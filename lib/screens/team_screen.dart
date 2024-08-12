@@ -10,16 +10,32 @@ class TeamScreen extends StatefulWidget {
 }
 
 class _TeamScreenState extends State<TeamScreen> {
-  final List<TeamModel> Teams = [
-    TeamModel("https://img.freepik.com/free-photo/confident-handsome-guy-posing-against-white-wall_176420-32936.jpg?t=st=1723452897~exp=1723456497~hmac=d1063ee18ade6b4f24d492b93758d241342ffeca0abc0759b44bfe7a0986bb4c&w=996", "Suleman Azeem Khan", "suleman.nastecsol@gmail,com"),
-    TeamModel("https://img.freepik.com/premium-photo/smiling-businessman-formal-wear-using-tablet-while-standing-rooftop_1289061-391.jpg?w=740", "Muhammad Ali Rana", "alirana.nastecol@gmail.com"),
-    TeamModel("", "Arqum Naeem", "arqumnaeem.nastecol@gmail.com"),
-    TeamModel("", "Shoaib Sardar", "shoaibsardar.nastecol@gmail.com"),
-    TeamModel("", "Imad Shareef", "imadshareef.nastecol@gmail.com"),
+  final List<TeamModel> teams = [
+    TeamModel(
+        "https://img.freepik.com/premium-photo/happy-fashionable-handsome-man_739685-5867.jpg?w=740",
+        "Suleman Azeem Khan",
+        "suleman.nastecsol@gmail,com"),
+    TeamModel(
+        "https://img.freepik.com/premium-photo/smiling-businessman-formal-wear-using-tablet-while-standing-rooftop_1289061-391.jpg?w=740",
+        "Muhammad Ali Rana",
+        "alirana.nastecol@gmail.com"),
+    TeamModel(
+        "https://img.freepik.com/premium-vector/man-suit-tie-is-smiling-looking-camera_697880-29692.jpg?w=740",
+        "Arqum Naeem",
+        "arqumnaeem.nastecol@gmail.com"),
+    TeamModel(
+        "https://img.freepik.com/free-photo/confident-handsome-guy-posing-against-white-wall_176420-32936.jpg?t=st=1723452897~exp=1723456497~hmac=d1063ee18ade6b4f24d492b93758d241342ffeca0abc0759b44bfe7a0986bb4c&w=996",
+        "Shoaib Sardar",
+        "shoaibsardar.nastecol@gmail.com"),
+    TeamModel(
+        "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+        "Imad Shareef",
+        "imadshareef.nastecol@gmail.com"),
   ];
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
         children: [
@@ -114,7 +130,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   height: 50,
                   width: MediaQuery.of(context).size.width - 50,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15),
@@ -149,41 +165,73 @@ class _TeamScreenState extends State<TeamScreen> {
                 ListView.builder(
                     padding: const EdgeInsets.all(5),
                     shrinkWrap: true,
-                    itemCount: Teams.length,
-                    itemBuilder: (BuildContext context , int index){
-                  final team = Teams[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                      const BorderRadius.all(Radius.circular(15)),
-                      color: NasColors.containerColor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(
-                              0, 0), // changes position of shadow
+                    itemCount: teams.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final team = teams[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(15)),
+                          color: NasColors.containerColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 8,
+                              offset: const Offset(
+                                  0, 0), // changes position of shadow
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 50,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage('${team.imageURL}'),
-                                  fit: BoxFit.fill)
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                height: 50,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                        image: NetworkImage('${team.imageURL}'),
+                                        fit: BoxFit.fill)),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${team.employeeName}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${team.email}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Spacer(),
+                              SizedBox(
+                                  width: 60,
+                                  child: IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(
+                                        Icons.more_vert,
+                                        size: 35,
+                                      )))
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                })
-
+                      );
+                    })
               ],
             ),
           )

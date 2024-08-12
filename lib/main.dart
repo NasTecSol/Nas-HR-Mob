@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:nashr/screens/main_screen.dart';
+import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:provider/provider.dart';
-
 import 'Controller/language_change_controller.dart';
 
 void main() async {
@@ -12,7 +11,7 @@ void main() async {
   await SingletonClass().init();
 
   LanguageChangeController languageController = LanguageChangeController();
-  await languageController.loadLanguage(); // Load the selected language
+  await languageController.loadLanguage();
   runApp(
     MultiProvider(
       providers: [
@@ -33,7 +32,7 @@ void main() async {
               Locale('ar'),
             ],
             debugShowCheckedModeBanner: false,
-            home: const MainScreen(),
+            home: const SplashScreen(),
           );
         },
       ),

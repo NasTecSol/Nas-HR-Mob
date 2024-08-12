@@ -21,17 +21,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
         "CT200-With Annas + 5 People"),
   ];
   final List<TaskModel> tasks = [
-    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00", "Nas-Hr Project"),
-    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00", "Nas-Hr Project"),
-    TaskModel("N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
+    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00",
+        "Nas-Hr Project"),
+    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00",
+        "Nas-Hr Project"),
+    TaskModel(
+        "N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
   ];
 
   final List<EventModel> events = [
-    EventModel("Upcoming Birthdays", "Suleman Azeem Khan #082", "July 6 12:00", "Nas-Hr Project"),
-    EventModel("Company Outing", "Visit to NasTecSol Company", "July 7 11:00", "Danial Rana & 6 others"),
+    EventModel("Upcoming Birthdays", "Suleman Azeem Khan #082", "July 6 12:00",
+        "Nas-Hr Project"),
+    EventModel("Company Outing", "Visit to NasTecSol Company", "July 7 11:00",
+        "Danial Rana & 6 others"),
     EventModel("Holiday", "Eid-Ul-Fitr Holiday", "July 8 01:00", "Happy Eid!"),
   ];
-
 
   String _getDayOfWeek(DateTime date) {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
@@ -49,8 +53,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.only(top: 50.0 , left: 20.0, right: 20.0),
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             Row(
               children: [
@@ -244,27 +249,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             if (_selectedOptionIndex == 1)
               Column(
-                mainAxisSize: MainAxisSize.min, // Set the Column to shrink-wrap its children
+                mainAxisSize: MainAxisSize.min,
+                // Set the Column to shrink-wrap its children
                 children: [
-                  Flexible( // Use Flexible instead of Expanded
-                    fit: FlexFit.loose, // Allow the child to take only the space it needs
+                  Flexible(
+                    // Use Flexible instead of Expanded
+                    fit: FlexFit.loose,
+                    // Allow the child to take only the space it needs
                     child: ListView.builder(
                       padding: const EdgeInsets.all(5),
-                      shrinkWrap: true, // Ensure the ListView doesn't take up unnecessary space
+                      shrinkWrap: true,
+                      // Ensure the ListView doesn't take up unnecessary space
                       itemCount: tasks.length,
                       itemBuilder: (BuildContext context, int index) {
                         final task = tasks[index];
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 15),
                           decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(Radius.circular(15)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(15)),
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.5),
                                 spreadRadius: 2,
                                 blurRadius: 8,
-                                offset: const Offset(0, 3), // changes position of shadow
+                                offset: const Offset(
+                                    0, 3), // changes position of shadow
                               ),
                             ],
                           ),
@@ -279,18 +290,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     topLeft: Radius.circular(15),
                                     bottomLeft: Radius.circular(15),
                                   ),
-                                  color: _getColorForVerificationStatus(task.status!),
+                                  color: _getColorForVerificationStatus(
+                                      task.status!),
                                 ),
                               ),
-                              Expanded( // Use Expanded to fill the remaining space
+                              Expanded(
+                                // Use Expanded to fill the remaining space
                                 child: Padding(
                                   padding: const EdgeInsets.all(15.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Expanded( // Expand the text to fill available space
+                                          Expanded(
+                                            // Expand the text to fill available space
                                             child: Text(
                                               "${task.taskName}",
                                               style: GoogleFonts.inter(
@@ -305,8 +320,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                             width: 75,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              color: _getColorForVerificationStatus(task.status!),
-                                              borderRadius: BorderRadius.circular(10),
+                                              color:
+                                                  _getColorForVerificationStatus(
+                                                      task.status!),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Center(
                                               child: Text(
@@ -327,7 +345,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         children: [
                                           Icon(
                                             Icons.calendar_month_outlined,
-                                            color: _getColorForVerificationStatus(task.status!),
+                                            color:
+                                                _getColorForVerificationStatus(
+                                                    task.status!),
                                             size: 25,
                                           ),
                                           const SizedBox(width: 10),
@@ -336,7 +356,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w500,
-                                              color: _getColorForVerificationStatus(task.status!),
+                                              color:
+                                                  _getColorForVerificationStatus(
+                                                      task.status!),
                                             ),
                                           ),
                                         ],
@@ -367,14 +389,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             if (_selectedOptionIndex == 2)
               Column(
-                mainAxisSize: MainAxisSize.min, // Set the Column to shrink-wrap its children
+                mainAxisSize: MainAxisSize.min,
+                // Set the Column to shrink-wrap its children
                 children: [
-                  Flexible( // Use Flexible instead of Expanded
-                    fit: FlexFit.loose, // Allow the child to take only the space it needs
+                  Flexible(
+                    // Use Flexible instead of Expanded
+                    fit: FlexFit.loose,
+                    // Allow the child to take only the space it needs
                     child: ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(10),
-                      shrinkWrap: true, // Ensure the ListView doesn't take up unnecessary space
+                      shrinkWrap: true,
+                      // Ensure the ListView doesn't take up unnecessary space
                       itemCount: events.length,
                       itemBuilder: (BuildContext context, int index) {
                         final event = events[index];
@@ -382,7 +408,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           children: [
                             Align(
                               alignment: Alignment.topLeft,
-                              child: Text("${event.eventType}",
+                              child: Text(
+                                "${event.eventType}",
                                 style: GoogleFonts.inter(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -394,14 +421,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             Container(
                               margin: const EdgeInsets.symmetric(vertical: 15),
                               decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(15)),
                                 color: NasColors.containerColor,
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey.withOpacity(0.3),
                                     spreadRadius: 2,
                                     blurRadius: 8,
-                                    offset: const Offset(0, 0), // changes position of shadow
+                                    offset: const Offset(
+                                        0, 0), // changes position of shadow
                                   ),
                                 ],
                               ),
@@ -409,31 +438,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 children: [
                                   Container(
                                     height: 165,
-                                    width: 80, // Adjusted the width for visibility
+                                    width: 80,
+                                    // Adjusted the width for visibility
                                     decoration: BoxDecoration(
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(15),
                                         bottomLeft: Radius.circular(15),
                                       ),
                                       color: NasColors.darkBlue,
-                                      image:  DecorationImage(
+                                      image: DecorationImage(
                                         image: AssetImage(
-                                          _getImageForEventType(event.eventType!), // Use a method to get the appropriate image
+                                          _getImageForEventType(event
+                                              .eventType!), // Use a method to get the appropriate image
                                         ),
                                         fit: BoxFit.contain,
                                       ),
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 8.0 , top: 2),
+                                    padding: const EdgeInsets.only(
+                                        left: 8.0, top: 2),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const SizedBox(height: 20),
                                         Align(
                                           alignment: Alignment.topLeft,
-                                          child: Text("${event.eventTile}",
+                                          child: Text(
+                                            "${event.eventTile}",
                                             style: GoogleFonts.inter(
                                               fontSize: 21,
                                               fontWeight: FontWeight.bold,
@@ -443,14 +478,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                         const SizedBox(height: 15),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
                                           children: [
                                             Align(
                                                 alignment: Alignment.topLeft,
-                                                child: Icon(Icons.calendar_month_outlined,color: NasColors.darkBlue,size: 30,)),
+                                                child: Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: NasColors.darkBlue,
+                                                  size: 30,
+                                                )),
                                             Align(
                                               alignment: Alignment.topLeft,
-                                              child: Text("${event.duration}",
+                                              child: Text(
+                                                "${event.duration}",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
@@ -463,7 +504,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         const SizedBox(height: 20),
                                         Align(
                                           alignment: Alignment.topLeft,
-                                          child: Text("${event.remarks}",
+                                          child: Text(
+                                            "${event.remarks}",
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -476,7 +518,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     ),
                                   ),
                                 ],
-                              ) ,
+                              ),
                             ),
                             const SizedBox(height: 20),
                           ],
@@ -536,6 +578,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+
   Color _getColorForVerificationStatus(String verificationStatus) {
     switch (verificationStatus) {
       case 'Completed':
@@ -550,6 +593,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return Colors.grey; // or any other default color
     }
   }
+
   String _getImageForEventType(String eventType) {
     switch (eventType) {
       case 'Upcoming Birthdays':
@@ -560,9 +604,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return 'images/Vector.png'; // Default image for company or other types
     }
   }
-
 }
-
 
 class MeetingModel {
   String? meetingName;
@@ -572,12 +614,11 @@ class MeetingModel {
   MeetingModel(this.meetingName, this.time, this.members);
 }
 
-
 class EventModel {
   String? eventType;
   String? eventTile;
   String? duration;
   String? remarks;
 
-  EventModel(this.eventType, this.eventTile, this.duration , this.remarks);
+  EventModel(this.eventType, this.eventTile, this.duration, this.remarks);
 }

@@ -1,12 +1,10 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/payroll_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
-import 'package:nashr/screens/task_screen.dart';
 import 'package:nashr/screens/team_screen.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
@@ -21,8 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final List<ActivityModel> activity = [
     ActivityModel("Late Comings", "08-07-2024", "9:00 PM", "late"),
-    ActivityModel(
-        "Leave Request", "08-07-2024", "Going on Vocations", "Approved"),
+    ActivityModel("Leave Request", "08-07-2024", "Going on Vocations", "Approved"),
     ActivityModel("Salary Increment", "08-07-2024", "Salary Wadhao", "Pending"),
   ];
   double blurAmount = 10.0;
@@ -256,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   child: ListView.builder(
+                    padding: const EdgeInsets.all(3),
                     controller: scrollController,
                     itemCount: 1,
                     itemBuilder: (BuildContext context, int index) {
