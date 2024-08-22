@@ -90,7 +90,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Text(
                 "Select Date",
                 style: GoogleFonts.inter(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: NasColors.darkBlue,
                 ),
@@ -411,7 +411,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               child: Text(
                                 "${event.eventType}",
                                 style: GoogleFonts.inter(
-                                  fontSize: 22,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: NasColors.darkBlue,
                                 ),
@@ -469,8 +469,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           alignment: Alignment.topLeft,
                                           child: Text(
                                             "${event.eventTile}",
+                                            maxLines: 2,
                                             style: GoogleFonts.inter(
-                                              fontSize: 21,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
@@ -493,7 +494,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                               child: Text(
                                                 "${event.duration}",
                                                 style: GoogleFonts.inter(
-                                                  fontSize: 18,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                   color: NasColors.darkBlue,
                                                 ),
@@ -507,7 +508,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           child: Text(
                                             "${event.remarks}",
                                             style: GoogleFonts.inter(
-                                              fontSize: 18,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.grey,
                                             ),
@@ -554,7 +555,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             side: BorderSide(
               color:
                   _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 3.0,
+              width: 0,
             ),
           ),
           child: Column(

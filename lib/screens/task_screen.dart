@@ -82,7 +82,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          height: 120,
+                          height: 150,
                           width: 20, // Adjusted the width for visibility
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.only(
@@ -209,7 +209,7 @@ class _TaskScreenState extends State<TaskScreen> {
             borderRadius: BorderRadius.circular(25),
             side: BorderSide(
               color: _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 3.0,
+              width: 0.0,
             ),
           ),
           child: Column(

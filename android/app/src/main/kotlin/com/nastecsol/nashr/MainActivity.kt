@@ -1,5 +1,7 @@
 package com.nastecsol.nashr
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity() {
+    // No changes needed here, just ensure it extends FlutterFragmentActivity
+}

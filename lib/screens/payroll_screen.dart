@@ -53,11 +53,6 @@ class _PayrollScreenState extends State<PayrollScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
                 Text(
                   "Payroll",
                   style: GoogleFonts.inter(

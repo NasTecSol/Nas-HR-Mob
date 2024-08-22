@@ -1,9 +1,13 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/main_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -16,6 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   bool _obscurePassword = true;
+  SingletonClass singletonClass = SingletonClass();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -81,20 +88,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextFormField(
                       controller: _email,
                       validator: (value) {
-                        if (value == null ||
-                            !value.contains('@') ||
-                            !value.contains('.com')) {
+                        if (value == null) {
                           return AppLocalizations.of(context)!
-                              .pleaseEnterAValidEmailAddress;
+                              .pleaseEnterAUsername;
                         }
                         return null;
                       },
                       cursorColor: Colors.grey,
                       decoration: InputDecoration(
-                        hintText: 'Email',
+                        hintText: 'Username',
                         hintStyle: GoogleFonts.inter(color: Colors.grey),
                         prefixIcon:  Icon(
-                          Icons.email_outlined,
+                          Icons.person,
                           color:NasColors.icons,
                         ),
                         border: OutlineInputBorder(
@@ -196,6 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   NasButton(text: "Sign In", onPressed: (){
                     if (_formKey.currentState!.validate()) {
+                      login();
                       Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -214,5 +220,39 @@ class _LoginScreenState extends State<LoginScreen> {
         ]),
       ),
     );
+  }
+  //Login API Call
+  Future login() async {
+    var uuid = const Uuid();
+    var v1 = uuid.v1();
+    print(v1);
+    String email = _email.text;
+    String password = _password.text;
+    Map data = {"userName": email, "password": password , "empId": email ,"macAddress":v1};
+    print(data);
+
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
+    try {
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      print(response.body);
+      if (response.statusCode == 200) {
+
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+
+    return null;
   }
 }

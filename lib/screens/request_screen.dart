@@ -84,7 +84,7 @@ class _RequestScreenState extends State<RequestScreen> {
                       ),
                     ),
                     onPressed: () {
-                      // Add your onPressed functionality here
+                      //Add your onPressed functionality here
                     },
                     child: SizedBox(
                       height: 30,
@@ -198,8 +198,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                   Row(
                                     children: [
                                       Container(
-                                        height: 80,
-                                        width: 80,
+                                        height: 50,
+                                        width: 50,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(15),
                                           image: const DecorationImage(
@@ -210,7 +210,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       ),
                                       const SizedBox(width: 5),
                                       SizedBox(
-                                        width: 200,
+                                        width: 150,
                                         child: Column(
                                           children: [
                                             Align(
@@ -218,7 +218,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                               child: Text(
                                                 "${request.employeeName}",
                                                 style: GoogleFonts.inter(
-                                                  fontSize: 18,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.black,
                                                 ),
@@ -269,7 +269,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black,
-                                        fontSize: 18,
+                                        fontSize: 15,
                                       ),
                                     ),
                                   ),
@@ -294,7 +294,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.grey,
-                                          fontSize: 18,
+                                          fontSize: 15,
                                         ),
                                       ),
                                     ),
@@ -306,7 +306,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.w500,
                                           color: Colors.grey,
-                                          fontSize: 16,
+                                          fontSize: 15,
                                         ),
                                       ),
                                     ),
@@ -318,7 +318,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
-                                          fontSize: 18,
+                                          fontSize: 15,
                                         ),
                                       ),
                                     ),
@@ -330,7 +330,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.w500,
                                           color: Colors.grey,
-                                          fontSize: 16,
+                                          fontSize: 15,
                                         ),
                                       ),
                                     ),
@@ -342,7 +342,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
-                                          fontSize: 18,
+                                          fontSize: 15,
                                         ),
                                       ),
                                     ),

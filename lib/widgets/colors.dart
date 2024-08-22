@@ -11,4 +11,5 @@ mixin NasColors {
   static Color onTime = const Color(0xff2D9596);
   static Color completed = const Color(0xff86D991);
   static Color containerColor = const Color(0xffF4F7FA);
+  static Color pending = const Color(0xffFBC948);
 }

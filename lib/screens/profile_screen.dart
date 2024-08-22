@@ -37,33 +37,17 @@ class _ProfileScreenState extends State<ProfileScreen>
           Container(
             color: Colors.white,
             child: Padding(
-              padding: const EdgeInsets.only(top: 50.0, left: 13, right: 13),
+              padding: const EdgeInsets.only(top: 50.0 , left: 20.0, right: 20.0),
               child: Column(
                 children: [
                   Row(
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_outlined,
-                            color: Colors.black,
-                          ),
+                      Text(
+                        "My Profile",
+                        style: GoogleFonts.inter(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
                         ),
                       ),
                       const Spacer(),
@@ -90,20 +74,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             color: Colors.black,
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      "My Profile",
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   TabBar(
@@ -209,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         // Positioned image overlapping the top border of the container
                         Positioned(
                           top: -0, // Adjust position as needed to overlap with container top border
-                          left: 180, // Adjust position as needed horizontally
+                          left: (MediaQuery.of(context).size.width - 400) / 0.07, // Adjust position as needed horizontally
                           child: Stack(
                             children: [ Container(
                               height: 100,
