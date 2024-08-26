@@ -185,7 +185,7 @@ class _TeamScreenState extends State<TeamScreen> {
                           ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(5.0),
                           child: Row(
                             children: [
                               Container(
@@ -203,7 +203,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                   Text(
                                     "${team.employeeName}",
                                     style: GoogleFonts.inter(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: NasColors.darkBlue,
                                     ),
@@ -211,7 +211,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                   Text(
                                     "${team.email}",
                                     style: GoogleFonts.inter(
-                                      fontSize: 15,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey,
                                     ),
@@ -220,7 +220,7 @@ class _TeamScreenState extends State<TeamScreen> {
                               ),
                               const Spacer(),
                               SizedBox(
-                                  width: 60,
+                                  width: 40,
                                   child: IconButton(
                                       onPressed: () {},
                                       icon: const Icon(

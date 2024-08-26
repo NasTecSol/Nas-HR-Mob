@@ -54,6 +54,14 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         ),
                       ),
                     ),
+                    Text(
+                      "My Document",
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
                       onPressed: () {
@@ -78,20 +86,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           color: Colors.white,
                         ),
                       ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      "My document",
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    )
+                    ),
+
                   ],
                 ),
                 const SizedBox(height: 30),

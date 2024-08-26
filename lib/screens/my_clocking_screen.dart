@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../widgets/colors.dart';
-
-class AssetsScreen extends StatefulWidget {
-  const AssetsScreen({super.key});
+import 'package:nashr/widgets/colors.dart';
+import 'dart:math' as math;
+class MyClockingScreen extends StatefulWidget {
+  const MyClockingScreen({super.key});
 
   @override
-  State<AssetsScreen> createState() => _AssetsScreenState();
+  State<MyClockingScreen> createState() => _MyClockingScreenState();
 }
 
-class _AssetsScreenState extends State<AssetsScreen> {
-  final List<AssetsModel> assets = [
-    AssetsModel("Roll Royce", "car", "203948393", "SAK 07",
-        "20, July, 2024 9:15 AM", "status"),
-    AssetsModel("MacBook pro M3", "laptop", "204049404", "SAK 07",
-        "21, July, 2024 9:30 AM", "status"),
+class _MyClockingScreenState extends State<MyClockingScreen> {
+  final List<MyClockingModel> clocks = [
+    MyClockingModel("July 20 2024", "-30 min late", "9:35:40 AM", "5:10:20 PM"),
+    MyClockingModel(
+        "July 21 2024", "Early Check Out", "9:01:26 AM", "5:00:10 PM"),
   ];
 
   @override
@@ -59,7 +57,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                     child: Text(
-                      "Assets",
+                      "My Clocking",
                       style: GoogleFonts.inter(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -110,125 +108,114 @@ class _AssetsScreenState extends State<AssetsScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  Text(
-                    "Assigned Assets",
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: NasColors.darkBlue,
-                    ),
-                  )
-                ],
-              ),
               ListView.builder(
                   padding: const EdgeInsets.all(5),
                   shrinkWrap: true,
-                  itemCount: assets.length,
+                  itemCount: clocks.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final asset = assets[index];
+                    final clock = clocks[index];
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 15),
                       decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(15)),
-                        color: NasColors.containerColor,
+                        borderRadius: const BorderRadius.all(Radius.circular(15)),
+                        color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
+                            color: Colors.grey.withOpacity(0.5),
                             spreadRadius: 2,
                             blurRadius: 8,
-                            offset: const Offset(
-                                0, 0), // changes position of shadow
+                            offset: const Offset(0, 3), // changes position of shadow
                           ),
                         ],
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            height: 165,
-                            width: 80, // Adjusted the width for visibility
+                            height: 120,
+                            width: 20, // Adjusted the width for visibility
                             decoration: BoxDecoration(
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 bottomLeft: Radius.circular(15),
                               ),
                               color: NasColors.darkBlue,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  _getImageForEventType(asset
-                                      .assetType!), // Use a method to get the appropriate image
-                                ),
-                                fit: BoxFit.fitWidth,
-                              ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
+                          Expanded(child: Padding(
+                            padding: const EdgeInsets.all(15.0),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(children: [
-                                  Text(
-                                    "${asset.assetName}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
+                                Text(
+                                  "${clock.date}",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
                                   ),
-                                  const SizedBox(width: 2.5),
-                                  Text(
-                                    "${asset.modelNo}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
+                                ),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "${clock.checkIn}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    height: 30,
-                                    width: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.rectangle,
-                                      color: NasColors.onTime,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "${asset.status}",
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
+                                    const SizedBox(width: 5),
+                                    Container(
+                                      height: 32,
+                                      width: 32,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      child: Transform(
+                                        transform: Matrix4.rotationY(
+                                            math.pi), // Flip horizontally
+                                        alignment: Alignment.center,
+                                        child: const Icon(
+                                          Icons.exit_to_app_outlined,
+                                          size: 25,
                                           color: Colors.white,
-                                          fontSize: 10,
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ]),
-                                const SizedBox(height: 20),
-                                Text("ID #${asset.id}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Text("Assigned At ${asset.assignedDate}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.darkBlue,
-                                  ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "${clock.checkOut}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Container(
+                                      height: 32,
+                                      width: 32,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      child: const Icon(
+                                        Icons.exit_to_app_outlined,
+                                        size: 25,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+
+                                  ],
                                 ),
                               ],
                             ),
-                          )
+                          ))
                         ],
                       ),
                     );
@@ -239,27 +226,13 @@ class _AssetsScreenState extends State<AssetsScreen> {
       ]),
     );
   }
-
-  String _getImageForEventType(String eventType) {
-    switch (eventType) {
-      case 'laptop':
-        return 'images/Laptop.png';
-      case 'car':
-        return 'images/Car.png';
-      default:
-        return 'images/Vector.png'; // Default image for company or other types
-    }
-  }
 }
 
-class AssetsModel {
-  String? assetName;
-  String? assetType;
-  String? id;
-  String? modelNo;
-  String? assignedDate;
+class MyClockingModel {
+  String? date;
   String? status;
+  String? checkIn;
+  String? checkOut;
 
-  AssetsModel(this.assetName, this.assetType, this.id, this.modelNo,
-      this.assignedDate, this.status);
+  MyClockingModel(this.date, this.status, this.checkIn, this.checkOut);
 }

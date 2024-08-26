@@ -1,11 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/document_screen.dart';
+import 'package:nashr/screens/loan_screen.dart';
+import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/payroll_screen.dart';
-import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/team_screen.dart';
+import 'package:nashr/singleton_class.dart';
+import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
 
@@ -17,17 +21,202 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final AuthService _authService = AuthService();
+  SingletonClass singletonClass = SingletonClass();
   final List<ActivityModel> activity = [
     ActivityModel("Late Comings", "08-07-2024", "9:00 PM", "late"),
-    ActivityModel("Leave Request", "08-07-2024", "Going on Vocations", "Approved"),
+    ActivityModel(
+        "Leave Request", "08-07-2024", "Going on Vocations", "Approved"),
     ActivityModel("Salary Increment", "08-07-2024", "Salary Wadhao", "Pending"),
   ];
   double blurAmount = 10.0;
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
+  bool isExpanded = true;
+  double _dragPosition = 0.0;
+  bool _isSliderCompleted = false;
+  final DraggableScrollableController _draggableScrollableController =
+      DraggableScrollableController();
+   //Slider
+  OverlayEntry? _overlayEntry;
+
+  OverlayEntry _createOverlayEntry() {
+    return OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: GestureDetector(
+          onTap: (){
+            _removeOverlay();
+          },
+          child: Material(
+            color: Colors.grey.withOpacity(0.8), // Set the opacity
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Select Clock-In Type',
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 90,
+                      width: 90,
+                      decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Image.asset("images/site.png",
+
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Office Check-In',
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 90,
+                    width: 90,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Image.asset("images/pc.png",
+
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Remote Check-In',
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () async {
+                      if (!(await _authService.checkBiometricAvailability())) {
+                        // Show a message asking the user to set up biometric credentials
+                        _removeOverlay();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please set up biometrics in your device settings')),
+                        );
+                        return; // Skip further actions if biometrics aren't set up
+                      }
+
+                      // If biometrics are available, proceed with authentication
+                      bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
+                      if (isAuthenticated) {
+                        // Proceed to the next screen or perform the desired action
+                        _removeOverlay();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Authenticated')),
+                        );
+                      } else {
+                        // Show an error message if authentication failed
+                        _removeOverlay();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Authentication failed')),
+                        );
+                      }
+                    },
+                    child: Container(
+                      height: 90,
+                      width: 90,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Image.asset("images/fingerprint.png",
+
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Biometric Check-In',
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _draggableScrollableController.addListener(() {
+      setState(() {
+        isExpanded = _draggableScrollableController.size > 0.3;
+        showHeaderContent = isExpanded;
+        blurAmount = isExpanded ? 10.0 : 0.0;
+      });
+    });
+  }
+
+  void toggleSheet() {
+    setState(() {
+      if (isExpanded) {
+        _draggableScrollableController.animateTo(
+          0.2,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        _draggableScrollableController.animateTo(
+          0.65,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      isExpanded = !isExpanded;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dashBoardData = singletonClass.employeeDataList.first.data;
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -45,40 +234,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 sigmaY: blurAmount,
               ), // Blur effect
               child: Container(
-                color: Colors.black.withOpacity(opacityAmount * 0.1), // Slight dark overlay
+                color: Colors.black
+                    .withOpacity(opacityAmount * 0.1), // Slight dark overlay
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12 ,top: 50 , left: 20),
-                  child: AnimatedOpacity(
-                    opacity: showHeaderContent ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: GestureDetector(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const ProfileScreen()));
-                      },
-                      child: ClipOval(
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 60,
-                          child: Image.asset(
-                            'images/DP.jpg', fit: BoxFit.fill,
-                            height: 200,
-                            width: 200,
+          if (isExpanded)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center ,
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(right: 12, top: 50, left: 10),
+                    child: AnimatedOpacity(
+                      opacity: showHeaderContent ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: GestureDetector(
+                        onTap: toggleSheet,
+                        child: ClipOval(
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 40,
+                            child: Image.asset(
+                              'images/DP.jpg',
+                              fit: BoxFit.fill,
+                              height: 150,
+                              width: 150,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-               Align(
+                Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 55),
@@ -88,34 +279,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         children: [
                           SizedBox(
-                            width: 200,
+                            width: 170,
                             child: Text(
-                              'Ali Rana #06',
+                              '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
                               textAlign: TextAlign.left,
                               style: GoogleFonts.inter(
-                                fontSize: 25,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                           SizedBox(
-                            width: 200,
+                            width: 170,
                             child: Text(
-                              'UI/UX Designer',
+                              '${dashBoardData?.profession}',
                               style: GoogleFonts.inter(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                           SizedBox(
-                            width: 200,
+                            width: 170,
                             child: Text(
                               'Contract ID #2039232',
                               style: GoogleFonts.inter(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -126,29 +317,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 35.0 , top: 35),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10.0, top: 35),
                   child: AnimatedOpacity(
                     opacity: showHeaderContent ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 300),
                     child: Column(
                       children: [
                         IconButton(
-                          onPressed: () {
-                          },
+                          onPressed: () {},
                           icon: Container(
                             height: 45,
                             width: 45,
-                            decoration:  BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6), // Adjust opacity for the glow effect
-                                  spreadRadius: 5, // Spread the shadow to create a glow effect
-                                  blurRadius: 10,  // Blur radius to make the glow smooth
+                                  color: Colors.white.withOpacity(0.6),
+                                  // Adjust opacity for the glow effect
+                                  spreadRadius: 5,
+                                  // Spread the shadow to create a glow effect
+                                  blurRadius:
+                                      10, // Blur radius to make the glow smooth
                                 ),
                               ],
                             ),
@@ -160,18 +351,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         IconButton(
                           onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MyClockingScreen()));
                           },
                           icon: Container(
                             height: 45,
                             width: 45,
-                            decoration:  BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6), // Adjust opacity for the glow effect
-                                  spreadRadius: 5, // Spread the shadow to create a glow effect
-                                  blurRadius: 10,  // Blur radius to make the glow smooth
+                                  color: Colors.white.withOpacity(0.6),
+                                  // Adjust opacity for the glow effect
+                                  spreadRadius: 5,
+                                  // Spread the shadow to create a glow effect
+                                  blurRadius:
+                                      10, // Blur radius to make the glow smooth
                                 ),
                               ],
                             ),
@@ -182,19 +381,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () {
-                          },
+                          onPressed: () {},
                           icon: Container(
                             height: 45,
                             width: 45,
-                            decoration:  BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6), // Adjust opacity for the glow effect
-                                  spreadRadius: 5, // Spread the shadow to create a glow effect
-                                  blurRadius: 10,  // Blur radius to make the glow smooth
+                                  color: Colors.white.withOpacity(0.6),
+                                  // Adjust opacity for the glow effect
+                                  spreadRadius: 5,
+                                  // Spread the shadow to create a glow effect
+                                  blurRadius:
+                                      10, // Blur radius to make the glow smooth
                                 ),
                               ],
                             ),
@@ -208,31 +409,46 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+              ],
+            ),
+          if (!isExpanded)
+            Padding(
+              padding: const EdgeInsets.only(top: 40.0, right: 10, left: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.6),
+                            // Adjust opacity for the glow effect
+                            spreadRadius: 5,
+                            // Spread the shadow to create a glow effect
+                            blurRadius:
+                                10, // Blur radius to make the glow smooth
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                          onPressed: toggleSheet,
+                          icon: const Icon(Icons.close))),
+                ],
               ),
-            ],
-          ),
+            ),
           Listener(
-            onPointerMove: (PointerMoveEvent event) {
-              setState(() {
-                if (event.delta.dy > 0) {
-                  // Dragging down
-                  blurAmount = 0.0;
-                  showHeaderContent = false;
-                } else if (event.delta.dy < 0) {
-                  // Dragging up
-                  blurAmount = 10.0;
-                  showHeaderContent = true;
-                }
-              });
-            },
+            onPointerMove: (PointerMoveEvent event) {},
             child: DraggableScrollableSheet(
-              initialChildSize: 0.7,
-              // The initial height of the bottom sheet
+              controller: _draggableScrollableController,
+              initialChildSize: isExpanded ? 0.65 : 0.2,
               minChildSize: 0.2,
-              // The minimum height of the bottom sheet
               maxChildSize: 0.7,
               expand: true,
-              builder: (BuildContext context, ScrollController scrollController) {
+              builder:
+                  (BuildContext context, ScrollController scrollController) {
                 return Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
@@ -266,8 +482,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 10,
                                 width: 80,
                                 decoration: BoxDecoration(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(15)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(15)),
                                   color: NasColors.darkBlue,
                                 ),
                               )
@@ -290,31 +506,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.grey.withOpacity(0.5),
                                           spreadRadius: 2,
                                           blurRadius: 8,
-                                          offset: const Offset(
-                                              0, 3), // changes position of shadow
+                                          offset: const Offset(0,
+                                              3), // changes position of shadow
                                         ),
                                       ],
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.only(
-                                          left: 15.0, right: 15, top: 10),
+                                          left: 5.0, right: 5, top: 10),
                                       child: Column(
                                         children: [
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                'Check-in',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const Spacer(),
                                               Transform(
-                                                transform: Matrix4.rotationY(
-                                                    math.pi), // Flip horizontally
+                                                transform:
+                                                Matrix4.rotationY(math.pi),
+                                                // Flip horizontally
                                                 alignment: Alignment.center,
                                                 child: const Icon(
                                                   Icons.exit_to_app_outlined,
@@ -322,108 +531,59 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.black,
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '9:30:40 AM',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.normal,
+                                              const SizedBox(width: 2.5),
+                                              Expanded(
+                                                child: Text(
+                                                  'Check-in',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: NasColors.red,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(15)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Text(
-                                                    "-30 min Late",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.red,
-                                                    ),
+                                              const SizedBox(width: 2.5),
+                                              Expanded(
+                                                child: Text(
+                                                  '9:30:40 AM',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Container(
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(
-                                              0, 3), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 15.0, right: 15, top: 10),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Check-Out',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const Spacer(),
-                                              const Icon(
-                                                Icons.exit_to_app_outlined,
-                                                size: 20,
-                                                color: Colors.black,
-                                              ),
-                                            ],
                                           ),
                                           const SizedBox(height: 5),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                '4:30:52 AM',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.normal,
+                                              const Icon(
+                                                Icons.exit_to_app_outlined,
+                                                size: 25,
+                                                color: Colors.black,
+                                              ),
+                                              const SizedBox(width: 2.5),
+                                              Expanded(
+                                                child: Text(
+                                                  'Check-Out',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
+                                              const SizedBox(width: 2.5),
+                                              Expanded(
+                                                child: Text(
+                                                  '4:30:52 AM',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ),
+
                                             ],
                                           ),
                                           const SizedBox(height: 10),
@@ -435,18 +595,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 decoration: BoxDecoration(
                                                   color: NasColors.onTime,
                                                   borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(15)),
+                                                  const BorderRadius.all(
+                                                      Radius.circular(15)),
                                                 ),
                                                 child: Padding(
                                                   padding:
-                                                      const EdgeInsets.all(5.0),
+                                                  const EdgeInsets.all(5.0),
                                                   child: Text(
                                                     "Early Check-out",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 10,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                      FontWeight.bold,
                                                       color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Expanded(
+                                                child: Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    'Worked 6h 1m',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
                                                 ),
@@ -531,197 +705,351 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: (){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const DocumentScreen()));
-                                      },
-                                      child: Container(
-                                        height: 90,
-                                        width: 90,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0,
-                                                  3), // changes position of shadow
-                                            ),
-                                          ],
+                            child:GestureDetector(
+                              onHorizontalDragUpdate: (details) {
+                                setState(() {
+                                  _dragPosition += details.primaryDelta!;
+                                  if (_dragPosition > MediaQuery.of(context).size.width * 0.7) {
+                                    _isSliderCompleted = true;
+                                  }
+                                });
+                              },
+                              onHorizontalDragEnd: (details) {
+                                if (_isSliderCompleted && details.velocity.pixelsPerSecond.dx > 0) {
+                                  // Swiped from left to right
+                                  _overlayEntry = _createOverlayEntry();
+                                  Overlay.of(context).insert(_overlayEntry!);
+                                  setState(() {
+                                    _dragPosition = 8; // Move back to the start point
+                                    _isSliderCompleted = false;
+                                  });
+                                } else {
+                                  setState(() {
+                                    _dragPosition = 8; // Reset to the start point
+                                    _isSliderCompleted = false;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                alignment: Alignment.topLeft,
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                  color: Colors.white,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF444658),
+                                      Color(0xFF677587),
+                                      Color(0xFF78889D),
+                                      Color(0xFF9DB2CE),
+                                      Color(0xFF8799B1),
+                                    ],
+                                    begin: Alignment.topRight,
+                                    end: Alignment.bottomLeft,
+                                  ),
+                                ),
+                                height: 60,
+                                child: Transform.translate(
+                                  offset: Offset(_dragPosition, -1),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 60,
+                                          height: 50,
+                                          decoration: const BoxDecoration(
+                                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                                            color: Colors.white,
+                                          ),
+                                          child: Lottie.asset('images/swiper.json'),
                                         ),
-                                        child: Center(
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'images/files.png',
-                                              fit: BoxFit.contain,
-                                              width: 50,
-                                              height: 50,
+                                        const SizedBox(width: 50),
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Text (
+                                            "Swipe to Check-In",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const DocumentScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/files.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      "Documents",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap:( ) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const AssetsScreen()));
-                      },
-                                      child: Container(
-                                        height: 90,
-                                        width: 90,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0,
-                                                  3), // changes position of shadow
-                                            ),
-                                          ],
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        "Documents",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
                                         ),
-                                        child: Center(
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'images/assets.png',
-                                              fit: BoxFit.contain,
-                                              width: 50,
-                                              height: 50,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const AssetsScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/assets.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      "Assets",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap:(){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const PayrollScreen()));
-                                      },
-                                      child: Container(
-                                        height: 90,
-                                        width: 90,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0,
-                                                  3), // changes position of shadow
-                                            ),
-                                          ],
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        "Assets",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
                                         ),
-                                        child: Center(
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'images/creditCard.png',
-                                              fit: BoxFit.contain,
-                                              width: 50,
-                                              height: 50,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const LoanScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/loan.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      "Salary",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap:(){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const TeamScreen()));
-                                      },
-                                      child: Container(
-                                        height: 90,
-                                        width: 90,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0,
-                                                  3), // changes position of shadow
-                                            ),
-                                          ],
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        "Loans",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
                                         ),
-                                        child: Center(
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'images/Team.png',
-                                              fit: BoxFit.contain,
-                                              width: 50,
-                                              height: 50,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const TeamScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/Team.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      "Teams",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        "Teams",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const PayrollScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/creditCard.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        "Salary",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           Padding(
@@ -746,7 +1074,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Column(
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Activity",
@@ -757,7 +1086,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 30),
+                                    const SizedBox(height: 20),
                                     SizedBox(
                                       height: 137,
                                       child: ListView.builder(
@@ -776,18 +1105,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               // Add spacing between items
                                               height: 100,
                                               decoration: BoxDecoration(
-                                                borderRadius: const BorderRadius.all(
-                                                    Radius.circular(15)),
-                                                color: Colors.white,
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(15)),
+                                                  color: Colors.white,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.5),
+                                                      color: Colors.grey
+                                                          .withOpacity(0.5),
                                                       spreadRadius: 2,
                                                       blurRadius: 8,
-                                                      offset: const Offset(0, 3), // changes position of shadow
+                                                      offset: const Offset(0,
+                                                          3), // changes position of shadow
                                                     ),
-                                                  ]
-                                              ),
+                                                  ]),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -796,7 +1127,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 children: [
                                                   Padding(
                                                     padding:
-                                                        const EdgeInsets.all(8.0),
+                                                        const EdgeInsets.all(
+                                                            8.0),
                                                     child: Text(
                                                       '${activities.activityName}',
                                                       style: GoogleFonts.inter(
@@ -832,23 +1164,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                   const SizedBox(height: 20),
-                                                   Container(
-                                                      width: 200,
-                                                      padding: const EdgeInsets.all(
-                                                              4.0),
-                                                      decoration: BoxDecoration(
-                                                        color: _getColorForActivity(activities.status!),
-                                                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
-                                                      ),
-                                                      child: Text(
-                                                        "${activities.status}",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          color: Colors.white,
-                                                        ),
+                                                  const SizedBox(height: 20),
+                                                  Container(
+                                                    width: 200,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            4.0),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          _getColorForActivity(
+                                                              activities
+                                                                  .status!),
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .only(
+                                                              bottomLeft: Radius
+                                                                  .circular(15),
+                                                              bottomRight:
+                                                                  Radius
+                                                                      .circular(
+                                                                          15)),
+                                                    ),
+                                                    child: Text(
+                                                      "${activities.status}",
+                                                      style: GoogleFonts.inter(
+                                                        color: Colors.white,
                                                       ),
                                                     ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
