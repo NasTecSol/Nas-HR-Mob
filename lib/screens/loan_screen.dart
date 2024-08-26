@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 
 class LoanScreen extends StatefulWidget {
@@ -10,34 +12,80 @@ class LoanScreen extends StatefulWidget {
 }
 
 class _LoanScreenState extends State<LoanScreen> {
-  final List<LoanModel> loans = [
-    LoanModel(
-        "March 2024",
-        "paid",
-        "1000 SAR",
-        "3000 SAR",),
-    LoanModel(
-        "April 2024",
-        "paid",
-        "1000 SAR",
-        "2000 SAR",),
-    LoanModel(
-        "May 2024",
-        "remaining",
-        "1000 SAR",
-        "2000 SAR",),
-    LoanModel(
-      "June 2024",
-      "remaining",
-      "1000 SAR",
-      "2000 SAR",)
-  ];
+  SingletonClass singletonClass = SingletonClass();
+  String totalLoan = (SingletonClass().employeeDataList.first.data!.loanInfo!.first.totalLoanAmount).toString();
+  String paidAmount = (SingletonClass().employeeDataList.first.data!.loanInfo!.first.paidAmount).toString();
+  String remainingAmount = "";
+  late List<Map<String, String>> loanInstallments;
+
+  int _extractLoanDuration(String loanDuration) {
+    // Extract the numeric part from the loanDuration string
+    final RegExp regex = RegExp(r'\d+');
+    final match = regex.firstMatch(loanDuration);
+
+    if (match != null) {
+      return int.parse(match.group(0)!);
+    } else {
+      throw Exception('Invalid loanDuration format');
+    }
+  }
+
+  List<Map<String, String>> _generateLoanInstallments(
+      String issueDate, int totalInstallments, int paidInstallments, String installmentAmount) {
+    List<Map<String, String>> loanInstallments = [];
+    DateTime startDate = DateTime.parse(issueDate);
+
+    for (int i = 0; i < totalInstallments; i++) {
+      DateTime installmentDate = DateTime(startDate.year, startDate.month + i, startDate.day);
+
+      // Adjust the month and year correctly to prevent overflow
+      int correctMonth = (startDate.month + i - 1) % 12 + 1;
+      int yearAdjustment = (startDate.month + i - 1) ~/ 12;
+      installmentDate = DateTime(startDate.year + yearAdjustment, correctMonth, startDate.day);
+
+      String monthYear = DateFormat.yMMMM().format(installmentDate);
+      String status = i < paidInstallments ? "paid" : "remaining";
+      String paidAmount = i < paidInstallments ? installmentAmount : "0";
+
+      loanInstallments.add({
+        "month": monthYear,
+        "status": status,
+        "paidAmount": paidAmount,
+        "remainingAmount": installmentAmount,
+      });
+    }
+
+    return loanInstallments;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    final loanInfo = singletonClass.employeeDataList.first.data?.loanInfo;
+    if (loanInfo == null || loanInfo.isEmpty) {
+      return const Center(child: Text('No loan information available'));
+    }
+
+    // Calculate the remaining amount
+    double totalLoanValue = double.parse(totalLoan);
+    double paidAmountValue = double.parse(paidAmount);
+    double remainingAmountValue = totalLoanValue - paidAmountValue;
+    remainingAmount = remainingAmountValue.toString();
+
+    // Extract the loan duration
+    int totalInstallments = _extractLoanDuration(loanInfo.first.loanDuration!);
+
+    // Generate loan installments
+    loanInstallments = _generateLoanInstallments(
+      loanInfo.first.loanIssueDate!,
+      totalInstallments,
+      int.parse(loanInfo.first.paidInstallments!),
+      loanInfo.first.installmentAmount!,
+    );
+
+    return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.only(top: 50.0,left: 20.0,right: 20.0),
+        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -54,16 +102,17 @@ class _LoanScreenState extends State<LoanScreen> {
                       height: 50,
                       width: 50,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              spreadRadius: 5,
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.4),
+                            spreadRadius: 5,
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
                       child: const Icon(
                         Icons.arrow_back_ios_new_outlined,
                         color: Colors.black,
@@ -94,7 +143,7 @@ class _LoanScreenState extends State<LoanScreen> {
                       ),
                     ),
                     onPressed: () {
-                      //Add your onPressed functionality here
+                      // Add your onPressed functionality here
                     },
                     child: SizedBox(
                       height: 30,
@@ -137,7 +186,7 @@ class _LoanScreenState extends State<LoanScreen> {
                   ),
                 ),
                 Text(
-                  "4000.00 SAR",
+                  totalLoan,
                   style: GoogleFonts.inter(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
@@ -153,9 +202,8 @@ class _LoanScreenState extends State<LoanScreen> {
                     color: NasColors.darkBlue,
                   ),
                 ),
-
                 Text(
-                  "2000.00 SAR",
+                  remainingAmount,
                   style: GoogleFonts.inter(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
@@ -198,20 +246,20 @@ class _LoanScreenState extends State<LoanScreen> {
                 padding: const EdgeInsets.all(12.0),
                 child: ListView.builder(
                   padding: EdgeInsets.zero,
-                  itemCount: loans.length,
+                  itemCount: loanInstallments.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final loan = loans[index];
+                    final loan = loanInstallments[index];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 0.0),
+                      padding: const EdgeInsets.only(left: 25),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
                             height: 50,
                             width: 100,
                             child: Text(
-                              loan.month ?? '',
+                              loan['month'] ?? '',
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 color: NasColors.darkBlue,
@@ -230,11 +278,9 @@ class _LoanScreenState extends State<LoanScreen> {
                                     width: 35,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: loan.status == 'paid'
+                                      color: loan['status'] == 'paid'
                                           ? NasColors.onTime
-                                          : loan.status == 'remaining'
-                                          ? NasColors.pending
-                                          : Colors.orange,
+                                          : NasColors.pending,
                                     ),
                                   ),
                                   Container(
@@ -248,12 +294,12 @@ class _LoanScreenState extends State<LoanScreen> {
                                 ],
                               ),
                               // Only show the divider if not the last item
-                              if (index < loans.length - 1)
+                              if (index < loanInstallments.length - 1)
                                 Container(
-                                  width: 2, // Thickness of the divider
-                                  height: 50, // Height of the divider, adjusted for better fit
-                                  color: Colors.grey, // Color of the divider
-                                  margin: const EdgeInsets.only(top: 0, bottom: 0), // Adjust to position the divider
+                                  width: 2,
+                                  height: 50,
+                                  color: Colors.grey,
+                                  margin: const EdgeInsets.only(top: 0, bottom: 0),
                                 ),
                             ],
                           ),
@@ -265,23 +311,24 @@ class _LoanScreenState extends State<LoanScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      if (loan.status == "paid")
+                                      if (loan['status'] == "paid")
                                         Icon(Icons.done, color: NasColors.onTime, size: 30),
-                                      if (loan.status == "remaining")
+                                      if (loan['status'] == "remaining")
                                         Icon(Icons.hourglass_bottom_outlined,
                                             color: NasColors.pending, size: 30),
                                       const SizedBox(width: 5),
-                                      if (loan.status == "paid")
+                                      if (loan['status'] == "paid")
                                         Text(
-                                          "${loan.status} ${loan.paidAmount}",
+                                          "Paid ${loan['paidAmount']}",
                                           style: GoogleFonts.inter(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 15,
                                             color: NasColors.darkBlue,
                                           ),
                                         ),
-                                      if (loan.status == "remaining")
+                                      if (loan['status'] == "remaining")
                                         Text(
                                           "To be paid",
                                           style: GoogleFonts.inter(
@@ -291,15 +338,6 @@ class _LoanScreenState extends State<LoanScreen> {
                                           ),
                                         ),
                                     ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    "Remaining ${loan.remainingAmount}",
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: NasColors.darkBlue,
-                                    ),
                                   ),
                                 ],
                               ),
@@ -312,21 +350,9 @@ class _LoanScreenState extends State<LoanScreen> {
                 ),
               ),
             ),
-
-
-
-
           ],
         ),
       ),
     );
   }
-}
-class LoanModel {
-  String? month;
-  String? status;
-  String? paidAmount;
-  String? remainingAmount;
-
-  LoanModel(this.month, this.status, this.paidAmount, this.remainingAmount);
 }

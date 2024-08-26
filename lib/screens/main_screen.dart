@@ -4,6 +4,7 @@ import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
 import 'package:nashr/screens/task_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import '../widgets/colors.dart';
 import 'home_screen.dart';
 
@@ -15,6 +16,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  SingletonClass singletonClass = SingletonClass();
   int _currentIndex = 0;
   final iconList = <IconData>[
     Icons.home,
@@ -31,6 +33,11 @@ class _MainScreenState extends State<MainScreen> {
     const ProfileScreen()
   ];
 
+  @override
+  void initState(){
+    super.initState();
+  singletonClass.getEmployeeData();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

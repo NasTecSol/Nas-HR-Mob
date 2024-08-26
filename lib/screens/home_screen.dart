@@ -8,6 +8,7 @@ import 'package:nashr/screens/loan_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/payroll_screen.dart';
 import 'package:nashr/screens/team_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
+  SingletonClass singletonClass = SingletonClass();
   final List<ActivityModel> activity = [
     ActivityModel("Late Comings", "08-07-2024", "9:00 PM", "late"),
     ActivityModel(
@@ -214,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dashBoardData = singletonClass.employeeDataList.first.data;
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -238,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (isExpanded)
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center ,
               children: [
                 Align(
                   alignment: Alignment.topLeft,
@@ -278,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             width: 170,
                             child: Text(
-                              'Ali Rana #06',
+                              '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
                               textAlign: TextAlign.left,
                               style: GoogleFonts.inter(
                                 fontSize: 18,
@@ -290,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             width: 170,
                             child: Text(
-                              'UI/UX Designer',
+                              '${dashBoardData?.profession}',
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,

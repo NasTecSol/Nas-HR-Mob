@@ -46,6 +46,7 @@ dependencies:
   http: ^1.2.2
   uuid: ^4.4.2
   local_auth: ^2.3.0
+  quickalert: ^1.1.0
 
 dev_dependencies:
   flutter_test:

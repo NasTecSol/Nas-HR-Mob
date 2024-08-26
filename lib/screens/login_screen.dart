@@ -7,7 +7,11 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:uuid/uuid.dart';
+
+import '../request_controller/login_model.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -202,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   NasButton(text: "Sign In", onPressed: (){
                     if (_formKey.currentState!.validate()) {
                       login();
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
+
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -228,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
     print(v1);
     String email = _email.text;
     String password = _password.text;
-    Map data = {"userName": email, "password": password , "empId": email ,"macAddress":v1};
+    Map data = {"password": password , "empId": email ,"macAddress":v1};
     print(data);
 
     String body = json.encode(data);
@@ -245,7 +249,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
       print(response.body);
       if (response.statusCode == 200) {
-
+        final decodedResponse = json.decode(response.body);
+        LoginModel loginModel = LoginModel.fromJson(decodedResponse);
+        singletonClass.setLoginModel(loginModel);
+        LoginModel? loginResponse = singletonClass.getLoginModel();
+        if (loginResponse!.statusCode == 200) {
+          LoginModel? data = singletonClass.getLoginModel();
+          if (data != null && data.data != null) {
+            String jwtToken = data.data!.trim(); // Ensure the token is not null and trim any leading/trailing whitespace
+            decodeJwt(jwtToken);
+            singletonClass.getEmployeeData();
+            await QuickAlert.show(
+              autoCloseDuration: const Duration(seconds: 2),
+              showCancelBtn: false,
+              showConfirmBtn: false,
+              context: context,
+              title: AppLocalizations.of(context)!.loginSuccessful,
+              type: QuickAlertType.success,
+            );
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const MainScreen()));
+          }
+        } else if (loginResponse.statusCode == 400) {
+          QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.phoneNumberOrPassCode,
+            type: QuickAlertType.error,
+          );
+        } else {
+          print('Error: ${loginResponse.statusCode}');
+        }
       } else {
         print('Error: ${response.statusCode}');
       }
@@ -254,5 +290,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return null;
+  }
+
+  //Decoding Token Data Here
+  void decodeJwt(String token) {
+    List<String> parts = token.split('.');
+
+    // Ensure parts have correct length by adding padding if necessary
+    for (int i = 0; i < parts.length; i++) {
+      while (parts[i].length % 4 != 0) {
+        parts[i] += '=';
+      }
+    }
+
+    String header = parts[0];
+    String payload = parts[1];
+    // Signature is not used for decoding in this example.
+
+    String decodedHeader = utf8.decode(base64Url.decode(header));
+    String decodedPayload = utf8.decode(base64Url.decode(payload));
+
+    Map<String, dynamic> headerJson = json.decode(decodedHeader);
+    Map<String, dynamic> payloadJson = json.decode(decodedPayload);
+    JWTData jwtData = JWTData.fromJson(payloadJson);
+    singletonClass.setJWTModel(jwtData);
+
+    JWTData? loginJWTData = singletonClass.getJWTModel();
+    print('${loginJWTData?.employeeId}');
+      print('Header: $headerJson');
+    print('Payload: $payloadJson');
   }
 }
