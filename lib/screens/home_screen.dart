@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             width: 170,
                             child: Text(
-                              'Contract ID #2039232',
+                              'Contract ID #${dashBoardData?.contractInfo?.first.contractId}',
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,

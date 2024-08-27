@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
@@ -16,7 +17,7 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? baseURL = 'https://a569-39-63-125-161.ngrok-free.app';
+  String? baseURL = 'https://0df7-39-63-125-161.ngrok-free.app';
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
@@ -52,6 +53,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/$employeeId');
     var response = await client.get(uri);
+    log(response.body);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeData.fromJson(responseBody);

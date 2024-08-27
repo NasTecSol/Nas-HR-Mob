@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/singleton_class.dart';
 
 import '../widgets/colors.dart';
 
@@ -11,15 +12,11 @@ class AssetsScreen extends StatefulWidget {
 }
 
 class _AssetsScreenState extends State<AssetsScreen> {
-  final List<AssetsModel> assets = [
-    AssetsModel("Roll Royce", "car", "203948393", "SAK 07",
-        "20, July, 2024 9:15 AM", "status"),
-    AssetsModel("MacBook pro M3", "laptop", "204049404", "SAK 07",
-        "21, July, 2024 9:30 AM", "status"),
-  ];
+  SingletonClass singletonClass = SingletonClass();
 
   @override
   Widget build(BuildContext context) {
+    final assetsInfo = singletonClass.employeeDataList.first.data?.assetsInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(children: [
@@ -125,9 +122,9 @@ class _AssetsScreenState extends State<AssetsScreen> {
               ListView.builder(
                   padding: const EdgeInsets.all(5),
                   shrinkWrap: true,
-                  itemCount: assets.length,
+                  itemCount: assetsInfo!.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final asset = assets[index];
+                    final assets = assetsInfo[index];
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 15),
                       decoration: BoxDecoration(
@@ -157,7 +154,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                               color: NasColors.darkBlue,
                               image: DecorationImage(
                                 image: AssetImage(
-                                  _getImageForEventType(asset
+                                  _getImageForEventType(assets
                                       .assetType!), // Use a method to get the appropriate image
                                 ),
                                 fit: BoxFit.fitWidth,
@@ -172,7 +169,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                               children: [
                                 Row(children: [
                                   Text(
-                                    "${asset.assetName}",
+                                    "${assets.assetName}",
                                     style: GoogleFonts.inter(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -181,7 +178,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                   ),
                                   const SizedBox(width: 2.5),
                                   Text(
-                                    "${asset.modelNo}",
+                                    "${assets.assetType}",
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -199,7 +196,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        "${asset.status}",
+                                        "Status",
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
@@ -211,7 +208,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                   ),
                                 ]),
                                 const SizedBox(height: 20),
-                                Text("ID #${asset.id}",
+                                Text("ID #${assets.assetType}",
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -219,7 +216,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                Text("Assigned At ${asset.assignedDate}",
+                                Text("Assigned At ${assets.issueDateFrom}",
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -250,16 +247,4 @@ class _AssetsScreenState extends State<AssetsScreen> {
         return 'images/Vector.png'; // Default image for company or other types
     }
   }
-}
-
-class AssetsModel {
-  String? assetName;
-  String? assetType;
-  String? id;
-  String? modelNo;
-  String? assignedDate;
-  String? status;
-
-  AssetsModel(this.assetName, this.assetType, this.id, this.modelNo,
-      this.assignedDate, this.status);
 }
