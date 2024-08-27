@@ -37,7 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSliderCompleted = false;
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
-   //Slider
+
+  //Slider
   OverlayEntry? _overlayEntry;
 
   OverlayEntry _createOverlayEntry() {
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
         left: 0,
         right: 0,
         child: GestureDetector(
-          onTap: (){
+          onTap: () {
             _removeOverlay();
           },
           child: Material(
@@ -69,15 +70,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
                   Container(
                     height: 90,
-                      width: 90,
-                      decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
+                    width: 90,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Image.asset("images/site.png",
-
+                      child: Image.asset(
+                        "images/site.png",
                       ),
                     ),
                   ),
@@ -101,8 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Image.asset("images/pc.png",
-
+                      child: Image.asset(
+                        "images/pc.png",
                       ),
                     ),
                   ),
@@ -123,13 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Show a message asking the user to set up biometric credentials
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please set up biometrics in your device settings')),
+                          const SnackBar(
+                              content: Text(
+                                  'Please set up biometrics in your device settings')),
                         );
                         return; // Skip further actions if biometrics aren't set up
                       }
 
                       // If biometrics are available, proceed with authentication
-                      bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
+                      bool isAuthenticated = await _authService
+                          .authenticateWithBiometrics(context);
                       if (isAuthenticated) {
                         // Proceed to the next screen or perform the desired action
                         _removeOverlay();
@@ -140,7 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Show an error message if authentication failed
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Authentication failed')),
+                          const SnackBar(
+                              content: Text('Authentication failed')),
                         );
                       }
                     },
@@ -153,8 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Image.asset("images/fingerprint.png",
-
+                        child: Image.asset(
+                          "images/fingerprint.png",
                         ),
                       ),
                     ),
@@ -241,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (isExpanded)
             Row(
-              mainAxisAlignment: MainAxisAlignment.center ,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Align(
                   alignment: Alignment.topLeft,
@@ -513,7 +518,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.only(
-                                          left: 5.0, right: 5, top: 10),
+                                          left: 10.0, right: 5, top: 10),
                                       child: Column(
                                         children: [
                                           Row(
@@ -522,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             children: [
                                               Transform(
                                                 transform:
-                                                Matrix4.rotationY(math.pi),
+                                                    Matrix4.rotationY(math.pi),
                                                 // Flip horizontally
                                                 alignment: Alignment.center,
                                                 child: const Icon(
@@ -547,7 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   '9:30:40 AM',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
@@ -579,11 +585,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   '4:30:52 AM',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
-
                                             ],
                                           ),
                                           const SizedBox(height: 10),
@@ -592,23 +598,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 MainAxisAlignment.start,
                                             children: [
                                               Container(
-                                                decoration: BoxDecoration(
-                                                  color: NasColors.onTime,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.red,
                                                   borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(15)),
+                                                      BorderRadius.all(
+                                                          Radius.circular(15)),
                                                 ),
                                                 child: Padding(
                                                   padding:
-                                                  const EdgeInsets.all(5.0),
-                                                  child: Text(
-                                                    "Early Check-out",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 10,
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                      color: Colors.white,
-                                                    ),
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        "Late Comings",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "15 mins",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ),
@@ -620,7 +641,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     'Worked 6h 1m',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                     ),
                                                   ),
                                                 ),
@@ -651,7 +673,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       // Center the content vertically
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -682,20 +705,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontWeight: FontWeight.normal,
                                           ),
                                         ),
-                                        Text(
-                                          "to",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                        ),
-                                        Text(
-                                          "1:00 PM",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -705,27 +714,31 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child:GestureDetector(
+                            child: GestureDetector(
                               onHorizontalDragUpdate: (details) {
                                 setState(() {
                                   _dragPosition += details.primaryDelta!;
-                                  if (_dragPosition > MediaQuery.of(context).size.width * 0.7) {
+                                  if (_dragPosition >
+                                      MediaQuery.of(context).size.width * 0.7) {
                                     _isSliderCompleted = true;
                                   }
                                 });
                               },
                               onHorizontalDragEnd: (details) {
-                                if (_isSliderCompleted && details.velocity.pixelsPerSecond.dx > 0) {
+                                if (_isSliderCompleted &&
+                                    details.velocity.pixelsPerSecond.dx > 0) {
                                   // Swiped from left to right
                                   _overlayEntry = _createOverlayEntry();
                                   Overlay.of(context).insert(_overlayEntry!);
                                   setState(() {
-                                    _dragPosition = 8; // Move back to the start point
+                                    _dragPosition =
+                                        8; // Move back to the start point
                                     _isSliderCompleted = false;
                                   });
                                 } else {
                                   setState(() {
-                                    _dragPosition = 8; // Reset to the start point
+                                    _dragPosition =
+                                        8; // Reset to the start point
                                     _isSliderCompleted = false;
                                   });
                                 }
@@ -733,7 +746,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 alignment: Alignment.topLeft,
                                 decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(15)),
                                   color: Colors.white,
                                   gradient: LinearGradient(
                                     colors: [
@@ -758,15 +772,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                           width: 60,
                                           height: 50,
                                           decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(15)),
                                             color: Colors.white,
                                           ),
-                                          child: Lottie.asset('images/swiper.json'),
+                                          child: Lottie.asset(
+                                              'images/swiper.json'),
                                         ),
                                         const SizedBox(width: 50),
                                         Align(
                                           alignment: Alignment.center,
-                                          child: Text (
+                                          child: Text(
                                             "Swipe to Check-In",
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
@@ -1086,9 +1102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 5),
                                     SizedBox(
-                                      height: 137,
+                                      height: 130,
                                       child: ListView.builder(
                                         padding: const EdgeInsets.all(5),
                                         scrollDirection: Axis.horizontal,
@@ -1097,14 +1113,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                             (BuildContext context, int index) {
                                           final activities = activity[index];
                                           return SizedBox(
-                                            width: 200,
-                                            // Explicit width for horizontal items
-                                            child: Container(
-                                              margin: const EdgeInsets.only(
-                                                  right: 10),
-                                              // Add spacing between items
-                                              height: 100,
-                                              decoration: BoxDecoration(
+                                              width: 200,
+                                              // Explicit width for horizontal items
+                                              child: Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 10),
+                                                height: 130,
+                                                // Adjust this as needed
+                                                decoration: BoxDecoration(
                                                   borderRadius:
                                                       const BorderRadius.all(
                                                           Radius.circular(15)),
@@ -1115,87 +1131,93 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           .withOpacity(0.5),
                                                       spreadRadius: 2,
                                                       blurRadius: 8,
-                                                      offset: const Offset(0,
-                                                          3), // changes position of shadow
+                                                      offset:
+                                                          const Offset(0, 3),
                                                     ),
-                                                  ]),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Text(
-                                                      '${activities.activityName}',
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15,
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Text(
+                                                        '${activities.activityName}',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 15,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8.0),
-                                                    child: Text(
-                                                      '${activities.date}',
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 8.0),
+                                                      child: Text(
+                                                        '${activities.date}',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8.0),
-                                                    child: Text(
-                                                      '${activities.time}',
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 8.0),
+                                                      child: Text(
+                                                        '${activities.time}',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(height: 20),
-                                                  Container(
-                                                    width: 200,
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            4.0),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          _getColorForActivity(
-                                                              activities
-                                                                  .status!),
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .only(
-                                                              bottomLeft: Radius
-                                                                  .circular(15),
-                                                              bottomRight:
-                                                                  Radius
-                                                                      .circular(
-                                                                          15)),
-                                                    ),
-                                                    child: Text(
-                                                      "${activities.status}",
-                                                      style: GoogleFonts.inter(
-                                                        color: Colors.white,
+                                                    Spacer(),
+                                                    // Add this to push the status Container to the bottom
+                                                    Container(
+                                                      width: double.infinity,
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4.0),
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            _getColorForActivity(
+                                                                activities
+                                                                    .status!),
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .only(
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  15),
+                                                          bottomRight:
+                                                              Radius.circular(
+                                                                  15),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        "${activities.status}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          color: Colors.white,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
+                                                  ],
+                                                ),
+                                              ));
                                         },
                                       ),
                                     )
