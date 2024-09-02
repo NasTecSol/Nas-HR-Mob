@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'dart:math' as math;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+
+
 class MyClockingScreen extends StatefulWidget {
   const MyClockingScreen({super.key});
 
@@ -57,7 +61,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                     child: Text(
-                      "My Clocking",
+                      AppLocalizations.of(context)!.myClocking,
                       style: GoogleFonts.inter(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -92,7 +96,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                              "Filter",
+                              AppLocalizations.of(context)!.filter,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
@@ -114,109 +118,112 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                   itemCount: clocks.length,
                   itemBuilder: (BuildContext context, int index) {
                     final clock = clocks[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(15)),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 8,
-                            offset: const Offset(0, 3), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            height: 120,
-                            width: 20, // Adjusted the width for visibility
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(15),
-                                bottomLeft: Radius.circular(15),
-                              ),
-                              color: NasColors.darkBlue,
+                    return Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3), // changes position of shadow
                             ),
-                          ),
-                          Expanded(child: Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${clock.date}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              height: 120,
+                              width: 20, // Adjusted the width for visibility
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(15),
+                                  bottomLeft: Radius.circular(15),
                                 ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      "${clock.checkIn}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                      ),
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                            Expanded(child: Padding(
+                              padding: const EdgeInsets.all(15.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${clock.date}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
                                     ),
-                                    const SizedBox(width: 5),
-                                    Container(
-                                      height: 32,
-                                      width: 32,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                        color: NasColors.darkBlue,
+                                  ),
+                                  const SizedBox(
+                                    height: 30,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "${clock.checkIn}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                      child: Transform(
-                                        transform: Matrix4.rotationY(
-                                            math.pi), // Flip horizontally
-                                        alignment: Alignment.center,
+                                      const SizedBox(width: 5),
+                                      Container(
+                                        height: 32,
+                                        width: 32,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                          color: NasColors.darkBlue,
+                                        ),
+                                        child: Transform(
+                                          transform: Matrix4.rotationY(
+                                              math.pi), // Flip horizontally
+                                          alignment: Alignment.center,
+                                          child: const Icon(
+                                            Icons.exit_to_app_outlined,
+                                            size: 25,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        "${clock.checkOut}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Container(
+                                        height: 32,
+                                        width: 32,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                          color: NasColors.darkBlue,
+                                        ),
                                         child: const Icon(
                                           Icons.exit_to_app_outlined,
                                           size: 25,
                                           color: Colors.white,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "${clock.checkOut}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Container(
-                                      height: 32,
-                                      width: 32,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                        color: NasColors.darkBlue,
-                                      ),
-                                      child: const Icon(
-                                        Icons.exit_to_app_outlined,
-                                        size: 25,
-                                        color: Colors.white,
-                                      ),
-                                    ),
 
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ))
-                        ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ))
+                          ],
+                        ),
                       ),
                     );
                   })

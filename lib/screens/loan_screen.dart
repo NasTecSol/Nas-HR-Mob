@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoanScreen extends StatefulWidget {
   const LoanScreen({super.key});
@@ -123,7 +124,7 @@ class _LoanScreenState extends State<LoanScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                   child: Text(
-                    "Loans",
+                    AppLocalizations.of(context)!.loans,
                     style: GoogleFonts.inter(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
@@ -158,7 +159,7 @@ class _LoanScreenState extends State<LoanScreen> {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            "Requests",
+                            AppLocalizations.of(context)!.requests,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
@@ -178,7 +179,7 @@ class _LoanScreenState extends State<LoanScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  "Total Amount",
+                  AppLocalizations.of(context)!.totalAmount,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -195,7 +196,7 @@ class _LoanScreenState extends State<LoanScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Remaining Amount",
+                  AppLocalizations.of(context)!.remainingAmount,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -219,7 +220,7 @@ class _LoanScreenState extends State<LoanScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      "Month",
+                      AppLocalizations.of(context)!.month,
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -229,7 +230,7 @@ class _LoanScreenState extends State<LoanScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      "Status",
+                      AppLocalizations.of(context)!.status,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 18,

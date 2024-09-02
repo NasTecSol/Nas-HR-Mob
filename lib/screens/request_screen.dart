@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/colors.dart';
 
 class RequestScreen extends StatefulWidget {
@@ -64,7 +64,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                   child: Text(
-                    "Requests",
+                    AppLocalizations.of(context)!.requests,
                     style: GoogleFonts.inter(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
@@ -99,7 +99,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            "Requests",
+                            AppLocalizations.of(context)!.requests,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
@@ -137,10 +137,10 @@ class _RequestScreenState extends State<RequestScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Expanded(
+                       Expanded(
                         child: TextField(
                           decoration: InputDecoration(
-                            hintText: 'Search...',
+                            hintText: '${AppLocalizations.of(context)!.search}...',
                             border: InputBorder.none,
                           ),
                         ),
@@ -173,217 +173,220 @@ class _RequestScreenState extends State<RequestScreen> {
                   final request = requests[index];
                   return GestureDetector(
                     onTap: () => _toggleExpand(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(15)),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                             Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 50,
-                                        width: 50,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(15),
-                                          image: const DecorationImage(
-                                            image: AssetImage('images/DP.jpg'),
-                                            fit: BoxFit.fill,
+                    child: Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                               Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 50,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(15),
+                                            image: const DecorationImage(
+                                              image: AssetImage('images/DP.jpg'),
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        SizedBox(
+                                          width: 150,
+                                          child: Column(
+                                            children: [
+                                              Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  "${request.employeeName}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  "${request.designation}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Container(
+                                          height: 30,
+                                          width: 75,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.rectangle,
+                                            color: _getColorForVerificationStatus(request.status!),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "${request.status}",
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        "${request.duration}",
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    if (_expandedIndex == index) ...[
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "${request.requestInfo}",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey,
+                                            fontSize: 15,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 5),
-                                      SizedBox(
-                                        width: 150,
-                                        child: Column(
-                                          children: [
-                                            Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                "${request.employeeName}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                "${request.designation}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "Annual Leave",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                            fontSize: 15,
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(width: 5),
-                                      Container(
-                                        height: 30,
-                                        width: 75,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
-                                          color: _getColorForVerificationStatus(request.status!),
-                                          borderRadius: BorderRadius.circular(10),
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "Balance to Date",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey,
+                                            fontSize: 15,
+                                          ),
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            "${request.status}",
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontSize: 12,
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "${request.balanceToDate}",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "Balance to end of Year",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          "${request.balanceToYear}",
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(30.0),
+                                        child: GestureDetector(
+                                          onTap: () {},
+                                          child: Container(
+                                            width: 220,
+                                            height: 50,
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.all(Radius.circular(15)),
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Color(0xFF4D4D4D),
+                                                  Color(0xFFE64545),
+                                                  Color(0xFFCF3E3E),
+                                                  Color(0xFFC13A3A),
+                                                  Color(0xFF992E2E),
+                                                ],
+                                                begin: Alignment.topRight,
+                                                end: Alignment.bottomLeft,
+                                              ),
+                                            ),
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                "Cancel Request",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 19,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Text(
-                                      "${request.duration}",
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  if (_expandedIndex == index) ...[
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "${request.requestInfo}",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "Annual Leave",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "Balance to Date",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "${request.balanceToDate}",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "Balance to end of Year",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "${request.balanceToYear}",
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(30.0),
-                                      child: GestureDetector(
-                                        onTap: () {},
-                                        child: Container(
-                                          width: 220,
-                                          height: 50,
-                                          decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.all(Radius.circular(15)),
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Color(0xFF4D4D4D),
-                                                Color(0xFFE64545),
-                                                Color(0xFFCF3E3E),
-                                                Color(0xFFC13A3A),
-                                                Color(0xFF992E2E),
-                                              ],
-                                              begin: Alignment.topRight,
-                                              end: Alignment.bottomLeft,
-                                            ),
-                                          ),
-                                          child: Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              "Cancel Request",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 19,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                   ],
-                                ],
-                              ),
-                          ],
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

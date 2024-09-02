@@ -7,11 +7,13 @@ import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/loan_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/payroll_screen.dart';
+import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/team_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -287,7 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 170,
                             child: Text(
                               '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
-                              textAlign: TextAlign.left,
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -386,7 +387,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const SettingScreen()));
+                          },
                           icon: Container(
                             height: 45,
                             width: 45,
@@ -501,7 +508,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Expanded(
                                   child: Container(
-                                    height: 120,
                                     decoration: BoxDecoration(
                                       borderRadius: const BorderRadius.all(
                                           Radius.circular(15)),
@@ -539,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  'Check-in',
+                                                  AppLocalizations.of(context)!.checkIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
@@ -572,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  'Check-Out',
+                                                  AppLocalizations.of(context)!.checkOut,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.bold,
@@ -610,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Column(
                                                     children: [
                                                       Text(
-                                                        "Late Comings",
+                                                        AppLocalizations.of(context)!.lateComings,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontSize: 10,
@@ -638,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    'Worked 6h 1m',
+                                                    '${AppLocalizations.of(context)!.worked} 6h 1m',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
@@ -690,7 +696,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const SizedBox(height: 8),
                                         // Space between icon and text
                                         Text(
-                                          "Break",
+                                          AppLocalizations.of(context)!.breaks,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -714,84 +720,87 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: GestureDetector(
-                              onHorizontalDragUpdate: (details) {
-                                setState(() {
-                                  _dragPosition += details.primaryDelta!;
-                                  if (_dragPosition >
-                                      MediaQuery.of(context).size.width * 0.7) {
-                                    _isSliderCompleted = true;
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: GestureDetector(
+                                onHorizontalDragUpdate: (details) {
+                                  setState(() {
+                                    _dragPosition += details.primaryDelta!;
+                                    if (_dragPosition >
+                                        MediaQuery.of(context).size.width * 0.7) {
+                                      _isSliderCompleted = true;
+                                    }
+                                  });
+                                },
+                                onHorizontalDragEnd: (details) {
+                                  if (_isSliderCompleted &&
+                                      details.velocity.pixelsPerSecond.dx > 0) {
+                                    // Swiped from left to right
+                                    _overlayEntry = _createOverlayEntry();
+                                    Overlay.of(context).insert(_overlayEntry!);
+                                    setState(() {
+                                      _dragPosition =
+                                          8; // Move back to the start point
+                                      _isSliderCompleted = false;
+                                    });
+                                  } else {
+                                    setState(() {
+                                      _dragPosition =
+                                          8; // Reset to the start point
+                                      _isSliderCompleted = false;
+                                    });
                                   }
-                                });
-                              },
-                              onHorizontalDragEnd: (details) {
-                                if (_isSliderCompleted &&
-                                    details.velocity.pixelsPerSecond.dx > 0) {
-                                  // Swiped from left to right
-                                  _overlayEntry = _createOverlayEntry();
-                                  Overlay.of(context).insert(_overlayEntry!);
-                                  setState(() {
-                                    _dragPosition =
-                                        8; // Move back to the start point
-                                    _isSliderCompleted = false;
-                                  });
-                                } else {
-                                  setState(() {
-                                    _dragPosition =
-                                        8; // Reset to the start point
-                                    _isSliderCompleted = false;
-                                  });
-                                }
-                              },
-                              child: Container(
-                                alignment: Alignment.topLeft,
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(15)),
-                                  color: Colors.white,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF444658),
-                                      Color(0xFF677587),
-                                      Color(0xFF78889D),
-                                      Color(0xFF9DB2CE),
-                                      Color(0xFF8799B1),
-                                    ],
-                                    begin: Alignment.topRight,
-                                    end: Alignment.bottomLeft,
+                                },
+                                child: Container(
+                                  alignment: Alignment.topLeft,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(15)),
+                                    color: Colors.white,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF444658),
+                                        Color(0xFF677587),
+                                        Color(0xFF78889D),
+                                        Color(0xFF9DB2CE),
+                                        Color(0xFF8799B1),
+                                      ],
+                                      begin: Alignment.topRight,
+                                      end: Alignment.bottomLeft,
+                                    ),
                                   ),
-                                ),
-                                height: 60,
-                                child: Transform.translate(
-                                  offset: Offset(_dragPosition, -1),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 60,
-                                          height: 50,
-                                          decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(15)),
-                                            color: Colors.white,
-                                          ),
-                                          child: Lottie.asset(
-                                              'images/swiper.json'),
-                                        ),
-                                        const SizedBox(width: 50),
-                                        Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            "Swipe to Check-In",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
+                                  height: 60,
+                                  child: Transform.translate(
+                                    offset: Offset(_dragPosition, -1),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 60,
+                                            height: 50,
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(15)),
                                               color: Colors.white,
                                             ),
+                                            child: Lottie.asset(
+                                                'images/swiper.json'),
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 50),
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              AppLocalizations.of(context)!.swipeToCheckIn,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -847,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        "Documents",
+                                        AppLocalizations.of(context)!.documents,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -899,7 +908,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        "Assets",
+                                        AppLocalizations.of(context)!.assets,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -951,7 +960,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        "Loans",
+                                        AppLocalizations.of(context)!.loans,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -1003,7 +1012,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        "Teams",
+                                        AppLocalizations.of(context)!.teams,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -1055,7 +1064,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        "Salary",
+                                        AppLocalizations.of(context)!.salaries,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -1094,7 +1103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Activity",
+                                          AppLocalizations.of(context)!.activity,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1184,7 +1193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ),
                                                       ),
                                                     ),
-                                                    Spacer(),
+                                                    const Spacer(),
                                                     // Add this to push the status Container to the bottom
                                                     Container(
                                                       width: double.infinity,

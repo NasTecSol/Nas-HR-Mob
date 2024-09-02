@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/widgets/colors.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class PayrollScreen extends StatefulWidget {
   const PayrollScreen({super.key});
 
@@ -54,7 +54,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                   ),
                 ),
                 Text(
-                  "Payroll",
+                AppLocalizations.of(context)!.payroll,
                   style: GoogleFonts.inter(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Last Month's Salary",
+                      AppLocalizations.of(context)!.lastMonthSalary,
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,

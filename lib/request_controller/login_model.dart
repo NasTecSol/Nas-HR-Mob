@@ -22,7 +22,7 @@ class LoginModel {
 //Token Model
 class JWTData {
   final String? employeeId;
-  final String? CompanyId;
+  final String? companyId;
   final String? branchId;
   final String? departmentId;
   final String? organizationId;
@@ -33,12 +33,12 @@ class JWTData {
   final int? exp;
   final int? iat;
 
-  JWTData({this.employeeId, this.CompanyId, this.branchId, this.departmentId, this.organizationId, this.empId,this.userName , this.role , this.grade , this.exp , this.iat});
+  JWTData({this.employeeId, this.companyId, this.branchId, this.departmentId, this.organizationId, this.empId,this.userName , this.role , this.grade , this.exp , this.iat});
 
   factory JWTData.fromJson(Map<String, dynamic> json) {
     return JWTData(
       employeeId: json['employeeId'],
-      CompanyId: json['CompanyId'],
+      companyId: json['CompanyId'],
       branchId: json['branchId'],
       departmentId: json['departmentId'],
       organizationId: json['organizationId'],
