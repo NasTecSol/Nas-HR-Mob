@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/widgets/colors.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class TeamScreen extends StatefulWidget {
   const TeamScreen({super.key});
 
@@ -75,7 +75,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                       child: Text(
-                        "Team",
+                        AppLocalizations.of(context)!.teams,
                         style: GoogleFonts.inter(
                           fontSize: 25,
                           fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class _TeamScreenState extends State<TeamScreen> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                "Filter",
+                                AppLocalizations.of(context)!.filter,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontWeight: FontWeight.bold,
@@ -145,11 +145,11 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Expanded(
+                       Expanded(
                         child: TextField(
                           cursorColor: Colors.black,
                           decoration: InputDecoration(
-                            hintText: 'Search...',
+                            hintText: '${AppLocalizations.of(context)!.search}...',
                             border: InputBorder.none,
                           ),
                         ),
@@ -168,68 +168,65 @@ class _TeamScreenState extends State<TeamScreen> {
                     itemCount: teams.length,
                     itemBuilder: (BuildContext context, int index) {
                       final team = teams[index];
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 15),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(15)),
-                          color: NasColors.containerColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 2,
-                              blurRadius: 8,
-                              offset: const Offset(
-                                  0, 0), // changes position of shadow
+                      return Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: NasColors.containerColor,
                             ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: 50,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                        image: NetworkImage('${team.imageURL}'),
-                                        fit: BoxFit.fill)),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    "${team.employeeName}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: NasColors.darkBlue,
-                                    ),
+                                  Container(
+                                    height: 50,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                            image: NetworkImage('${team.imageURL}'),
+                                            fit: BoxFit.fill)),
                                   ),
-                                  Text(
-                                    "${team.email}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${team.employeeName}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: NasColors.darkBlue,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${team.email}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                  const Spacer(),
+                                  SizedBox(
+                                      width: 40,
+                                      child: IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                            Icons.more_vert,
+                                            size: 35,
+                                          )))
                                 ],
                               ),
-                              const Spacer(),
-                              SizedBox(
-                                  width: 40,
-                                  child: IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.more_vert,
-                                        size: 35,
-                                      )))
-                            ],
+                            ),
                           ),
-                        ),
+                          Divider(
+                            thickness: 1,
+                            color: Colors.grey[300],
+                          )
+                        ],
                       );
                     })
               ],

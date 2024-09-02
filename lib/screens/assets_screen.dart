@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/singleton_class.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/colors.dart';
 
 class AssetsScreen extends StatefulWidget {
@@ -56,7 +56,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                     child: Text(
-                      "Assets",
+                      AppLocalizations.of(context)!.assets,
                       style: GoogleFonts.inter(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
@@ -91,7 +91,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                              "Filter",
+                              AppLocalizations.of(context)!.filter,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
               Row(
                 children: [
                   Text(
-                    "Assigned Assets",
+                    AppLocalizations.of(context)!.assignedAssets,
                     style: GoogleFonts.inter(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -125,108 +125,111 @@ class _AssetsScreenState extends State<AssetsScreen> {
                   itemCount: assetsInfo!.length,
                   itemBuilder: (BuildContext context, int index) {
                     final assets = assetsInfo[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(15)),
-                        color: NasColors.containerColor,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            spreadRadius: 2,
-                            blurRadius: 8,
-                            offset: const Offset(
-                                0, 0), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 165,
-                            width: 80, // Adjusted the width for visibility
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(15),
-                                bottomLeft: Radius.circular(15),
-                              ),
-                              color: NasColors.darkBlue,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  _getImageForEventType(assets
-                                      .assetType!), // Use a method to get the appropriate image
+                    return Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(15)),
+                          color: NasColors.containerColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 2,
+                              blurRadius: 8,
+                              offset: const Offset(
+                                  0, 0), // changes position of shadow
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 165,
+                              width: 80, // Adjusted the width for visibility
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(15),
+                                  bottomLeft: Radius.circular(15),
                                 ),
-                                fit: BoxFit.fitWidth,
+                                color: NasColors.darkBlue,
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    _getImageForEventType(assets
+                                        .assetType!), // Use a method to get the appropriate image
+                                  ),
+                                  fit: BoxFit.fitWidth,
+                                ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(children: [
-                                  Text(
-                                    "${assets.assetName}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [
+                                    Text(
+                                      "${assets.assetName}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 2.5),
-                                  Text(
-                                    "${assets.assetType}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
+                                    const SizedBox(width: 2.5),
+                                    Text(
+                                      "${assets.assetType}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    height: 30,
-                                    width: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.rectangle,
-                                      color: NasColors.onTime,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "Status",
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 10,
+                                    const SizedBox(width: 5),
+                                    Container(
+                                      height: 30,
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        color: NasColors.onTime,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "Status",
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
                                         ),
                                       ),
                                     ),
+                                  ]),
+                                  const SizedBox(height: 20),
+                                  Text("ID #${assets.assetType}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
                                   ),
-                                ]),
-                                const SizedBox(height: 20),
-                                Text("ID #${assets.assetType}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.darkBlue,
+                                  const SizedBox(height: 20),
+                                  Text("Assigned At ${assets.issueDateFrom}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 20),
-                                Text("Assigned At ${assets.issueDateFrom}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     );
                   })

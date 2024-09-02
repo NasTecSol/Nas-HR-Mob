@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
@@ -18,6 +19,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _currentIndex = 0;
+  bool _isLoading = true;
   final iconList = <IconData>[
     Icons.home,
     Icons.task,
@@ -34,15 +36,39 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-  singletonClass.getEmployeeData();
+    _fetchEmployeeData();
+  }
+
+
+  void _fetchEmployeeData() async {
+    if (singletonClass.employeeDataList.isNotEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
+    } else {
+
+      Future.delayed(const Duration(seconds: 2), () {
+        _fetchEmployeeData();
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: _screens[_currentIndex],
+      body: _isLoading
+          ?  Center(
+        child:SizedBox(
+          height: 200,
+          width: 200,
+          child: Lottie.asset(
+              'images/loader.json'
+          ),
+        ), // Show loader while loading
+      )
+          : _screens[_currentIndex],
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Container(
@@ -100,10 +126,10 @@ class _MainScreenState extends State<MainScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Icon(
-                        iconList[index],
-                        size: 30,
-                        color: color,
-                      ),
+                            iconList[index],
+                            size: 30,
+                            color: color,
+                          ),
                     ),
                   ),
                 );

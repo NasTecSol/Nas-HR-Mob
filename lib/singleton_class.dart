@@ -17,7 +17,7 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? baseURL = 'https://0df7-39-63-125-161.ngrok-free.app';
+  String? baseURL = 'https://33a7-39-63-125-161.ngrok-free.app';
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];

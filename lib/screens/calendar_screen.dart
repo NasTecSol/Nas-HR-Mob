@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/task_screen.dart';
 import '../widgets/colors.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -62,7 +62,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                   child: Text(
-                    "Calendar",
+                    AppLocalizations.of(context)!.calendar,
                     style: GoogleFonts.inter(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
@@ -78,24 +78,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  buildOptionsCard(0, "Meetings"),
-                  buildOptionsCard(1, "tasks"),
-                  buildOptionsCard(2, "Events"),
+                  buildOptionsCard(0, AppLocalizations.of(context)!.meetings),
+                  buildOptionsCard(1, AppLocalizations.of(context)!.tasks),
+                  buildOptionsCard(2, AppLocalizations.of(context)!.events),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Select Date",
+             Text(
+                AppLocalizations.of(context)!.selectDate,
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: NasColors.darkBlue,
                 ),
               ),
-            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 80, // Adjust as needed
@@ -404,125 +401,128 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       itemCount: events.length,
                       itemBuilder: (BuildContext context, int index) {
                         final event = events[index];
-                        return Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                "${event.eventType}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: NasColors.darkBlue,
+                        return Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Column(
+                            children: [
+                              Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                  "${event.eventType}",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: NasColors.darkBlue,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              margin: const EdgeInsets.symmetric(vertical: 15),
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(15)),
-                                color: NasColors.containerColor,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.3),
-                                    spreadRadius: 2,
-                                    blurRadius: 8,
-                                    offset: const Offset(
-                                        0, 0), // changes position of shadow
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    height: 165,
-                                    width: 80,
-                                    // Adjusted the width for visibility
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(15),
-                                        bottomLeft: Radius.circular(15),
-                                      ),
-                                      color: NasColors.darkBlue,
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                          _getImageForEventType(event
-                                              .eventType!), // Use a method to get the appropriate image
+                              const SizedBox(height: 10),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 15),
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(15)),
+                                  color: NasColors.containerColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.3),
+                                      spreadRadius: 2,
+                                      blurRadius: 8,
+                                      offset: const Offset(
+                                          0, 0), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 165,
+                                      width: 80,
+                                      // Adjusted the width for visibility
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          bottomLeft: Radius.circular(15),
                                         ),
-                                        fit: BoxFit.contain,
+                                        color: NasColors.darkBlue,
+                                        image: DecorationImage(
+                                          image: AssetImage(
+                                            _getImageForEventType(event
+                                                .eventType!), // Use a method to get the appropriate image
+                                          ),
+                                          fit: BoxFit.contain,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 8.0, top: 2),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 20),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            "${event.eventTile}",
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 15),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Icon(
-                                                  Icons.calendar_month_outlined,
-                                                  color: NasColors.darkBlue,
-                                                  size: 30,
-                                                )),
-                                            Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                "${event.duration}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: NasColors.darkBlue,
-                                                ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0, top: 2),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 20),
+                                          Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              "${event.eventTile}",
+                                              maxLines: 2,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            "${event.remarks}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey,
+                                          ),
+                                          const SizedBox(height: 15),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: Icon(
+                                                    Icons.calendar_month_outlined,
+                                                    color: NasColors.darkBlue,
+                                                    size: 30,
+                                                  )),
+                                              Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  "${event.duration}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: NasColors.darkBlue,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              "${event.remarks}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                      ],
+                                          const SizedBox(height: 20),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
+                              const SizedBox(height: 20),
+                            ],
+                          ),
                         );
                       },
                     ),
