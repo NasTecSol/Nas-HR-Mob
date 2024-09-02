@@ -9,6 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import '../widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'loan_screen.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -25,8 +27,20 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final List<Document> documentInfoDummy = [
     // Example data, replace with your actual document data
-    Document(imageUrl: 'images/cnic.png', name: 'العمراني، نصار ابراهيم',cardNumber: '1027195021' , dateOfBirthInHijri: '1404/04/05' , expiryDateInHijri: '1450/11/29', placeOfBirth: 'Alqaan'),
-    Document(imageUrl: 'images/iqama.png', name: 'العمراني، نصار ابراهيم',cardNumber: '1027195021' , dateOfBirthInHijri: '1404/04/05' , expiryDateInHijri: '1450/11/29', placeOfBirth: 'Alqaan'),
+    Document(
+        imageUrl: 'images/cnic.png',
+        name: 'العمراني، نصار ابراهيم',
+        cardNumber: '1027195021',
+        dateOfBirthInHijri: '1404/04/05',
+        expiryDateInHijri: '1450/11/29',
+        placeOfBirth: 'Alqaan'),
+    Document(
+        imageUrl: 'images/iqama.png',
+        name: 'العمراني، نصار ابراهيم',
+        cardNumber: '1027195021',
+        dateOfBirthInHijri: '1404/04/05',
+        expiryDateInHijri: '1450/11/29',
+        placeOfBirth: 'Alqaan'),
   ];
 
   void _toggleExpand() {
@@ -35,17 +49,41 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
+  late List<String> _tabTitles ;// Titles for each tab
+
   @override
   void initState() {
     super.initState();
-    _tabController =
-        TabController(length: 4, vsync: this); // Initialize _tabController
+
+    // Initialize _tabTitles inside initState where context is available
+
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tabTitles = [
+      AppLocalizations.of(context)!.myProfile,
+      AppLocalizations.of(context)!.bankAccounts,
+      AppLocalizations.of(context)!.documents,
+      AppLocalizations.of(context)!.loans,
+      AppLocalizations.of(context)!.familyInfo
+    ];
+
+    _tabController = TabController(length: _tabTitles.length, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+  }
+  @override
   void dispose() {
-    _tabController.dispose(); // Dispose _tabController
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
     super.dispose();
+  }
+
+  void _handleTabSelection() {
+    setState(() {
+      // This will trigger rebuild and change the title and icon button action
+    });
   }
 
   @override
@@ -54,7 +92,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bankInfo = singletonClass.employeeDataList.first.data!.bankingInfo;
     final salaryInfo = singletonClass.employeeDataList.first.data!.salaryInfo;
     final familyInfo = singletonClass.employeeDataList.first.data!.familyInfo;
-    final documentInfo = singletonClass.employeeDataList.first.data!.documentsInfo;
+    final documentInfo =
+        singletonClass.employeeDataList.first.data!.documentsInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Column(
@@ -70,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   Row(
                     children: [
                       Text(
-                       AppLocalizations.of(context)!.myProfile,
+                        _tabTitles[_tabController.index], // Display the title based on the selected tab
                         style: GoogleFonts.inter(
                           fontSize: 25,
                           fontWeight: FontWeight.bold,
@@ -78,14 +117,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                       ),
                       const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          // Add your settings action
-                        },
-                        icon: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
+
+                      // Display the Settings button for "Profile" tab (index 0)
+                      if (_tabController.index == 0)
+                        IconButton(
+                          onPressed: () {
+                            // Add your settings action for the "Profile" tab
+                          },
+                          icon: Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white,
                               boxShadow: [
@@ -95,13 +137,106 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
                                 ),
-                              ]),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.settings,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      if (_tabController.index == 1)
+                      IconButton(
+                        onPressed: () {
+                          // Add your settings action for the "Profile" tab
+                        },
+                        icon: Container(
+                          height: 50,
+                          width: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.4),
+                                spreadRadius: 5,
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
                           child: const Icon(
-                            Icons.settings,
+                            Icons.add,
                             color: Colors.black,
                           ),
                         ),
                       ),
+                      // Display the "Add" button for "Documents" tab (index 2)
+                      if (_tabController.index == 2)
+                        IconButton(
+                          onPressed: () {
+                            // Add your settings action for the "Profile" tab
+                          },
+                          icon: Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.4),
+                                  spreadRadius: 5,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+
+                      // Display the "Request" button for "Loans" tab (index 3)
+                      if (_tabController.index == 3)
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: NasColors.darkBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onPressed: () {
+                            // Add your action for "Loans" tab
+                          },
+                          child: SizedBox(
+                            height: 50,
+                            width: 130,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.requests,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -119,10 +254,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                       color: Colors.black,
                     ),
                     unselectedLabelColor: Colors.grey,
-                    tabs:  [
+                    tabs: [
                       Tab(text: AppLocalizations.of(context)!.profile),
                       Tab(text: AppLocalizations.of(context)!.bankAccounts),
                       Tab(text: AppLocalizations.of(context)!.documents),
+                      Tab(text: AppLocalizations.of(context)!.loans),
                       Tab(text: AppLocalizations.of(context)!.familyInfo),
                     ],
                   ),
@@ -255,7 +391,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             Positioned(
                               top: -0,
                               // Adjust position as needed to overlap with container top border
-                              left: (MediaQuery.of(context).size.width - 100) / 2,
+                              left:
+                                  (MediaQuery.of(context).size.width - 100) / 2,
                               // Adjust position as needed horizontally
                               child: Stack(children: [
                                 Container(
@@ -331,7 +468,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.center,
                                     child: Text(
-                                      AppLocalizations.of(context)!.personalInformation,
+                                      AppLocalizations.of(context)!
+                                          .personalInformation,
                                       style: GoogleFonts.inter(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -434,7 +572,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      AppLocalizations.of(context)!.martialStatus,
+                                      AppLocalizations.of(context)!
+                                          .martialStatus,
                                       style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
@@ -533,6 +672,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                   ]),
                 ),
+                // Content for Tab 2
                 Container(
                     color: Colors.white,
                     child: Padding(
@@ -543,8 +683,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              buildOptionsCard(0, AppLocalizations.of(context)!.paymentMethods),
-                              buildOptionsCard(1, AppLocalizations.of(context)!.salary)
+                              buildOptionsCard(0,
+                                  AppLocalizations.of(context)!.paymentMethods),
+                              buildOptionsCard(
+                                  1, AppLocalizations.of(context)!.salary)
                             ],
                           ),
                           if (_selectedOptionIndex == 0)
@@ -701,7 +843,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         children: [
                                           const SizedBox(height: 10),
                                           Text(
-                                            AppLocalizations.of(context)!.lastMonthSalary,
+                                            AppLocalizations.of(context)!
+                                                .lastMonthSalary,
                                             maxLines: 2,
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
@@ -739,7 +882,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                       ),
                     )),
-
+                // Content for Tab 3
                 Container(
                   color: Colors.white,
                   child: Column(
@@ -769,8 +912,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   builder: (BuildContext context) {
                                     // Pass the document data to the bottom sheet
                                     return Container(
-                                      height: MediaQuery.of(context).size.height *
-                                          0.9,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.9,
                                       width: double.infinity,
                                       color: Colors.transparent,
                                       child: Padding(
@@ -806,7 +950,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ],
                                             ),
                                             ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               child: Image.asset(
                                                 images.imageUrl,
                                                 height: 250,
@@ -827,28 +972,44 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     onPressed: () async {
                                                       try {
                                                         // Load the asset image as bytes
-                                                        final byteData = await rootBundle.load('images/iqama.png'); // Update with your asset path
+                                                        final byteData =
+                                                            await rootBundle.load(
+                                                                'images/iqama.png'); // Update with your asset path
 
                                                         // Get the temporary directory
-                                                        final tempDir = await getTemporaryDirectory();
+                                                        final tempDir =
+                                                            await getTemporaryDirectory();
 
                                                         // Create a temporary file in the directory
-                                                        final file = File('${tempDir.path}/iqama.png');
+                                                        final file = File(
+                                                            '${tempDir.path}/iqama.png');
 
                                                         // Write the image bytes to the temporary file
-                                                        await file.writeAsBytes(byteData.buffer.asUint8List());
+                                                        await file.writeAsBytes(
+                                                            byteData.buffer
+                                                                .asUint8List());
 
                                                         // Share the temporary file
-                                                        await Share.shareXFiles([XFile(file.path)], text: 'Check out this image!');
+                                                        await Share.shareXFiles(
+                                                            [XFile(file.path)],
+                                                            text:
+                                                                'Check out this image!');
                                                       } catch (e) {
                                                         // Handle any errors that occur during the process
-                                                        debugPrint('Error sharing image: $e');
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text('Failed to share image: $e')),
+                                                        debugPrint(
+                                                            'Error sharing image: $e');
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                              content: Text(
+                                                                  'Failed to share image: $e')),
                                                         );
                                                       }
                                                     },
-                                                    icon: const Icon(Icons.ios_share, color: Colors.white),
+                                                    icon: const Icon(
+                                                        Icons.ios_share,
+                                                        color: Colors.white),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
@@ -860,9 +1021,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                   child: IconButton(
                                                     onPressed: () {
                                                       // Copy the image URL or any text to the clipboard
-                                                      Clipboard.setData(ClipboardData(text: images.imageUrl)); // Text to be copied
+                                                      Clipboard.setData(
+                                                          ClipboardData(
+                                                              text: images
+                                                                  .imageUrl)); // Text to be copied
                                                     },
-                                                    icon: const Icon(Icons.copy, color: Colors.white),
+                                                    icon: const Icon(Icons.copy,
+                                                        color: Colors.white),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
@@ -875,15 +1040,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     onPressed: () {
                                                       // Action for the favorite button
                                                     },
-                                                    icon: const Icon(Icons.star, color: Colors.white),
+                                                    icon: const Icon(Icons.star,
+                                                        color: Colors.white),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                             const SizedBox(height: 10),
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 // Column(
                                                 //   crossAxisAlignment: CrossAxisAlignment.start, // Align text to start
@@ -924,14 +1092,19 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 //   ],
                                                 // ),
                                                 ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: SizedBox( // Set a fixed width
-                                                    height: 120, // Set a fixed height
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: SizedBox(
+                                                    // Set a fixed width
+                                                    height: 120,
+                                                    // Set a fixed height
                                                     child: Image.asset(
                                                       'images/qrCode.png',
                                                       fit: BoxFit.cover,
-                                                      alignment: Alignment.topCenter,
-                                                      errorBuilder: (context, error, stackTrace) {
+                                                      alignment:
+                                                          Alignment.topCenter,
+                                                      errorBuilder: (context,
+                                                          error, stackTrace) {
                                                         return const Icon(
                                                           Icons.broken_image,
                                                           size: 60,
@@ -946,35 +1119,49 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             const SizedBox(height: 10),
                                             Container(
                                               decoration: BoxDecoration(
-                                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                        Radius.circular(15)),
                                                 color: NasColors.lightBlue,
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(10.0),
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
                                                 child: Column(
                                                   children: [
                                                     Row(
                                                       children: [
                                                         Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Text("Name in Arabic",
+                                                            Text(
+                                                              "Name in Arabic",
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
                                                             Text(
                                                               images.name,
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
                                                           ],
@@ -983,9 +1170,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         IconButton(
                                                           onPressed: () {
                                                             // Copy the image URL or any text to the clipboard
-                                                            Clipboard.setData(ClipboardData(text: images.name)); // Text to be copied
+                                                            Clipboard.setData(
+                                                                ClipboardData(
+                                                                    text: images
+                                                                        .name)); // Text to be copied
                                                           },
-                                                          icon: const Icon(Icons.copy, color: Colors.white),
+                                                          icon: const Icon(
+                                                              Icons.copy,
+                                                              color:
+                                                                  Colors.white),
                                                         ),
                                                       ],
                                                     ),
@@ -998,27 +1191,41 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     Row(
                                                       children: [
                                                         Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Text("Card Number",
+                                                            Text(
+                                                              "Card Number",
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
-                                                            const SizedBox(height: 5),
+                                                            const SizedBox(
+                                                                height: 5),
                                                             Text(
                                                               images.cardNumber,
-                                                              textAlign: TextAlign.left,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left,
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
                                                           ],
@@ -1027,9 +1234,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         IconButton(
                                                           onPressed: () {
                                                             // Copy the image URL or any text to the clipboard
-                                                            Clipboard.setData(ClipboardData(text: images.cardNumber)); // Text to be copied
+                                                            Clipboard.setData(
+                                                                ClipboardData(
+                                                                    text: images
+                                                                        .cardNumber)); // Text to be copied
                                                           },
-                                                          icon: const Icon(Icons.copy, color: Colors.white),
+                                                          icon: const Icon(
+                                                              Icons.copy,
+                                                              color:
+                                                                  Colors.white),
                                                         ),
                                                       ],
                                                     ),
@@ -1040,84 +1253,64 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
                                                         Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Text("Date of Birth in Hijri",
-                                                              maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(height: 5),
-                                                             Text(
-                                                                images.dateOfBirthInHijri,
-                                                                textAlign: TextAlign.left,
-                                                                maxLines: 4,
-                                                                softWrap: true ,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 15,
-                                                                  fontWeight: FontWeight.normal,
-                                                                  color: Colors.white,
-                                                                ),
-                                                              ),
-                                                          ],
-                                                        ),
-                                                        const Spacer(),
-                                                        IconButton(
-                                                          onPressed: () {
-                                                            // Copy the image URL or any text to the clipboard
-                                                            Clipboard.setData(ClipboardData(text: images.dateOfBirthInHijri)); // Text to be copied
-                                                          },
-                                                          icon: const Icon(Icons.copy, color: Colors.white),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    const Divider(
-                                                      height: 1,
-                                                      color: Colors.white,
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                    Row(
-                                                      children: [
-                                                        Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text("Expiry date in Hijri",
-                                                              maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(height: 5),
                                                             Text(
-                                                                images.expiryDateInHijri,
-                                                                maxLines: 4,
-                                                                softWrap: true ,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 15,
-                                                                  fontWeight: FontWeight.normal,
-                                                                  color: Colors.white,
-                                                                ),
+                                                              "Date of Birth in Hijri",
+                                                              maxLines: 4,
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              images
+                                                                  .dateOfBirthInHijri,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left,
+                                                              maxLines: 4,
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
                                                           ],
                                                         ),
                                                         const Spacer(),
                                                         IconButton(
                                                           onPressed: () {
                                                             // Copy the image URL or any text to the clipboard
-                                                            Clipboard.setData(ClipboardData(text: images.expiryDateInHijri)); // Text to be copied
+                                                            Clipboard.setData(
+                                                                ClipboardData(
+                                                                    text: images
+                                                                        .dateOfBirthInHijri)); // Text to be copied
                                                           },
-                                                          icon: const Icon(Icons.copy, color: Colors.white),
+                                                          icon: const Icon(
+                                                              Icons.copy,
+                                                              color:
+                                                                  Colors.white),
                                                         ),
                                                       ],
                                                     ),
@@ -1130,26 +1323,39 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     Row(
                                                       children: [
                                                         Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Text("Place of Birth",
+                                                            Text(
+                                                              "Expiry date in Hijri",
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
-                                                            const SizedBox(height: 5),
+                                                            const SizedBox(
+                                                                height: 5),
                                                             Text(
-                                                              images.placeOfBirth,
+                                                              images
+                                                                  .expiryDateInHijri,
                                                               maxLines: 4,
-                                                              softWrap: true ,
-                                                              style: GoogleFonts.inter(
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.normal,
-                                                                color: Colors.white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
                                                               ),
                                                             ),
                                                           ],
@@ -1158,9 +1364,77 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         IconButton(
                                                           onPressed: () {
                                                             // Copy the image URL or any text to the clipboard
-                                                            Clipboard.setData(ClipboardData(text: images.placeOfBirth)); // Text to be copied
+                                                            Clipboard.setData(
+                                                                ClipboardData(
+                                                                    text: images
+                                                                        .expiryDateInHijri)); // Text to be copied
                                                           },
-                                                          icon: const Icon(Icons.copy, color: Colors.white),
+                                                          icon: const Icon(
+                                                              Icons.copy,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    const Divider(
+                                                      height: 1,
+                                                      color: Colors.white,
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              "Place of Birth",
+                                                              maxLines: 4,
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              images
+                                                                  .placeOfBirth,
+                                                              maxLines: 4,
+                                                              softWrap: true,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const Spacer(),
+                                                        IconButton(
+                                                          onPressed: () {
+                                                            // Copy the image URL or any text to the clipboard
+                                                            Clipboard.setData(
+                                                                ClipboardData(
+                                                                    text: images
+                                                                        .placeOfBirth)); // Text to be copied
+                                                          },
+                                                          icon: const Icon(
+                                                              Icons.copy,
+                                                              color:
+                                                                  Colors.white),
                                                         ),
                                                       ],
                                                     ),
@@ -1191,12 +1465,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         color: Colors.black12,
                                         blurRadius: 10,
                                         spreadRadius: 10,
-                                        offset: Offset(0, -6), // Top shadow added only for items after the first one
+                                        offset: Offset(0,
+                                            -6), // Top shadow added only for items after the first one
                                       ),
                                     const BoxShadow(
                                       color: Colors.black12,
                                       blurRadius: 10,
-                                      offset: Offset(0, 5), // Bottom shadow to enhance overlap effect
+                                      offset: Offset(0,
+                                          5), // Bottom shadow to enhance overlap effect
                                     ),
                                   ],
                                 ),
@@ -1234,6 +1510,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ],
                   ),
                 ),
+                // Content for Tab 4
+                Container(
+                  color: Colors.white,
+                  child: const LoanScreen(),
+                ),
+                // Content for Tab 5
                 Container(
                     color: Colors.white,
                     child: ListView(
@@ -1268,7 +1550,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.center,
                                         child: Text(
-                                          AppLocalizations.of(context)!.familyInfo,
+                                          AppLocalizations.of(context)!
+                                              .familyInfo,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1279,7 +1562,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!.fatherName,
+                                          AppLocalizations.of(context)!
+                                              .fatherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1302,7 +1586,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!.motherName,
+                                          AppLocalizations.of(context)!
+                                              .motherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1394,7 +1679,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!.familyPhoneNo,
+                                          AppLocalizations.of(context)!
+                                              .familyPhoneNo,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1417,7 +1703,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!.emergencyContact,
+                                          AppLocalizations.of(context)!
+                                              .emergencyContact,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1429,7 +1716,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!.relation,
+                                          AppLocalizations.of(context)!
+                                              .relation,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1556,5 +1844,12 @@ class Document {
   final String expiryDateInHijri;
   final String placeOfBirth;
 
-  Document({required this.imageUrl , required this.name ,required this.cardNumber ,required this.dateOfBirthInHijri ,required this.expiryDateInHijri ,required this.placeOfBirth ,});
+  Document({
+    required this.imageUrl,
+    required this.name,
+    required this.cardNumber,
+    required this.dateOfBirthInHijri,
+    required this.expiryDateInHijri,
+    required this.placeOfBirth,
+  });
 }

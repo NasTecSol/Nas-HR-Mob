@@ -264,6 +264,9 @@
   "remainingAmount": "المبلغ المتبقي",
   "status": "الحالة",
   "assignedAssets": "الأصول المعينة",
-  "myDocuments": "مستنداتي"
+  "myDocuments": "مستنداتي",
+  "loginSuccess": "تسجيل الدخول بنجاح",
+  "complaints": "الشكاوى",
+  "teamClocking": "توقيت الفريق"
 
 }

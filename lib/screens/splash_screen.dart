@@ -71,7 +71,7 @@ class _SplashscreenState extends State<SplashScreen>
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: "Nass",
+                      text: "Nas",
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,

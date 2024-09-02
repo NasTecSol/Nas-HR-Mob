@@ -169,5 +169,8 @@
   "remainingAmount":"Remaining Amount",
   "status":"Status",
   "assignedAssets":"Assigned Assets",
-  "myDocuments":"My Documents"
+  "myDocuments":"My Documents",
+  "loginSuccess":"Login Successful",
+  "complaints":"Complaints",
+  "teamClocking":"Team Clocking"
 }

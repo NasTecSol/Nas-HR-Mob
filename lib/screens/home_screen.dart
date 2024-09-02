@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +15,7 @@ import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,8 +37,34 @@ class _HomeScreenState extends State<HomeScreen> {
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
   bool isExpanded = true;
+  bool isLoading = false;
+
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
+  bool _isCheckInCompleted = false; // Track if check-in is completed
+  String _swipeStatusText = 'Swipe to Check-In'; // Initial swipe text
+
+  void _updateSwipeStatus(String statusText) {
+    setState(() {
+      _swipeStatusText = statusText;
+    });
+  }
+
+  // void _handleSwipe() {
+  //   setState(() {
+  //     if (_isCheckInCompleted) {
+  //       _dragPosition =
+  //           MediaQuery.of(context).size.width - 100; // Fix swipe at right side
+  //       _isSliderCompleted = false;
+  //     } else {
+  //       _dragPosition += 50; // Update as per your requirement
+  //       if (_dragPosition > MediaQuery.of(context).size.width * 0.9) {
+  //         _isSliderCompleted = true;
+  //       }
+  //     }
+  //   });
+  // }
+
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
 
@@ -79,9 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Image.asset(
-                        "images/site.png",
-                      ),
+                      child: Image.asset("images/site.png"),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -104,9 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Image.asset(
-                        "images/pc.png",
-                      ),
+                      child: Image.asset("images/pc.png"),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -123,31 +147,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   GestureDetector(
                     onTap: () async {
                       if (!(await _authService.checkBiometricAvailability())) {
-                        // Show a message asking the user to set up biometric credentials
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please set up biometrics in your device settings')),
+                          const SnackBar(content: Text('Please set up biometrics in your device settings')),
                         );
                         return; // Skip further actions if biometrics aren't set up
                       }
 
-                      // If biometrics are available, proceed with authentication
-                      bool isAuthenticated = await _authService
-                          .authenticateWithBiometrics(context);
+                      bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
                       if (isAuthenticated) {
-                        // Proceed to the next screen or perform the desired action
                         _removeOverlay();
+                        await checkIn('biometric');
+                        setState(() {
+                          _isCheckInCompleted = true; // Set check-in as completed
+                        });
+                        _updateSwipeStatus('Swipe to Check-Out');
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Authenticated')),
                         );
                       } else {
-                        // Show an error message if authentication failed
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Authentication failed')),
+                          const SnackBar(content: Text('Authentication failed')),
                         );
                       }
                     },
@@ -160,9 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Image.asset(
-                          "images/fingerprint.png",
-                        ),
+                        child: Image.asset("images/fingerprint.png"),
                       ),
                     ),
                   ),
@@ -392,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                    const SettingScreen()));
+                                        const SettingScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -545,7 +564,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.checkIn,
+                                                  AppLocalizations.of(context)!
+                                                      .checkIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
@@ -578,7 +598,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.checkOut,
+                                                  AppLocalizations.of(context)!
+                                                      .checkOut,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.bold,
@@ -616,7 +637,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Column(
                                                     children: [
                                                       Text(
-                                                        AppLocalizations.of(context)!.lateComings,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .lateComings,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontSize: 10,
@@ -725,24 +748,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    _dragPosition += details.primaryDelta!;
-                                    if (_dragPosition >
-                                        MediaQuery.of(context).size.width * 0.7) {
-                                      _isSliderCompleted = true;
+                                    if (!_isCheckInCompleted) {
+                                      _dragPosition += details.primaryDelta!;
+                                      if (_dragPosition >
+                                          MediaQuery.of(context).size.width *
+                                              0.7) {
+                                        _isSliderCompleted = true;
+                                      }
                                     }
                                   });
                                 },
                                 onHorizontalDragEnd: (details) {
-                                  if (_isSliderCompleted &&
+                                  if (!_isCheckInCompleted &&
+                                      _isSliderCompleted &&
                                       details.velocity.pixelsPerSecond.dx > 0) {
-                                    // Swiped from left to right
+                                    // Swiped from left to right and check-in is not completed
                                     _overlayEntry = _createOverlayEntry();
                                     Overlay.of(context).insert(_overlayEntry!);
+                                    _updateSwipeStatus('Swipe to Check-Out');
                                     setState(() {
                                       _dragPosition =
-                                          8; // Move back to the start point
+                                          8; // Reset to the start point
                                       _isSliderCompleted = false;
                                     });
+                                  } else if (_isCheckInCompleted &&
+                                      details.velocity.pixelsPerSecond.dx < 0) {
+                                    // Swiped from right to left (Check-Out)
+                                    // Perform check-out logic here
                                   } else {
                                     setState(() {
                                       _dragPosition =
@@ -791,7 +823,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Align(
                                             alignment: Alignment.center,
                                             child: Text(
-                                              AppLocalizations.of(context)!.swipeToCheckIn,
+                                              _swipeStatusText,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w600,
@@ -814,6 +846,55 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
+                                  if(singletonClass.getJWTModel()?.role == 'manager')
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0,
+                                                    3), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'images/teamClocking.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                        AppLocalizations.of(context)!.teamClocking,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  if(singletonClass.getJWTModel()?.role == 'dev' || singletonClass.getJWTModel()?.role == 'manager')
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -866,6 +947,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ],
                                   ),
                                   const SizedBox(width: 20),
+                                  if(singletonClass.getJWTModel()?.role == 'dev' || singletonClass.getJWTModel()?.role == 'manager')
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -918,58 +1000,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ],
                                   ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const LoanScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/loan.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.loans,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 20),
+                                  if(singletonClass.getJWTModel()?.role == 'dev' || singletonClass.getJWTModel()?.role == 'manager')
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -1022,15 +1053,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ],
                                   ),
                                   const SizedBox(width: 20),
+                                  if(singletonClass.getJWTModel()?.role == 'manager' || singletonClass.getJWTModel()?.role == 'dev')
                                   Column(
                                     children: [
                                       GestureDetector(
                                         onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const PayrollScreen()));
+
                                         },
                                         child: Container(
                                           height: 65,
@@ -1052,7 +1080,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: Center(
                                             child: ClipOval(
                                               child: Image.asset(
-                                                'images/creditCard.png',
+                                                'images/complaint.png',
                                                 fit: BoxFit.contain,
                                                 width: 30,
                                                 height: 30,
@@ -1064,7 +1092,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                        AppLocalizations.of(context)!.salaries,
+                                        AppLocalizations.of(context)!.complaints,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -1103,7 +1131,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          AppLocalizations.of(context)!.activity,
+                                          AppLocalizations.of(context)!
+                                              .activity,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1258,6 +1287,46 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.yellow;
       default:
         return Colors.grey; // or any other default color
+    }
+  }
+
+  Future<void> checkIn(String type) async {
+    String checkInTime = DateTime.now().toUtc().toIso8601String();
+    Map<String, dynamic> data = {
+      "employeeId": singletonClass.getJWTModel()?.employeeId,
+      "employeeName": singletonClass.getJWTModel()?.userName,
+      "checkInTime": checkInTime,
+      "checkOutTime": "", // Set checkOutTime later
+      "type": type,
+      "totalTime": checkInTime, // Calculate and set later if needed
+    };
+    print(data);
+
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+      setState(() {
+        isLoading = false;
+      });
+      print(response.body);
+      if (response.statusCode == 200) {
+        // Handle successful response
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
     }
   }
 }
