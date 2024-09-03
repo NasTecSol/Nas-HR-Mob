@@ -1,19 +1,23 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/document_screen.dart';
-import 'package:nashr/screens/loan_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
-import 'package:nashr/screens/payroll_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/team_screen.dart';
 import 'package:nashr/singleton_class.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,8 +39,39 @@ class _HomeScreenState extends State<HomeScreen> {
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
   bool isExpanded = true;
+  bool isLoading = false;
+
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
+  bool _isCheckInCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCheckInState();
+    _draggableScrollableController.addListener(() {
+      setState(() {
+        isExpanded = _draggableScrollableController.size > 0.3;
+        showHeaderContent = isExpanded;
+        blurAmount = isExpanded ? 10.0 : 0.0;
+      });
+    });
+  }
+
+  // Load state from SharedPreferences
+  Future<void> _loadCheckInState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isCheckInCompleted = prefs.getBool('isCheckInCompleted') ?? false;
+    });
+  }
+
+  // Save state to SharedPreferences
+  Future<void> _saveCheckInState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isCheckInCompleted', _isCheckInCompleted);
+  }
+
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
 
@@ -61,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Select Clock-In Type',
+                    AppLocalizations.of(context)!.clockInType,
                     textAlign: TextAlign.left,
                     style: GoogleFonts.inter(
                       fontSize: 20,
@@ -79,39 +114,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Image.asset(
-                        "images/site.png",
-                      ),
+                      child: Image.asset("images/site.png"),
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Office Check-In',
-                    textAlign: TextAlign.left,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    height: 90,
-                    width: 90,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Image.asset(
-                        "images/pc.png",
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Remote Check-In',
+                    AppLocalizations.of(context)!.location,
                     textAlign: TextAlign.left,
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -123,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   GestureDetector(
                     onTap: () async {
                       if (!(await _authService.checkBiometricAvailability())) {
-                        // Show a message asking the user to set up biometric credentials
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -133,17 +140,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         return; // Skip further actions if biometrics aren't set up
                       }
 
-                      // If biometrics are available, proceed with authentication
                       bool isAuthenticated = await _authService
                           .authenticateWithBiometrics(context);
                       if (isAuthenticated) {
-                        // Proceed to the next screen or perform the desired action
                         _removeOverlay();
+                        await checkIn('biometric');
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Authenticated')),
                         );
                       } else {
-                        // Show an error message if authentication failed
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -160,15 +165,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Image.asset(
-                          "images/fingerprint.png",
-                        ),
+                        child: Image.asset("images/fingerprint.png"),
                       ),
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Biometric Check-In',
+                    AppLocalizations.of(context)!.biometricCheckIn,
                     textAlign: TextAlign.left,
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -188,18 +191,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _draggableScrollableController.addListener(() {
-      setState(() {
-        isExpanded = _draggableScrollableController.size > 0.3;
-        showHeaderContent = isExpanded;
-        blurAmount = isExpanded ? 10.0 : 0.0;
-      });
-    });
   }
 
   void toggleSheet() {
@@ -392,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                    const SettingScreen()));
+                                        const SettingScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -545,7 +536,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.checkIn,
+                                                  AppLocalizations.of(context)!
+                                                      .checkIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
@@ -578,7 +570,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.checkOut,
+                                                  AppLocalizations.of(context)!
+                                                      .checkOut,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.bold,
@@ -616,7 +609,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Column(
                                                     children: [
                                                       Text(
-                                                        AppLocalizations.of(context)!.lateComings,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .lateComings,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontSize: 10,
@@ -725,30 +720,57 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    _dragPosition += details.primaryDelta!;
-                                    if (_dragPosition >
-                                        MediaQuery.of(context).size.width * 0.7) {
-                                      _isSliderCompleted = true;
+                                    if (!_isCheckInCompleted) {
+                                      _dragPosition += details.primaryDelta!;
+                                      // Check if the swipe has crossed 70% of screen width
+                                      if (_dragPosition >
+                                          MediaQuery.of(context).size.width *
+                                              0.7) {
+                                        _isSliderCompleted = true;
+                                      }
+                                    } else if (_isCheckInCompleted) {
+                                      _dragPosition += details.primaryDelta!;
+                                      // Check if the swipe has crossed -70% of screen width for check-out
+                                      if (_dragPosition <
+                                          -MediaQuery.of(context).size.width *
+                                              0.7) {
+                                        _isSliderCompleted = true;
+                                      }
                                     }
                                   });
                                 },
                                 onHorizontalDragEnd: (details) {
-                                  if (_isSliderCompleted &&
-                                      details.velocity.pixelsPerSecond.dx > 0) {
-                                    // Swiped from left to right
-                                    _overlayEntry = _createOverlayEntry();
-                                    Overlay.of(context).insert(_overlayEntry!);
-                                    setState(() {
-                                      _dragPosition =
-                                          8; // Move back to the start point
-                                      _isSliderCompleted = false;
-                                    });
-                                  } else {
-                                    setState(() {
-                                      _dragPosition =
-                                          8; // Reset to the start point
-                                      _isSliderCompleted = false;
-                                    });
+                                  if (!_isCheckInCompleted) {
+                                    if (_isSliderCompleted &&
+                                        details.velocity.pixelsPerSecond.dx >
+                                            0) {
+                                      // Swiped from left to right and check-in is not completed
+                                      _overlayEntry = _createOverlayEntry();
+                                      Overlay.of(context)
+                                          .insert(_overlayEntry!);
+                                      setState(() {
+                                        _dragPosition =
+                                            0; // Reset to start position
+                                        _isSliderCompleted = false;
+                                      });
+                                    } else {
+                                      // Reset if swipe didn't meet the criteria for check-in
+                                      setState(() {
+                                        _dragPosition = 0;
+                                        _isSliderCompleted = false;
+                                      });
+                                    }
+                                  } else if (_isCheckInCompleted) {
+                                    if (_isSliderCompleted &&
+                                        details.velocity.pixelsPerSecond.dx <
+                                            0) {
+                                    } else {
+                                      // Reset if swipe didn't meet the criteria for check-out
+                                      setState(() {
+                                        _dragPosition = 0;
+                                        _isSliderCompleted = false;
+                                      });
+                                    }
                                   }
                                 },
                                 child: Container(
@@ -770,39 +792,118 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   height: 60,
-                                  child: Transform.translate(
-                                    offset: Offset(_dragPosition, -1),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 60,
-                                            height: 50,
-                                            decoration: const BoxDecoration(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(15)),
-                                              color: Colors.white,
-                                            ),
-                                            child: Lottie.asset(
-                                                'images/swiper.json'),
-                                          ),
-                                          const SizedBox(width: 50),
-                                          Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              AppLocalizations.of(context)!.swipeToCheckIn,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white,
+                                  child: _isCheckInCompleted
+                                      ? Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 5.0, left: 30),
+                                          child: Row(
+                                            children: [
+                                              IconButton(
+                                                onPressed: () async {
+                                                  if (_isCheckInCompleted) {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext context) => AlertDialog(
+                                                        title: Text(AppLocalizations.of(context)!.areYouSure,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () => Navigator.of(context).pop(),
+                                                            child: Text(AppLocalizations.of(context)!.cancel,
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: Colors.red,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () async {
+                                                              Navigator.pop(context);
+                                                              checkOut();
+                                                            },
+                                                            child: Text(AppLocalizations.of(context)!.yes,
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: Colors.black,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+
+                                                    );
+                                                  }
+                                                },
+                                                icon: SizedBox(
+                                                  width: 35,
+                                                  // Set width of the icon
+                                                  height: 35,
+                                                  // Set height of the icon
+                                                  child: Image.asset(
+                                                      'images/exit.png'),
+                                                ),
                                               ),
+                                              const SizedBox(width: 20),
+                                              Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.pressButtonToCheckOut,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Transform.translate(
+                                          offset: Offset(_dragPosition, -1),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 60,
+                                                  height: 50,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                15)),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Lottie.asset(
+                                                      'images/swiper.json'),
+                                                ),
+                                                const SizedBox(width: 50),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .swipeToCheckIn,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                        ),
                                 ),
                               ),
                             ),
@@ -814,265 +915,274 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const DocumentScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/files.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  if (singletonClass.getJWTModel()?.role ==
+                                      'manager')
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {},
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0,
+                                                      3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: ClipOval(
+                                                child: Image.asset(
+                                                  'images/teamClocking.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.documents,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .teamClocking,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const AssetsScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/assets.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  if (singletonClass.getJWTModel()?.role ==
+                                          'dev' ||
+                                      singletonClass.getJWTModel()?.role ==
+                                          'manager')
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const DocumentScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0,
+                                                      3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: ClipOval(
+                                                child: Image.asset(
+                                                  'images/files.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.assets,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .documents,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const LoanScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/loan.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  if (singletonClass.getJWTModel()?.role ==
+                                          'dev' ||
+                                      singletonClass.getJWTModel()?.role ==
+                                          'manager')
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const AssetsScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0,
+                                                      3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: ClipOval(
+                                                child: Image.asset(
+                                                  'images/assets.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.loans,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!.assets,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const TeamScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/Team.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  if (singletonClass.getJWTModel()?.role ==
+                                          'dev' ||
+                                      singletonClass.getJWTModel()?.role ==
+                                          'manager')
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const TeamScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0,
+                                                      3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: ClipOval(
+                                                child: Image.asset(
+                                                  'images/Team.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.teams,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!.teams,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const PayrollScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 8,
-                                                offset: const Offset(0,
-                                                    3), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                'images/creditCard.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  if (singletonClass.getJWTModel()?.role ==
+                                          'manager' ||
+                                      singletonClass.getJWTModel()?.role ==
+                                          'dev')
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {},
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0,
+                                                      3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: ClipOval(
+                                                child: Image.asset(
+                                                  'images/complaint.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                        AppLocalizations.of(context)!.salaries,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .complaints,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -1103,7 +1213,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          AppLocalizations.of(context)!.activity,
+                                          AppLocalizations.of(context)!
+                                              .activity,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1258,6 +1369,205 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.yellow;
       default:
         return Colors.grey; // or any other default color
+    }
+  }
+
+
+  Future<void> checkIn(String type) async {
+    String checkInTime = DateTime.now().toUtc().toIso8601String();
+    Map<String, dynamic> data = {
+      "employeeId": singletonClass.getJWTModel()?.employeeId,
+      "employeeName": singletonClass.getJWTModel()?.userName,
+      "checkInTime": checkInTime,
+      "type": type,
+      "totalTime" : "$checkInTime",
+      // Adjust this if needed for total time calculation
+    };
+    print(data);
+
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+        var checkInData = CheckInData.fromJson(decodedResponse);
+        singletonClass.setCheckInData([checkInData]);
+        print(singletonClass.checkInDataList.first.data?.id);
+        setState(() {
+          _isCheckInCompleted = true; // Reset the check-in state
+          _dragPosition = 0; // Reset drag position
+          _isSliderCompleted = true; // Reset slider completion flag
+        });
+        await _saveCheckInState();
+        // Show success alert
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          title: 'Success',
+          text: 'Check-in completed successfully!',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      } else if (response.statusCode == 400) {
+        // Show error alert for status code 400
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Error',
+          text: 'Validation failed. Please check your inputs.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      } else {
+        // Handle other error statuses
+        print('Error: ${response.statusCode}');
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Error',
+          text: 'An unexpected error occurred. Please try again.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error: $e');
+
+      // Show error alert for exceptions
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Error',
+        text: 'An error occurred. Please check your network connection.',
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+      );
+    }
+  }
+
+//CHECK OUT API CALL
+  Future<void> checkOut() async {
+    String checkOutTime = DateTime.now().toUtc().toIso8601String();
+    String? checkInTime = singletonClass.checkInDataList.first.data?.checkInTime;
+    DateTime checkInDateTime = DateTime.parse(checkInTime!);
+    DateTime checkOutDateTime = DateTime.parse(checkOutTime);
+    Duration difference = checkOutDateTime.difference(checkInDateTime);
+    String totalHours = "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
+    print(totalHours);
+    String? id = singletonClass.checkInDataList.first.data?.id;
+    Map<String, dynamic> data = {
+      "employeeId": singletonClass.getJWTModel()?.employeeId,
+      "employeeName": singletonClass.getJWTModel()?.userName,
+      "checkOutTime": checkOutTime,
+      "type": singletonClass.checkInDataList.first.data?.type,
+      "totalTime": totalHours,
+      // Adjust this if needed for total time calculation
+    };
+    print(data);
+
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$id');
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.patch(
+        uri,
+        body: body,
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isCheckInCompleted = false; // Reset the check-in state
+          _dragPosition = 0; // Reset drag position
+          _isSliderCompleted = false; // Reset slider completion flag
+        });
+        await _saveCheckInState();
+        // Show success alert
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          title: 'Success',
+          text: 'Check-out completed successfully!',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      } else if (response.statusCode == 400) {
+        // Show error alert for status code 400
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Error',
+          text: 'Validation failed. Please check your inputs.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      } else {
+        // Handle other error statuses
+        print('Error: ${response.statusCode}');
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Error',
+          text: 'An unexpected error occurred. Please try again.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error: $e');
+
+      // Show error alert for exceptions
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Error',
+        text: 'An error occurred. Please check your network connection.',
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+      );
     }
   }
 }

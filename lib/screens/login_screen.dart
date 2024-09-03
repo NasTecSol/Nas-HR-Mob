@@ -325,9 +325,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           login();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(""),
-                              duration: const Duration(seconds: 4),
+                              duration: Duration(seconds: 4),
                             ),
                           );
                         }
@@ -401,13 +401,12 @@ class _LoginScreenState extends State<LoginScreen> {
             decodeJwt(jwtToken);
             singletonClass.getEmployeeData();
             await _saveTokenLocally(data.data!.trim());
-
             await QuickAlert.show(
-              autoCloseDuration: const Duration(seconds: 2),
+              autoCloseDuration:  const Duration(seconds: 2),
               showCancelBtn: false,
               showConfirmBtn: false,
               context: context,
-              title: "",
+              title: AppLocalizations.of(context)!.loginSuccess,
               type: QuickAlertType.success,
             );
             await Navigator.push(

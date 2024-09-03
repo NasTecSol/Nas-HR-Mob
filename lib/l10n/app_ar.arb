@@ -264,6 +264,18 @@
   "remainingAmount": "المبلغ المتبقي",
   "status": "الحالة",
   "assignedAssets": "الأصول المعينة",
-  "myDocuments": "مستنداتي"
+  "myDocuments": "مستنداتي",
+  "loginSuccess": "تسجيل الدخول بنجاح",
+  "complaints": "الشكاوى",
+  "teamClocking": "توقيت الفريق",
+  "success": "نجاح",
+  "checkOutSuccess": "تم تسجيل الخروج بنجاح!",
+  "yes": "نعم",
+  "cancel": "إلغاء",
+  "areYouSure": "هل أنت متأكد من تسجيل الخروج؟",
+  "pressButtonToCheckOut": "اضغط الزر لتسجيل الخروج",
+  "clockInType": "اختر نوع تسجيل الدخول",
+  "location": "الموقع",
+  "biometricCheckIn": "تسجيل الدخول البيومتري"
 
 }

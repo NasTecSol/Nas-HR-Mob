@@ -141,7 +141,7 @@
   "meetings":"Meetings",
   "selectDate":"Select Date",
   "myProfile":"My Profile",
-  "profile":"profile",
+  "profile":"Profile",
   "bankAccounts":"Bank Accounts",
   "familyInfo":"Family Info",
   "personalInformation":"Personal Information",
@@ -169,5 +169,17 @@
   "remainingAmount":"Remaining Amount",
   "status":"Status",
   "assignedAssets":"Assigned Assets",
-  "myDocuments":"My Documents"
+  "myDocuments":"My Documents",
+  "loginSuccess":"Login Successful",
+  "complaints":"Complaints",
+  "teamClocking":"Team Clocking",
+  "success":"Success",
+  "checkOutSuccess":"Check-out Successfully !",
+  "yes":"Yes",
+  "cancel":"Cancel",
+  "areYouSure":"Are you sure to check-out!",
+  "pressButtonToCheckOut":"Press button to check-out",
+  "clockInType":"Select Clock-in Type",
+  "location":"Location",
+  "biometricCheckIn":"Biometric Check-in"
 }

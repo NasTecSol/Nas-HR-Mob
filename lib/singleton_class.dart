@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
@@ -17,10 +18,11 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? baseURL = 'https://33a7-39-63-125-161.ngrok-free.app';
+  String? baseURL = 'https://ee5c-39-63-125-161.ngrok-free.app';
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<CheckInData> checkInDataList = [];
 
 
   init() async {
@@ -29,6 +31,11 @@ class SingletonClass {
  // Setters for populating data
   void setLoginModel(LoginModel loginModel) {
     _loginModel = loginModel;
+  }
+
+  void setCheckInData(List<CheckInData> checkInData) {
+    // Method to set the company list
+    checkInDataList = checkInData;
   }
 
   void setJWTModel(JWTData jwtData) {
