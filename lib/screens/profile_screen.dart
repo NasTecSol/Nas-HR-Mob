@@ -246,14 +246,27 @@ class _ProfileScreenState extends State<ProfileScreen>
                     controller: _tabController,
                     indicatorColor: Colors.black,
                     labelColor: Colors.black,
+                    dividerColor: Colors.transparent,
                     indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorWeight: 8,
+                    indicatorWeight: 5,
+                    indicator:  UnderlineTabIndicator(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: const BorderSide(
+                        width: 8.0, // Thickness of the indicator
+                        color: Colors.black, // Color of the indicator
+                      ), // Horizontal padding
+                    ),
                     labelStyle: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                     unselectedLabelColor: Colors.grey,
+                    unselectedLabelStyle: GoogleFonts.inter(
+                      fontSize: 14,  // Smaller font for unselected tabs
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey,
+                    ),
                     tabs: [
                       Tab(text: AppLocalizations.of(context)!.profile),
                       Tab(text: AppLocalizations.of(context)!.bankAccounts),
