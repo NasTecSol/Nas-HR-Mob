@@ -145,15 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (isAuthenticated) {
                         _removeOverlay();
                         await checkIn('biometric');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Authenticated')),
-                        );
+
                       } else {
                         _removeOverlay();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Authentication failed')),
-                        );
                       }
                     },
                     child: Container(
@@ -1418,7 +1412,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         await _saveCheckInState();
         // Show success alert
-        QuickAlert.show(
+         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
           title: 'Success',
@@ -1518,8 +1512,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _isSliderCompleted = false; // Reset slider completion flag
         });
         await _saveCheckInState();
+        await singletonClass.getClockingData();
         // Show success alert
-        QuickAlert.show(
+        await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
           title: 'Success',

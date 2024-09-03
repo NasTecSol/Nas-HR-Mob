@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:nashr/request_controller/check_in_model.dart';
+import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
@@ -23,6 +24,7 @@ class SingletonClass {
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
   List<CheckInData> checkInDataList = [];
+  List<ClockingData> clockingDataList = [];
 
 
   init() async {
@@ -46,6 +48,13 @@ class SingletonClass {
     // Method to set the company list
     employeeDataList = employeeData;
   }
+
+  void setClockingData(List<ClockingData> clockingData) {
+    // Method to set the company list
+    clockingDataList = clockingData;
+  }
+
+
   // Method to get the ResponseModel instance
   LoginModel? getLoginModel() {
     return _loginModel;
@@ -66,6 +75,20 @@ class SingletonClass {
       var employeeData = EmployeeData.fromJson(responseBody);
       setEmployeeData([employeeData]);
       return employeeData;
+    }
+    return null ; // Print the response body
+  }
+
+  Future<ClockingData?> getClockingData() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/c-emp-check-in-out');
+    var response = await client.get(uri);
+    log(response.body);
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var clockingData = ClockingData.fromJson(responseBody);
+      setClockingData([clockingData]);
+      return clockingData;
     }
     return null ; // Print the response body
   }
