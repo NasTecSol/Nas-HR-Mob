@@ -280,6 +280,7 @@
   "logout": "تسجيل الخروج",
   "teamComplaints": "شكاوى الفريق",
   "myComplaints": "شكاواي",
-  "fileComplain": "تقديم شكوى"
+  "fileComplain": "تقديم شكوى",
+  "areYouSureToLogout": "هل أنت متأكد من تسجيل الخروج؟"
 
 }

@@ -185,5 +185,6 @@
   "logout":"Logout",
   "teamComplaints":"Team Complaints",
   "myComplaints":"My Complaints",
-  "fileComplain":"File Complain"
+  "fileComplain":"File Complain",
+  "areYouSureToLogout":"Are you sure to logout"
 }

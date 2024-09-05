@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -39,8 +40,7 @@ class _SettingScreenState extends State<SettingScreen> {
   final AuthService _authService = AuthService();
 
   logout() async {
-    final SharedPreferences preferences =
-    await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.remove('token');
   }
 
@@ -181,87 +181,83 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 50,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.logout , size: 28,color: NasColors.darkBlue,),
-                      Text( AppLocalizations.of(context)!.biometrics,
+                GestureDetector(
+                  onTap: () async {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          backgroundColor: NasColors.backGround,
+
+                      title: Text(AppLocalizations.of(context)!.areYouSureToLogout,
                         style: GoogleFonts.inter(
                           fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: NasColors.darkBlue,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
                       ),
-                      const Spacer(),
-                      Switch(
-                        value: _isToggled,
-                        onChanged: (bool value) async {
-                          setState(() {
-                            _isToggled = value;
-                          });
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(AppLocalizations.of(context)!.cancel,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            await logout();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const SplashScreen()));
+                          },
+                          child: Text(AppLocalizations.of(context)!.yes,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),);
+                  },
+                  child: Container(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width - 50,
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout , size: 28,color: NasColors.darkBlue,),
+                        SizedBox(width: 2),
+                        Text( AppLocalizations.of(context)!.logout,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                        const Spacer(),
 
-                          if (_isToggled) {
-                            // Handle enabling biometric authentication
-                            if (!(await _authService.checkBiometricAvailability())) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please set up biometrics in your device settings')),
-                              );
-                              setState(() {
-                                _isToggled = false; // Reset toggle if biometrics aren't available
-                              });
-                              return; // Skip further actions if biometrics aren't set up
-                            }
-
-                            bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
-                            if (isAuthenticated) {
-                              setState(() {
-                                _isBiometricEnabled = value;
-                                _saveBiometricState(value);
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Biometric authentication enabled')),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Biometric authentication failed')),
-                              );
-                              setState(() {
-                                _isToggled = false; // Reset toggle if authentication fails
-                              });
-                            }
-                          } else {
-                            // Handle disabling biometric authentication
-                            // Implement any necessary actions for turning off biometrics
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Biometric authentication disabled')),
-                            );
-                          }
-                        },
-                        activeColor: NasColors.darkBlue,
-                        activeTrackColor:NasColors.icons ,
-                        inactiveTrackColor: NasColors.lightBlue, // Color of the track when inactive
-                        inactiveThumbColor: Colors.white, // Color of the thumb when inactive
-                      ),
-
-                    ],
+                      ],
+                    ),
                   ),
                 )
               ],
