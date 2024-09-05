@@ -181,5 +181,12 @@
   "pressButtonToCheckOut":"Press button to check-out",
   "clockInType":"Select Clock-in Type",
   "location":"Location",
-  "biometricCheckIn":"Biometric Check-in"
+  "biometricCheckIn":"Biometric Check-in",
+  "logout":"Logout",
+  "teamComplaints":"Team Complaints",
+  "myComplaints":"My Complaints",
+  "fileComplain":"File Complain",
+  "areYouSureToLogout":"Are you sure to logout",
+  "checkInComplete":"Check-in completed successfully!",
+  "checkOutComplete":"Check-out completed successfully!"
 }

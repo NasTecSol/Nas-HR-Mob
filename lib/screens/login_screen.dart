@@ -401,6 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
             decodeJwt(jwtToken);
             singletonClass.getEmployeeData();
             singletonClass.getClockingData();
+            singletonClass.getBranchData();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(
               autoCloseDuration:  const Duration(seconds: 2),

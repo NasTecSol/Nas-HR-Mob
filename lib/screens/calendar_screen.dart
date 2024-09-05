@@ -260,123 +260,126 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       itemCount: tasks.length,
                       itemBuilder: (BuildContext context, int index) {
                         final task = tasks[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 15),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(15)),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 8,
-                                offset: const Offset(
-                                    0, 3), // changes position of shadow
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 120,
-                                width: 20, // Adjusted the width for visibility
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(15),
-                                    bottomLeft: Radius.circular(15),
-                                  ),
-                                  color: _getColorForVerificationStatus(
-                                      task.status!),
+                        return Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 15),
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(15)),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 8,
+                                  offset: const Offset(
+                                      0, 3), // changes position of shadow
                                 ),
-                              ),
-                              Expanded(
-                                // Use Expanded to fill the remaining space
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            // Expand the text to fill available space
-                                            child: Text(
-                                              "${task.taskName}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            height: 20,
-                                            width: 75,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.rectangle,
-                                              color:
-                                                  _getColorForVerificationStatus(
-                                                      task.status!),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Center(
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  height: 120,
+                                  width: 20, // Adjusted the width for visibility
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(15),
+                                      bottomLeft: Radius.circular(15),
+                                    ),
+                                    color: _getColorForVerificationStatus(
+                                        task.status!),
+                                  ),
+                                ),
+                                Expanded(
+                                  // Use Expanded to fill the remaining space
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              // Expand the text to fill available space
                                               child: Text(
-                                                "${task.status}",
-                                                textAlign: TextAlign.center,
+                                                "${task.taskName}",
                                                 style: GoogleFonts.inter(
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                  fontSize: 10,
+                                                  color: Colors.black,
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.calendar_month_outlined,
-                                            color:
-                                                _getColorForVerificationStatus(
-                                                    task.status!),
-                                            size: 25,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            "${task.duration}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
+                                            Container(
+                                              height: 20,
+                                              width: 75,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.rectangle,
+                                                color:
+                                                    _getColorForVerificationStatus(
+                                                        task.status!),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "${task.status}",
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.calendar_month_outlined,
                                               color:
                                                   _getColorForVerificationStatus(
                                                       task.status!),
+                                              size: 25,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              "${task.duration}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500,
+                                                color:
+                                                    _getColorForVerificationStatus(
+                                                        task.status!),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            "${task.projectName}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${task.projectName}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.w500,
-                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
