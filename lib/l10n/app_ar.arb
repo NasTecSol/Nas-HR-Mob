@@ -276,6 +276,10 @@
   "pressButtonToCheckOut": "اضغط الزر لتسجيل الخروج",
   "clockInType": "اختر نوع تسجيل الدخول",
   "location": "الموقع",
-  "biometricCheckIn": "تسجيل الدخول البيومتري"
+  "biometricCheckIn": "تسجيل الدخول البيومتري",
+  "logout": "تسجيل الخروج",
+  "teamComplaints": "شكاوى الفريق",
+  "myComplaints": "شكاواي",
+  "fileComplain": "تقديم شكوى"
 
 }

@@ -19,7 +19,9 @@ class _AssetsScreenState extends State<AssetsScreen> {
     final assetsInfo = singletonClass.employeeDataList.first.data?.assetsInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: ListView(children: [
+      body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(

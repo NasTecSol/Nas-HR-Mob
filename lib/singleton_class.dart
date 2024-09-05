@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:intl/intl.dart';
+import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
@@ -19,12 +21,15 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? baseURL = 'https://ee5c-39-63-125-161.ngrok-free.app';
+  String? baseURL = 'https://336d-39-63-125-66.ngrok-free.app';
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
   List<CheckInData> checkInDataList = [];
   List<ClockingData> clockingDataList = [];
+  List<BranchData> branchDataList = [];
+  String? checkInStatus ;
+  String? checkOutStatus ;
 
 
   init() async {
@@ -54,6 +59,10 @@ class SingletonClass {
     clockingDataList = clockingData;
   }
 
+  void setBranchData(List<BranchData> branchData) {
+    // Method to set the company list
+    branchDataList = branchData;
+  }
 
   // Method to get the ResponseModel instance
   LoginModel? getLoginModel() {
@@ -61,6 +70,14 @@ class SingletonClass {
   }
   JWTData? getJWTModel() {
     return _jwtData;
+  }
+
+  void setCheckInStatus(String status) {
+    checkInStatus = status;
+  }
+
+  void setCheckOutStatus(String status) {
+    checkOutStatus = status;
   }
 //API Calls
 
@@ -92,4 +109,21 @@ class SingletonClass {
     }
     return null ; // Print the response body
   }
+
+  //BRANCH DATA
+  Future<BranchData?> getBranchData() async {
+    String? branchId = getJWTModel()?.branchId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
+    var response = await client.get(uri);
+    log(response.body);
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var branch = BranchData.fromJson(responseBody);
+      setBranchData([branch]);
+      return branch;
+    }
+    return null ; // Print the response body
+  }
 }
+

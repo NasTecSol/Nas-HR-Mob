@@ -23,12 +23,14 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
   @override
   void initState() {
     super.initState();
+     singletonClass.getClockingData();
     _fetchClockingData();
   }
 
   Future<void> _fetchClockingData() async {
     try {
       await singletonClass.getClockingData();
+
       String? currentEmployeeId = singletonClass.getJWTModel()?.employeeId;
 
       if (currentEmployeeId != null) {
