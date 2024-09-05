@@ -18,13 +18,12 @@ class MyClockingScreen extends StatefulWidget {
 class _MyClockingScreenState extends State<MyClockingScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = true; // Track loading state
-  List<ClockingData> filteredClockingData = []; // Initialize as empty
+  List<Data> filteredClockingData = []; // Corrected type to List<Data>
 
   @override
   void initState() {
     super.initState();
-     singletonClass.getClockingData();
-    _fetchClockingData();
+    _fetchClockingData(); // Fetch data once during initialization
   }
 
   Future<void> _fetchClockingData() async {
@@ -34,6 +33,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
       String? currentEmployeeId = singletonClass.getJWTModel()?.employeeId;
 
       if (currentEmployeeId != null) {
+        // Filter clocking data by the current employee ID
         filteredClockingData = filterClockingDataByEmployeeId(
           singletonClass.clockingDataList,
           currentEmployeeId,
@@ -49,12 +49,23 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
     }
   }
 
-  List<ClockingData> filterClockingDataByEmployeeId(
-      List<ClockingData> data, String employeeId) {
-    return data
-        .where((clockingData) => clockingData.data!
-            .any((employee) => employee.employeeId == employeeId))
-        .toList();
+  List<Data> filterClockingDataByEmployeeId(List<ClockingData> clockingDataList, String employeeId) {
+    // Create a list to store the filtered data
+    List<Data> filteredData = [];
+
+    for (var clockingData in clockingDataList) {
+      if (clockingData.data != null) {
+        // Filter out the employee-specific data from each ClockingData object
+        var employeeData = clockingData.data!
+            .where((employee) => employee.employeeId == employeeId)
+            .toList();
+
+        // Add the filtered data to the overall list
+        filteredData.addAll(employeeData);
+      }
+    }
+
+    return filteredData;
   }
 
   @override
@@ -167,22 +178,19 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                         shrinkWrap: true,
                         itemCount: filteredClockingData.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final clock = filteredClockingData.first.data![index];
+                          final clock = filteredClockingData[index]; // Corrected index
 
                           // Format date
-                          String formattedDate = DateFormat('MMMM dd, yyyy')
-                              .format(DateTime.parse(clock.createdAt ??
-                                  DateTime.now().toString()));
-                          String formattedCheckInTime = DateFormat('hh:mm a')
-                              .format(DateTime.parse(clock.checkInTime ??
-                                  DateTime.now().toString()));
+                          String formattedDate = DateFormat('MMMM dd, yyyy').format(
+                              DateTime.parse(clock.createdAt ?? DateTime.now().toString()));
+                          String formattedCheckInTime = DateFormat('hh:mm a').format(
+                              DateTime.parse(clock.checkInTime ?? DateTime.now().toString()));
 
                           // Check if checkOutTime is null
-                          String? formattedCheckOutTime = clock.checkOutTime !=
-                                  null
-                              ? DateFormat('hh:mm a')
-                                  .format(DateTime.parse(clock.checkOutTime!))
-                              : "N/A"; // Or handle appropriately if check-out time is not available
+                          String formattedCheckOutTime = clock.checkOutTime != null
+                              ? DateFormat('hh:mm a').format(DateTime.parse(clock.checkOutTime!))
+                              : 'N/A'; // Provide a fallback for null check-out time
+
 
                           return Container(
                             margin: const EdgeInsets.symmetric(vertical: 15),

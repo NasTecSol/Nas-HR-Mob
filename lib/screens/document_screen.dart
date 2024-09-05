@@ -44,7 +44,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 28.0 , left: 15 , right: 15),
+              padding: const EdgeInsets.only(top: 30.0 , left: 20 , right: 20),
               child: Column(
                 children: [
                   Row(

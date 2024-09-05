@@ -119,7 +119,7 @@ class _TeamScreenState extends State<TeamScreen> {
         padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.only(top: 30.0 , left: 20 , right: 20),
             child: Column(
               children: [
                 Row(

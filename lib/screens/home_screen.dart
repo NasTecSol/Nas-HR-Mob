@@ -513,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.only(
-                                          left: 10.0, right: 5, top: 10),
+                                          left: 10.0, right: 5, top: 10 , bottom: 10),
                                       child: Column(
                                         children: [
                                           Row(
@@ -802,37 +802,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       showDialog(
                                                         context: context,
                                                         builder: (BuildContext context) => AlertDialog(
-                                                          title: Text(AppLocalizations.of(context)!.areYouSure,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 15,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () => Navigator.of(context).pop(),
-                                                              child: Text(AppLocalizations.of(context)!.cancel,
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 15,
-                                                                  fontWeight: FontWeight.w600,
-                                                                  color: Colors.red,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            TextButton(
-                                                              onPressed: () async {
-                                                                Navigator.pop(context);
-                                                                checkOut();
-                                                              },
-                                                              child: Text(AppLocalizations.of(context)!.yes,
+                                                          title: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                            children: [
+                                                              Icon(Icons.warning, color: Colors.yellow),
+                                                              Text(AppLocalizations.of(context)!.areYouSure,
                                                                 style: GoogleFonts.inter(
                                                                   fontSize: 15,
                                                                   fontWeight: FontWeight.w600,
                                                                   color: Colors.black,
                                                                 ),
                                                               ),
+                                                            ],
+                                                          ),
+                                                          actions: [
+                                                            Row(
+                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                              children: [
+                                                                IconButton(
+                                                                  icon: Icon(Icons.cancel, color: Colors.red),
+                                                                  onPressed: () => Navigator.of(context).pop(),
+                                                                  tooltip: AppLocalizations.of(context)!.cancel,
+                                                                ),
+                                                                Text(
+                                                                  AppLocalizations.of(context)!.cancel,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.red,
+                                                                  ),
+                                                                ),
+                                                                IconButton(
+                                                                  icon: Icon(Icons.logout, color: Colors.black),
+                                                                  onPressed: () async {
+                                                                    Navigator.pop(context);
+                                                                    checkOut();
+                                                                  },
+                                                                  tooltip: AppLocalizations.of(context)!.yes,
+                                                                ),
+                                                                Text(
+                                                                  AppLocalizations.of(context)!.yes,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.black,
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
+
                                                           ],
                                                         ),
 
@@ -1251,6 +1269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         style: GoogleFonts.inter(
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 15,
+                                                          color: Colors.grey
                                                         ),
                                                       ),
                                                     ),
@@ -1268,7 +1287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     // Add this to push the status Container to the bottom
                                                     Container(
                                                       width: double.infinity,
-                                                      padding: const EdgeInsets.all(4.0),
+                                                      padding: const EdgeInsets.only(left: 10.0 , right: 4 , top: 4 , bottom: 4),
                                                       decoration: BoxDecoration(
                                                         color: _getColorForActivity(activities.status!),
                                                         borderRadius: const BorderRadius.only(
