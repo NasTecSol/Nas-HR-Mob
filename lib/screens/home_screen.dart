@@ -1386,8 +1386,8 @@ class _HomeScreenState extends State<HomeScreen> {
          await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
-          title: 'Success',
-          text: 'Check-in completed successfully!',
+          title:  AppLocalizations.of(context)!.success,
+          text: AppLocalizations.of(context)!.checkInComplete,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
@@ -1488,8 +1488,8 @@ class _HomeScreenState extends State<HomeScreen> {
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
-          title: 'Success',
-          text: 'Check-out completed successfully!',
+          title: AppLocalizations.of(context)!.success,
+          text: AppLocalizations.of(context)!.checkOutComplete,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,

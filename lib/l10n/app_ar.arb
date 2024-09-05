@@ -281,6 +281,8 @@
   "teamComplaints": "شكاوى الفريق",
   "myComplaints": "شكاواي",
   "fileComplain": "تقديم شكوى",
-  "areYouSureToLogout": "هل أنت متأكد من تسجيل الخروج؟"
+  "areYouSureToLogout": "هل أنت متأكد من تسجيل الخروج؟",
+  "checkInComplete": "تم تسجيل الدخول بنجاح!",
+  "checkOutComplete": "تم تسجيل الخروج بنجاح!"
 
 }

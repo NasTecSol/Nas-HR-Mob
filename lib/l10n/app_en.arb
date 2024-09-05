@@ -186,5 +186,7 @@
   "teamComplaints":"Team Complaints",
   "myComplaints":"My Complaints",
   "fileComplain":"File Complain",
-  "areYouSureToLogout":"Are you sure to logout"
+  "areYouSureToLogout":"Are you sure to logout",
+  "checkInComplete":"Check-in completed successfully!",
+  "checkOutComplete":"Check-out completed successfully!"
 }
