@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -21,7 +20,8 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? baseURL = 'https://336d-39-63-125-66.ngrok-free.app';
+  String? awsURL ='https://dev.nashrms.com' ;
+  String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
@@ -78,6 +78,10 @@ class SingletonClass {
 
   void setCheckOutStatus(String status) {
     checkOutStatus = status;
+  }
+
+  void setBaseURL(String url) {
+    baseURL = url;
   }
 //API Calls
 

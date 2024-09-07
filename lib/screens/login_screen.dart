@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/main_screen.dart';
+import 'package:nashr/screens/url_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -318,6 +319,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                      const UrlScreen()));
+                            },
+                            icon: const Icon(Icons.link),
+                          ),
+
                     NasButton(
                       text: AppLocalizations.of(context)!.signIn,
                       onPressed: () {
