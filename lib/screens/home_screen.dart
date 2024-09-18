@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: const Duration(milliseconds: 300),
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('images/DP.jpg'),
+                image: AssetImage('images/DP.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: Colors.white,
                             radius: 40,
                             child: Image.asset(
-                              'images/DP.jpg',
+                              'images/DP.png',
                               fit: BoxFit.fill,
                               height: 150,
                               width: 150,

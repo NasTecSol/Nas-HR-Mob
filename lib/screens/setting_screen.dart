@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/screens/language_screen.dart';
 import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -182,6 +183,45 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
                 const SizedBox(height: 20),
                 GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> const LanguageScreen()));
+                  },
+                  child: Container(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width - 50,
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.language , size: 28,color: NasColors.darkBlue,),
+                        const SizedBox(width: 2),
+                        Text( AppLocalizations.of(context)!.language,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                        const Spacer(),
+
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
                   onTap: () async {
                     showDialog(
                         context: context,
@@ -246,7 +286,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     child: Row(
                       children: [
                         Icon(Icons.logout , size: 28,color: NasColors.darkBlue,),
-                        SizedBox(width: 2),
+                        const SizedBox(width: 2),
                         Text( AppLocalizations.of(context)!.logout,
                           style: GoogleFonts.inter(
                             fontSize: 15,
@@ -259,7 +299,8 @@ class _SettingScreenState extends State<SettingScreen> {
                       ],
                     ),
                   ),
-                )
+                ),
+
               ],
             ),
           )

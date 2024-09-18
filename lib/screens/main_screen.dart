@@ -108,7 +108,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: const CircleAvatar(
                           radius: 25,
                           backgroundColor: Colors.transparent,
-                          backgroundImage: AssetImage('images/DP.jpg'),
+                          backgroundImage: AssetImage('images/DP.png'),
                         ),
                       ),
                     );

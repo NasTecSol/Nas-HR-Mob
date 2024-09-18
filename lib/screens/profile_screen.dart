@@ -420,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   ),
                                   child: ClipOval(
                                     child: Image.asset(
-                                      'images/DP.jpg',
+                                      'images/DP.png',
                                       fit: BoxFit.cover,
                                     ),
                                   ),

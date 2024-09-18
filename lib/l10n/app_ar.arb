@@ -283,6 +283,19 @@
   "fileComplain": "تقديم شكوى",
   "areYouSureToLogout": "هل أنت متأكد من تسجيل الخروج؟",
   "checkInComplete": "تم تسجيل الدخول بنجاح!",
-  "checkOutComplete": "تم تسجيل الخروج بنجاح!"
+  "checkOutComplete": "تم تسجيل الخروج بنجاح!",
+  "internalServerError": "خطأ داخلي في الخادم!",
+  "tryAgain": "يرجى المحاولة مرة أخرى لاحقًا",
+  "language": "اللغة",
+  "employeeProfile": "ملف الموظف",
+  "annualLeave": "إجازة سنوية",
+  "sickLeave": "إجازة مرضية",
+  "leaveHistory": "تاريخ الإجازات",
+  "errorFetchData": "خطأ في جلب البيانات. يرجى المحاولة مرة أخرى لاحقاً",
+  "noData": "لا توجد بيانات متاحة",
+  "leaveRemaining": "الإجازة المتبقية",
+  "leaveUsed": "الإجازة المستخدمة",
+  "late": "متأخر",
+  "earlyCheckOut": "مغادرة مبكرة"
 
 }

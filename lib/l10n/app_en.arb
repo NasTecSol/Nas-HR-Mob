@@ -188,5 +188,18 @@
   "fileComplain":"File Complain",
   "areYouSureToLogout":"Are you sure to logout",
   "checkInComplete":"Check-in completed successfully!",
-  "checkOutComplete":"Check-out completed successfully!"
+  "checkOutComplete":"Check-out completed successfully!",
+  "internalServerError":"Internal server error!",
+  "tryAgain":"Please try again later ",
+  "language":"Language",
+  "employeeProfile":"Employee Profile",
+  "annualLeave":"Annual Leave",
+  "sickLeave":"Sick Leave",
+  "leaveHistory":"Leave History",
+  "errorFetchData":"Error fetching data. Please try again later",
+  "noData":"No data available",
+  "leaveRemaining":"Leave Remaining",
+  "leaveUsed":"Leave Used",
+  "late":"Late",
+  "earlyCheckOut":"Early Check-Out"
 }

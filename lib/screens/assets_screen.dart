@@ -148,7 +148,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                         child: Row(
                           children: [
                             Container(
-                              height: 165,
+                              height: 120,
                               width: 80, // Adjusted the width for visibility
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.only(
