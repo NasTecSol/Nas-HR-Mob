@@ -113,25 +113,67 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     );
                   }
-                  return Padding(
+                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       width: 70,
                       alignment: Alignment.center,
                       decoration: isActive
                           ? BoxDecoration(
-                        borderRadius:
-                        const BorderRadius.all(Radius.circular(15)),
+                        borderRadius: const BorderRadius.all(Radius.circular(15)),
                         color: NasColors.darkBlue,
                       )
                           : null,
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Icon(
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Icon(
                               iconList[index],
                               size: 30,
                               color: color,
                             ),
+                          ),
+                          if (index == 2) // Add badge only for the RequestScreen icon (index 2)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'  ?
+                                Text(
+                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
+                                      singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'pending').length +
+                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
+                                      : 0}', // Request List Notification count
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ) : Text(
+                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'pending').length
+                                      : 0}', // Approver List Notification count
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                )
+
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   );

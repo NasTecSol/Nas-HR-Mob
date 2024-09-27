@@ -415,6 +415,8 @@ class _LoginScreenState extends State<LoginScreen> {
             singletonClass.getClockingData();
             singletonClass.getBranchData();
             singletonClass.getCompanyData();
+            singletonClass.getRequestData();
+            singletonClass.getApproverData();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(
               autoCloseDuration: const Duration(seconds: 2),

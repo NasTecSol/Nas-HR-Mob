@@ -26,7 +26,7 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? awsURL ='https://structures-trades-ot-gabriel.trycloudflare.com';
+  String? awsURL ='https://lawyers-fifty-studios-linking.trycloudflare.com';
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;

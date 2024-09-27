@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,6 +23,7 @@ class RequestScreen extends StatefulWidget {
 class _RequestScreenState extends State<RequestScreen> {
   int _selectedOptionIndex = 0;
   final TextEditingController _notes = TextEditingController();
+  final TextEditingController _comment = TextEditingController();
   DateTime? fromDate;
   DateTime? toDate;
   SingletonClass singletonClass = SingletonClass();
@@ -33,17 +35,17 @@ class _RequestScreenState extends State<RequestScreen> {
   List<String> subTypeList = [];
   int? totalDays;
 
+
   @override
   void initState() {
     super.initState();
     if (singletonClass.companyDataList.isNotEmpty &&
         singletonClass.companyDataList.first.data != null &&
         singletonClass.companyDataList.first.data!.request != null) {
-      // Assuming `requestType` is a String property of the `Request` object
       requestType = singletonClass.companyDataList.first.data!.request!
-          .map((request) => request.requestType) // Map to String type
-          .where((type) => type != null) // Filter out nulls if necessary
-          .cast<String>() // Ensure it is of type List<String>
+          .map((request) => request.requestType)
+          .where((type) => type != null)
+          .cast<String>()
           .toList();
     }
     singletonClass.getRequestData();
@@ -57,9 +59,9 @@ class _RequestScreenState extends State<RequestScreen> {
   void _toggleExpand(int index) {
     setState(() {
       if (_expandedIndex == index) {
-        _expandedIndex = null; // Collapse if the same item is clicked again
+        _expandedIndex = null;
       } else {
-        _expandedIndex = index; // Expand the clicked item
+        _expandedIndex = index;
       }
     });
   }
@@ -429,17 +431,18 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       decoration: BoxDecoration(
                                                         shape:
                                                             BoxShape.rectangle,
-                                                        color:
-                                                            _getColorForVerificationStatus(
-                                                                request
-                                                                    .status!),
+                                                        color: _getColorForVerificationStatus(
+                                                            request.status ??
+                                                                'pending' // Default to 'Pending' if null
+                                                            ),
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(10),
                                                       ),
                                                       child: Center(
                                                         child: Text(
-                                                          "${request.status}",
+                                                          request.status ??
+                                                              'N/A',
                                                           textAlign:
                                                               TextAlign.center,
                                                           style:
@@ -558,53 +561,226 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            30.0),
-                                                    child: GestureDetector(
-                                                      onTap: () {},
-                                                      child: Container(
-                                                        width: 220,
-                                                        height: 50,
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          15)),
-                                                          gradient:
-                                                              LinearGradient(
-                                                            colors: [
-                                                              Color(0xFF4D4D4D),
-                                                              Color(0xFFE64545),
-                                                              Color(0xFFCF3E3E),
-                                                              Color(0xFFC13A3A),
-                                                              Color(0xFF992E2E),
+                                                  const SizedBox(height: 10),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      // First static column ("Req")
+                                                      Column(
+                                                        children: [
+                                                          Stack(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            children: [
+                                                              Container(
+                                                                height: 25,
+                                                                width: 25,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                  color: NasColors
+                                                                      .onTime,
+                                                                ),
+                                                              ),
+                                                              Container(
+                                                                height: 10,
+                                                                width: 10,
+                                                                decoration:
+                                                                    const BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
                                                             ],
-                                                            begin: Alignment
-                                                                .topRight,
-                                                            end: Alignment
-                                                                .bottomLeft,
                                                           ),
-                                                        ),
-                                                        child: Align(
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child: Text(
-                                                            "Cancel Request",
+                                                          const SizedBox(
+                                                              height: 5),
+                                                          Text(
+                                                            "Req",
                                                             style: GoogleFonts
                                                                 .inter(
-                                                              fontSize: 19,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
                                                               color:
-                                                                  Colors.white,
+                                                                  Colors.black,
+                                                              fontSize: 12,
                                                             ),
                                                           ),
+                                                        ],
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                bottom: 20.0),
+                                                        child: Container(
+                                                          width: 50,
+                                                          height: 2,
+                                                          color: Colors.grey,
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 0,
+                                                                  bottom: 0),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
+                                                      Flexible(
+                                                        child: Wrap(
+                                                          alignment:
+                                                              WrapAlignment
+                                                                  .start,
+                                                          runSpacing: 0,
+                                                          // Space between rows of approver if it wraps
+                                                          children: request
+                                                                          .approvers !=
+                                                                      null &&
+                                                                  request
+                                                                      .approvers!
+                                                                      .isNotEmpty
+                                                              ? request
+                                                                  .approvers!
+                                                                  .map(
+                                                                      (approver) {
+                                                                  return Column(
+                                                                    children: [
+                                                                      Stack(
+                                                                        alignment:
+                                                                            Alignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            height:
+                                                                                25,
+                                                                            width:
+                                                                                25,
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: _getColorForApproverStatus(approver.status),
+                                                                            ),
+                                                                          ),
+                                                                          Container(
+                                                                            height:
+                                                                                10,
+                                                                            width:
+                                                                                10,
+                                                                            decoration:
+                                                                                const BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: Colors.white,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              5),
+                                                                      Text(
+                                                                        approver.approverName ??
+                                                                            'N/A',
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              12,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                                }).toList()
+                                                              : [
+                                                                  Text(
+                                                                    'N/A',
+                                                                    style: GoogleFonts
+                                                                        .inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                        ),
+                                                      ),
+                                                      // Line between ListView and "CEO"
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                bottom: 20.0),
+                                                        child: Container(
+                                                          width: 50,
+                                                          height: 2,
+                                                          color: Colors.grey,
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 0,
+                                                                  bottom: 0),
+                                                        ),
+                                                      ),
+
+                                                      // Last static column ("CEO")
+                                                      Column(
+                                                        children: [
+                                                          Stack(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            children: [
+                                                              Container(
+                                                                height: 25,
+                                                                width: 25,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                  color: NasColors
+                                                                      .pending,
+                                                                ),
+                                                              ),
+                                                              Container(
+                                                                height: 10,
+                                                                width: 10,
+                                                                decoration:
+                                                                    const BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 5),
+                                                          Text(
+                                                            "CEO",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  )
                                                 ],
                                               ],
                                             ),
@@ -674,6 +850,521 @@ class _RequestScreenState extends State<RequestScreen> {
                                       (BuildContext context, int index) {
                                     final request = singletonClass
                                         .requestDataList.first.data![index];
+                                    return GestureDetector(
+                                      onTap: () => _toggleExpand(index),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 5),
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(15.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        height: 50,
+                                                        width: 50,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(15),
+                                                          image:
+                                                              const DecorationImage(
+                                                            image: AssetImage(
+                                                                'images/DP.png'),
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      SizedBox(
+                                                        width: 150,
+                                                        child: Column(
+                                                          children: [
+                                                            Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .topLeft,
+                                                              child: Text(
+                                                                "${request.employeeName}",
+                                                                style:
+                                                                    GoogleFonts
+                                                                        .inter(
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .black,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .topLeft,
+                                                              child: Text(
+                                                                "${request.subType}",
+                                                                style:
+                                                                    GoogleFonts
+                                                                        .inter(
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .grey,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      Container(
+                                                        height: 30,
+                                                        width: 75,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          shape: BoxShape.rectangle,
+                                                              color: _getColorForVerificationStatus(request.status ?? 'default'),
+                                                              borderRadius:
+                                                              BorderRadius.circular(10),
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            "${request.status}",
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  Align(
+                                                    alignment:
+                                                        Alignment.topLeft,
+                                                    child: Text(
+                                                      request.requestData !=
+                                                                  null &&
+                                                              request
+                                                                  .requestData!
+                                                                  .isNotEmpty
+                                                          ? "${request.requestData!.first.startDate} - ${request.requestData!.first.endDate}"
+                                                          : "No data available",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (_expandedIndex ==
+                                                      index) ...[
+                                                    const SizedBox(height: 10),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        "${request.reason}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Colors.grey,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        '${request.requestType}',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.grey,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        "Balance to Date",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Colors.grey,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        "25 Days",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        "Balance to end of Year",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Colors.grey,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: Text(
+                                                        "15",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black,
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        // First static column ("Req")
+                                                        Column(
+                                                          children: [
+                                                            Stack(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              children: [
+                                                                Container(
+                                                                  height: 25,
+                                                                  width: 25,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    color: NasColors
+                                                                        .onTime,
+                                                                  ),
+                                                                ),
+                                                                Container(
+                                                                  height: 10,
+                                                                  width: 10,
+                                                                  decoration:
+                                                                      const BoxDecoration(
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              "Req",
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  bottom: 20.0),
+                                                          child: Container(
+                                                            width: 50,
+                                                            height: 2,
+                                                            color: Colors.grey,
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    top: 0,
+                                                                    bottom: 0),
+                                                          ),
+                                                        ),
+                                                        Flexible(
+                                                          child: Wrap(
+                                                            alignment:
+                                                                WrapAlignment
+                                                                    .start,
+                                                            runSpacing: 0,
+                                                            // Space between rows of approver if it wraps
+                                                            children: request
+                                                                            .approvers !=
+                                                                        null &&
+                                                                    request
+                                                                        .approvers!
+                                                                        .isNotEmpty
+                                                                ? request
+                                                                    .approvers!
+                                                                    .map(
+                                                                        (approver) {
+                                                                    return Column(
+                                                                      children: [
+                                                                        Stack(
+                                                                          alignment:
+                                                                              Alignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              height: 25,
+                                                                              width: 25,
+                                                                              decoration: BoxDecoration(
+                                                                                shape: BoxShape.circle,
+                                                                                color: _getColorForApproverStatus(approver.status),
+                                                                              ),
+                                                                            ),
+                                                                            Container(
+                                                                              height: 10,
+                                                                              width: 10,
+                                                                              decoration: const BoxDecoration(
+                                                                                shape: BoxShape.circle,
+                                                                                color: Colors.white,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                        const SizedBox(
+                                                                            height:
+                                                                                5),
+                                                                        Text(
+                                                                          approver.approverName ??
+                                                                              'N/A',
+                                                                          style:
+                                                                              GoogleFonts.inter(
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontWeight:
+                                                                                FontWeight.w500,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  }).toList()
+                                                                : [
+                                                                    Text(
+                                                                      'N/A',
+                                                                      style: GoogleFonts
+                                                                          .inter(
+                                                                        fontSize:
+                                                                            15,
+                                                                        color: Colors
+                                                                            .grey,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                          ),
+                                                        ),
+                                                        // Line between ListView and "CEO"
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  bottom: 20.0),
+                                                          child: Container(
+                                                            width: 50,
+                                                            height: 2,
+                                                            color: Colors.grey,
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    top: 0,
+                                                                    bottom: 0),
+                                                          ),
+                                                        ),
+
+                                                        // Last static column ("CEO")
+                                                        Column(
+                                                          children: [
+                                                            Stack(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              children: [
+                                                                Container(
+                                                                  height: 25,
+                                                                  width: 25,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    color: NasColors
+                                                                        .pending,
+                                                                  ),
+                                                                ),
+                                                                Container(
+                                                                  height: 10,
+                                                                  width: 10,
+                                                                  decoration:
+                                                                      const BoxDecoration(
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 5),
+                                                            Text(
+                                                              "CEO",
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                        } else {
+                          return Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.noData,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            ),
+                          );
+                        }
+                      }),
+                )
+              ],
+              if (_selectedOptionIndex == 1) ...[
+                Expanded(
+                  // Wrap ListView with Expanded
+                  child: FutureBuilder(
+                      future: singletonClass.getApproverData(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/loader.json'),
+                            ),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (snapshot.hasData) {
+                          return singletonClass
+                                  .approverDataList.first.data!.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.all(5),
+                                  itemCount: singletonClass
+                                      .approverDataList.first.data!.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    final request = singletonClass
+                                        .approverDataList.first.data![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -912,56 +1603,306 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                     ),
+                                                    if (request.status == 'pending')
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.all(
-                                                              30.0),
-                                                      child: GestureDetector(
-                                                        onTap: () {},
-                                                        child: Container(
-                                                          width: 220,
-                                                          height: 50,
-                                                          decoration:
-                                                              const BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
+                                                              10.0),
+                                                      child: Row(
+                                                        children: [
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context: context,
+                                                                  builder: (BuildContext context) {
+                                                                    return AlertDialog(
+                                                                      title: Text(
+                                                                        'Add Comment',
+                                                                        style: GoogleFonts.poppins(
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.darkBlue,
+                                                                          fontSize: 23,
+                                                                        ),
+                                                                      ),
+                                                                      content: Expanded(
+                                                                        child: Container(
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                            border: Border.all(
+                                                                              color: NasColors.darkBlue,
+                                                                              width: 1.0,
+                                                                            ),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(
+                                                                                color: Colors.white,
+                                                                                blurRadius: 15,
+                                                                                offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          child: TextField(
+                                                                            textAlign: TextAlign.center,
+                                                                            controller: _comment,
+                                                                            minLines: 1, // Minimum number of lines the text field will have
+                                                                            maxLines: null, // No limit to the number of lines, it will expand
+                                                                            decoration: InputDecoration(
+                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                              focusedBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(
+                                                                                  color: NasColors.darkBlue,
+                                                                                ), // Set focused border color
+                                                                              ),
+                                                                              enabledBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(
+                                                                                  color: NasColors.darkBlue,
+                                                                                ), // Set border color when not focused
+                                                                              ),
+                                                                            ),
+                                                                            style: const TextStyle(
+                                                                              color: Colors.black,
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 12,
+                                                                            ),
+                                                                            autofocus: false,
+                                                                            textInputAction: TextInputAction.done,
+                                                                            cursorColor: Colors.black,
+                                                                            onTapOutside: (event) {
+                                                                              FocusManager.instance.primaryFocus?.unfocus();
+                                                                            },
+                                                                            onChanged: (value) {
+                                                                              // Handle any changes here
+                                                                            },
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.red,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: TextButton(
+                                                                                onPressed: () {
+                                                                                  Navigator.pop(context);
+                                                                                  patchRequestData(
+                                                                                      request.id, 'Rejected', request.toJson() );
+                                                                                  _comment.clear();
+                                                                                },
+                                                                                child: Text(
+                                                                                  'Reject',
+                                                                                  style: GoogleFonts.poppins(
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 12,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              width: 140,
+                                                              height: 40,
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                borderRadius: BorderRadius
                                                                     .all(Radius
                                                                         .circular(
-                                                                            15)),
-                                                            gradient:
-                                                                LinearGradient(
-                                                              colors: [
-                                                                Color(
-                                                                    0xFF4D4D4D),
-                                                                Color(
-                                                                    0xFFE64545),
-                                                                Color(
-                                                                    0xFFCF3E3E),
-                                                                Color(
-                                                                    0xFFC13A3A),
-                                                                Color(
-                                                                    0xFF992E2E),
-                                                              ],
-                                                              begin: Alignment
-                                                                  .topRight,
-                                                              end: Alignment
-                                                                  .bottomLeft,
-                                                            ),
-                                                          ),
-                                                          child: Align(
-                                                            alignment: Alignment
-                                                                .center,
-                                                            child: Text(
-                                                              "Cancel Request",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 19,
-                                                                color: Colors
-                                                                    .white,
+                                                                            10)),
+                                                                gradient:
+                                                                    LinearGradient(
+                                                                  colors: [
+                                                                    Color(
+                                                                        0xFF4D4D4D),
+                                                                    Color(
+                                                                        0xFFE64545),
+                                                                    Color(
+                                                                        0xFFCF3E3E),
+                                                                    Color(
+                                                                        0xFFC13A3A),
+                                                                    Color(
+                                                                        0xFF992E2E),
+                                                                  ],
+                                                                  begin: Alignment
+                                                                      .topRight,
+                                                                  end: Alignment
+                                                                      .bottomLeft,
+                                                                ),
+                                                              ),
+                                                              child: Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                child: Text(
+                                                                  "Cancel Request",
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
-                                                        ),
+                                                          const SizedBox(
+                                                              width: 5),
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context: context,
+                                                                  builder: (BuildContext context) {
+                                                                    return AlertDialog(
+                                                                      title: Text(
+                                                                        'Add Comment',
+                                                                        style: GoogleFonts.poppins(
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.darkBlue,
+                                                                          fontSize: 23,
+                                                                        ),
+                                                                      ),
+                                                                      content: Expanded(
+                                                                        child: Container(
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                            border: Border.all(
+                                                                              color: NasColors.darkBlue,
+                                                                              width: 1.0,
+                                                                            ),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(
+                                                                                color: Colors.white,
+                                                                                blurRadius: 15,
+                                                                                offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          child: TextField(
+                                                                            textAlign: TextAlign.center,
+                                                                            controller: _comment,
+                                                                            minLines: 1, // Minimum number of lines the text field will have
+                                                                            maxLines: null, // No limit to the number of lines, it will expand
+                                                                            decoration: InputDecoration(
+                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                              focusedBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(
+                                                                                  color: NasColors.darkBlue,
+                                                                                ), // Set focused border color
+                                                                              ),
+                                                                              enabledBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(
+                                                                                  color: NasColors.darkBlue,
+                                                                                ), // Set border color when not focused
+                                                                              ),
+                                                                            ),
+                                                                            style: const TextStyle(
+                                                                              color: Colors.black,
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 12,
+                                                                            ),
+                                                                            autofocus: false,
+                                                                            textInputAction: TextInputAction.done,
+                                                                            cursorColor: Colors.black,
+                                                                            onTapOutside: (event) {
+                                                                              FocusManager.instance.primaryFocus?.unfocus();
+                                                                            },
+                                                                            onChanged: (value) {
+                                                                              // Handle any changes here
+                                                                            },
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: NasColors.completed,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: TextButton(
+                                                                                onPressed: () {
+                                                                                  Navigator.pop(context);
+                                                                                  patchRequestData(
+                                                                                      request.id, 'accepted', request.toJson() );
+                                                                                  _comment.clear();
+                                                                                },
+                                                                                child: Text(
+                                                                                  'Accept',
+                                                                                  style: GoogleFonts.poppins(
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 12,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              width: 140,
+                                                              height: 40,
+                                                              decoration:
+                                                                  const BoxDecoration(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            10)),
+                                                                gradient:
+                                                                    LinearGradient(
+                                                                  colors: [
+                                                                    Color(
+                                                                        0xFF47734D),
+                                                                    Color(
+                                                                        0xFF5B9362),
+                                                                    Color(
+                                                                        0xFF66A56E),
+                                                                    Color(
+                                                                        0xFF76BE7F),
+                                                                    Color(
+                                                                        0xFF86D991),
+                                                                  ],
+                                                                  begin: Alignment
+                                                                      .topRight,
+                                                                  end: Alignment
+                                                                      .bottomLeft,
+                                                                ),
+                                                              ),
+                                                              child: Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                child: Text(
+                                                                  "Accept Request",
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ],
@@ -974,418 +1915,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                     );
                                   },
                                 );
-                        } else {
-                          return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                            ),
-                          );
-                        }
-                      }),
-                )
-              ],
-              if (_selectedOptionIndex == 1) ...[
-                Expanded(
-                  // Wrap ListView with Expanded
-                  child: FutureBuilder(
-                      future: singletonClass.getApproverData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Text('Error: ${snapshot.error}'),
-                          );
-                        } else if (snapshot.hasData) {
-                          return singletonClass
-                              .approverDataList.first.data!.isEmpty
-                              ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                            ),
-                          )
-                              : ListView.builder(
-                            padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass
-                                .approverDataList.first.data!.length,
-                            itemBuilder:
-                                (BuildContext context, int index) {
-                              final request = singletonClass
-                                  .approverDataList.first.data![index];
-                              return GestureDetector(
-                                onTap: () => _toggleExpand(index),
-                                child: AnimatedContainer(
-                                  duration:
-                                  const Duration(milliseconds: 300),
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 5),
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(15)),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                        Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  height: 50,
-                                                  width: 50,
-                                                  decoration:
-                                                  BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(15),
-                                                    image:
-                                                    const DecorationImage(
-                                                      image: AssetImage(
-                                                          'images/DP.png'),
-                                                      fit: BoxFit.fill,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 5),
-                                                SizedBox(
-                                                  width: 150,
-                                                  child: Column(
-                                                    children: [
-                                                      Align(
-                                                        alignment:
-                                                        Alignment
-                                                            .topLeft,
-                                                        child: Text(
-                                                          "${request.employeeName}",
-                                                          style:
-                                                          GoogleFonts
-                                                              .inter(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .bold,
-                                                            color: Colors
-                                                                .black,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Align(
-                                                        alignment:
-                                                        Alignment
-                                                            .topLeft,
-                                                        child: Text(
-                                                          "${request.subType}",
-                                                          style:
-                                                          GoogleFonts
-                                                              .inter(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .bold,
-                                                            color: Colors
-                                                                .grey,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Container(
-                                                  height: 30,
-                                                  width: 75,
-                                                  decoration:
-                                                  BoxDecoration(
-                                                    shape: BoxShape
-                                                        .rectangle,
-                                                    color:
-                                                    _getColorForVerificationStatus(
-                                                        request
-                                                            .status!),
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(10),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      "${request.status}",
-                                                      textAlign: TextAlign
-                                                          .center,
-                                                      style: GoogleFonts
-                                                          .inter(
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold,
-                                                        color:
-                                                        Colors.white,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Align(
-                                              alignment:
-                                              Alignment.topLeft,
-                                              child: Text(
-                                                request.requestData !=
-                                                    null &&
-                                                    request
-                                                        .requestData!
-                                                        .isNotEmpty
-                                                    ? "${request.requestData!.first.startDate} - ${request.requestData!.first.endDate}"
-                                                    : "No data available",
-                                                style: GoogleFonts.inter(
-                                                  fontWeight:
-                                                  FontWeight.bold,
-                                                  color: Colors.black,
-                                                  fontSize: 15,
-                                                ),
-                                              ),
-                                            ),
-                                            if (_expandedIndex ==
-                                                index) ...[
-                                              const SizedBox(height: 10),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  "${request.reason}",
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.w500,
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  '${request.requestType}',
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  "Balance to Date",
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.w500,
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  "25 Days",
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    color: Colors.black,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  "Balance to end of Year",
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.w500,
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              Align(
-                                                alignment:
-                                                Alignment.topLeft,
-                                                child: Text(
-                                                  "15",
-                                                  style:
-                                                  GoogleFonts.inter(
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    color: Colors.black,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                const EdgeInsets.all(
-                                                    10.0),
-                                                child: Row(
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        patchRequestData(
-                                                            request.id,
-                                                            'Rejected',
-                                                            request.toJson() // Ensure you have a method to convert the request to JSON
-                                                        );
-                                                      },
-                                                      child: Container(
-                                                        width: 140,
-                                                        height: 40,
-                                                        decoration:
-                                                        const BoxDecoration(
-                                                          borderRadius:
-                                                          BorderRadius
-                                                              .all(Radius
-                                                              .circular(
-                                                              10)),
-                                                          gradient:
-                                                          LinearGradient(
-                                                            colors: [
-                                                              Color(
-                                                                  0xFF4D4D4D),
-                                                              Color(
-                                                                  0xFFE64545),
-                                                              Color(
-                                                                  0xFFCF3E3E),
-                                                              Color(
-                                                                  0xFFC13A3A),
-                                                              Color(
-                                                                  0xFF992E2E),
-                                                            ],
-                                                            begin: Alignment
-                                                                .topRight,
-                                                            end: Alignment
-                                                                .bottomLeft,
-                                                          ),
-                                                        ),
-                                                        child: Align(
-                                                          alignment: Alignment
-                                                              .center,
-                                                          child: Text(
-                                                            "Cancel Request",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 15,
-                                                              color: Colors
-                                                                  .white,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 5),
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        patchRequestData(
-                                                            request.id,
-                                                            'accepted',
-                                                            request.toJson() // Ensure you have a method to convert the request to JSON
-                                                        );
-                                                      },
-                                                      child: Container(
-                                                        width: 140,
-                                                        height: 40,
-                                                        decoration:
-                                                        const BoxDecoration(
-                                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                          gradient:
-                                                          LinearGradient(
-                                                            colors: [
-                                                              Color(0xFF47734D),
-                                                              Color(0xFF5B9362),
-                                                              Color(0xFF66A56E),
-                                                              Color(0xFF76BE7F),
-                                                              Color(0xFF86D991),
-                                                            ],
-                                                            begin: Alignment
-                                                                .topRight,
-                                                            end: Alignment
-                                                                .bottomLeft,
-                                                          ),
-                                                        ),
-                                                        child: Align(
-                                                          alignment: Alignment
-                                                              .center,
-                                                          child: Text(
-                                                            "Accept Request",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 15,
-                                                              color: Colors
-                                                                  .white,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
                         } else {
                           return Center(
                             child: Text(
@@ -1453,6 +1982,39 @@ class _RequestScreenState extends State<RequestScreen> {
     );
   }
 
+  //Approver Colors
+  Color _getColorForApproverStatus(String? approverStatus) {
+    if (approverStatus == null ||
+        approverStatus.isEmpty ||
+        approverStatus == 'pending') {
+      return NasColors
+          .pending; // Use pending color if status is empty or pending
+    } else {
+      return NasColors
+          .completed; // Use completed color if status is other than pending
+    }
+  }
+
+  void _showWarningDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insufficient Leave Balance'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Color _getColorForVerificationStatus(String verificationStatus) {
     switch (verificationStatus) {
       case 'accepted':
@@ -1476,6 +2038,35 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/OverTime.png'; // Default image for company or other types
     }
   }
+
+  double? _getRemainingLeaveBalance(String? requestName) {
+    if (requestName == null) return null;
+
+    // Get the leave balance object
+    var leaveBalance = singletonClass.employeeDataList.first.data!.leaveBalance;
+
+    // Loop through leaveBalance to find the matching request name
+    for (var entry in leaveBalance!.toJson().entries) {
+      // Log each entry to check keys
+      print('Checking entry: ${entry.key}');
+
+      // Use case-insensitive comparison for the key
+      if (entry.key.toLowerCase() == requestName.toLowerCase()) {
+        // Log the found entry
+        print('Found entry: ${entry.key}: ${entry.value}');
+
+        // Accessing the remaining property correctly
+        var remaining = entry.value['remaining'];
+        print('Remaining for ${entry.key}: $remaining'); // Log the remaining value
+
+        return remaining is num ? remaining.toDouble() : null; // Ensure it's a double
+      }
+    }
+
+    return null; // Return null if no matching leave balance found
+  }
+
+
 
   void _showRequestBottomSheet(BuildContext context, Request selectedRequest) {
     List<SubTypes> subTypeList = selectedRequest.subTypes ?? [];
@@ -1587,9 +2178,23 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         }).toList(),
                         onChanged: (SubTypes? newValue) {
-                          setState(() {
-                            _selectedSubType = newValue;
-                          });
+                          if (newValue != null) {
+                            double? remainingBalance = _getRemainingLeaveBalance(newValue.requestType);
+
+                            // Debug log to check the retrieved balance
+                            print('Remaining Balance for ${newValue.requestName}: $remainingBalance');
+
+                            // Check if the remaining balance is null or less than or equal to 0
+                            if (remainingBalance == null || remainingBalance <= 0) {
+                              // Show warning if the selected leave balance is insufficient
+                              _showWarningDialog(context, 'Insufficient ${newValue.requestName} Balance');
+                            } else {
+                              // Balance is sufficient
+                              setState(() {
+                                _selectedSubType = newValue;
+                              });
+                            }
+                          }
                         },
                       ),
                     ),
@@ -1726,8 +2331,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     toDate = date;
                                     if (fromDate != null) {
                                       totalDays = toDate!
-                                          .difference(fromDate!)
-                                          .inDays; // Calculate totalDays
+                                          .difference(fromDate!).inDays + 1; // Calculate totalDays
                                     } else {
                                       totalDays =
                                           null; // Handle case where fromDate is null
@@ -1865,7 +2469,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
     String formattedFromDate = DateFormat('yyyy-MM-dd').format(fromDate!);
     String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
-    int totalDays = toDate!.difference(fromDate!).inDays;
+    int totalDays = toDate!.difference(fromDate!).inDays + 1;
     String totalDaysString = totalDays.toString();
     // Check if requestType and subType are selected
     if (selectedRequestType == null || selectedSubType == null) {
@@ -1900,6 +2504,7 @@ class _RequestScreenState extends State<RequestScreen> {
       "approvers": [],
       "reason": _notes.text,
       "attachments": [],
+      'status':"pending"
     };
 
     String body = json.encode(data);
@@ -2002,7 +2607,6 @@ class _RequestScreenState extends State<RequestScreen> {
 
   //PATCH API CALL
   void patchRequestData(String? requestID, String status, Map<String, dynamic> requestData) async {
-
     // Define the URL where you want to send the data
     String url = '${singletonClass.baseURL}/request/$requestID';
 
@@ -2022,6 +2626,7 @@ class _RequestScreenState extends State<RequestScreen> {
           "approverName": requestData['approvers'][0]['approverName'],
           "status": status,
           "timeStamps": DateTime.now().toIso8601String(),
+          "comments": _comment.text,
         }
       ],
       "reason": requestData['reason'],
@@ -2057,7 +2662,7 @@ class _RequestScreenState extends State<RequestScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title:AppLocalizations.of(context)!.success,
+            title: AppLocalizations.of(context)!.success,
             type: QuickAlertType.success,
           );
         } else if (decodedResponse['statusCode'] == 400) {

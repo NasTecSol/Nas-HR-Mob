@@ -221,7 +221,7 @@ class LeaveBalance {
 class SickLeave {
   int? entitlement;
   int? remaining;
-  int? used;
+  String? used;
 
   SickLeave({this.entitlement, this.remaining, this.used});
 
@@ -230,7 +230,6 @@ class SickLeave {
     remaining = json["remaining"];
     used = json["used"];
   }
-
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["entitlement"] = entitlement;

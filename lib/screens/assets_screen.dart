@@ -180,36 +180,42 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
-                                    const SizedBox(width: 2.5),
-                                    Text(
-                                      "${assets.assetType}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Container(
-                                      height: 30,
-                                      width: 50,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.rectangle,
-                                        color: NasColors.onTime,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "Status",
-                                          textAlign: TextAlign.center,
+                                    const SizedBox(width: 4.5),
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "${assets.assetType}",
                                           style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 10,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: NasColors.darkBlue,
                                           ),
                                         ),
-                                      ),
-                                    ),
+                                        const SizedBox(height: 2.5),
+                                        Container(
+                                          height: 30,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.rectangle,
+                                            color: NasColors.onTime,
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "Status",
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                   ]),
                                   const SizedBox(height: 20),
                                   Text("ID #${assets.assetType}",
