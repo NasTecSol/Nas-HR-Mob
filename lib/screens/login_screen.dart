@@ -468,6 +468,9 @@ class _LoginScreenState extends State<LoginScreen> {
         text: "An unexpected error occurred. Please try again later.",
         type: QuickAlertType.error,
       );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 

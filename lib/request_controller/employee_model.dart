@@ -219,9 +219,9 @@ class LeaveBalance {
 }
 
 class SickLeave {
-  int? entitlement;
-  int? remaining;
-  String? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   SickLeave({this.entitlement, this.remaining, this.used});
 
@@ -241,9 +241,9 @@ class SickLeave {
 
 class AnnualLeave {
   String? currentMonth;
-  double? entitlement;
-  double? remaining;
-  int? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used});
 

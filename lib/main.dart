@@ -1,20 +1,25 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:provider/provider.dart';
+
 import 'Controller/language_change_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SingletonClass().init();
 
+  // SharedPreferences sp = await SharedPreferences.getInstance();
+
   LanguageChangeController languageController = LanguageChangeController();
-  await languageController.loadLanguage();
+  await languageController.loadLanguage(); // Load the selected language
+
   runApp(
     MultiProvider(
-      providers: [
+      providers:[
         ChangeNotifierProvider(create: (_) => languageController),
       ],
       child: Consumer<LanguageChangeController>(
@@ -32,7 +37,7 @@ void main() async {
               Locale('ar'),
             ],
             debugShowCheckedModeBanner: false,
-            home: const SplashScreen(),
+            home:   const SplashScreen(),
           );
         },
       ),

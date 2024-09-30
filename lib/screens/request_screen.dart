@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -90,7 +89,7 @@ class _RequestScreenState extends State<RequestScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Select Request Type",
+                      AppLocalizations.of(context)!.selectRequestType,
                       textAlign: TextAlign.left,
                       style: GoogleFonts.inter(
                         fontSize: 20,
@@ -139,7 +138,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "${request.requestType}",
+                                _translateRequest(request.requestName , context),
                                 textAlign: TextAlign.left,
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
@@ -441,8 +440,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                       child: Center(
                                                         child: Text(
-                                                          request.status ??
-                                                              'N/A',
+                                                          _translateStatus(request.status, context),
                                                           textAlign:
                                                               TextAlign.center,
                                                           style:
@@ -954,7 +952,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                         child: Center(
                                                           child: Text(
-                                                            "${request.status}",
+                                                            _translateStatus(request.status, context),
                                                             textAlign: TextAlign
                                                                 .center,
                                                             style: GoogleFonts
@@ -1474,7 +1472,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                         child: Center(
                                                           child: Text(
-                                                            "${request.status}",
+                                                            _translateStatus(request.status, context),
                                                             textAlign: TextAlign
                                                                 .center,
                                                             style: GoogleFonts
@@ -1617,7 +1615,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   builder: (BuildContext context) {
                                                                     return AlertDialog(
                                                                       title: Text(
-                                                                        'Add Comment',
+                                                                        AppLocalizations.of(context)!.comment,
                                                                         style: GoogleFonts.poppins(
                                                                           fontWeight: FontWeight.w500,
                                                                           color: NasColors.darkBlue,
@@ -1693,7 +1691,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                   _comment.clear();
                                                                                 },
                                                                                 child: Text(
-                                                                                  'Reject',
+                                                                                  AppLocalizations.of(context)!.rejected,
                                                                                   style: GoogleFonts.poppins(
                                                                                     fontWeight: FontWeight.w500,
                                                                                     color: Colors.white,
@@ -1742,7 +1740,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     Alignment
                                                                         .center,
                                                                 child: Text(
-                                                                  "Cancel Request",
+                                                                  AppLocalizations.of(context)!.cancel,
                                                                   style:
                                                                       GoogleFonts
                                                                           .inter(
@@ -1764,7 +1762,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   builder: (BuildContext context) {
                                                                     return AlertDialog(
                                                                       title: Text(
-                                                                        'Add Comment',
+                                                                        AppLocalizations.of(context)!.comment,
                                                                         style: GoogleFonts.poppins(
                                                                           fontWeight: FontWeight.w500,
                                                                           color: NasColors.darkBlue,
@@ -1836,11 +1834,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 onPressed: () {
                                                                                   Navigator.pop(context);
                                                                                   patchRequestData(
-                                                                                      request.id, 'accepted', request.toJson() );
+                                                                                      request.id, 'Approved', request.toJson() );
                                                                                   _comment.clear();
                                                                                 },
                                                                                 child: Text(
-                                                                                  'Accept',
+                                                                                  AppLocalizations.of(context)!.accept,
                                                                                   style: GoogleFonts.poppins(
                                                                                     fontWeight: FontWeight.w500,
                                                                                     color: Colors.white,
@@ -1889,7 +1887,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     Alignment
                                                                         .center,
                                                                 child: Text(
-                                                                  "Accept Request",
+                                                                  AppLocalizations.of(context)!.acceptRequest,
                                                                   style:
                                                                       GoogleFonts
                                                                           .inter(
@@ -1981,7 +1979,39 @@ class _RequestScreenState extends State<RequestScreen> {
       ),
     );
   }
+  String _translateStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Pending':
+        return localizations.pending; // Use the localized string
+      case 'Approved':
+        return localizations.approved; // Use the localized string
+      case 'Rejected':
+        return localizations.rejected; // Use the localized string
+      case 'Cancelled':
+        return localizations.cancelled;
+      default:
+        return status!; // Fallback to the original status if not found
+    }
+  }
 
+  String _translateRequest(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'leave Request':
+        return localizations.leave; // Use the localized string
+      case 'Loan':
+        return localizations.loan; // Use the localized string
+      case 'Asset':
+        return localizations.assets; // Use the localized string
+      case 'OverTime':
+        return localizations.overTime;
+      case 'Training':
+        return localizations.training;
+      default:
+        return status!; // Fallback to the original status if not found
+    }
+  }
   //Approver Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
@@ -2017,11 +2047,13 @@ class _RequestScreenState extends State<RequestScreen> {
 
   Color _getColorForVerificationStatus(String verificationStatus) {
     switch (verificationStatus) {
-      case 'accepted':
+      case 'Approved':
         return NasColors.completed;
-      case 'pending':
+      case 'Pending':
         return Colors.yellow;
       case 'Rejected':
+        return Colors.red;
+      case 'Cancelled':
         return Colors.red;
       default:
         return Colors.grey; // or any other default color
@@ -2504,7 +2536,6 @@ class _RequestScreenState extends State<RequestScreen> {
       "approvers": [],
       "reason": _notes.text,
       "attachments": [],
-      'status':"pending"
     };
 
     String body = json.encode(data);
