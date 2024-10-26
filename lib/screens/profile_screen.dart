@@ -125,8 +125,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             // Add your settings action for the "Profile" tab
                           },
                           icon: Container(
-                            height: 50,
-                            width: 50,
+                            height: 40,
+                            width: 40,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white,
@@ -151,8 +151,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                           // Add your settings action for the "Profile" tab
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white,
@@ -178,8 +178,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             // Add your settings action for the "Profile" tab
                           },
                           icon: Container(
-                            height: 50,
-                            width: 50,
+                            height: 40,
+                            width: 40,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white,
@@ -213,8 +213,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                             // Add your action for "Loans" tab
                           },
                           child: SizedBox(
-                            height: 50,
-                            width: 130,
+                            height: 40,
+                            width: 120,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

@@ -57,10 +57,10 @@ class Data {
   SalaryInfo? salaryInfo;
   List<SocialLinks>? socialLinks;
   List<LoanInfo>? loanInfo;
-  List<AssetsInfo>? assetsInfo;
+  List<dynamic>? assetsInfo;
   List<Approvals>? approvals;
   List<ContractInfo>? contractInfo;
-  List<DocumentsInfo>? documentsInfo;
+  List<dynamic>? documentsInfo; // Dynamic list for documents handling
   String? createdBy;
   String? branchId;
   String? departmentId;
@@ -68,13 +68,55 @@ class Data {
   int? v;
   LeaveBalance? leaveBalance;
 
-  Data({this.id, this.userName, this.password, this.email, this.firstName, this.middleName, this.lastName, this.martialStatus, this.religion, this.address, this.nic, this.iqamaNumber, this.passport, this.imigrationSatus, this.dob, this.age, this.phoneNumber, this.gender, this.role, this.profession, this.nationality, this.profilePic, this.familyInfo, this.educationInfo, this.experienceBackground, this.bankingInfo, this.employeeInfo, this.salaryInfo, this.socialLinks, this.loanInfo, this.assetsInfo, this.approvals, this.contractInfo, this.documentsInfo, this.createdBy, this.branchId, this.departmentId, this.organizationId, this.v, this.leaveBalance});
+  Data(
+      {this.id,
+        this.userName,
+        this.password,
+        this.email,
+        this.firstName,
+        this.middleName,
+        this.lastName,
+        this.martialStatus,
+        this.religion,
+        this.address,
+        this.nic,
+        this.iqamaNumber,
+        this.passport,
+        this.imigrationSatus,
+        this.dob,
+        this.age,
+        this.phoneNumber,
+        this.gender,
+        this.role,
+        this.profession,
+        this.nationality,
+        this.profilePic,
+        this.familyInfo,
+        this.educationInfo,
+        this.experienceBackground,
+        this.bankingInfo,
+        this.employeeInfo,
+        this.salaryInfo,
+        this.socialLinks,
+        this.loanInfo,
+        this.assetsInfo,
+        this.approvals,
+        this.contractInfo,
+        this.documentsInfo, // Handle dynamic data here
+        this.createdBy,
+        this.branchId,
+        this.departmentId,
+        this.organizationId,
+        this.v,
+        this.leaveBalance});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     userName = json["userName"];
     password = json["password"];
-    email = json["email"] == null ? null : (json["email"] as List).map((e) => Email.fromJson(e)).toList();
+    email = json["email"] == null
+        ? null
+        : (json["email"] as List).map((e) => Email.fromJson(e)).toList();
     firstName = json["firstName"];
     middleName = json["middleName"];
     lastName = json["lastName"];
@@ -82,35 +124,81 @@ class Data {
     religion = json["religion"];
     address = json["address"] == null ? null : Address.fromJson(json["address"]);
     nic = json["NIC"];
-    iqamaNumber = json["iqamaNumber"] == null ? null : IqamaNumber.fromJson(json["iqamaNumber"]);
+    iqamaNumber = json["iqamaNumber"] == null
+        ? null
+        : IqamaNumber.fromJson(json["iqamaNumber"]);
     passport = json["passport"] == null ? null : Passport.fromJson(json["passport"]);
     imigrationSatus = json["imigrationSatus"];
     dob = json["DOB"];
     age = json["age"];
-    phoneNumber = json["phoneNumber"] == null ? null : (json["phoneNumber"] as List).map((e) => PhoneNumber.fromJson(e)).toList();
+    phoneNumber = json["phoneNumber"] == null
+        ? null
+        : (json["phoneNumber"] as List)
+        .map((e) => PhoneNumber.fromJson(e))
+        .toList();
     gender = json["gender"];
     role = json["role"];
     profession = json["profession"];
     nationality = json["nationality"];
     profilePic = json["profilePic"];
-    familyInfo = json["familyInfo"] == null ? null : FamilyInfo.fromJson(json["familyInfo"]);
-    educationInfo = json["educationInfo"] == null ? null : (json["educationInfo"] as List).map((e) => EducationInfo.fromJson(e)).toList();
-    experienceBackground = json["experienceBackground"] == null ? null : (json["experienceBackground"] as List).map((e) => ExperienceBackground.fromJson(e)).toList();
-    bankingInfo = json["bankingInfo"] == null ? null : (json["bankingInfo"] as List).map((e) => BankingInfo.fromJson(e)).toList();
-    employeeInfo = json["employeeInfo"] == null ? null : (json["employeeInfo"] as List).map((e) => EmployeeInfo.fromJson(e)).toList();
-    salaryInfo = json["salaryInfo"] == null ? null : SalaryInfo.fromJson(json["salaryInfo"]);
-    socialLinks = json["socialLinks"] == null ? null : (json["socialLinks"] as List).map((e) => SocialLinks.fromJson(e)).toList();
-    loanInfo = json["loanInfo"] == null ? null : (json["loanInfo"] as List).map((e) => LoanInfo.fromJson(e)).toList();
-    assetsInfo = json["assetsInfo"] == null ? null : (json["assetsInfo"] as List).map((e) => AssetsInfo.fromJson(e)).toList();
-    approvals = json["approvals"] == null ? null : (json["approvals"] as List).map((e) => Approvals.fromJson(e)).toList();
-    contractInfo = json["contractInfo"] == null ? null : (json["contractInfo"] as List).map((e) => ContractInfo.fromJson(e)).toList();
-    documentsInfo = json["documentsInfo"] == null ? null : (json["documentsInfo"] as List).map((e) => DocumentsInfo.fromJson(e)).toList();
+    familyInfo = json["familyInfo"] == null
+        ? null
+        : FamilyInfo.fromJson(json["familyInfo"]);
+    educationInfo = json["educationInfo"] == null
+        ? null
+        : (json["educationInfo"] as List)
+        .map((e) => EducationInfo.fromJson(e))
+        .toList();
+    experienceBackground = json["experienceBackground"] == null
+        ? null
+        : (json["experienceBackground"] as List)
+        .map((e) => ExperienceBackground.fromJson(e))
+        .toList();
+    bankingInfo = json["bankingInfo"] == null
+        ? null
+        : (json["bankingInfo"] as List)
+        .map((e) => BankingInfo.fromJson(e))
+        .toList();
+    employeeInfo = json["employeeInfo"] == null
+        ? null
+        : (json["employeeInfo"] as List)
+        .map((e) => EmployeeInfo.fromJson(e))
+        .toList();
+    salaryInfo = json["salaryInfo"] == null
+        ? null
+        : SalaryInfo.fromJson(json["salaryInfo"]);
+    socialLinks = json["socialLinks"] == null
+        ? null
+        : (json["socialLinks"] as List)
+        .map((e) => SocialLinks.fromJson(e))
+        .toList();
+    loanInfo = json["loanInfo"] == null
+        ? null
+        : (json["loanInfo"] as List).map((e) => LoanInfo.fromJson(e)).toList();
+    assetsInfo = json["assetsInfo"] == null
+        ? null
+        :  List<dynamic>.from(json["assetsInfo"]
+        .map((e) => e is Map<String, dynamic> ? AssetsInfo.fromJson(e) : e));
+    approvals = json["approvals"] == null
+        ? null
+        : (json["approvals"] as List).map((e) => Approvals.fromJson(e)).toList();
+    contractInfo = json["contractInfo"] == null
+        ? null
+        : (json["contractInfo"] as List)
+        .map((e) => ContractInfo.fromJson(e))
+        .toList();
+    documentsInfo = json["documentsInfo"] == null
+        ? null
+        : List<dynamic>.from(json["documentsInfo"]
+        .map((e) => e is Map<String, dynamic> ? DocumentsInfo.fromJson(e) : e));
     createdBy = json["createdBy"];
     branchId = json["branchId"];
     departmentId = json["departmentId"];
     organizationId = json["organizationId"];
     v = json["__v"];
-    leaveBalance = json["leaveBalance"] == null ? null : LeaveBalance.fromJson(json["leaveBalance"]);
+    leaveBalance = json["leaveBalance"] == null
+        ? null
+        : LeaveBalance.fromJson(json["leaveBalance"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -118,7 +206,7 @@ class Data {
     _data["_id"] = id;
     _data["userName"] = userName;
     _data["password"] = password;
-    if(email != null) {
+    if (email != null) {
       _data["email"] = email?.map((e) => e.toJson()).toList();
     }
     _data["firstName"] = firstName;
@@ -126,20 +214,20 @@ class Data {
     _data["lastName"] = lastName;
     _data["martialStatus"] = martialStatus;
     _data["religion"] = religion;
-    if(address != null) {
+    if (address != null) {
       _data["address"] = address?.toJson();
     }
     _data["NIC"] = nic;
-    if(iqamaNumber != null) {
+    if (iqamaNumber != null) {
       _data["iqamaNumber"] = iqamaNumber?.toJson();
     }
-    if(passport != null) {
+    if (passport != null) {
       _data["passport"] = passport?.toJson();
     }
     _data["imigrationSatus"] = imigrationSatus;
     _data["DOB"] = dob;
     _data["age"] = age;
-    if(phoneNumber != null) {
+    if (phoneNumber != null) {
       _data["phoneNumber"] = phoneNumber?.map((e) => e.toJson()).toList();
     }
     _data["gender"] = gender;
@@ -147,48 +235,62 @@ class Data {
     _data["profession"] = profession;
     _data["nationality"] = nationality;
     _data["profilePic"] = profilePic;
-    if(familyInfo != null) {
+    if (familyInfo != null) {
       _data["familyInfo"] = familyInfo?.toJson();
     }
-    if(educationInfo != null) {
-      _data["educationInfo"] = educationInfo?.map((e) => e.toJson()).toList();
+    if (educationInfo != null) {
+      _data["educationInfo"] =
+          educationInfo?.map((e) => e.toJson()).toList();
     }
-    if(experienceBackground != null) {
-      _data["experienceBackground"] = experienceBackground?.map((e) => e.toJson()).toList();
+    if (experienceBackground != null) {
+      _data["experienceBackground"] =
+          experienceBackground?.map((e) => e.toJson()).toList();
     }
-    if(bankingInfo != null) {
+    if (bankingInfo != null) {
       _data["bankingInfo"] = bankingInfo?.map((e) => e.toJson()).toList();
     }
-    if(employeeInfo != null) {
+    if (employeeInfo != null) {
       _data["employeeInfo"] = employeeInfo?.map((e) => e.toJson()).toList();
     }
-    if(salaryInfo != null) {
+    if (salaryInfo != null) {
       _data["salaryInfo"] = salaryInfo?.toJson();
     }
-    if(socialLinks != null) {
+    if (socialLinks != null) {
       _data["socialLinks"] = socialLinks?.map((e) => e.toJson()).toList();
     }
-    if(loanInfo != null) {
+    if (loanInfo != null) {
       _data["loanInfo"] = loanInfo?.map((e) => e.toJson()).toList();
     }
-    if(assetsInfo != null) {
-      _data["assetsInfo"] = assetsInfo?.map((e) => e.toJson()).toList();
+
+    if (assetsInfo != null) {
+      _data["assetsInfo"] = assetsInfo?.map((e) {
+        if (e is AssetsInfo) {
+          return e.toJson();
+        }
+        return e; // Handle dynamic type
+      }).toList();
     }
-    if(approvals != null) {
+
+    if (approvals != null) {
       _data["approvals"] = approvals?.map((e) => e.toJson()).toList();
     }
-    if(contractInfo != null) {
+    if (contractInfo != null) {
       _data["contractInfo"] = contractInfo?.map((e) => e.toJson()).toList();
     }
-    if(documentsInfo != null) {
-      _data["documentsInfo"] = documentsInfo?.map((e) => e.toJson()).toList();
+    if (documentsInfo != null) {
+      _data["documentsInfo"] = documentsInfo?.map((e) {
+        if (e is DocumentsInfo) {
+          return e.toJson();
+        }
+        return e; // Handle dynamic type
+      }).toList();
     }
     _data["createdBy"] = createdBy;
     _data["branchId"] = branchId;
     _data["departmentId"] = departmentId;
     _data["organizationId"] = organizationId;
     _data["__v"] = v;
-    if(leaveBalance != null) {
+    if (leaveBalance != null) {
       _data["leaveBalance"] = leaveBalance?.toJson();
     }
     return _data;
@@ -264,16 +366,18 @@ class AnnualLeave {
   }
 }
 
+
 class DocumentsInfo {
   String? type;
   String? remarks;
-  String? url;
+  dynamic url;
   String? format;
   String? empId;
   String? expiration;
-  String? size;
+  dynamic size;
 
-  DocumentsInfo({this.type, this.remarks, this.url, this.format, this.empId, this.expiration, this.size});
+  DocumentsInfo(
+      {this.type, this.remarks, this.url, this.format, this.empId, this.expiration, this.size});
 
   DocumentsInfo.fromJson(Map<String, dynamic> json) {
     type = json["type"];
@@ -297,6 +401,7 @@ class DocumentsInfo {
     return _data;
   }
 }
+
 
 class ContractInfo {
   String? contractId;
@@ -363,13 +468,15 @@ class Approvals {
 class AssetsInfo {
   String? assetName;
   String? assetType;
+  int? assetId;
   String? issueDateFrom;
   String? issueDateTo;
 
-  AssetsInfo({this.assetName, this.assetType, this.issueDateFrom, this.issueDateTo});
+  AssetsInfo({this.assetName, this.assetId ,  this.assetType, this.issueDateFrom, this.issueDateTo});
 
   AssetsInfo.fromJson(Map<String, dynamic> json) {
     assetName = json["assetName"];
+    assetId = json["assetId"];
     assetType = json["assetType"];
     issueDateFrom = json["issueDateFrom"];
     issueDateTo = json["issueDateTo"];
@@ -378,6 +485,7 @@ class AssetsInfo {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["assetName"] = assetName;
+    _data["assetId"] = assetId;
     _data["assetType"] = assetType;
     _data["issueDateFrom"] = issueDateFrom;
     _data["issueDateTo"] = issueDateTo;
@@ -386,13 +494,13 @@ class AssetsInfo {
 }
 
 class LoanInfo {
-  String? totalLoanAmount;
-  String? loanIssueDate;
-  String? loanDuration;
-  String? installmentAmount;
-  String? paidAmount;
-  String? totalInstallments;
-  String? paidInstallments;
+  dynamic totalLoanAmount;
+  dynamic loanIssueDate;
+  dynamic loanDuration;
+  dynamic installmentAmount;
+  dynamic paidAmount;
+  dynamic totalInstallments;
+  dynamic paidInstallments;
 
   LoanInfo({this.totalLoanAmount, this.loanIssueDate, this.loanDuration, this.installmentAmount, this.paidAmount, this.totalInstallments, this.paidInstallments});
 
@@ -489,7 +597,7 @@ class SalaryInfo {
 
 class TaxInfo {
   String? texPercentage;
-  int? deductableAmount;
+  dynamic deductableAmount;
   String? timeCycle;
 
   TaxInfo({this.texPercentage, this.deductableAmount, this.timeCycle});

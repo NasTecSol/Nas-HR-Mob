@@ -21,6 +21,8 @@ import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
+import 'onsite_checkin.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -107,16 +109,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    height: 90,
-                    width: 90,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Image.asset("images/site.png"),
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const OnsiteCheckin()));
+
+                    },
+                    child: Container(
+                      height: 90,
+                      width: 90,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Image.asset("images/site.png"),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -319,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            print("///////???""?${singletonClass.checkOutStatus}");
+
                           },
                           icon: Container(
                             height: 45,
@@ -545,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '9:30:40 AM',
+                                                  '09:30:40 AM',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -579,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '4:30:52 AM',
+                                                  '04:30:52 AM',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -776,7 +784,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     decoration: const BoxDecoration(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(15)),
-                                      color: Colors.white,
                                       gradient: LinearGradient(
                                         colors: [
                                           Color(0xFF444658),
@@ -805,7 +812,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           title: Row(
                                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                             children: [
-                                                              Icon(Icons.warning, color: Colors.yellow),
+                                                              const Icon(Icons.warning, color: Colors.yellow),
                                                               Text(AppLocalizations.of(context)!.areYouSure,
                                                                 style: GoogleFonts.inter(
                                                                   fontSize: 15,
@@ -817,35 +824,46 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                           actions: [
                                                             Row(
-                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                               children: [
-                                                                IconButton(
-                                                                  icon: Icon(Icons.cancel, color: Colors.red),
-                                                                  onPressed: () => Navigator.of(context).pop(),
-                                                                  tooltip: AppLocalizations.of(context)!.cancel,
-                                                                ),
-                                                                Text(
-                                                                  AppLocalizations.of(context)!.cancel,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.red,
+                                                                InkWell(
+                                                                  onTap: () => Navigator.of(context).pop(),
+                                                                  child: Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      const Icon(Icons.cancel, color: Colors.red), // Icon
+                                                                      const SizedBox(width: 5),
+                                                                      Text(
+                                                                        AppLocalizations.of(context)!.cancel,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 15,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          color: Colors.red,
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
-                                                                IconButton(
-                                                                  icon: Icon(Icons.logout, color: Colors.black),
-                                                                  onPressed: () async {
+                                                                const SizedBox(width: 8),
+                                                                InkWell(
+                                                                  onTap: () async {
                                                                     Navigator.pop(context);
-                                                                    checkOut();
+                                                                    await checkOut();
                                                                   },
-                                                                  tooltip: AppLocalizations.of(context)!.yes,
-                                                                ),
-                                                                Text(
-                                                                  AppLocalizations.of(context)!.yes,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.black,
+                                                                  child: Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      const Icon(Icons.logout, color: Colors.black),
+                                                                      const SizedBox(width: 5),
+                                                                      Text(
+                                                                        AppLocalizations.of(context)!.yes,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 15,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          color: Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
                                                               ],
@@ -946,24 +964,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/teamClocking.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1000,24 +1014,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child: Image.asset(
                                                   'images/files.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
+
                                             ),
                                           ),
                                         ),
@@ -1054,24 +1065,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/assets.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1107,24 +1114,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/Team.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1156,24 +1159,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
-                                                  'images/complaint.png',
+                                              child:  Image.asset(
+                                                  'images/Complain.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1251,10 +1250,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.white,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.5),
-                                                      spreadRadius: 2,
-                                                      blurRadius: 8,
-                                                      offset: const Offset(0, 3),
+                                                      color: Colors.grey.withOpacity(0.3),
+                                                      spreadRadius: 1,
+                                                      blurRadius: 5,
+                                                      offset: const Offset(0, 0),
                                                     ),
                                                   ],
                                                 ),
@@ -1350,7 +1349,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'Approved':
         return Colors.green;
       case 'Pending':
-        return Colors.yellow;
+        return NasColors.pending;
       default:
         return Colors.grey; // or any other default color
     }
@@ -1358,7 +1357,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> checkIn(String type) async {
-    String checkInTime = DateTime.now().toUtc().toIso8601String();
+    String checkInTime = DateTime.now().toIso8601String();
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
       "employeeName": singletonClass.getJWTModel()?.userName,
@@ -1456,7 +1455,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //CHECK OUT API CALL
   Future<void> checkOut() async {
-    String checkOutTime = DateTime.now().toUtc().toIso8601String();
+    String checkOutTime = DateTime.now().toIso8601String();
     String? checkInTime = singletonClass.checkInDataList.first.data?.checkInTime;
     DateTime checkInDateTime = DateTime.parse(checkInTime!);
     DateTime checkOutDateTime = DateTime.parse(checkOutTime);

@@ -64,8 +64,8 @@ class _SettingScreenState extends State<SettingScreen> {
                           Navigator.pop(context);
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white,
@@ -89,7 +89,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       child: Text(
                         AppLocalizations.of(context)!.settings,
                         style: GoogleFonts.inter(
-                          fontSize: 25,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: NasColors.darkBlue,
                         ),

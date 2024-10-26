@@ -64,7 +64,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: Text(
                     AppLocalizations.of(context)!.calendar,
                     style: GoogleFonts.inter(
-                      fontSize: 25,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: NasColors.darkBlue,
                     ),
@@ -588,7 +588,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case 'Completed':
         return NasColors.completed;
       case 'Pending':
-        return Colors.yellow;
+        return NasColors.pending;
       case 'InProgress':
         return NasColors.onTime;
       case 'All':

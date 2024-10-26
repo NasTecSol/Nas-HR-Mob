@@ -49,7 +49,7 @@ class _TaskScreenState extends State<TaskScreen> {
                   child: Text(
                     AppLocalizations.of(context)!.tasks,
                     style: GoogleFonts.inter(
-                        fontSize: 25,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: NasColors.darkBlue),
                   ),
@@ -183,7 +183,7 @@ class _TaskScreenState extends State<TaskScreen> {
         case 'Completed':
           return NasColors.completed;
         case 'Pending':
-          return Colors.yellow;
+          return NasColors.pending;
         case 'InProgress':
           return NasColors.onTime;
         default:
@@ -248,7 +248,7 @@ class _TaskScreenState extends State<TaskScreen> {
       case 'Completed':
         return NasColors.completed;
       case 'Pending':
-        return Colors.yellow;
+        return NasColors.pending;
       case 'InProgress':
         return NasColors.onTime;
       case 'All':

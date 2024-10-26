@@ -113,6 +113,7 @@ class _TeamScreenState extends State<TeamScreen> {
 
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
@@ -120,7 +121,7 @@ class _TeamScreenState extends State<TeamScreen> {
         padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 30.0 , left: 20 , right: 20),
+            padding: const EdgeInsets.only(top: 30.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(
@@ -132,19 +133,20 @@ class _TeamScreenState extends State<TeamScreen> {
                           Navigator.pop(context);
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.4),
+                                spreadRadius: 5,
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
                           child: const Icon(
                             Icons.arrow_back_ios_new_outlined,
                             color: Colors.black,
@@ -157,7 +159,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       child: Text(
                         AppLocalizations.of(context)!.teams,
                         style: GoogleFonts.inter(
-                          fontSize: 25,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: NasColors.darkBlue,
                         ),
@@ -179,7 +181,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         },
                         child: SizedBox(
                           height: 30,
-                          width: 100,
+                          width: 90,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -241,7 +243,10 @@ class _TeamScreenState extends State<TeamScreen> {
                     ],
                   ),
                 ),
-                ListView.builder(
+                const SizedBox(height: 20),
+                // Check if filteredSupervisors has data
+                filteredSupervisors.isNotEmpty
+                    ? ListView.builder(
                   padding: const EdgeInsets.all(5),
                   shrinkWrap: true,
                   itemCount: filteredSupervisors.length,
@@ -252,8 +257,15 @@ class _TeamScreenState extends State<TeamScreen> {
                     return Column(
                       children: [
                         GestureDetector(
-                          onTap:(){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> EmployeeProfileScreen(supervisors: team,)));
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EmployeeProfileScreen(
+                                  supervisors: team,
+                                ),
+                              ),
+                            );
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 4),
@@ -328,6 +340,19 @@ class _TeamScreenState extends State<TeamScreen> {
                     );
                   },
                 )
+                    : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -335,6 +360,7 @@ class _TeamScreenState extends State<TeamScreen> {
       ),
     );
   }
+
 }
 
 class TeamModel {

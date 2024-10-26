@@ -42,7 +42,7 @@ class Data {
   Passport? passport;
   String? imigrationSatus;
   String? dob;
-  int? age;
+  dynamic age;
   List<PhoneNumber>? phoneNumber;
   String? gender;
   String? role;
@@ -197,12 +197,14 @@ class Data {
 
 class LeaveBalance {
   AnnualLeave? annualLeave;
+  CasualLeave? casualLeave;
   SickLeave? sickLeave;
 
-  LeaveBalance({this.annualLeave, this.sickLeave});
+  LeaveBalance({this.annualLeave, this.casualLeave, this.sickLeave});
 
   LeaveBalance.fromJson(Map<String, dynamic> json) {
     annualLeave = json["annualLeave"] == null ? null : AnnualLeave.fromJson(json["annualLeave"]);
+    casualLeave = json["casualLeave"] == null ? null : CasualLeave.fromJson(json["casualLeave"]);
     sickLeave = json["sickLeave"] == null ? null : SickLeave.fromJson(json["sickLeave"]);
   }
 
@@ -210,6 +212,9 @@ class LeaveBalance {
     final Map<String, dynamic> _data = <String, dynamic>{};
     if(annualLeave != null) {
       _data["annualLeave"] = annualLeave?.toJson();
+    }
+    if(casualLeave != null) {
+      _data["casualLeave"] = casualLeave?.toJson();
     }
     if(sickLeave != null) {
       _data["sickLeave"] = sickLeave?.toJson();
@@ -221,7 +226,7 @@ class LeaveBalance {
 class SickLeave {
   int? entitlement;
   int? remaining;
-  int? used;
+  dynamic used;
 
   SickLeave({this.entitlement, this.remaining, this.used});
 
@@ -240,10 +245,32 @@ class SickLeave {
   }
 }
 
+class CasualLeave {
+  int? entitlement;
+  int? remaining;
+  dynamic used;
+
+  CasualLeave({this.entitlement, this.remaining, this.used});
+
+  CasualLeave.fromJson(Map<String, dynamic> json) {
+    entitlement = json["entitlement"];
+    remaining = json["remaining"];
+    used = json["used"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["entitlement"] = entitlement;
+    _data["remaining"] = remaining;
+    _data["used"] = used;
+    return _data;
+  }
+}
+
 class AnnualLeave {
   String? currentMonth;
-  double? entitlement;
-  double? remaining;
+  int? entitlement;
+  int? remaining;
   int? used;
 
   AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used});
@@ -362,17 +389,17 @@ class Approvals {
 }
 
 class AssetsInfo {
-  int? assetId;
   String? assetName;
   String? assetType;
+  int? assetId;
   String? issueDateFrom;
   String? issueDateTo;
 
-  AssetsInfo({this.assetId, this.assetName, this.assetType, this.issueDateFrom, this.issueDateTo});
+  AssetsInfo({this.assetName, this.assetId ,this.assetType, this.issueDateFrom, this.issueDateTo});
 
   AssetsInfo.fromJson(Map<String, dynamic> json) {
-    assetId = json["assetId"];
     assetName = json["assetName"];
+    assetId = json["assetId"];
     assetType = json["assetType"];
     issueDateFrom = json["issueDateFrom"];
     issueDateTo = json["issueDateTo"];
@@ -380,8 +407,8 @@ class AssetsInfo {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["assetId"] = assetId;
     _data["assetName"] = assetName;
+    _data["assetId"] = assetId;
     _data["assetType"] = assetType;
     _data["issueDateFrom"] = issueDateFrom;
     _data["issueDateTo"] = issueDateTo;

@@ -428,5 +428,10 @@
   "leave": "إجازة",
   "overTime": "ساعات إضافية",
   "training": "تدريب",
-  "selectRequestType": "اختر نوع الطلب"
+  "selectRequestType": "اختر نوع الطلب",
+  "passwordOrPhoneNo": "كلمة المرور أو رقم الهاتف غير صحيح",
+  "pleaseEnterNotes": "يرجى إدخال ملاحظة",
+  "enterToAndFromDate": "يرجى تحديد كل من تاريخ البداية وتاريخ النهاية",
+  "selectSubType": "يرجى اختيار النوع الفرعي"
+
 }
