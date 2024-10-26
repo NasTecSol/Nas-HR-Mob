@@ -437,7 +437,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title: "",
+            title:  AppLocalizations.of(context)!.passwordOrPhoneNo,
             type: QuickAlertType.error,
           );
         } else {
@@ -464,8 +464,8 @@ class _LoginScreenState extends State<LoginScreen> {
         showCancelBtn: false,
         showConfirmBtn: false,
         context: context,
-        title: "Error",
-        text: "An unexpected error occurred. Please try again later.",
+        title:  AppLocalizations.of(context)!.internalServerError,
+        text:  AppLocalizations.of(context)!.tryAgain,
         type: QuickAlertType.error,
       );
       setState(() {

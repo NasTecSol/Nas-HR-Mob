@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
+import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
+import 'package:nashr/request_controller/employee_details_assets_model.dart';
+import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
@@ -31,6 +34,9 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<AssetDetailsModel> assetsDetailsModel = [];
+  List<EmployeeDetailsAssetsModel> employeeDetailsAssetsModel = [];
+  List<EmployeeDetailsAttendanceData> employeeDetailsAttendanceDataList = [];
   List<ApproverRequestData> approverDataList = [];
   List<CompanyData> companyDataList = [];
   List<RequestDateModel> requestDataList = [];
@@ -41,7 +47,6 @@ class SingletonClass {
   List<BranchData> branchDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
-
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -64,6 +69,13 @@ class SingletonClass {
     // Method to set the company list
     companyDataList = companyData;
   }
+
+  void setEmployeeAttendanceDataList(List<EmployeeDetailsAttendanceData> attendance) {
+    // Method to set the company list
+    employeeDetailsAttendanceDataList = attendance;
+  }
+
+
   void setApproverDataList(List<ApproverRequestData> approverReq) {
     // Method to set the company list
     approverDataList = approverReq;
@@ -149,6 +161,7 @@ class SingletonClass {
     }
     return null ; // Print the response body
   }
+
   //ApproverDataReq API call
 
   Future<ApproverRequestData?> getApproverData() async {

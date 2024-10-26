@@ -152,8 +152,8 @@ class _MainScreenState extends State<MainScreen> {
                                 Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'pending').length +
-                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'Pending').length +
+                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'Pending').length
                                       : 0}', // Request List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -162,7 +162,7 @@ class _MainScreenState extends State<MainScreen> {
                                   textAlign: TextAlign.center,
                                 ) : Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'pending').length
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'Pending').length
                                       : 0}', // Approver List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,

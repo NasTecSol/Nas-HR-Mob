@@ -11,8 +11,13 @@ class ApproverRequestData {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    if (json["data"] != null && json["data"] is List) {
+      data = (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    } else {
+      data = [];
+    }
   }
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
@@ -122,26 +127,51 @@ class Approvers {
 }
 
 class RequestData {
-  String? startDate;
-  String? endDate;
-  String? duration;
-  String? leaveType;
+  dynamic startDate;
+  dynamic endDate;
+  dynamic duration;
+  dynamic leaveType;
+  dynamic loanAmount;
+  dynamic loanCycle;
+  dynamic loanInstallment;
+  dynamic loanDuration;
+  dynamic loanType;
 
-  RequestData({this.startDate, this.endDate, this.duration, this.leaveType});
+  RequestData({
+    this.startDate,
+    this.endDate,
+    this.duration,
+    this.leaveType,
+    this.loanAmount,
+    this.loanCycle,
+    this.loanInstallment,
+    this.loanDuration,
+    this.loanType,
+  });
 
   RequestData.fromJson(Map<String, dynamic> json) {
-    startDate = json["start_date"];
-    endDate = json["end_date"];
+    startDate = json["startDate"];
+    endDate = json["endDate"];
     duration = json["duration"];
-    leaveType = json["leave_type"];
+    leaveType = json["leaveType"];
+    loanAmount = json["loanAmount"];
+    loanCycle = json["loanCycle"];
+    loanInstallment = json["loanInstallment"];
+    loanDuration = json["loanDuration"];
+    loanType = json["loanType"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["start_date"] = startDate;
-    _data["end_date"] = endDate;
+    _data["startDate"] = startDate;
+    _data["endDate"] = endDate;
     _data["duration"] = duration;
-    _data["leave_type"] = leaveType;
+    _data["leaveType"] = leaveType;
+    _data["loanAmount"] = loanAmount;
+    _data["loanCycle"] = loanCycle;
+    _data["loanInstallment"] = loanInstallment;
+    _data["loanDuration"] = loanDuration;
+    _data["loanType"] = loanType;
     return _data;
   }
 }

@@ -54,8 +54,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           Navigator.pop(context);
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white,
@@ -76,7 +76,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       Text(
                         AppLocalizations.of(context)!.myDocuments,
                         style: GoogleFonts.inter(
-                          fontSize: 28,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -87,8 +87,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           // Add your settings action
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               color: NasColors.darkBlue,
@@ -155,11 +155,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
             ),
             Column(
               children: [
+                documentInfo!.isNotEmpty ?
                 ListView.builder(
                   shrinkWrap: true,
-                  itemCount: documentInfo?.length,
+                  itemCount: documentInfo.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final documents = documentInfo![index];
+                    final documents = documentInfo[index];
                     final images = documentInfoDummy[index];
                     return Transform.translate(
                       offset: Offset(0, index == 0 ? 0 : -10),
@@ -698,6 +699,19 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     );
                   },
+                )
+                    :  Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

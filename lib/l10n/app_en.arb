@@ -763,5 +763,9 @@
   "leave":"Leave",
   "overTime":"Overtime",
   "training":"Training",
-  "selectRequestType":"Select a Request Type"
+  "selectRequestType":"Select a Request Type",
+  "passwordOrPhoneNo":"Password or Phone number is incorrect",
+  "pleaseEnterNotes":"Please enter a note",
+  "enterToAndFromDate":"Please select both From Date and To Date",
+  "selectSubType":"Please select subtype"
 }
