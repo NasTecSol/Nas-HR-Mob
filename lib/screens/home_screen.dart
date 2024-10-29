@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   GestureDetector(
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(builder: (context)=> const OnsiteCheckin()));
-
+                      _removeOverlay();
                     },
                     child: Container(
                       height: 90,
