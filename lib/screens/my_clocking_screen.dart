@@ -74,18 +74,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: isLoading
-            ? Center(
-                child: Center(
-                  child:  SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset(
-                      'images/loader.json'
-                  ),
-                ),)
-              )
-            : ListView(
+        child:  ListView(
                 children: [
                   Column(
                     children: [
@@ -98,8 +87,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 Navigator.pop(context);
                               },
                               icon: Container(
-                                height: 50,
-                                width: 50,
+                                height: 40,
+                                width: 40,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   color: Colors.white,
@@ -124,7 +113,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                             child: Text(
                               AppLocalizations.of(context)!.myClocking,
                               style: GoogleFonts.inter(
-                                fontSize: 25,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: NasColors.darkBlue,
                               ),
@@ -146,7 +135,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                               },
                               child: SizedBox(
                                 height: 30,
-                                width: 100,
+                                width: 90,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -173,19 +162,30 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
+                      isLoading
+                          ? Center(
+                          child: Center(
+                            child:  SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset(
+                                  'images/loader.json'
+                              ),
+                            ),)
+                      )
+                          :
                       ListView.builder(
                         padding: const EdgeInsets.all(5),
                         shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredClockingData.length,
                         itemBuilder: (BuildContext context, int index) {
                           final clock = filteredClockingData[index]; // Corrected index
-
                           // Format date
                           String formattedDate = DateFormat('MMMM dd, yyyy').format(
                               DateTime.parse(clock.createdAt ?? DateTime.now().toString()));
                           String formattedCheckInTime = DateFormat('hh:mm a').format(
                               DateTime.parse(clock.checkInTime ?? DateTime.now().toString()));
-
                           // Check if checkOutTime is null
                           String formattedCheckOutTime = clock.checkOutTime != null
                               ? DateFormat('hh:mm a').format(DateTime.parse(clock.checkOutTime!))
