@@ -30,8 +30,8 @@ class _ComplaintsState extends State<Complaints> {
                       Navigator.pop(context);
                     },
                     icon: Container(
-                      height: 50,
-                      width: 50,
+                      height: 40,
+                      width: 40,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           color: Colors.white,
@@ -55,7 +55,7 @@ class _ComplaintsState extends State<Complaints> {
                   child: Text(
                     AppLocalizations.of(context)!.complaints,
                     style: GoogleFonts.inter(
-                      fontSize: 25,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: NasColors.darkBlue,
                     ),
@@ -77,7 +77,7 @@ class _ComplaintsState extends State<Complaints> {
                     },
                     child: SizedBox(
                       height: 30,
-                      width: 100,
+                      width: 90,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

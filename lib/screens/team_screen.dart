@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -112,6 +113,7 @@ class _TeamScreenState extends State<TeamScreen> {
 
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
@@ -119,7 +121,7 @@ class _TeamScreenState extends State<TeamScreen> {
         padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 30.0 , left: 20 , right: 20),
+            padding: const EdgeInsets.only(top: 30.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(
@@ -131,19 +133,20 @@ class _TeamScreenState extends State<TeamScreen> {
                           Navigator.pop(context);
                         },
                         icon: Container(
-                          height: 50,
-                          width: 50,
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.4),
+                                spreadRadius: 5,
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
                           child: const Icon(
                             Icons.arrow_back_ios_new_outlined,
                             color: Colors.black,
@@ -156,7 +159,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       child: Text(
                         AppLocalizations.of(context)!.teams,
                         style: GoogleFonts.inter(
-                          fontSize: 25,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: NasColors.darkBlue,
                         ),
@@ -178,7 +181,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         },
                         child: SizedBox(
                           height: 30,
-                          width: 100,
+                          width: 90,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -240,7 +243,10 @@ class _TeamScreenState extends State<TeamScreen> {
                     ],
                   ),
                 ),
-                ListView.builder(
+                const SizedBox(height: 20),
+                // Check if filteredSupervisors has data
+                filteredSupervisors.isNotEmpty
+                    ? ListView.builder(
                   padding: const EdgeInsets.all(5),
                   shrinkWrap: true,
                   itemCount: filteredSupervisors.length,
@@ -250,67 +256,79 @@ class _TeamScreenState extends State<TeamScreen> {
                     bool isSupervisor = team.empId == reportingManagerId;
                     return Column(
                       children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          decoration: BoxDecoration(
-                            color: NasColors.containerColor,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: 50,
-                                  width: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: NetworkImage('${team1.imageURL}'),
-                                      fit: BoxFit.fill,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EmployeeProfileScreen(
+                                  supervisors: team,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: NasColors.containerColor,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 50,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: NetworkImage('${team1.imageURL}'),
+                                        fit: BoxFit.fill,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${team.userName}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.darkBlue,
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${team.userName}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: NasColors.darkBlue,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      isSupervisor ? 'Supervisor' : 'Employee',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey,
+                                      Text(
+                                        isSupervisor ? 'Supervisor' : 'Employee',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "${team.designation}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey,
+                                      Text(
+                                        "${team.designation}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const Spacer(),
-                                SizedBox(
-                                  width: 40,
-                                  child: IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(
-                                      Icons.more_vert,
-                                      size: 35,
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 40,
+                                    child: IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(
+                                        Icons.more_vert,
+                                        size: 35,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -322,6 +340,19 @@ class _TeamScreenState extends State<TeamScreen> {
                     );
                   },
                 )
+                    : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -329,6 +360,7 @@ class _TeamScreenState extends State<TeamScreen> {
       ),
     );
   }
+
 }
 
 class TeamModel {
