@@ -15,6 +15,7 @@ import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/request_data_model.dart';
+import 'package:nashr/request_controller/search_employee_model.dart';
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -34,6 +35,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<SearchEmployeeData> searchEmployeeDataList = [];
   List<AssetDetailsModel> assetsDetailsModel = [];
   List<EmployeeDetailsAssetsModel> employeeDetailsAssetsModel = [];
   List<EmployeeDetailsAttendanceData> employeeDetailsAttendanceDataList = [];
@@ -47,6 +49,7 @@ class SingletonClass {
   List<BranchData> branchDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
+  String? fcmToken;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -69,7 +72,10 @@ class SingletonClass {
     // Method to set the company list
     companyDataList = companyData;
   }
-
+  void setSearchEmployeeData(List<SearchEmployeeData> searchEmployeeData) {
+    // Method to set the company list
+    searchEmployeeDataList = searchEmployeeData;
+  }
   void setEmployeeAttendanceDataList(List<EmployeeDetailsAttendanceData> attendance) {
     // Method to set the company list
     employeeDetailsAttendanceDataList = attendance;
@@ -130,6 +136,13 @@ class SingletonClass {
   void setBaseURL(String url) {
     baseURL = url;
   }
+
+  void setFCMToken(String token) {
+    fcmToken = token;
+  }
+
+
+
 //API Calls
 
   Future<EmployeeData?> getEmployeeData() async {
@@ -185,7 +198,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
     var response = await client.get(uri);
-    log(response.body);
+    log("Company Log ??|||${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var companyData = CompanyData.fromJson(responseBody);

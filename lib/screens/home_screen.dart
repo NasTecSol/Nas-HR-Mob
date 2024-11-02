@@ -8,6 +8,7 @@ import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
+import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
@@ -44,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool showHeaderContent = true;
   bool isExpanded = true;
   bool isLoading = false;
-
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
   bool _isCheckInCompleted = false;
@@ -1189,6 +1189,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child:  Image.asset(
+                                              'images/Penalties.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                       'Penalties',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

@@ -127,6 +127,7 @@ class Approvers {
 }
 
 class RequestData {
+  List<Employees>? employees;
   dynamic startDate;
   dynamic endDate;
   dynamic duration;
@@ -136,8 +137,14 @@ class RequestData {
   dynamic loanInstallment;
   dynamic loanDuration;
   dynamic loanType;
+  dynamic fine_penality;
+  int? amount;
+  dynamic details;
+  dynamic dateTime;
+  dynamic remark;
 
   RequestData({
+    this.employees,
     this.startDate,
     this.endDate,
     this.duration,
@@ -147,9 +154,15 @@ class RequestData {
     this.loanInstallment,
     this.loanDuration,
     this.loanType,
+    this.fine_penality,
+    this.amount,
+    this.details,
+    this.dateTime,
+    this.remark,
   });
 
   RequestData.fromJson(Map<String, dynamic> json) {
+    employees = json["employees"] == null ? null : (json["employees"] as List).map((e) => Employees.fromJson(e)).toList();
     startDate = json["startDate"];
     endDate = json["endDate"];
     duration = json["duration"];
@@ -159,10 +172,18 @@ class RequestData {
     loanInstallment = json["loanInstallment"];
     loanDuration = json["loanDuration"];
     loanType = json["loanType"];
+    fine_penality = json["fine_penality"];
+    amount = json["amount"];
+    details = json["details"];
+    dateTime = json["date&time"];
+    remark = json["remark"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
+    if(employees != null) {
+      _data["employees"] = employees?.map((e) => e.toJson()).toList();
+    }
     _data["startDate"] = startDate;
     _data["endDate"] = endDate;
     _data["duration"] = duration;
@@ -172,6 +193,33 @@ class RequestData {
     _data["loanInstallment"] = loanInstallment;
     _data["loanDuration"] = loanDuration;
     _data["loanType"] = loanType;
+    _data["fine_penality"] = fine_penality;
+    _data["amount"] = amount;
+    _data["details"] = details;
+    _data["date&time"] = dateTime;
+    _data["remark"] = remark;
+    return _data;
+  }
+}
+
+class Employees {
+  String? empId;
+  String? name;
+  int? severity;
+
+  Employees({this.empId, this.name, this.severity});
+
+  Employees.fromJson(Map<String, dynamic> json) {
+    empId = json["empId"];
+    name = json["name"];
+    severity = json["severity"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["empId"] = empId;
+    _data["name"] = name;
+    _data["severity"] = severity;
     return _data;
   }
 }
