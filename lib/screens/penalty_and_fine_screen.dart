@@ -81,7 +81,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                       child: Text(
-                        'Penalties and Fine',
+                        AppLocalizations.of(context)!.penaltiesAndFine,
                         style: GoogleFonts.inter(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -134,8 +134,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                 Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      buildOptionsCard(0,"Against me"),
-                      buildOptionsCard(1, "Team's"),
+                      buildOptionsCard(0,AppLocalizations.of(context)!.againstMe),
+                      buildOptionsCard(1, AppLocalizations.of(context)!.teams),
                     ],
                   ),
                 if(singletonClass.getJWTModel()?.grade == 'L2' ||
