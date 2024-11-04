@@ -417,6 +417,7 @@ class _LoginScreenState extends State<LoginScreen> {
             singletonClass.getCompanyData();
             singletonClass.getRequestData();
             singletonClass.getApproverData();
+            singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(
               autoCloseDuration: const Duration(seconds: 2),

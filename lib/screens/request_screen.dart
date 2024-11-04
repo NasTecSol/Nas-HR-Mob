@@ -2684,10 +2684,10 @@ class _RequestScreenState extends State<RequestScreen> {
     switch (status) {
       case 'leave Request':
         return localizations.leave; // Use the localized string
-      case 'Loan':
-        return localizations.loan; // Use the localized string
-      case 'Asset':
-        return localizations.assets; // Use the localized string
+      case 'Loan Request':
+        return localizations.loanRequest; // Use the localized string
+      case 'Penalty and Fine Requests':
+        return localizations.penaltiesAndFine; // Use the localized string
       case 'OverTime':
         return localizations.overTime;
       case 'Training':
@@ -2715,14 +2715,14 @@ class _RequestScreenState extends State<RequestScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Insufficient Leave Balance'),
+          title:  Text(AppLocalizations.of(context)!.insufficientBalance),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text('OK'),
+              child:  Text(AppLocalizations.of(context)!.ok),
             ),
           ],
         );
@@ -2860,7 +2860,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "Apply Requests",
+                              AppLocalizations.of(context)!.applyRequests,
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -2871,7 +2871,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "SubType",
+                          AppLocalizations.of(context)!.subType,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -2889,7 +2889,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              'Select SubType',
+                              AppLocalizations.of(context)!.selectSubType,
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -3044,7 +3044,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                           ],
                           Text(
-                            "Search Employee",
+                            AppLocalizations.of(context)!.searchEmployee,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3103,7 +3103,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   setState((){
                                     _employeeSearchResults.clear();
                                   });
-                                }, child: Text("Clear",
+                                }, child: Text(AppLocalizations.of(context)!.clearAll,
                                   style: GoogleFonts.inter(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -3156,7 +3156,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           builder: (BuildContext context) {
                                             return AlertDialog(
                                               title: Text(
-                                                "Select Severity of employee",
+                                                AppLocalizations.of(context)!.selectSeverityOfEmployee,
                                                 style: GoogleFonts.inter(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 15,
@@ -3196,7 +3196,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "Low",
+                                                            AppLocalizations.of(context)!.low,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 15,
@@ -3234,7 +3234,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "Medium",
+                                                            AppLocalizations.of(context)!.medium,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 15,
@@ -3272,7 +3272,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            "High",
+                                                            AppLocalizations.of(context)!.high,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 15,
@@ -3309,7 +3309,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ],
                         const SizedBox(height: 10),
                         Text(
-                          "Notes",
+                          AppLocalizations.of(context)!.notes,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3354,7 +3354,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "Select Date",
+                          AppLocalizations.of(context)!.selectDate,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3402,7 +3402,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   },
                                   child: Text(
                                     fromDate == null
-                                        ? "From Date"
+                                        ? AppLocalizations.of(context)!.fromDate
                                         : DateFormat('yyyy-MM-dd')
                                             .format(fromDate!),
                                     style: GoogleFonts.inter(
@@ -3461,7 +3461,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   },
                                   child: Text(
                                     toDate == null
-                                        ? "To Date"
+                                        ? AppLocalizations.of(context)!.toDate
                                         : DateFormat('yyyy-MM-dd')
                                             .format(toDate!),
                                     style: GoogleFonts.inter(
@@ -3486,7 +3486,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         const SizedBox(height: 10),
                         if (_selectedRequestType == "leaveRequest") ...[
                           Text(
-                            "Days",
+                            AppLocalizations.of(context)!.days,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3541,7 +3541,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
-                                  "Attach Document",
+                                  AppLocalizations.of(context)!.attachDocuments,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -3556,7 +3556,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         const SizedBox(height: 10),
                         if (_selectedRequestType == 'loanRequest') ...[
                           Text(
-                            "Total Loan Amount",
+                            AppLocalizations.of(context)!.totalLoanAmount,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3601,7 +3601,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            "Installment Amount",
+                            AppLocalizations.of(context)!.installmentAmount,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3648,7 +3648,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         const SizedBox(height: 10),
                         if (_selectedRequestType == 'penalties_fines') ...[
                           Text(
-                            "Amount",
+                            AppLocalizations.of(context)!.amount,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3693,7 +3693,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            "Details",
+                            AppLocalizations.of(context)!.details,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -3790,7 +3790,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 child: Align(
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "Submit",
+                                    AppLocalizations.of(context)!.submit,
                                     style: GoogleFonts.inter(
                                       fontSize: 19,
                                       color: Colors.white,
@@ -4126,7 +4126,7 @@ class _RequestScreenState extends State<RequestScreen> {
         _showSearchResult = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Employee not found")),
+         SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
       );
     }
   }

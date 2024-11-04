@@ -8,6 +8,7 @@ import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
+import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
@@ -327,7 +328,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         IconButton(
                           onPressed: () {
-
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                            const NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,

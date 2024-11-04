@@ -255,5 +255,37 @@ class SingletonClass {
       return '';
     }
   }
+
+
+  void sendFCMToken() async {
+
+    String? employeeId = getJWTModel()?.employeeId;
+    String url = '$baseURL/notification-subscriber/updateByEmployeeId/$employeeId';
+
+    Map<String, dynamic> data = {
+      "pushNotificationId": "$fcmToken",
+    };
+
+    // Convert data to JSON string
+    String jsonData = jsonEncode(data);
+    log("///$jsonData");
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonData,
+      );
+      print("<><><><>${response.body}");
+      if (response.statusCode == 200) {
+        print("Sexfull send");
+      } else {
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+    }
+  }
 }
+
 
