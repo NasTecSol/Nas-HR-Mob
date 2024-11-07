@@ -225,10 +225,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: <Widget>[
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/DP.png'),
-                fit: BoxFit.cover,
+            decoration:  BoxDecoration(
+            image:   DecorationImage(
+                image: dashBoardData?.profilePic != null
+                    ? NetworkImage(dashBoardData!.profilePic!) // Network image
+                    : AssetImage('images/DP.png') as ImageProvider,
+              fit: BoxFit.cover,
               ),
             ),
             child: BackdropFilter(
@@ -260,11 +262,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,
-                            child: Image.asset(
-                              'images/DP.png',
-                              fit: BoxFit.fill,
-                              height: 150,
-                              width: 150,
+                            child: ClipOval(
+                              child: Image.network(
+                                dashBoardData?.profilePic ?? '', // URL for the network image, empty string if null
+                                fit: BoxFit.cover,
+                                width: 100,
+                                height: 100,
+                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                  // Display the default asset image if the network image fails to load
+                                  return Image.asset(
+                                    'images/DP.png',
+                                    fit: BoxFit.cover,
+                                    width: 100,
+                                    height: 100,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),

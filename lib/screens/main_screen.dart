@@ -56,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final dashBoardData = singletonClass.employeeDataList.first.data;
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -105,10 +106,12 @@ class _MainScreenState extends State<MainScreen> {
                           color: NasColors.darkBlue,
                         )
                             : null,
-                        child: const CircleAvatar(
+                        child:  CircleAvatar(
                           radius: 25,
                           backgroundColor: Colors.transparent,
-                          backgroundImage: AssetImage('images/DP.png'),
+                          backgroundImage: dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty
+                              ? NetworkImage(dashBoardData!.profilePic!) // Use network image if available
+                              : AssetImage('images/DP.png') as ImageProvider, // Fallback to asset image
                         ),
                       ),
                     );

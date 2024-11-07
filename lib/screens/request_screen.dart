@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -11,8 +12,12 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../request_controller/attachment_response_model.dart';
 import '../request_controller/company_model.dart';
 import '../widgets/colors.dart';
+import 'package:flutter/services.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 
 class RequestScreen extends StatefulWidget {
   const RequestScreen({super.key});
@@ -3505,20 +3510,15 @@ class _RequestScreenState extends State<RequestScreen> {
                           TextButton(
                             onPressed: () async {
                               FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType.custom,
-                                allowedExtensions: [
-                                  'jpg',
-                                  'pdf',
-                                  'doc',
-                                  'docx',
-                                  'txt'
-                                ],
+                              await FilePicker.platform.pickFiles(
+                                type: FileType
+                                    .any, // Ensures only image files are allowed
                               );
 
                               if (result != null &&
                                   result.files.single.path != null) {
-                                PlatformFile file = result.files.single;
+                                PlatformFile file =
+                                    result.files.single;
 
                                 // Save the file data for sending in the API call
                                 setState(() {
@@ -3526,6 +3526,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                 });
 
                                 print('Selected file: ${file.name}');
+
+                                // Show confirmation dialog before uploading
+                                _showConfirmationDialog(
+                                    file); // Upload the selected file to the API
                               } else {
                                 // User canceled the file picker
                                 print('File selection canceled.');
@@ -3813,6 +3817,123 @@ class _RequestScreenState extends State<RequestScreen> {
     });
   }
 
+
+  //DIALOUGE
+
+  void _showConfirmationDialog(PlatformFile file) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Upload'),
+          content:
+          Text('Are you sure you want to upload this file: ${file.name}?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Close the dialog and do nothing
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Close the dialog
+                Navigator.of(context).pop();
+
+                // Trigger the API call to upload the file
+                await uploadProfile();
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //S3 CALL
+  Future<void> uploadProfile() async {
+    if (selectedFile == null) {
+      print("No file selected.");
+      return; // Exit the function if no file is selected
+    }
+
+    // Check if bytes are available
+    if (selectedFile!.bytes == null) {
+      // Load the bytes of the selected file manually
+      print("Loading bytes for the selected file...");
+      try {
+        final file = File(selectedFile!.path!); // Convert PlatformFile to File
+        final fileBytes = await file.readAsBytes();
+
+        // If bytes are still null, return early
+        if (fileBytes.isEmpty) {
+          print("No bytes available for the selected file.");
+          return; // Exit the function if no valid bytes are available
+        }
+
+        // Proceed with uploading the file after loading bytes
+        _uploadFileWithBytes(fileBytes);
+      } catch (e) {
+        print('Error reading file: $e');
+      }
+    } else {
+      // If bytes are already available, upload directly
+      _uploadFileWithBytes(selectedFile!.bytes!);
+    }
+  }
+
+  void _uploadFileWithBytes(Uint8List fileBytes) async {
+    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
+
+    setState(() {
+      isLoading = true; // Corrected to set isLoading to true
+    });
+
+    try {
+      var request = http.MultipartRequest('POST', uri);
+
+      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
+      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
+          'application/octet-stream';
+
+      // Add the file to the request as bytes
+      request.files.add(http.MultipartFile(
+        'file', // Field name in the API
+        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
+        fileBytes.length, // File size (in bytes)
+        filename: selectedFile!.name, // Filename
+        contentType: MediaType.parse(mimeType), // MIME type
+      ));
+
+      // Add additional fields to the request if necessary
+      request.fields['attachmentName'] =
+          selectedFile!.name; // Safe unwrapping of nullable name
+      request.fields['attachmentType'] = selectedFile!.extension ??
+          ''; // Safe unwrapping of nullable extension
+
+      // Send the request
+      var response = await request.send();
+
+      final responseBody = await response.stream.bytesToString();
+
+      // Log the response body for debugging
+      print("API Response Body: $responseBody");
+
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(responseBody);
+        AttachmentResponse attachmentResponse = AttachmentResponse.fromJson(decodedJson);
+        singletonClass.attachmentResponseDataList = [attachmentResponse];
+
+      } else {
+        print('Upload failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   //POST API CALL
   Future<void> postRequest() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
@@ -3855,11 +3976,10 @@ class _RequestScreenState extends State<RequestScreen> {
     // Prepare attachments if a file is selected
     List<Map<String, dynamic>> attachments = [];
     if (selectedFile != null) {
-      String base64FileContent = base64Encode(selectedFile!.bytes!);
       attachments.add({
-        "fileName": selectedFile!.name,
-        "fileType": selectedFile!.extension ?? "unknown",
-        "fileContent": base64FileContent,
+        "fileName": singletonClass.attachmentResponseDataList.first.data!.attachmentName,
+        "fileType": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
+        "fileContent": singletonClass.attachmentResponseDataList.first.data!.url,
       });
     }
 
