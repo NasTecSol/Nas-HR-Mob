@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
+import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -14,6 +15,7 @@ import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 class SingletonClass {
@@ -30,11 +32,13 @@ class SingletonClass {
   static SingletonClass? _singleton;
 
   bool initialized = false;
-  String? awsURL ='https://dev.nashrms.com/api';
+  String? awsURL ='https://dedicated-armed-song-rides.trycloudflare.com';
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<ProfileResponse> profileResponseDataList = [];
+  List<AttachmentResponse> attachmentResponseDataList = [];
   List<SearchEmployeeData> searchEmployeeDataList = [];
   List<AssetDetailsModel> assetsDetailsModel = [];
   List<EmployeeDetailsAssetsModel> employeeDetailsAssetsModel = [];
