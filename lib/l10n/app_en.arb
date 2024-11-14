@@ -793,5 +793,11 @@
   "insufficientBalance":"Insufficient Leave Balance",
   "ok":"OK",
   "employeeNotFound":"Employee not found",
-  "notifications":"Notifications"
+  "notifications":"Notifications",
+  "pleaseAttachDocument":"Please Attach Documents!",
+  "viewAll":"View All",
+  "earlyCheckOut":"Early check-out",
+  "youHaveNotCheckedInYet":"You have not checked in yet. Please check in first.",
+  "currentLocationNotAvailable":"Current location not available.",
+  "sorryYouAreOutOfTheLocationRadius":"Sorry, you are out of the location radius!"
 }

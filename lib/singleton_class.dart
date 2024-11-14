@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
+import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -15,6 +16,7 @@ import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:nashr/request_controller/notification_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
@@ -31,18 +33,21 @@ class SingletonClass {
 
   static SingletonClass? _singleton;
 
+
   bool initialized = false;
-  String? awsURL ='https://dedicated-armed-song-rides.trycloudflare.com';
+  String? awsURL = "https://protein-bishop-rat-tend.trycloudflare.com";
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<NotificationModel> notificationModelList = [];
   List<ProfileResponse> profileResponseDataList = [];
   List<AttachmentResponse> attachmentResponseDataList = [];
   List<SearchEmployeeData> searchEmployeeDataList = [];
   List<AssetDetailsModel> assetsDetailsModel = [];
   List<EmployeeDetailsAssetsModel> employeeDetailsAssetsModel = [];
   List<EmployeeDetailsAttendanceData> employeeDetailsAttendanceDataList = [];
+  List<AttendanceData> attendanceDataList = [];
   List<ApproverRequestData> approverDataList = [];
   List<CompanyData> companyDataList = [];
   List<RequestDateModel> requestDataList = [];
@@ -101,6 +106,13 @@ class SingletonClass {
     // Method to set the company list
     employeeDataList = employeeData;
   }
+
+  void setAttendanceData(List<AttendanceData> attendanceData) {
+    // Method to set the company list
+    attendanceDataList = attendanceData;
+  }
+
+
   void setEmployeeDetailsData(List<EmployeeDetailsData> employeeDetailsData) {
     // Method to set the company list
     employeeDetailsDataList = employeeDetailsData;
@@ -160,6 +172,22 @@ class SingletonClass {
       var employeeData = EmployeeData.fromJson(responseBody);
       setEmployeeData([employeeData]);
       return employeeData;
+    }
+    return null ; // Print the response body
+  }
+
+  //NOTIFICATION API CALL
+  Future<NotificationModel?> getNotifications() async {
+    String? employeeId =  getJWTModel()?.employeeId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/notification-data/getNotificationData/$employeeId');
+    var response = await client.get(uri);
+    log(response.body);
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var notificationData = NotificationModel.fromJson(responseBody);
+      notificationModelList.addAll([notificationData]);
+      return notificationData;
     }
     return null ; // Print the response body
   }
@@ -261,6 +289,34 @@ class SingletonClass {
   }
 
 
+  //ATTENDANCE API CALL
+  Future<AttendanceData?> getEmployeeAttendanceData() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    var client = http.Client();
+    DateTime now = DateTime.now();
+    DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
+    String firstDateString = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
+    String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+
+    var uri = Uri.parse(
+        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$firstDateString/$currentDateString');
+
+    var response = await client.get(uri);
+    print("//////?????${response.body}");
+    print(employeeId);
+    print(firstDateString);
+    print(currentDateString);
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var attendance = AttendanceData.fromJson(responseBody);
+      setAttendanceData([attendance]);
+      return attendance;
+    }
+
+    return null;
+  }
+
+
   void sendFCMToken() async {
 
     String? employeeId = getJWTModel()?.employeeId;
@@ -289,6 +345,16 @@ class SingletonClass {
     } catch (error) {
       print('Failed to send data. Error: $error');
     }
+  }
+
+  String formatTime(String createdAt) {
+    DateTime createdDate = DateTime.parse(createdAt);
+    return DateFormat('hh:mm a').format(createdDate); // e.g., "10:30 AM"
+  }
+
+  String formatDate2(String createdAt) {
+    DateTime createdDate = DateTime.parse(createdAt);
+    return DateFormat('dd-MM-yyyy').format(createdDate); // e.g., "01-11-2024"
   }
 }
 
