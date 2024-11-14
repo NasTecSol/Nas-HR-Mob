@@ -40,7 +40,8 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResult = false;
-  List<SearchedResult> _employeeSearchResults = []; // Stores search results of employees
+  List<SearchedResult> _employeeSearchResults =
+      []; // Stores search results of employees
   List<SearchedResult?> _selectedEmployees = [];
   DateTime? fromDate;
   DateTime? toDate;
@@ -73,9 +74,7 @@ class _RequestScreenState extends State<RequestScreen> {
     });
     _approverDataFuture = singletonClass.getApproverData();
     _requestDataFuture = singletonClass.getRequestData();
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
@@ -377,7 +376,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                 itemBuilder: (BuildContext context, int index) {
                                   final request = singletonClass
                                       .requestDataList.first.data![index];
-                                  if (request.requestType == 'penalties_fines') {
+                                  if (request.requestType ==
+                                      'penalties_fines') {
                                     return const SizedBox.shrink();
                                   }
                                   return GestureDetector(
@@ -1085,7 +1085,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                       (BuildContext context, int index) {
                                     final request = singletonClass
                                         .requestDataList.first.data![index];
-                                    if (request.requestType == 'penalties_fines') {
+                                    if (request.requestType ==
+                                        'penalties_fines') {
                                       return const SizedBox.shrink();
                                     }
                                     return GestureDetector(
@@ -1809,7 +1810,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                       (BuildContext context, int index) {
                                     final request = singletonClass
                                         .approverDataList.first.data![index];
-                                    if (request.requestType == 'penalties_fines') {
+                                    if (request.requestType ==
+                                        'penalties_fines') {
                                       return const SizedBox.shrink();
                                     }
                                     return GestureDetector(
@@ -2720,14 +2722,14 @@ class _RequestScreenState extends State<RequestScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:  Text(AppLocalizations.of(context)!.insufficientBalance),
+          title: Text(AppLocalizations.of(context)!.insufficientBalance),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child:  Text(AppLocalizations.of(context)!.ok),
+              child: Text(AppLocalizations.of(context)!.ok),
             ),
           ],
         );
@@ -2967,18 +2969,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                       Container(
                                         margin: const EdgeInsets.all(3),
                                         decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
                                           color: NasColors.lightBlue,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.3),
+                                              color:
+                                                  Colors.grey.withOpacity(0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
                                             ),
                                           ],
                                         ),
-                                        width: 150, // Set a fixed width for each employee tile
+                                        width: 150,
+                                        // Set a fixed width for each employee tile
                                         child: Row(
                                           children: [
                                             Container(
@@ -2987,23 +2992,27 @@ class _RequestScreenState extends State<RequestScreen> {
                                               decoration: const BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 image: DecorationImage(
-                                                  image: AssetImage("images/DP.png"),
+                                                  image: AssetImage(
+                                                      "images/DP.png"),
                                                   fit: BoxFit.fill,
                                                 ),
                                               ),
                                             ),
                                             const SizedBox(width: 5),
                                             Column(
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  employee!.employeeName ?? "Unknown",
+                                                  employee!.employeeName ??
+                                                      "Unknown",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.white,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis, // Optional: Handle long text
+                                                  overflow: TextOverflow
+                                                      .ellipsis, // Optional: Handle long text
                                                 ),
                                                 Text(
                                                   employee.empId ?? "Unknown",
@@ -3025,7 +3034,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                         child: GestureDetector(
                                           onTap: () {
                                             setState(() {
-                                              _selectedEmployees.remove(employee);
+                                              _selectedEmployees
+                                                  .remove(employee);
                                             });
                                           },
                                           child: Container(
@@ -3033,7 +3043,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                               shape: BoxShape.circle,
                                               color: Colors.red,
                                             ),
-                                            padding: const EdgeInsets.all(4.0), // Adjust padding for icon size
+                                            padding: const EdgeInsets.all(4.0),
+                                            // Adjust padding for icon size
                                             child: const Icon(
                                               Icons.close,
                                               color: Colors.white,
@@ -3099,22 +3110,23 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             ],
                           ),
-                          if (_showSearchResult == true)...[
+                          if (_showSearchResult == true) ...[
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton(
-                                    onPressed: (){
-                                  setState((){
-                                    _employeeSearchResults.clear();
-                                  });
-                                }, child: Text(AppLocalizations.of(context)!.clearAll,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red
-                                  ),
-                                )),
+                                    onPressed: () {
+                                      setState(() {
+                                        _employeeSearchResults.clear();
+                                      });
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.clearAll,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red),
+                                    )),
                               ],
                             ),
                             SizedBox(
@@ -3132,22 +3144,31 @@ class _RequestScreenState extends State<RequestScreen> {
                                           decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
                                             image: DecorationImage(
-                                              image: AssetImage("images/DP.png"),
+                                              image:
+                                                  AssetImage("images/DP.png"),
                                               fit: BoxFit.fill,
                                             ),
                                           ),
                                         ),
                                         const SizedBox(width: 10),
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              employee.employeeName ?? "Unknown",
-                                              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: NasColors.darkBlue),
+                                              employee.employeeName ??
+                                                  "Unknown",
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue),
                                             ),
                                             Text(
                                               employee.empId ?? "Unknown",
-                                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey),
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey),
                                             ),
                                           ],
                                         ),
@@ -3161,49 +3182,69 @@ class _RequestScreenState extends State<RequestScreen> {
                                           builder: (BuildContext context) {
                                             return AlertDialog(
                                               title: Text(
-                                                AppLocalizations.of(context)!.selectSeverityOfEmployee,
+                                                AppLocalizations.of(context)!
+                                                    .selectSeverityOfEmployee,
                                                 style: GoogleFonts.inter(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 15,
                                                 ),
                                               ),
                                               content: SizedBox(
-                                                height: 120, // Adjust the height as needed to fit content
+                                                height: 120,
+                                                // Adjust the height as needed to fit content
                                                 child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
                                                   children: [
                                                     // Low Severity Option
                                                     GestureDetector(
                                                       onTap: () {
                                                         setState(() {
-                                                          employee.severity = 1; // Set severity level to 1 for Low
-                                                          if (_selectedEmployees.contains(employee)) {
-                                                            _selectedEmployees.remove(employee);
+                                                          employee.severity =
+                                                              1; // Set severity level to 1 for Low
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
                                                           } else {
-                                                            _selectedEmployees.add(employee);
+                                                            _selectedEmployees
+                                                                .add(employee);
                                                           }
                                                         });
-                                                        Navigator.pop(context); // Close the dialog
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
                                                       },
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           ClipOval(
                                                             child: CircleAvatar(
-                                                              backgroundColor: Colors.white,
+                                                              backgroundColor:
+                                                                  Colors.white,
                                                               radius: 20,
-                                                              child: Image.asset(
+                                                              child:
+                                                                  Image.asset(
                                                                 'images/1.png',
-                                                                fit: BoxFit.fill,
+                                                                fit:
+                                                                    BoxFit.fill,
                                                                 height: 40,
                                                                 width: 40,
                                                               ),
                                                             ),
                                                           ),
                                                           Text(
-                                                            AppLocalizations.of(context)!.low,
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.bold,
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .low,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                               fontSize: 15,
                                                             ),
                                                           ),
@@ -3214,34 +3255,50 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     GestureDetector(
                                                       onTap: () {
                                                         setState(() {
-                                                          employee.severity = 2; // Set severity level to 2 for Medium
-                                                          if (_selectedEmployees.contains(employee)) {
-                                                            _selectedEmployees.remove(employee);
+                                                          employee.severity =
+                                                              2; // Set severity level to 2 for Medium
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
                                                           } else {
-                                                            _selectedEmployees.add(employee);
+                                                            _selectedEmployees
+                                                                .add(employee);
                                                           }
                                                         });
-                                                        Navigator.pop(context); // Close the dialog
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
                                                       },
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           ClipOval(
                                                             child: CircleAvatar(
-                                                              backgroundColor: Colors.white,
+                                                              backgroundColor:
+                                                                  Colors.white,
                                                               radius: 20,
-                                                              child: Image.asset(
+                                                              child:
+                                                                  Image.asset(
                                                                 'images/2.png',
-                                                                fit: BoxFit.fill,
+                                                                fit:
+                                                                    BoxFit.fill,
                                                                 height: 40,
                                                                 width: 40,
                                                               ),
                                                             ),
                                                           ),
                                                           Text(
-                                                            AppLocalizations.of(context)!.medium,
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.bold,
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .medium,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                               fontSize: 15,
                                                             ),
                                                           ),
@@ -3252,34 +3309,50 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     GestureDetector(
                                                       onTap: () {
                                                         setState(() {
-                                                          employee.severity = 3; // Set severity level to 3 for High
-                                                          if (_selectedEmployees.contains(employee)) {
-                                                            _selectedEmployees.remove(employee);
+                                                          employee.severity =
+                                                              3; // Set severity level to 3 for High
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
                                                           } else {
-                                                            _selectedEmployees.add(employee);
+                                                            _selectedEmployees
+                                                                .add(employee);
                                                           }
                                                         });
-                                                        Navigator.pop(context); // Close the dialog
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
                                                       },
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           ClipOval(
                                                             child: CircleAvatar(
-                                                              backgroundColor: Colors.white,
+                                                              backgroundColor:
+                                                                  Colors.white,
                                                               radius: 20,
-                                                              child: Image.asset(
+                                                              child:
+                                                                  Image.asset(
                                                                 'images/3.png',
-                                                                fit: BoxFit.fill,
+                                                                fit:
+                                                                    BoxFit.fill,
                                                                 height: 40,
                                                                 width: 40,
                                                               ),
                                                             ),
                                                           ),
                                                           Text(
-                                                            AppLocalizations.of(context)!.high,
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.bold,
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .high,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                               fontSize: 15,
                                                             ),
                                                           ),
@@ -3298,7 +3371,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           shape: BoxShape.circle,
                                           color: Colors.green,
                                         ),
-                                        padding: const EdgeInsets.all(8.0), // Space around the icon
+                                        padding: const EdgeInsets.all(8.0),
+                                        // Space around the icon
                                         child: const Icon(
                                           Icons.add,
                                           color: Colors.white,
@@ -3310,7 +3384,6 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             ),
                           ],
-
                         ],
                         const SizedBox(height: 10),
                         Text(
@@ -3506,56 +3579,6 @@ class _RequestScreenState extends State<RequestScreen> {
                               fontSize: 16,
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          TextButton(
-                            onPressed: () async {
-                              FilePickerResult? result =
-                              await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .any, // Ensures only image files are allowed
-                              );
-
-                              if (result != null &&
-                                  result.files.single.path != null) {
-                                PlatformFile file =
-                                    result.files.single;
-
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
-
-                                print('Selected file: ${file.name}');
-
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
-                              } else {
-                                // User canceled the file picker
-                                print('File selection canceled.');
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.add,
-                                  color: Colors.black,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.attachDocuments,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                         const SizedBox(height: 10),
                         if (_selectedRequestType == 'loanRequest') ...[
@@ -3742,67 +3765,132 @@ class _RequestScreenState extends State<RequestScreen> {
                           ),
                         ],
                         const SizedBox(height: 10),
-                        Padding(
-                            padding:
-                                const EdgeInsets.only(left: 50.0, right: 50),
-                            child: GestureDetector(
-                              onTap: () {
-                                if (_formKey.currentState!.validate()) {
-                                  if (fromDate == null || toDate == null) {
-                                    QuickAlert.show(
-                                      context: context,
-                                      type: QuickAlertType.error,
-                                      title: AppLocalizations.of(context)!
-                                          .enterToAndFromDate,
-                                      autoCloseDuration:
-                                          const Duration(seconds: 5),
-                                      showCancelBtn: false,
-                                      showConfirmBtn: false,
-                                    );
-                                  } else {
-                                    postRequest();
-                                  }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          AppLocalizations.of(context)!
-                                              .pleaseEnterNotes),
-                                      duration: const Duration(seconds: 4),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Container(
-                                width: 100,
-                                height: 50,
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(15)),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF47734D),
-                                      Color(0xFF5B9362),
-                                      Color(0xFF66A56E),
-                                      Color(0xFF76BE7F),
-                                      Color(0xFF86D991),
-                                    ],
-                                    begin: Alignment.topRight,
-                                    end: Alignment.bottomLeft,
+                        if (selectedRequest.docRequired == true) ...[
+                          TextButton(
+                            onPressed: () async {
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles(
+                                type: FileType
+                                    .any, // Ensures only image files are allowed
+                              );
+
+                              if (result != null &&
+                                  result.files.single.path != null) {
+                                PlatformFile file = result.files.single;
+
+                                // Save the file data for sending in the API call
+                                setState(() {
+                                  selectedFile = file;
+                                });
+
+                                print('Selected file: ${file.name}');
+
+                                // Show confirmation dialog before uploading
+                                _showConfirmationDialog(
+                                    file); // Upload the selected file to the API
+                              } else {
+                                // User canceled the file picker
+                                print('File selection canceled.');
+                              }
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.add,
+                                  color: Colors.black,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.attachDocuments,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 15,
                                   ),
                                 ),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    AppLocalizations.of(context)!.submit,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 19,
-                                      color: Colors.white,
-                                    ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        Padding(
+                          padding: const EdgeInsets.only(left: 50.0, right: 50),
+                          child: GestureDetector(
+                            onTap: () {
+                              if (_formKey.currentState!.validate()) {
+                                // Check if fromDate and toDate are selected
+                                if (fromDate == null || toDate == null) {
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.error,
+                                    title: AppLocalizations.of(context)!
+                                        .enterToAndFromDate,
+                                    autoCloseDuration:
+                                        const Duration(seconds: 5),
+                                    showCancelBtn: false,
+                                    showConfirmBtn: false,
+                                  );
+                                } else if (selectedRequest.docRequired ==
+                                        true &&
+                                    selectedFile == null) {
+                                  // Validation for required document
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.error,
+                                    title: AppLocalizations.of(context)!
+                                        .pleaseAttachDocument,
+                                    autoCloseDuration:
+                                        const Duration(seconds: 5),
+                                    showCancelBtn: false,
+                                    showConfirmBtn: false,
+                                  );
+                                } else {
+                                  // All validations passed, proceed to post the request
+                                  postRequest();
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!
+                                        .pleaseEnterNotes),
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              width: 100,
+                              height: 50,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF47734D),
+                                    Color(0xFF5B9362),
+                                    Color(0xFF66A56E),
+                                    Color(0xFF76BE7F),
+                                    Color(0xFF86D991),
+                                  ],
+                                  begin: Alignment.topRight,
+                                  end: Alignment.bottomLeft,
+                                ),
+                              ),
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  AppLocalizations.of(context)!.submit,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 19,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
-                            ))
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -3817,7 +3905,6 @@ class _RequestScreenState extends State<RequestScreen> {
     });
   }
 
-
   //DIALOUGE
 
   void _showConfirmationDialog(PlatformFile file) {
@@ -3827,7 +3914,7 @@ class _RequestScreenState extends State<RequestScreen> {
         return AlertDialog(
           title: const Text('Confirm Upload'),
           content:
-          Text('Are you sure you want to upload this file: ${file.name}?'),
+              Text('Are you sure you want to upload this file: ${file.name}?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -3923,9 +4010,9 @@ class _RequestScreenState extends State<RequestScreen> {
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        AttachmentResponse attachmentResponse = AttachmentResponse.fromJson(decodedJson);
+        AttachmentResponse attachmentResponse =
+            AttachmentResponse.fromJson(decodedJson);
         singletonClass.attachmentResponseDataList = [attachmentResponse];
-
       } else {
         print('Upload failed: ${response.statusCode}');
       }
@@ -3977,9 +4064,12 @@ class _RequestScreenState extends State<RequestScreen> {
     List<Map<String, dynamic>> attachments = [];
     if (selectedFile != null) {
       attachments.add({
-        "fileName": singletonClass.attachmentResponseDataList.first.data!.attachmentName,
-        "fileType": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
-        "fileContent": singletonClass.attachmentResponseDataList.first.data!.url,
+        "fileName": singletonClass
+            .attachmentResponseDataList.first.data!.attachmentName,
+        "fileType": singletonClass
+            .attachmentResponseDataList.first.data!.attachmentType,
+        "fileContent":
+            singletonClass.attachmentResponseDataList.first.data!.url,
       });
     }
 
@@ -3994,8 +4084,7 @@ class _RequestScreenState extends State<RequestScreen> {
         "loanType": selectedSubType,
       });
     } else if (selectedRequestType == 'penalties_fines') {
-      List<Map<String, dynamic>> employees =
-          _selectedEmployees.map((employee) {
+      List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
         return {
           "empId": employee!.empId,
           "name": employee.employeeName,
@@ -4217,7 +4306,8 @@ class _RequestScreenState extends State<RequestScreen> {
     if (employeeId.isEmpty) return;
 
     var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+    var uri = Uri.parse(
+        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
 
     var response = await client.get(uri);
     if (response.statusCode == 200) {
@@ -4246,7 +4336,7 @@ class _RequestScreenState extends State<RequestScreen> {
         _showSearchResult = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
+        SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
       );
     }
   }
@@ -4264,16 +4354,18 @@ class SearchedResult {
     this.employeeName,
     this.severity,
   });
+
   @override
   String toString() {
     return 'SearchedResultData: {empId:$empId , employeeName: $employeeName , severity:$severity}';
   }
+
   // Convert CashData to JSON
   Map<String, dynamic> toJson() {
     return {
-      'empId':empId,
-      'employeeName':employeeName,
-      'severity':severity,
+      'empId': empId,
+      'employeeName': employeeName,
+      'severity': severity,
     };
   }
 }

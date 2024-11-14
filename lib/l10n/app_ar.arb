@@ -458,6 +458,15 @@
   "insufficientBalance": "رصيد الإجازة غير كافٍ",
   "ok": "موافق",
   "employeeNotFound": "الموظف غير موجود",
-  "notifications": "الإشعارات"
+  "notifications": "الإشعارات",
+  "pleaseAttachDocument": "يرجى إرفاق المستندات!",
+  "viewAll": "عرض الكل",
+  "earlyCheckOut": "الخروج المبكر",
+  "youHaveNotCheckedInYet": "لم تقم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.",
+  "currentLocationNotAvailable": "الموقع الحالي غير متاح.",
+  "sorryYouAreOutOfTheLocationRadius": "عذرًا، أنت خارج نطاق دائرة الموقع!"
+
+
+
 
 }

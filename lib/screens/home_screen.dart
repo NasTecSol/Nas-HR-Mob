@@ -54,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadCheckInState();
+    singletonClass.getEmployeeAttendanceData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -82,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //Slider
   OverlayEntry? _overlayEntry;
+
 
   OverlayEntry _createOverlayEntry() {
     return OverlayEntry(
@@ -193,9 +195,347 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  //2ND OverLay
+  OverlayEntry? _overlayEntry2;
+
+  OverlayEntry _createViewAllOverlay(){
+    return OverlayEntry (
+        builder: (context) => Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: () {
+                _removeOverlay();
+              },
+              child: Material(
+                color: Colors.grey.withOpacity(0.8),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 100.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamClocking()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/teamClocking.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .teamClocking,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const DocumentScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Image.asset(
+                                            'images/files.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .documents,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const AssetsScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/assets.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!.assets,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const TeamScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/Team.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!.teams,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const Complaints()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/Complain.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .complaints,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      _removeOverlay();
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
+                                    },
+                                    child: Container(
+                                      height: 65,
+                                      width: 65,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 1,
+                                            blurRadius: 0.5,
+                                            offset: const Offset(0, 0), // changes position of shadow
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child:  Image.asset(
+                                          'images/Penalties.png',
+                                          fit: BoxFit.contain,
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  // Add spacing between image and text
+                                  Text(
+                                    'Penalties',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ))
+    );
+  }
+
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _overlayEntry2?.remove();
+    _overlayEntry2 = null;
   }
 
   void toggleSheet() {
@@ -229,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> {
             image:   DecorationImage(
                 image: dashBoardData?.profilePic != null
                     ? NetworkImage(dashBoardData!.profilePic!) // Network image
-                    : AssetImage('images/DP.png') as ImageProvider,
+                    : const AssetImage('images/DP.png') as ImageProvider,
               fit: BoxFit.cover,
               ),
             ),
@@ -568,7 +908,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '09:30:40 AM',
+                                                  singletonClass.attendanceDataList.first.data!.last.clockInTime?.isNotEmpty ?? false
+                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockInTime}'
+                                                      : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -602,7 +944,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '04:30:52 AM',
+                                                  singletonClass.attendanceDataList.first.data!.last.clockOutTime?.isNotEmpty ?? false
+                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockOutTime}'
+                                                      : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -614,57 +958,111 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 10),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.red,
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(15)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .lateComings,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white,
+                                              // Check if there are late minutes
+                                              if ((singletonClass.attendanceDataList.first.data!.last.lateMinutes ?? 0) > 0)
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.lateComings,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        "15 mins",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white,
+                                                        Text(
+                                                          '${singletonClass.attendanceDataList.first.data!.last.lateMinutes}',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              // If early check-out exists and no late minutes, show early check-out
+                                              else if ((singletonClass.attendanceDataList.first.data!.last.earlyCheckOut ?? 0) > 0)
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.blue,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.earlyCheckOut,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          '${singletonClass.attendanceDataList.first.data!.last.earlyCheckOut}',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              // If both lateMinutes and earlyCheckOut are unavailable, show "Late Comings" with "NA"
+                                              else
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.lateComings,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'NA',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
                                               const SizedBox(width: 5),
+                                              // Display total hours worked
                                               Expanded(
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${AppLocalizations.of(context)!.worked} 6h 1m',
+                                                    '${AppLocalizations.of(context)!.worked} ${singletonClass.attendanceDataList.first.data!.last.totalHoursWorked?.toString() ?? 'NA'}',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
+                                                      fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
                                                 ),
@@ -721,7 +1119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const SizedBox(height: 4),
                                         // Space between text items
                                         Text(
-                                          "12:00 PM",
+                                          '${singletonClass.attendanceDataList.first.data!.last.breakTime}',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.normal,
@@ -957,9 +1355,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                             ),
                             ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(onPressed: (){
+                                _overlayEntry2 = _createViewAllOverlay();
+                                Overlay.of(context)
+                                    .insert(_overlayEntry2!);
+                              }, child: Text(AppLocalizations.of(context)!.viewAll,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight:
+                                  FontWeight.w600,
+                                  color: Colors.black,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ))
+                            ],
+                          ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: SingleChildScrollView(
+                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1293,10 +1710,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: ListView.builder(
                                         padding: const EdgeInsets.all(5),
                                         scrollDirection: Axis.horizontal,
-                                        itemCount: activity.length,
+                                        itemCount: singletonClass.notificationModelList.first.data!.length,
                                         itemBuilder:
                                             (BuildContext context, int index) {
-                                          final activities = activity[index];
+                                          final activities = singletonClass.notificationModelList.first.data![index];
+
                                           return SizedBox(
                                               width: 180,
                                               // Explicit width for horizontal items
@@ -1323,7 +1741,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     Padding(
                                                       padding: const EdgeInsets.all(8.0),
                                                       child: Text(
-                                                        '${activities.activityName}',
+                                                        '${activities.notificationType}',
                                                         style: GoogleFonts.inter(
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 15,
@@ -1334,7 +1752,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                                       child: Text(
-                                                        '${activities.time}',
+                                                        singletonClass.formatTime("${activities.createdAt}"),
                                                         style: GoogleFonts.inter(
                                                           fontWeight: FontWeight.w500,
                                                           fontSize: 15,
@@ -1365,7 +1783,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                           const Spacer(),
                                                           Text(
-                                                            '${activities.date}',
+                                                            singletonClass.formatDate2("${activities.createdAt}"),
                                                             style:
                                                             GoogleFonts.inter(
                                                               fontWeight:
@@ -1405,9 +1823,9 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (status) {
       case 'late':
         return Colors.red;
-      case 'Approved':
+      case 'approved':
         return Colors.green;
-      case 'Pending':
+      case 'pending':
         return NasColors.pending;
       default:
         return Colors.grey; // or any other default color

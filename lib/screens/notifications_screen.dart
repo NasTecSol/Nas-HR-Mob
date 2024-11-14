@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -11,6 +14,14 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  SingletonClass singletonClass = SingletonClass();
+
+  @override
+  void initState(){
+    super.initState();
+  singletonClass.getNotifications();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,88 +112,165 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ],
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(15)),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "Ali Rana",
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          ),
+            Expanded(
+              child: FutureBuilder(
+                  future: singletonClass.getNotifications(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
                         ),
-                        Spacer(),
-                        Text(
-                          "8m ago",
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          ),
-                        ),
-
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Sick-Leave",
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else if (snapshot.hasData) {
+                      return singletonClass.notificationModelList.first.data!.isEmpty
+                          ? Center(
+                              child: Text(
+                                AppLocalizations.of(context)!.noData,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w500,
                                   color: Colors.black,
+                                  fontSize: 15,
                                 ),
                               ),
-                              Text(
-                                "Hello, I am sick today and won't be able to come for "
-                                    "2 days as I am admitted in the hospital.",
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 4, // Limits the text to 3 lines
-                              ),
-                            ],
+                            )
+                          : ListView.builder(
+                              itemCount: singletonClass
+                                  .notificationModelList.first.data!.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final notificationData = singletonClass
+                                    .notificationModelList.first.data![index];
+                                return Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 5),
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(15)),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                "${singletonClass.getJWTModel()!.userName}",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                formatRelativeTime("${notificationData.createdAt}"),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${notificationData.notificationType}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${notificationData.message}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines:
+                                                          4, // Limits the text to 3 lines
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 80,
+                                                width: 80,
+                                                child: Image.asset(
+                                                    "images/Medicine.png"),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ));
+                              });
+                    } else {
+                      return Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                            fontSize: 15,
                           ),
                         ),
-                        SizedBox(
-                          height: 80,
-                          width: 80,
-                          child: Image.asset("images/Medicine.png"),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              )
+                      );
+                    }
+                  }),
             ),
           ],
         ),
       ),
     );
   }
+
+  String formatRelativeTime(String createdAt) {
+    DateTime createdDate = DateTime.parse(createdAt);
+    DateTime currentDate = DateTime.now();
+
+    Duration difference = currentDate.difference(createdDate);
+
+    if (difference.inMinutes < 1) {
+      return 'just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      // For dates older than a week, show the full date
+      return DateFormat('dd-MM-yyyy').format(createdDate);
+    }
+  }
+
 }

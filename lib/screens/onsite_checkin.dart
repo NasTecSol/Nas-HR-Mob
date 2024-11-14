@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:math' as math;
@@ -10,6 +11,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../request_controller/check_in_model.dart';
 
 class OnsiteCheckin extends StatefulWidget {
@@ -28,15 +30,30 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   final Location _location = Location();
 
   // Company location (example coordinates)
-  final double _companyLatitude = 33.6019273; // Example latitude
-  final double _companyLongitude = 73.1564021; // Example longitude
-  final double _radiusInMeters = 1000.0; // 100 meters radius
+  final double _companyLatitude = 33.57227317548423; // Example latitude
+  final double _companyLongitude = 73.14761580269642; // Example longitude
+  final double _radiusInMeters = 200.0; // 100 meters radius
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+    _loadMapState();
   }
+
+
+  Future<void> _loadMapState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isCheckedIn = prefs.getBool('isCheckInCompleted') ?? false;
+    });
+  }
+
+  Future<void> _saveCheckInState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isCheckInCompleted', isCheckedIn);
+  }
+
 
   Future<void> _getCurrentLocation() async {
     // Check and request permissions
@@ -91,11 +108,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       if (distance > _radiusInMeters) {
         _showOutOfLocationMessage();
       } else {
-        if (isCheckedIn ==true) {
-          _showWithinRadiusDialog();
-        } else {
-          _showCheckOutDialog();
-        } // Show the dialog if within the location radius
+        _showAlertDialog(); // Show the dialog if within the location radius
       }
     }
   }
@@ -117,32 +130,38 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
 
   void _showOutOfLocationMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sorry, you are out of the location radius!')),
+       SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
     );
   }
 
-  void _showWithinRadiusDialog() {
+  void _showAlertDialog() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Within Location Radius'),
-          content: const Text('You are within the location radius. Do you want to proceed?'),
+          title: Text(isCheckedIn ? AppLocalizations.of(context)!.checkOut : AppLocalizations.of(context)!.checkIn),
+          content: Text(
+            isCheckedIn
+                ? AppLocalizations.of(context)!.areYouSure
+                : AppLocalizations.of(context)!.youHaveNotCheckedInYet,
+          ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                checkIn("biometric");
-                // Handle 'Yes' action here
+                Navigator.pop(context);
               },
-              child: const Text('Yes'),
+              child:  Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                // Handle 'Cancel' action here
+                if (isCheckedIn) {
+                  checkOut();
+                } else {
+                  checkIn("biometric");
+                }
+                Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text(isCheckedIn ?  AppLocalizations.of(context)!.checkOut : AppLocalizations.of(context)!.checkIn),
             ),
           ],
         );
@@ -150,32 +169,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     );
   }
 
-  void _showCheckOutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Check-Out'),
-          content: const Text('You are within the radius. Do you want to check out?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await checkOut();
-              },
-              child: const Text('Check Out'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _addCompanyLocationMarker() async {
     final ByteData bytes = await rootBundle.load('images/site.png'); // Use your company icon
@@ -214,7 +207,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Current location not available.')),
+         SnackBar(content: Text(AppLocalizations.of(context)!.currentLocationNotAvailable)),
       );
     }
   }
@@ -256,6 +249,14 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
               ],
             ),
           ),
+          if(isLoading)
+            Center(
+              child: SizedBox(
+                height: 200,
+                width: 200,
+                child: Lottie.asset('images/loader.json'),
+              ),
+            )
         ],
       ),
     );
@@ -299,11 +300,11 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         var checkInData = CheckInData.fromJson(decodedResponse);
         singletonClass.setCheckInData([checkInData]);
         print(singletonClass.checkInDataList.first.data?.id);
-        // Show success alert
-        await Future.delayed(const Duration(seconds: 2));
         setState(() {
           isCheckedIn = true;
         });
+        await _saveCheckInState();
+        await Future.delayed(const Duration(seconds: 2));
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -359,96 +360,114 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
 //CHECK OUT API CALL
   Future<void> checkOut() async {
     String checkOutTime = DateTime.now().toIso8601String();
+
+    // Fetch the check-in time from the singleton class
     String? checkInTime = singletonClass.checkInDataList.first.data?.checkInTime;
-    DateTime checkInDateTime = DateTime.parse(checkInTime!);
-    DateTime checkOutDateTime = DateTime.parse(checkOutTime);
-    Duration difference = checkOutDateTime.difference(checkInDateTime);
-    String totalHours = "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
-    print(totalHours);
-    String? id = singletonClass.checkInDataList.first.data?.id;
-    Map<String, dynamic> data = {
-      "employeeId": singletonClass.getJWTModel()?.employeeId,
-      "employeeName": singletonClass.getJWTModel()?.userName,
-      "checkOutTime": checkOutTime,
-      "type": singletonClass.checkInDataList.first.data?.type,
-      "totalTime": totalHours,
-      // Adjust this if needed for total time calculation
-    };
-    print(data);
 
-    String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$id');
-    setState(() {
-      isLoading = true;
-    });
+    // Calculate the duration between check-in and check-out
+    if (checkInTime != null) {
+      DateTime checkInDateTime = DateTime.parse(checkInTime);
+      DateTime checkOutDateTime = DateTime.parse(checkOutTime);
+      Duration difference = checkOutDateTime.difference(checkInDateTime);
+      String totalHours = "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
+      print("Total time spent: $totalHours");
 
-    try {
-      final response = await http.patch(
-        uri,
-        body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
+      // Fetch the check-in ID for updating the record
+      String? id = singletonClass.checkInDataList.first.data?.id;
 
+      // Prepare data for the check-out API call
+      Map<String, dynamic> data = {
+        "employeeId": singletonClass.getJWTModel()?.employeeId,
+        "employeeName": singletonClass.getJWTModel()?.userName,
+        "checkOutTime": checkOutTime,
+        "type": singletonClass.checkInDataList.first.data?.type,
+        "totalTime": totalHours,
+      };
+      print("Check-out data: $data");
+
+      String body = json.encode(data);
+      var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$id');
       setState(() {
-        isLoading = false;
+        isLoading = true;
       });
-      print(response.body);
 
-      if (response.statusCode == 200) {
-        await singletonClass.getClockingData();
-        // Show success alert
-        await Future.delayed(const Duration(seconds: 2));
+      try {
+        final response = await http.patch(
+          uri,
+          body: body,
+          headers: {
+            "Content-Type": "application/json",
+            "accept": "application/json",
+          },
+        );
+
         setState(() {
-          isCheckedIn = false;
+          isLoading = false;
         });
-        await QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkOutComplete,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
+        print("Check-out response: ${response.body}");
+
+        if (response.statusCode == 200) {
+          await Future.delayed(const Duration(seconds: 2));
+          setState(() {
+            isCheckedIn = false;
+          });
+          await _saveCheckInState();
+          await QuickAlert.show(
+            context: context,
+            type: QuickAlertType.success,
+            title: AppLocalizations.of(context)!.success,
+            text: AppLocalizations.of(context)!.checkOutComplete,
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+        } else if (response.statusCode == 400) {
+          // Handle validation error
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            title: 'Error',
+            text: 'Validation failed. Please check your inputs.',
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+        } else {
+          // Handle other server errors
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again.',
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+        }
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        print('Check-out Error: $e');
+
+        // Handle network errors or exceptions
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
           title: 'Error',
-          text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else {
-        // Handle other error statuses
-        print('Error: ${response.statusCode}');
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'An unexpected error occurred. Please try again.',
+          text: 'An error occurred. Please check your network connection.',
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
       }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print('Error: $e');
-
-      // Show error alert for exceptions
+    } else {
+      // Handle the case where the check-in time is null
       QuickAlert.show(
         context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'An error occurred. Please check your network connection.',
+        type: QuickAlertType.warning,
+        title: 'No Check-In Found',
+        text: 'You must check in before checking out.',
         autoCloseDuration: const Duration(seconds: 5),
         showCancelBtn: false,
         showConfirmBtn: false,
