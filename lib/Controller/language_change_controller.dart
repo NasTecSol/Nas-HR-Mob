@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LanguageChangeController extends ChangeNotifier {
+class LanguageChangeController with ChangeNotifier {
   Locale? _appLocale;
   Locale? get appLocale => _appLocale;
 

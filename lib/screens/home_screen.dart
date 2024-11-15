@@ -8,6 +8,8 @@ import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
+import 'package:nashr/screens/notifications_screen.dart';
+import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
@@ -20,6 +22,8 @@ import '../widgets/colors.dart';
 import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+
+import 'onsite_checkin.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool showHeaderContent = true;
   bool isExpanded = true;
   bool isLoading = false;
-
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
   bool _isCheckInCompleted = false;
@@ -51,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadCheckInState();
+    singletonClass.getEmployeeAttendanceData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -80,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //Slider
   OverlayEntry? _overlayEntry;
 
+
   OverlayEntry _createOverlayEntry() {
     return OverlayEntry(
       builder: (context) => Positioned(
@@ -107,16 +112,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    height: 90,
-                    width: 90,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Image.asset("images/site.png"),
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const OnsiteCheckin()));
+                      _removeOverlay();
+                    },
+                    child: Container(
+                      height: 90,
+                      width: 90,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Image.asset("images/site.png"),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -184,9 +195,347 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  //2ND OverLay
+  OverlayEntry? _overlayEntry2;
+
+  OverlayEntry _createViewAllOverlay(){
+    return OverlayEntry (
+        builder: (context) => Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: () {
+                _removeOverlay();
+              },
+              child: Material(
+                color: Colors.grey.withOpacity(0.8),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 100.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamClocking()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/teamClocking.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .teamClocking,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const DocumentScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Image.asset(
+                                            'images/files.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .documents,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const AssetsScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/assets.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!.assets,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                const TeamScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/Team.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!.teams,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const Complaints()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/Complain.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .complaints,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 20),
+                              Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      _removeOverlay();
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
+                                    },
+                                    child: Container(
+                                      height: 65,
+                                      width: 65,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 1,
+                                            blurRadius: 0.5,
+                                            offset: const Offset(0, 0), // changes position of shadow
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child:  Image.asset(
+                                          'images/Penalties.png',
+                                          fit: BoxFit.contain,
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  // Add spacing between image and text
+                                  Text(
+                                    'Penalties',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ))
+    );
+  }
+
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _overlayEntry2?.remove();
+    _overlayEntry2 = null;
   }
 
   void toggleSheet() {
@@ -216,10 +565,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: <Widget>[
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/DP.jpg'),
-                fit: BoxFit.cover,
+            decoration:  BoxDecoration(
+            image:   DecorationImage(
+                image: dashBoardData?.profilePic != null
+                    ? NetworkImage(dashBoardData!.profilePic!) // Network image
+                    : const AssetImage('images/DP.png') as ImageProvider,
+              fit: BoxFit.cover,
               ),
             ),
             child: BackdropFilter(
@@ -251,11 +602,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,
-                            child: Image.asset(
-                              'images/DP.jpg',
-                              fit: BoxFit.fill,
-                              height: 150,
-                              width: 150,
+                            child: ClipOval(
+                              child: Image.network(
+                                dashBoardData?.profilePic ?? '', // URL for the network image, empty string if null
+                                fit: BoxFit.cover,
+                                width: 100,
+                                height: 100,
+                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                  // Display the default asset image if the network image fails to load
+                                  return Image.asset(
+                                    'images/DP.png',
+                                    fit: BoxFit.cover,
+                                    width: 100,
+                                    height: 100,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -319,7 +681,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            print("///////???""?${singletonClass.checkOutStatus}");
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                            const NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -545,7 +908,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '9:30:40 AM',
+                                                  singletonClass.attendanceDataList.first.data!.last.clockInTime?.isNotEmpty ?? false
+                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockInTime}'
+                                                      : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -579,7 +944,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  '4:30:52 AM',
+                                                  singletonClass.attendanceDataList.first.data!.last.clockOutTime?.isNotEmpty ?? false
+                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockOutTime}'
+                                                      : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -591,57 +958,111 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 10),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.red,
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(15)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .lateComings,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white,
+                                              // Check if there are late minutes
+                                              if ((singletonClass.attendanceDataList.first.data!.last.lateMinutes ?? 0) > 0)
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.lateComings,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        "15 mins",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white,
+                                                        Text(
+                                                          '${singletonClass.attendanceDataList.first.data!.last.lateMinutes}',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              // If early check-out exists and no late minutes, show early check-out
+                                              else if ((singletonClass.attendanceDataList.first.data!.last.earlyCheckOut ?? 0) > 0)
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.blue,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.earlyCheckOut,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          '${singletonClass.attendanceDataList.first.data!.last.earlyCheckOut}',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              // If both lateMinutes and earlyCheckOut are unavailable, show "Late Comings" with "NA"
+                                              else
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(5.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(context)!.lateComings,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'NA',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
                                               const SizedBox(width: 5),
+                                              // Display total hours worked
                                               Expanded(
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${AppLocalizations.of(context)!.worked} 6h 1m',
+                                                    '${AppLocalizations.of(context)!.worked} ${singletonClass.attendanceDataList.first.data!.last.totalHoursWorked?.toString() ?? 'NA'}',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
+                                                      fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
                                                 ),
@@ -698,7 +1119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const SizedBox(height: 4),
                                         // Space between text items
                                         Text(
-                                          "12:00 PM",
+                                          '${singletonClass.attendanceDataList.first.data!.last.breakTime}',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.normal,
@@ -776,7 +1197,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     decoration: const BoxDecoration(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(15)),
-                                      color: Colors.white,
                                       gradient: LinearGradient(
                                         colors: [
                                           Color(0xFF444658),
@@ -805,7 +1225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           title: Row(
                                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                             children: [
-                                                              Icon(Icons.warning, color: Colors.yellow),
+                                                              const Icon(Icons.warning, color: Colors.yellow),
                                                               Text(AppLocalizations.of(context)!.areYouSure,
                                                                 style: GoogleFonts.inter(
                                                                   fontSize: 15,
@@ -817,35 +1237,46 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                           actions: [
                                                             Row(
-                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                               children: [
-                                                                IconButton(
-                                                                  icon: Icon(Icons.cancel, color: Colors.red),
-                                                                  onPressed: () => Navigator.of(context).pop(),
-                                                                  tooltip: AppLocalizations.of(context)!.cancel,
-                                                                ),
-                                                                Text(
-                                                                  AppLocalizations.of(context)!.cancel,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.red,
+                                                                InkWell(
+                                                                  onTap: () => Navigator.of(context).pop(),
+                                                                  child: Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      const Icon(Icons.cancel, color: Colors.red), // Icon
+                                                                      const SizedBox(width: 5),
+                                                                      Text(
+                                                                        AppLocalizations.of(context)!.cancel,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 15,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          color: Colors.red,
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
-                                                                IconButton(
-                                                                  icon: Icon(Icons.logout, color: Colors.black),
-                                                                  onPressed: () async {
+                                                                const SizedBox(width: 8),
+                                                                InkWell(
+                                                                  onTap: () async {
                                                                     Navigator.pop(context);
-                                                                    checkOut();
+                                                                    await checkOut();
                                                                   },
-                                                                  tooltip: AppLocalizations.of(context)!.yes,
-                                                                ),
-                                                                Text(
-                                                                  AppLocalizations.of(context)!.yes,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.black,
+                                                                  child: Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      const Icon(Icons.logout, color: Colors.black),
+                                                                      const SizedBox(width: 5),
+                                                                      Text(
+                                                                        AppLocalizations.of(context)!.yes,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 15,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          color: Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
                                                               ],
@@ -924,9 +1355,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                             ),
                             ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(onPressed: (){
+                                _overlayEntry2 = _createViewAllOverlay();
+                                Overlay.of(context)
+                                    .insert(_overlayEntry2!);
+                              }, child: Text(AppLocalizations.of(context)!.viewAll,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight:
+                                  FontWeight.w600,
+                                  color: Colors.black,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ))
+                            ],
+                          ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: SingleChildScrollView(
+                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -946,24 +1396,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/teamClocking.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1000,24 +1446,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child: Image.asset(
                                                   'images/files.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
+
                                             ),
                                           ),
                                         ),
@@ -1054,24 +1497,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/assets.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1107,24 +1546,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
+                                              child:  Image.asset(
                                                   'images/Team.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1156,24 +1591,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0,
-                                                      3), // changes position of shadow
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0), // changes position of shadow
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child: ClipOval(
-                                                child: Image.asset(
-                                                  'images/complaint.png',
+                                              child:  Image.asset(
+                                                  'images/Complain.png',
                                                   fit: BoxFit.contain,
                                                   width: 30,
                                                   height: 30,
                                                 ),
-                                              ),
                                             ),
                                           ),
                                         ),
@@ -1190,6 +1621,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0), // changes position of shadow
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child:  Image.asset(
+                                              'images/Penalties.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      // Add spacing between image and text
+                                      Text(
+                                       'Penalties',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -1235,10 +1710,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: ListView.builder(
                                         padding: const EdgeInsets.all(5),
                                         scrollDirection: Axis.horizontal,
-                                        itemCount: activity.length,
+                                        itemCount: singletonClass.notificationModelList.first.data!.length,
                                         itemBuilder:
                                             (BuildContext context, int index) {
-                                          final activities = activity[index];
+                                          final activities = singletonClass.notificationModelList.first.data![index];
+
                                           return SizedBox(
                                               width: 180,
                                               // Explicit width for horizontal items
@@ -1251,10 +1727,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.white,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: Colors.grey.withOpacity(0.5),
-                                                      spreadRadius: 2,
-                                                      blurRadius: 8,
-                                                      offset: const Offset(0, 3),
+                                                      color: Colors.grey.withOpacity(0.3),
+                                                      spreadRadius: 1,
+                                                      blurRadius: 5,
+                                                      offset: const Offset(0, 0),
                                                     ),
                                                   ],
                                                 ),
@@ -1265,7 +1741,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     Padding(
                                                       padding: const EdgeInsets.all(8.0),
                                                       child: Text(
-                                                        '${activities.activityName}',
+                                                        '${activities.notificationType}',
                                                         style: GoogleFonts.inter(
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 15,
@@ -1276,7 +1752,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                                       child: Text(
-                                                        '${activities.time}',
+                                                        singletonClass.formatTime("${activities.createdAt}"),
                                                         style: GoogleFonts.inter(
                                                           fontWeight: FontWeight.w500,
                                                           fontSize: 15,
@@ -1307,7 +1783,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ),
                                                           const Spacer(),
                                                           Text(
-                                                            '${activities.date}',
+                                                            singletonClass.formatDate2("${activities.createdAt}"),
                                                             style:
                                                             GoogleFonts.inter(
                                                               fontWeight:
@@ -1347,10 +1823,10 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (status) {
       case 'late':
         return Colors.red;
-      case 'Approved':
+      case 'approved':
         return Colors.green;
-      case 'Pending':
-        return Colors.yellow;
+      case 'pending':
+        return NasColors.pending;
       default:
         return Colors.grey; // or any other default color
     }
@@ -1358,7 +1834,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> checkIn(String type) async {
-    String checkInTime = DateTime.now().toUtc().toIso8601String();
+    String checkInTime = DateTime.now().toIso8601String();
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
       "employeeName": singletonClass.getJWTModel()?.userName,
@@ -1456,7 +1932,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //CHECK OUT API CALL
   Future<void> checkOut() async {
-    String checkOutTime = DateTime.now().toUtc().toIso8601String();
+    String checkOutTime = DateTime.now().toIso8601String();
     String? checkInTime = singletonClass.checkInDataList.first.data?.checkInTime;
     DateTime checkInDateTime = DateTime.parse(checkInTime!);
     DateTime checkOutDateTime = DateTime.parse(checkOutTime);

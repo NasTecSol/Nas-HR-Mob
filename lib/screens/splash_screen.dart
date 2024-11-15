@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/login_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashscreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  SingletonClass singletonClass = SingletonClass();
 
   @override
   void initState() {
@@ -23,6 +26,13 @@ class _SplashscreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 3500),
     );
     _animationController.forward().then((value) async {
+      final preferences = await SharedPreferences.getInstance();
+      final String? url =preferences.getString('baseURL');
+      if (url != null && url.isNotEmpty){
+        singletonClass.baseURL = url ;
+      } else {
+        singletonClass.baseURL = singletonClass.awsURL;
+      }
       await Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),

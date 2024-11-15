@@ -49,7 +49,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
     }
   }
 
-  List<Data> filterClockingDataByEmployeeId(List<ClockingData> clockingDataList, String employeeId) {
+  List<Data> filterClockingDataByEmployeeId(
+      List<ClockingData> clockingDataList, String employeeId) {
     // Create a list to store the filtered data
     List<Data> filteredData = [];
 
@@ -62,6 +63,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
 
         // Add the filtered data to the overall list
         filteredData.addAll(employeeData);
+
       }
     }
 
@@ -74,123 +76,125 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: isLoading
-            ? Center(
-                child: Center(
-                  child:  SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset(
-                      'images/loader.json'
-                  ),
-                ),)
-              )
-            : ListView(
-                children: [
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(0.0),
-                            child: IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: Container(
-                                height: 50,
-                                width: 50,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
-                                      spreadRadius: 5,
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.arrow_back_ios_new_outlined,
-                                  color: Colors.black,
-                                ),
+        child: ListView(
+          children: [
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.4),
+                                spreadRadius: 5,
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
                               ),
-                            ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 0.0, top: 0.0),
-                            child: Text(
-                              AppLocalizations.of(context)!.myClocking,
-                              style: GoogleFonts.inter(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_outlined,
+                            color: Colors.black,
                           ),
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 0.0),
-                            child: TextButton(
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: NasColors.darkBlue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                              onPressed: () {
-                                // Add your onPressed functionality here
-                              },
-                              child: SizedBox(
-                                height: 30,
-                                width: 100,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.filter_alt,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      AppLocalizations.of(context)!.filter,
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 20),
-                      ListView.builder(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 0.0, top: 0.0),
+                      child: Text(
+                        AppLocalizations.of(context)!.myClocking,
+                        style: GoogleFonts.inter(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: NasColors.darkBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onPressed: () {
+                          // Add your onPressed functionality here
+                        },
+                        child: SizedBox(
+                          height: 30,
+                          width: 90,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.filter_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                AppLocalizations.of(context)!.filter,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                isLoading ?
+                  Center(
+                      child: Center(
+                    child: SizedBox(
+                      height: 200,
+                      width: 200,
+                      child: Lottie.asset('images/loader.json'),
+                    ),
+                  )) :
+                filteredClockingData.isNotEmpty
+                    ? ListView.builder(
                         padding: const EdgeInsets.all(5),
                         shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredClockingData.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final clock = filteredClockingData[index]; // Corrected index
-
+                          final clock =
+                              filteredClockingData[index]; // Corrected index
                           // Format date
-                          String formattedDate = DateFormat('MMMM dd, yyyy').format(
-                              DateTime.parse(clock.createdAt ?? DateTime.now().toString()));
-                          String formattedCheckInTime = DateFormat('hh:mm a').format(
-                              DateTime.parse(clock.checkInTime ?? DateTime.now().toString()));
-
+                          String formattedDate = DateFormat('MMMM dd, yyyy')
+                              .format(DateTime.parse(clock.createdAt ??
+                                  DateTime.now().toString()));
+                          String formattedCheckInTime = DateFormat('hh:mm a')
+                              .format(DateTime.parse(clock.checkInTime ??
+                                  DateTime.now().toString()));
                           // Check if checkOutTime is null
-                          String formattedCheckOutTime = clock.checkOutTime != null
-                              ? DateFormat('hh:mm a').format(DateTime.parse(clock.checkOutTime!))
+                          String formattedCheckOutTime = clock.checkOutTime !=
+                                  null
+                              ? DateFormat('hh:mm a')
+                                  .format(DateTime.parse(clock.checkOutTime!))
                               : 'N/A'; // Provide a fallback for null check-out time
-
 
                           return Container(
                             margin: const EdgeInsets.symmetric(vertical: 15),
@@ -306,11 +310,22 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                             ),
                           );
                         },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                      )
+                    : Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                            fontSize: 15,
+                          ),
+                        ),
+                      )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

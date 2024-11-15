@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "849512939836",
+    "project_id": "nashr-b93a9",
+    "storage_bucket": "nashr-b93a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849512939836:android:cca7536afcf6ae0483de39",
+        "android_client_info": {
+          "package_name": "com.nastecsol.nashr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjwjOFEmH8x-gZzAvG5P_Q2eFwEHmeTi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
