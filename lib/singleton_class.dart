@@ -35,7 +35,7 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? awsURL = "https://protein-bishop-rat-tend.trycloudflare.com";
+  String? awsURL = "https://dev.nashrms.com/api";
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
