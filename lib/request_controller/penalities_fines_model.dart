@@ -1,13 +1,13 @@
 
-class RequestDateModel {
+class PenaltiesAndFineModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
   List<Data>? data;
 
-  RequestDateModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  PenaltiesAndFineModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
-  RequestDateModel.fromJson(Map<String, dynamic> json) {
+  PenaltiesAndFineModel.fromJson(Map<String, dynamic> json) {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
@@ -97,23 +97,20 @@ class Data {
 }
 
 class Attachments {
-  String? fileName;
-  String? fileType;
-  String? fileContent;
+  String? type;
+  String? url;
 
-  Attachments({this.fileName, this.fileType, this.fileContent});
+  Attachments({this.type, this.url});
 
   Attachments.fromJson(Map<String, dynamic> json) {
-    fileName = json["fileName"];
-    fileType = json["fileType"];
-    fileContent = json["fileContent"];
+    type = json["type"];
+    url = json["url"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["fileName"] = fileName;
-    _data["fileType"] = fileType;
-    _data["fileContent"] = fileContent;
+    _data["type"] = type;
+    _data["url"] = url;
     return _data;
   }
 }
@@ -151,55 +148,21 @@ class Approvers {
 
 class RequestData {
   List<Employees>? employees;
-  dynamic startDate;
-  dynamic endDate;
-  dynamic duration;
-  dynamic leaveType;
-  dynamic loanAmount;
-  dynamic loanCycle;
-  dynamic loanInstallment;
-  dynamic loanDuration;
-  dynamic loanType;
-  dynamic fine_penality;
+  String? finePenality;
   int? amount;
-  dynamic details;
-  dynamic dateTime;
-  dynamic remark;
+  String? details;
+  String? remark;
+  String? date;
 
-  RequestData({
-    this.employees,
-    this.startDate,
-    this.endDate,
-    this.duration,
-    this.leaveType,
-    this.loanAmount,
-    this.loanCycle,
-    this.loanInstallment,
-    this.loanDuration,
-    this.loanType,
-    this.fine_penality,
-    this.amount,
-    this.details,
-    this.dateTime,
-    this.remark,
-  });
+  RequestData({this.employees, this.finePenality, this.amount, this.details, this.remark, this.date});
 
   RequestData.fromJson(Map<String, dynamic> json) {
     employees = json["employees"] == null ? null : (json["employees"] as List).map((e) => Employees.fromJson(e)).toList();
-    startDate = json["startDate"];
-    endDate = json["endDate"];
-    duration = json["duration"];
-    leaveType = json["leaveType"];
-    loanAmount = json["loanAmount"];
-    loanCycle = json["loanCycle"];
-    loanInstallment = json["loanInstallment"];
-    loanDuration = json["loanDuration"];
-    loanType = json["loanType"];
-    fine_penality = json["fine_penality"];
+    finePenality = json["fine_penality"];
     amount = json["amount"];
     details = json["details"];
-    dateTime = json["date&time"];
     remark = json["remark"];
+    date = json["date"];
   }
 
   Map<String, dynamic> toJson() {
@@ -207,20 +170,11 @@ class RequestData {
     if(employees != null) {
       _data["employees"] = employees?.map((e) => e.toJson()).toList();
     }
-    _data["startDate"] = startDate;
-    _data["endDate"] = endDate;
-    _data["duration"] = duration;
-    _data["leaveType"] = leaveType;
-    _data["loanAmount"] = loanAmount;
-    _data["loanCycle"] = loanCycle;
-    _data["loanInstallment"] = loanInstallment;
-    _data["loanDuration"] = loanDuration;
-    _data["loanType"] = loanType;
-    _data["fine_penality"] = fine_penality;
+    _data["fine_penality"] = finePenality;
     _data["amount"] = amount;
     _data["details"] = details;
-    _data["date&time"] = dateTime;
     _data["remark"] = remark;
+    _data["date"] = date;
     return _data;
   }
 }

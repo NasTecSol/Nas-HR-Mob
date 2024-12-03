@@ -40,8 +40,7 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResult = false;
-  List<SearchedResult> _employeeSearchResults =
-      []; // Stores search results of employees
+  List<SearchedResult> _employeeSearchResults = []; // Stores search results of employees
   List<SearchedResult?> _selectedEmployees = [];
   DateTime? fromDate;
   DateTime? toDate;
@@ -142,6 +141,11 @@ class _RequestScreenState extends State<RequestScreen> {
                               !(singletonClass.getJWTModel()?.grade == 'L0' ||
                                   singletonClass.getJWTModel()?.grade ==
                                       'L1')) {
+                            return const SizedBox
+                                .shrink(); // Skip rendering this item if the grade condition is not met
+                          }
+                          if (request.requestType ==
+                              'complaintRequest') {
                             return const SizedBox
                                 .shrink(); // Skip rendering this item if the grade condition is not met
                           }
@@ -326,7 +330,9 @@ class _RequestScreenState extends State<RequestScreen> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    print("Singleton Data : ${singletonClass.requestDataList.first.data!.first.employeeName}");
+                  },
                   icon: Icon(
                     Icons.filter_list_alt,
                     size: 35,
@@ -376,10 +382,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                 itemBuilder: (BuildContext context, int index) {
                                   final request = singletonClass
                                       .requestDataList.first.data![index];
-                                  if (request.requestType ==
-                                      'penalties_fines') {
-                                    return const SizedBox.shrink();
-                                  }
                                   return GestureDetector(
                                     onTap: () => _toggleExpand(index),
                                     child: AnimatedContainer(
@@ -567,8 +569,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   request
                                                                       .requestData!
                                                                       .isNotEmpty
-                                                              ? "Duration: ${request.requestData!.first.loanDuration}"
-                                                              : "No data available",
+                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                              : AppLocalizations.of(context)!.noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -584,7 +586,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "Duration: ${request.requestData!.first.duration}"
-                                                              : "No data available",
+                                                              : AppLocalizations.of(context)!.noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -631,7 +633,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "Balance to Date",
+                                                        AppLocalizations.of(context)!.balanceToDate,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -661,7 +663,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "Balance to end of Year",
+                                                        AppLocalizations.of(context)!.balanceToEndOfYear,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -695,7 +697,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "Total Loan Amount",
+                                                        AppLocalizations.of(context)!.totalLoanAmount,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -716,7 +718,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanAmount}"
-                                                              : "No data available",
+                                                              : AppLocalizations.of(context)!.noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -730,7 +732,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "Loan Installment",
+                                                        AppLocalizations.of(context)!.loanInstallment,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -751,7 +753,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanInstallment}"
-                                                              : "No data available",
+                                                              : AppLocalizations.of(context)!.noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -765,7 +767,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "Loan Cycle",
+                                                        AppLocalizations.of(context)!.loanCycle,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -786,7 +788,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanCycle}"
-                                                              : "No data available",
+                                                              : AppLocalizations.of(context)!.noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1085,10 +1087,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                       (BuildContext context, int index) {
                                     final request = singletonClass
                                         .requestDataList.first.data![index];
-                                    if (request.requestType ==
-                                        'penalties_fines') {
-                                      return const SizedBox.shrink();
-                                    }
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1280,7 +1278,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.loanDuration}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1298,7 +1296,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.duration}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1351,7 +1349,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Balance to Date",
+                                                          AppLocalizations.of(context)!.balanceToDate,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1382,7 +1380,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Balance to end of Year",
+                                                          AppLocalizations.of(context)!.balanceToEndOfYear,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1419,7 +1417,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Total Loan Amount",
+                                                          AppLocalizations.of(context)!.totalLoanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1440,7 +1438,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanAmount}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1457,7 +1455,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Loan Installment",
+                                                          AppLocalizations.of(context)!.loanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1478,7 +1476,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanInstallment}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1495,7 +1493,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Loan Cycle",
+                                                          AppLocalizations.of(context)!.loanCycle,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1516,7 +1514,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanCycle}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1810,10 +1808,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                       (BuildContext context, int index) {
                                     final request = singletonClass
                                         .approverDataList.first.data![index];
-                                    if (request.requestType ==
-                                        'penalties_fines') {
-                                      return const SizedBox.shrink();
-                                    }
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -2003,7 +1997,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.loanDuration}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2021,7 +2015,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.duration}"
-                                                                : "No data available",
+                                                                : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2074,7 +2068,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Balance to Date",
+                                                          AppLocalizations.of(context)!.balanceToDate,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2105,7 +2099,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Balance to end of Year",
+                                                          AppLocalizations.of(context)!.balanceToEndOfYear,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2142,7 +2136,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Total Loan Amount",
+                                                          AppLocalizations.of(context)!.totalLoanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2163,7 +2157,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanAmount}"
-                                                                : "No data available",
+                                                                :   AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2180,7 +2174,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Loan Installment",
+                                                          AppLocalizations.of(context)!.loanInstallment,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2201,7 +2195,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanInstallment}"
-                                                                : "No data available",
+                                                                :   AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2218,7 +2212,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "Loan Cycle",
+                                                          AppLocalizations.of(context)!.loanCycle,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2239,7 +2233,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanCycle}"
-                                                                : "No data available",
+                                                                :   AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2259,6 +2253,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             const EdgeInsets
                                                                 .all(10.0),
                                                         child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
                                                           children: [
                                                             GestureDetector(
                                                               onTap: () {
@@ -2374,7 +2369,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     });
                                                               },
                                                               child: Container(
-                                                                width: 140,
+                                                                width: 120,
                                                                 height: 40,
                                                                 decoration:
                                                                     const BoxDecoration(
@@ -2537,7 +2532,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     });
                                                               },
                                                               child: Container(
-                                                                width: 140,
+                                                                width: 120,
                                                                 height: 40,
                                                                 decoration:
                                                                     const BoxDecoration(
@@ -2758,6 +2753,10 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/time.png';
       case 'assetsRequest':
         return 'images/pc.png';
+      case 'loanRequest':
+        return 'images/loanRequest.png';
+      case 'penalties_fines':
+        return 'images/Penalties.png';
       default:
         return 'images/OverTime.png'; // Default image for company or other types
     }

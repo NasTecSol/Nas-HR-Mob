@@ -1904,16 +1904,16 @@ class _ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Upload'),
+          title:  Text(AppLocalizations.of(context)!.confirmUpload),
           content:
-              Text('Are you sure you want to upload this file: ${file.name}?'),
+              Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?'),
           actions: [
             TextButton(
               onPressed: () {
                 // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child:  Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () async {
@@ -1923,7 +1923,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 // Trigger the API call to upload the file
                 await uploadProfile();
               },
-              child: const Text('Yes'),
+              child:  Text(AppLocalizations.of(context)!.yes),
             ),
           ],
         );

@@ -464,7 +464,18 @@
   "earlyCheckOut": "الخروج المبكر",
   "youHaveNotCheckedInYet": "لم تقم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.",
   "currentLocationNotAvailable": "الموقع الحالي غير متاح.",
-  "sorryYouAreOutOfTheLocationRadius": "عذرًا، أنت خارج نطاق دائرة الموقع!"
+  "sorryYouAreOutOfTheLocationRadius": "عذرًا، أنت خارج نطاق دائرة الموقع!",
+  "title": "العنوان",
+  "maximum300": "الحد الأقصى 300 حرف. الأحرف الخاصة غير مسموح بها.",
+  "typeYourComplainHere": "اكتب شكواك هنا..",
+  "typeYourTitleHere": "اكتب عنوانك هنا..",
+  "confirmUpload": "تأكيد الرفع",
+  "areYouSureYouWantToUploadThisFile": "هل أنت متأكد أنك تريد رفع هذا الملف:",
+  "balanceToDate": "الرصيد حتى اليوم",
+  "balanceToEndOfYear": "الرصيد حتى نهاية العام",
+  "duration": "المدة",
+  "loanInstallment": "القسط الشهري",
+  "loanCycle": "دورة القرض"
 
 
 

@@ -106,12 +106,26 @@ class _MainScreenState extends State<MainScreen> {
                           color: NasColors.darkBlue,
                         )
                             : null,
-                        child:  CircleAvatar(
-                          radius: 25,
-                          backgroundColor: Colors.transparent,
-                          backgroundImage: dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty
-                              ? NetworkImage(dashBoardData!.profilePic!) // Use network image if available
-                              : AssetImage('images/DP.png') as ImageProvider, // Fallback to asset image
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 35,
+                            child: ClipOval(
+                              child: Image.network(
+                                dashBoardData?.profilePic ?? '', // URL for the network image, empty string if null
+                                fit: BoxFit.cover,
+                                width: 70,
+                                height: 70,
+                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                  // Display the default asset image if the network image fails to load
+                                  return Image.asset(
+                                    'images/DP.png',
+                                    fit: BoxFit.cover,
+                                    width: 70,
+                                    height: 70,
+                                  );
+                                },
+                              ),
+                          ),
                         ),
                       ),
                     );

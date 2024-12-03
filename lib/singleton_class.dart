@@ -9,6 +9,8 @@ import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
+import 'package:nashr/request_controller/complaints_approver_model.dart';
+import 'package:nashr/request_controller/complaints_model.dart';
 import 'package:nashr/request_controller/employee_details_assets_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
@@ -17,6 +19,8 @@ import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
+import 'package:nashr/request_controller/penalities_fines_model.dart';
+import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
@@ -35,12 +39,16 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? awsURL = "https://protein-bishop-rat-tend.trycloudflare.com";
+  String? awsURL = "https://dev.nashrms.com/api";
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<ComplaintsApproverModel> complaintsApproverDataList = [];
+  List<PenaltiesApproverModel> penaltiesApproverDataList = [];
+  List<PenaltiesAndFineModel> penaltiesDataList = [];
   List<NotificationModel> notificationModelList = [];
+  List<ComplaintsModel> complaintsDataList = [];
   List<ProfileResponse> profileResponseDataList = [];
   List<AttachmentResponse> attachmentResponseDataList = [];
   List<SearchEmployeeData> searchEmployeeDataList = [];
@@ -193,35 +201,223 @@ class SingletonClass {
   }
 
   Future<RequestDateModel?> getRequestData() async {
-    String? employeeId =  getJWTModel()?.employeeId;
+    String? employeeId = getJWTModel()?.employeeId;
+
+    // Request body with the required parameter
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["leaveRequest","loanRequest"],
+    };
+
+    var uri = Uri.parse('$baseURL/request/employee/$employeeId');
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = RequestDateModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        setRequestData([requestData]);
+
+        // Print the parsed data for debugging
+        print(
+            "Singleton Data: ${requestDataList.first.data!.first.employeeName}");
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error: $e');
+      return null;
+    }
+  }
+
+
+  Future<ComplaintsModel?> getComplaintsData() async {
+    String? employeeId = getJWTModel()?.employeeId;
+
+    // Request body with the required parameter
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["complaintRequest"],
+    };
+
+    var uri = Uri.parse('$baseURL/request/employee/$employeeId');
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Complaints Log: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = ComplaintsModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        complaintsDataList.addAll([requestData]);
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error: $e');
+      return null;
+    }
+  }
+
+  Future<PenaltiesAndFineModel?> getPenalties() async {
+    String? employeeId =  getJWTModel()?.empId;
     var client = http.Client();
-    var uri = Uri.parse('$baseURL/request/emp/$employeeId');
+    var uri = Uri.parse('$baseURL/request/penalties_fines/$employeeId');
     var response = await client.get(uri);
     log(response.body);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
-      var requestData = RequestDateModel.fromJson(responseBody);
-      setRequestData([requestData]);
+      var requestData = PenaltiesAndFineModel.fromJson(responseBody);
+      penaltiesDataList.addAll([requestData]);
       return requestData;
     }
     return null ; // Print the response body
   }
-
   //ApproverDataReq API call
 
   Future<ApproverRequestData?> getApproverData() async {
-    String? employeeId =  getJWTModel()?.employeeId;
-    var client = http.Client();
+    String? employeeId = getJWTModel()?.employeeId;
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["leaveRequest","loanRequest"],
+    };
     var uri = Uri.parse('$baseURL/request/approver/$employeeId');
-    var response = await client.get(uri);
-    log(response.body);
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var requestData = ApproverRequestData.fromJson(responseBody);
-      setApproverDataList([requestData]);
-      return requestData;
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = ApproverRequestData.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        setApproverDataList([requestData]);
+
+        // Print the parsed data for debugging
+        print(
+            "Singleton Data approver: ${approverDataList.first.data!.first.employeeName}");
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error: $e');
+      return null;
     }
-    return null ; // Print the response body
+  }
+
+  //Approver for complaints
+  Future<ComplaintsApproverModel?> getComplaintsApproverData() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["complaintRequest"],
+    };
+    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("complaints Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = ComplaintsApproverModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        complaintsApproverDataList.addAll([requestData]);
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error: $e');
+      return null;
+    }
+  }
+
+  //Approver for penalties
+  Future<PenaltiesApproverModel?> getPenaltiesApprover() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["penalties_fines"],
+    };
+    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("penalties Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = PenaltiesApproverModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        penaltiesApproverDataList.addAll([requestData]);
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error: $e');
+      return null;
+    }
   }
 
 
@@ -241,10 +437,16 @@ class SingletonClass {
   }
 
   Future<ClockingData?> getClockingData() async {
+    String? employeeId = getJWTModel()?.employeeId;
     var client = http.Client();
-    var uri = Uri.parse('$baseURL/c-emp-check-in-out');
+    DateTime now = DateTime.now();
+    DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
+    String firstDateString = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
+    String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+
+    var uri = Uri.parse('$baseURL/c-emp-check-in-out/$employeeId/$firstDateString/$currentDateString');
     var response = await client.get(uri);
-    log(response.body);
+    log("ClockingData:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var clockingData = ClockingData.fromJson(responseBody);
