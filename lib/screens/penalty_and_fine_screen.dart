@@ -30,7 +30,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
   void initState() {
     super.initState();
     _approverDataFuture =
-        singletonClass.getApproverData(); // Initialize Future in initState
+        singletonClass.getComplaintsApproverData(); // Initialize Future in initState
   }
 
   void _toggleExpand(int index) {
@@ -149,7 +149,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                 Expanded(
                   // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: singletonClass.getRequestData(),
+                      future: singletonClass.getPenalties(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -166,7 +166,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                                  .requestDataList.first.data!.isEmpty
+                                  .penaltiesDataList.first.data!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -181,15 +181,11 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: singletonClass
-                                      .requestDataList.first.data!.length,
+                                      .penaltiesDataList.first.data!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .requestDataList.first.data![index];
-                                    if (request.requestType == 'leaveRequest' ||
-                                        request.requestType == 'loanRequest') {
-                                      return const SizedBox.shrink();
-                                    }
+                                        .penaltiesDataList.first.data![index];
                                     return AnimatedContainer(
                                       duration:
                                           const Duration(milliseconds: 300),
@@ -236,8 +232,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                     children: [
                                                       Expanded(
                                                         child: Text(
-                                                          request.requestData!
-                                                              .first.dateTime,
+                                                          "${request.requestData!
+                                                              .first.date}",
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontSize: 15,
@@ -260,8 +256,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                     ],
                                                   ),
                                                   Text(
-                                                    request.requestData!.first
-                                                        .remark,
+                                                    "${request.requestData!.first
+                                                        .remark}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
@@ -300,7 +296,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                   Expanded(
                     // Wrap ListView with Expanded
                     child: FutureBuilder(
-                        future: singletonClass.getRequestData(),
+                        future: singletonClass.getPenalties(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -317,7 +313,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             );
                           } else if (snapshot.hasData) {
                             return singletonClass
-                                    .requestDataList.first.data!.isEmpty
+                                    .penaltiesDataList.first.data!.isEmpty
                                 ? Center(
                                     child: Text(
                                       AppLocalizations.of(context)!.noData,
@@ -332,17 +328,11 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     itemCount: singletonClass
-                                        .requestDataList.first.data!.length,
+                                        .penaltiesDataList.first.data!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       final request = singletonClass
-                                          .requestDataList.first.data![index];
-                                      if (request.requestType ==
-                                              'leaveRequest' ||
-                                          request.requestType ==
-                                              'loanRequest') {
-                                        return const SizedBox.shrink();
-                                      }
+                                          .penaltiesDataList.first.data![index];
                                       return AnimatedContainer(
                                         duration:
                                             const Duration(milliseconds: 300),
@@ -391,8 +381,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            request.requestData!
-                                                                .first.dateTime,
+                                                            "${request.requestData!
+                                                                .first.date}",
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontSize: 15,
@@ -417,8 +407,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                       ],
                                                     ),
                                                     Text(
-                                                      request.requestData!.first
-                                                          .remark,
+                                                      "${request.requestData!.first
+                                                          .remark}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
                                                         fontWeight:
@@ -471,8 +461,8 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else if (snapshot.hasData) {
-                            return singletonClass
-                                    .approverDataList.first.data!.isEmpty
+                            return  singletonClass.penaltiesApproverDataList.isEmpty ||
+                                singletonClass.penaltiesApproverDataList.first.data!.isEmpty
                                 ? Center(
                                     child: Text(
                                       AppLocalizations.of(context)!.noData,
@@ -487,17 +477,11 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     itemCount: singletonClass
-                                        .approverDataList.first.data!.length,
+                                        .penaltiesApproverDataList.first.data!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       final request = singletonClass
-                                          .approverDataList.first.data![index];
-                                      if (request.requestType ==
-                                              'leaveRequest' ||
-                                          request.requestType ==
-                                              'loanRequest') {
-                                        return const SizedBox.shrink();
-                                      }
+                                          .penaltiesApproverDataList.first.data![index];
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(

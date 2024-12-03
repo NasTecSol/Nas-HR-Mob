@@ -66,22 +66,39 @@ class _LoanScreenState extends State<LoanScreen> {
       return const Center(child: Text('No loan information available'));
     }
 
-    // Calculate the remaining amount
+// Validate `totalLoan` and `paidAmount` before parsing
+    if (totalLoan == null || totalLoan.isEmpty || double.tryParse(totalLoan) == null) {
+      return const Center(child: Text('Invalid total loan value'));
+    }
+
+    if (paidAmount == null || paidAmount.isEmpty || double.tryParse(paidAmount) == null) {
+      return const Center(child: Text('Invalid paid amount value'));
+    }
+
+// Calculate the remaining amount
     double totalLoanValue = double.parse(totalLoan);
     double paidAmountValue = double.parse(paidAmount);
     double remainingAmountValue = totalLoanValue - paidAmountValue;
     remainingAmount = remainingAmountValue.toString();
 
-    // Extract the loan duration
+// Validate and extract the loan duration
+    if (loanInfo.first.loanDuration == null ||
+        int.tryParse(loanInfo.first.loanDuration!) == null) {
+      return const Center(child: Text('Invalid loan duration'));
+    }
     int totalInstallments = _extractLoanDuration(loanInfo.first.loanDuration!);
 
-    // Generate loan installments
+// Generate loan installments
+    if (loanInfo.first.loanIssueDate == null || loanInfo.first.paidInstallments == null) {
+      return const Center(child: Text('Incomplete loan data'));
+    }
     loanInstallments = _generateLoanInstallments(
       loanInfo.first.loanIssueDate!,
       totalInstallments,
       int.parse(loanInfo.first.paidInstallments!),
       loanInfo.first.installmentAmount!,
     );
+
 
     return Scaffold(
       backgroundColor: Colors.white,

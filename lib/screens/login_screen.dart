@@ -418,6 +418,7 @@ class _LoginScreenState extends State<LoginScreen> {
             singletonClass.getRequestData();
             singletonClass.getApproverData();
             singletonClass.getEmployeeAttendanceData();
+            singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(

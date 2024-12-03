@@ -224,7 +224,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                 height: 80,
                                                 width: 80,
                                                 child: Image.asset(
-                                                    "images/Medicine.png"),
+                                                    _getNotificationImage("${notificationData.notificationType}")),
                                               ),
                                             ],
                                           )
@@ -270,6 +270,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     } else {
       // For dates older than a week, show the full date
       return DateFormat('dd-MM-yyyy').format(createdDate);
+    }
+  }
+
+
+
+  String _getNotificationImage(String eventType) {
+    switch (eventType) {
+      case 'Leave Request':
+        return 'images/Medicine.png';
+      case 'Loan Request':
+        return 'images/loan.png';
+      case 'Penalty and Fine Requests':
+        return 'images/leaveRequest.png';
+      case 'Complaint Request':
+        return 'images/Team.png';
+      default:
+        return 'images/time.png'; // Default image for company or other types
     }
   }
 

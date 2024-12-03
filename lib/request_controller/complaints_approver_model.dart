@@ -1,18 +1,23 @@
 
-class RequestDateModel {
+class ComplaintsApproverModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
   List<Data>? data;
 
-  RequestDateModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  ComplaintsApproverModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
-  RequestDateModel.fromJson(Map<String, dynamic> json) {
+  ComplaintsApproverModel.fromJson(Map<String, dynamic> json) {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    if (json["data"] != null && json["data"] is List) {
+      data = (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    } else {
+      data = [];
+    }
   }
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
@@ -30,7 +35,6 @@ class Data {
   String? id;
   String? employeeId;
   String? employeeName;
-  String? empId;
   String? companyId;
   String? branchId;
   String? policyId;
@@ -39,19 +43,18 @@ class Data {
   List<RequestData>? requestData;
   List<Approvers>? approvers;
   String? reason;
-  List<Attachments>? attachments;
+  List<dynamic>? attachments;
   String? createdAt;
   String? updatedAt;
   int? v;
   String? status;
 
-  Data({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
+  Data({this.id, this.employeeId, this.employeeName, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     employeeId = json["employeeId"];
     employeeName = json["employeeName"];
-    empId = json["empId"];
     companyId = json["companyId"];
     branchId = json["branchId"];
     policyId = json["policyId"];
@@ -60,7 +63,7 @@ class Data {
     requestData = json["requestData"] == null ? null : (json["requestData"] as List).map((e) => RequestData.fromJson(e)).toList();
     approvers = json["approvers"] == null ? null : (json["approvers"] as List).map((e) => Approvers.fromJson(e)).toList();
     reason = json["reason"];
-    attachments = json["attachments"] == null ? null : (json["attachments"] as List).map((e) => Attachments.fromJson(e)).toList();
+    attachments = json["attachments"] ?? [];
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
@@ -72,7 +75,6 @@ class Data {
     _data["_id"] = id;
     _data["employeeId"] = employeeId;
     _data["employeeName"] = employeeName;
-    _data["empId"] = empId;
     _data["companyId"] = companyId;
     _data["branchId"] = branchId;
     _data["policyId"] = policyId;
@@ -86,7 +88,7 @@ class Data {
     }
     _data["reason"] = reason;
     if(attachments != null) {
-      _data["attachments"] = attachments?.map((e) => e.toJson()).toList();
+      _data["attachments"] = attachments;
     }
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
@@ -96,42 +98,18 @@ class Data {
   }
 }
 
-class Attachments {
-  String? fileName;
-  String? fileType;
-  String? fileContent;
-
-  Attachments({this.fileName, this.fileType, this.fileContent});
-
-  Attachments.fromJson(Map<String, dynamic> json) {
-    fileName = json["fileName"];
-    fileType = json["fileType"];
-    fileContent = json["fileContent"];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["fileName"] = fileName;
-    _data["fileType"] = fileType;
-    _data["fileContent"] = fileContent;
-    return _data;
-  }
-}
-
 class Approvers {
   String? approverId;
   String? approverName;
-  bool? isRequired;
   String? status;
   String? timeStamps;
   String? comments;
 
-  Approvers({this.approverId, this.approverName, this.isRequired, this.status, this.timeStamps, this.comments});
+  Approvers({this.approverId, this.approverName, this.status, this.timeStamps, this.comments});
 
   Approvers.fromJson(Map<String, dynamic> json) {
     approverId = json["approverId"];
     approverName = json["approverName"];
-    isRequired = json["isRequired"];
     status = json["status"];
     timeStamps = json["timeStamps"];
     comments = json["comments"];
@@ -141,7 +119,6 @@ class Approvers {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["approverId"] = approverId;
     _data["approverName"] = approverName;
-    _data["isRequired"] = isRequired;
     _data["status"] = status;
     _data["timeStamps"] = timeStamps;
     _data["comments"] = comments;

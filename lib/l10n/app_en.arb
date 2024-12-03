@@ -799,5 +799,18 @@
   "earlyCheckOut":"Early check-out",
   "youHaveNotCheckedInYet":"You have not checked in yet. Please check in first.",
   "currentLocationNotAvailable":"Current location not available.",
-  "sorryYouAreOutOfTheLocationRadius":"Sorry, you are out of the location radius!"
+  "sorryYouAreOutOfTheLocationRadius":"Sorry, you are out of the location radius!",
+  "title":"Title",
+  "maximum300":"Maximum 300 characters limit. Special characters are not allowed.",
+  "typeYourComplainHere":"Type your complain here..",
+  "typeYourTitleHere":"Type your title here..",
+  "confirmUpload":"Confirm Upload",
+  "areYouSureYouWantToUploadThisFile":"Are you sure you want to upload this file:",
+  "balanceToDate":"Balance to Date",
+  "balanceToEndOfYear":"Balance to end of year",
+  "duration":"Duration",
+  "loanInstallment":"Loan Installment",
+  "loanCycle":"Loan Cycle"
+
+
 }

@@ -1,13 +1,13 @@
 
-class RequestDateModel {
+class ComplaintsModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
   List<Data>? data;
 
-  RequestDateModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  ComplaintsModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
-  RequestDateModel.fromJson(Map<String, dynamic> json) {
+  ComplaintsModel.fromJson(Map<String, dynamic> json) {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];

@@ -17,8 +17,7 @@ class MyClockingScreen extends StatefulWidget {
 
 class _MyClockingScreenState extends State<MyClockingScreen> {
   SingletonClass singletonClass = SingletonClass();
-  bool isLoading = true; // Track loading state
-  List<Data> filteredClockingData = []; // Corrected type to List<Data>
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -29,16 +28,6 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
   Future<void> _fetchClockingData() async {
     try {
       await singletonClass.getClockingData();
-
-      String? currentEmployeeId = singletonClass.getJWTModel()?.employeeId;
-
-      if (currentEmployeeId != null) {
-        // Filter clocking data by the current employee ID
-        filteredClockingData = filterClockingDataByEmployeeId(
-          singletonClass.clockingDataList,
-          currentEmployeeId,
-        );
-      }
     } catch (e) {
       // Handle errors if needed
       print('Error fetching data: $e');
@@ -47,27 +36,6 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
         isLoading = false; // Stop loading once data is fetched
       });
     }
-  }
-
-  List<Data> filterClockingDataByEmployeeId(
-      List<ClockingData> clockingDataList, String employeeId) {
-    // Create a list to store the filtered data
-    List<Data> filteredData = [];
-
-    for (var clockingData in clockingDataList) {
-      if (clockingData.data != null) {
-        // Filter out the employee-specific data from each ClockingData object
-        var employeeData = clockingData.data!
-            .where((employee) => employee.employeeId == employeeId)
-            .toList();
-
-        // Add the filtered data to the overall list
-        filteredData.addAll(employeeData);
-
-      }
-    }
-
-    return filteredData;
   }
 
   @override
@@ -173,15 +141,15 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                       child: Lottie.asset('images/loader.json'),
                     ),
                   )) :
-                filteredClockingData.isNotEmpty
+                singletonClass.clockingDataList.isNotEmpty
                     ? ListView.builder(
                         padding: const EdgeInsets.all(5),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: filteredClockingData.length,
+                        itemCount: singletonClass.clockingDataList.first.data!.length,
                         itemBuilder: (BuildContext context, int index) {
                           final clock =
-                              filteredClockingData[index]; // Corrected index
+                              singletonClass.clockingDataList.first.data![index]; // Corrected index
                           // Format date
                           String formattedDate = DateFormat('MMMM dd, yyyy')
                               .format(DateTime.parse(clock.createdAt ??
