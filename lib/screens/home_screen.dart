@@ -1855,13 +1855,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> checkIn(String type) async {
-    String checkInTime = DateTime.now().toIso8601String();
+    String currentTime = DateTime.now().toIso8601String();
+    String checkInTime = '${currentTime.split('.')[0]}.000Z';
+    print("checkintime >>>${checkInTime}");
+
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
       "employeeName": singletonClass.getJWTModel()?.userName,
       "checkInTime": checkInTime,
       "type": type,
-      "totalTime" : "$checkInTime",
+      "totalTime" : checkInTime,
       // Adjust this if needed for total time calculation
     };
     print(data);
@@ -1954,7 +1957,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //CHECK OUT API CALL
   Future<void> checkOut() async {
-    String checkOutTime = DateTime.now().toIso8601String();
+    String currentTime = DateTime.now().toIso8601String();
+    String checkOutTime = '${currentTime.split('.')[0]}.000Z';
     String? checkInTime = singletonClass.clockingDataList.first.data?.last.checkInTime;
     DateTime checkInDateTime = DateTime.parse(checkInTime!);
     DateTime checkOutDateTime = DateTime.parse(checkOutTime);
