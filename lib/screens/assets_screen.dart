@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/screens/assets_details_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/colors.dart';
@@ -23,7 +24,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
           padding: EdgeInsets.zero,
           children: [
         Padding(
-          padding: const EdgeInsets.only(top: 30.0 , left: 20 , right: 20),
+          padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
           child: Column(
             children: [
               Row(
@@ -35,8 +36,8 @@ class _AssetsScreenState extends State<AssetsScreen> {
                         Navigator.pop(context);
                       },
                       icon: Container(
-                        height: 50,
-                        width: 50,
+                        height: 40,
+                        width: 40,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white,
@@ -60,7 +61,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                     child: Text(
                       AppLocalizations.of(context)!.assets,
                       style: GoogleFonts.inter(
-                        fontSize: 25,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: NasColors.darkBlue,
                       ),
@@ -82,7 +83,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                       },
                       child: SizedBox(
                         height: 30,
-                        width: 100,
+                        width: 90,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -121,35 +122,47 @@ class _AssetsScreenState extends State<AssetsScreen> {
                   )
                 ],
               ),
-              ListView.builder(
-                  padding: const EdgeInsets.all(5),
-                  shrinkWrap: true,
-                  itemCount: assetsInfo!.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final assets = assetsInfo[index];
-                    return Directionality(
-                      textDirection: TextDirection.ltr,
+              assetsInfo!.isNotEmpty
+                  ? ListView.builder(
+                padding: const EdgeInsets.all(5),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: assetsInfo.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final assets = assetsInfo[index];
+                  return Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AssetsDetailsScreen(
+                              assetsInfo: assets,
+                            ),
+                          ),
+                        );
+                      },
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 15),
                         decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(15)),
+                          borderRadius: const BorderRadius.all(Radius.circular(15)),
                           color: NasColors.containerColor,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.3),
                               spreadRadius: 2,
                               blurRadius: 8,
-                              offset: const Offset(
-                                  0, 0), // changes position of shadow
+                              offset: const Offset(0, 0), // changes position of shadow
                             ),
                           ],
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min, // Set the main axis size
                           children: [
                             Container(
-                              height: 165,
-                              width: 80, // Adjusted the width for visibility
+                              height: MediaQuery.of(context).size.height * 0.15, // Responsive height
+                              width: MediaQuery.of(context).size.width * 0.25, // Responsive width
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(15),
@@ -158,10 +171,9 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                 color: NasColors.darkBlue,
                                 image: DecorationImage(
                                   image: AssetImage(
-                                    _getImageForEventType(assets
-                                        .assetType!), // Use a method to get the appropriate image
+                                    _getImageForEventType(assets.assetType!), // Use a method to get the appropriate image
                                   ),
-                                  fit: BoxFit.fitWidth,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
@@ -171,56 +183,70 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(children: [
-                                    Text(
-                                      "${assets.assetName}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 2.5),
-                                    Text(
-                                      "${assets.assetType}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Container(
-                                      height: 30,
-                                      width: 50,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.rectangle,
-                                        color: NasColors.onTime,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
+                                  Row(
+                                    children: [
+                                      Container(
+                                        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5), // Set max width
                                         child: Text(
-                                          "Status",
-                                          textAlign: TextAlign.center,
+                                          "${assets.assetName}",
                                           style: GoogleFonts.inter(
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 10,
+                                            color: Colors.black,
+                                          ),
+                                          overflow: TextOverflow.ellipsis, // Handle overflow
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${assets.assetId}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: NasColors.darkBlue,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        height: MediaQuery.of(context).size.height * 0.03, // Responsive height
+                                        width: MediaQuery.of(context).size.width * 0.15, // Responsive width
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.rectangle,
+                                          color: NasColors.onTime,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            "Status",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ]),
-                                  const SizedBox(height: 20),
-                                  Text("ID #${assets.assetType}",
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    "ID #${assets.assetId}",
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: NasColors.darkBlue,
                                     ),
                                   ),
-                                  const SizedBox(height: 20),
-                                  Text("Assigned At ${assets.issueDateFrom}",
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    "Assigned At ${assets.issueDateFrom}",
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -229,12 +255,27 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                   ),
                                 ],
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  })
+                    ),
+                  );
+                },
+              )
+                  : Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    AppLocalizations.of(context)!.noData,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: NasColors.darkBlue,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

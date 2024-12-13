@@ -34,8 +34,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                     Navigator.pop(context);
                   },
                   icon: Container(
-                    height: 50,
-                    width: 50,
+                    height: 40,
+                    width: 40,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         color: Colors.white,
@@ -56,7 +56,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                 Text(
                 AppLocalizations.of(context)!.payroll,
                   style: GoogleFonts.inter(
-                    fontSize: 28,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),

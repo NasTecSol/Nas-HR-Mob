@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/main_screen.dart';
+import 'package:nashr/screens/url_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -318,6 +319,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                      const UrlScreen()));
+                            },
+                            icon: const Icon(Icons.link),
+                          ),
+
                     NasButton(
                       text: AppLocalizations.of(context)!.signIn,
                       onPressed: () {
@@ -402,9 +414,15 @@ class _LoginScreenState extends State<LoginScreen> {
             singletonClass.getEmployeeData();
             singletonClass.getClockingData();
             singletonClass.getBranchData();
+            singletonClass.getCompanyData();
+            singletonClass.getRequestData();
+            singletonClass.getApproverData();
+            singletonClass.getEmployeeAttendanceData();
+            singletonClass.getNotifications();
+            singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(
-              autoCloseDuration:  const Duration(seconds: 2),
+              autoCloseDuration: const Duration(seconds: 2),
               showCancelBtn: false,
               showConfirmBtn: false,
               context: context,
@@ -422,19 +440,43 @@ class _LoginScreenState extends State<LoginScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title: "",
+            title:  AppLocalizations.of(context)!.passwordOrPhoneNo,
             type: QuickAlertType.error,
           );
         } else {
           print('Error: ${loginResponse.statusCode}');
         }
+      } else if (response.statusCode == 405) {
+        // Handle 405 Not Allowed error
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
+          text: AppLocalizations.of(context)!.tryAgain,
+          type: QuickAlertType.error,
+        );
       } else {
         print('Error: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title:  AppLocalizations.of(context)!.internalServerError,
+        text:  AppLocalizations.of(context)!.tryAgain,
+        type: QuickAlertType.error,
+      );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
+
 
   // Decoding Token Data Here
   void decodeJwt(String token) {
