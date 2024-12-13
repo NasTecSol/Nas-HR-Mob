@@ -27,30 +27,30 @@ class AttendanceData {
 }
 
 class Data {
-  String? id;
-  String? employeeId;
-  String? empId;
-  String? name;
-  String? companyId;
-  String? branchId;
-  String? date;
-  String? clockInTime;
-  String? clockOutTime;
-  int? totalHoursWorked;
-  String? location;
-  String? status;
+  dynamic id;
+  dynamic employeeId;
+  dynamic empId;
+  dynamic name;
+  dynamic companyId;
+  dynamic branchId;
+  dynamic date;
+  dynamic clockInTime;
+  dynamic clockOutTime;
+  dynamic totalHoursWorked;
+  dynamic location;
+  dynamic status;
   List<dynamic>? breaksTaken;
-  int? breakTime;
-  int? lateMinutes;
+  dynamic breakTime;
+  dynamic lateMinutes;
   List<dynamic>? penalties;
   dynamic leaveDetails;
-  String? shift;
-  int? workingHoursPerday;
-  int? earlyCheckOut;
-  String? remarks;
-  String? createdAt;
-  String? updatedAt;
-  int? v;
+  dynamic shift;
+  dynamic workingHoursPerday;
+  dynamic earlyCheckOut;
+  dynamic remarks;
+  dynamic createdAt;
+  dynamic updatedAt;
+  dynamic v;
 
   Data({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 

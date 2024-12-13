@@ -551,12 +551,21 @@ class SingletonClass {
 
   String formatTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('hh:mm a').format(createdDate); // e.g., "10:30 AM"
+    return DateFormat('hh:mm a').format(createdDate);
   }
 
   String formatDate2(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('dd-MM-yyyy').format(createdDate); // e.g., "01-11-2024"
+    return DateFormat('dd-MM-yyyy').format(createdDate);
+  }
+
+  String formatDateTime(String dateTime) {
+    try {
+      final parsedDate = DateTime.parse(dateTime).toLocal();
+      return DateFormat('dd-MM-yyyy hh:mm:a').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 }
 
