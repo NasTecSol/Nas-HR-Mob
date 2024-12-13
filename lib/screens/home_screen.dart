@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
+import 'package:nashr/screens/attendance_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
@@ -209,6 +210,51 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
+                              Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      _removeOverlay();
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const AttendanceScreen()));
+                                    },
+                                    child: Container(
+                                      height: 65,
+                                      width: 65,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 1,
+                                            blurRadius: 0.5,
+                                            offset: const Offset(0, 0), // changes position of shadow
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child:  Image.asset(
+                                          'images/attendance.png',
+                                          fit: BoxFit.contain,
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  // Add spacing between image and text
+                                  Text(
+                                    AppLocalizations.of(context)!
+                                        .attendance,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
@@ -887,10 +933,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.attendanceDataList.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.last.clockInTime?.isNotEmpty == true
-                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockInTime}'
+                                                  singletonClass.clockingDataList.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.last.checkInTime?.isNotEmpty == true
+                                                      ? singletonClass.formatDateTime(singletonClass.clockingDataList.first.data!.last.checkInTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -922,10 +968,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.attendanceDataList.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.last.clockOutTime?.isNotEmpty == true
-                                                      ? '${singletonClass.attendanceDataList.first.data!.last.clockOutTime}'
+                                                  singletonClass.clockingDataList.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.last.checkOutTime?.isNotEmpty == true
+                                                      ? singletonClass.formatDateTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -960,7 +1006,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            '${singletonClass.attendanceDataList.first.data!.last.lateMinutes}',
+                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.last.lateMinutes),
                                                             style: GoogleFonts.inter(
                                                               fontSize: 10,
                                                               fontWeight: FontWeight.bold,
@@ -973,8 +1019,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   )
                                                 else if ((singletonClass.attendanceDataList.first.data!.last.earlyCheckOut ?? 0) > 0)
                                                   Container(
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.blue,
+                                                    decoration:  BoxDecoration(
+                                                      color: NasColors.onTime,
                                                       borderRadius: BorderRadius.all(Radius.circular(15)),
                                                     ),
                                                     child: Padding(
@@ -990,7 +1036,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            '${singletonClass.attendanceDataList.first.data!.last.earlyCheckOut}',
+                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.last.earlyCheckOut),
                                                             style: GoogleFonts.inter(
                                                               fontSize: 10,
                                                               fontWeight: FontWeight.bold,
@@ -1036,9 +1082,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass.attendanceDataList.isNotEmpty &&
-                                                        singletonClass.attendanceDataList.first.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.attendanceDataList.first.data!.last.totalHoursWorked?.toString() ?? 'NA'}'
+                                                    singletonClass.clockingDataList.isNotEmpty &&
+                                                        singletonClass.clockingDataList.first.data!.isNotEmpty
+                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.clockingDataList.first.data!.last.totalTime?.toString() ?? 'NA'}'
                                                         : '${AppLocalizations.of(context)!.worked} NA',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1092,7 +1138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           singletonClass.attendanceDataList.isNotEmpty &&
                                               singletonClass.attendanceDataList.first.data!.isNotEmpty
-                                              ? '${singletonClass.attendanceDataList.first.data!.last.breakTime}'
+                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.last.breaksTaken)
                                               : 'NA',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
@@ -1850,6 +1896,18 @@ class _HomeScreenState extends State<HomeScreen> {
         return NasColors.pending;
       default:
         return Colors.grey; // or any other default color
+    }
+  }
+
+  String formatMinutes(dynamic minutes) {
+    if (minutes == null) return '--';
+    try {
+      // Ensure the value is treated as a double and then round it
+      double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
+      return roundedMinutes.ceil().toString(); // Round up to the nearest integer
+    } catch (e) {
+      print('Error formatting minutes: $e');
+      return '--';
     }
   }
 
