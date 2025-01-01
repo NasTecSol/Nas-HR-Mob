@@ -59,6 +59,9 @@ dependencies:
   flutter_image_compress: ^2.3.0
   mime: ^2.0.0
   http_parser: ^4.0.2
+  pdfrx: ^1.0.94
+  pdfx: ^2.0.2
+  url_launcher: ^6.0.10
 
 dev_dependencies:
   flutter_test:

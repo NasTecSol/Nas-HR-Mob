@@ -27,7 +27,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.only(top: 30.0, left: 20, right: 20),
+        padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
         child: Column(
           children: [
             Row(
@@ -114,139 +114,169 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             Expanded(
               child: FutureBuilder(
-                  future: singletonClass.getNotifications(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
+                future: singletonClass.getNotifications(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/loader.json'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    );
+                  } else if (snapshot.hasData) {
+                    return singletonClass.notificationModelList.first.data!.isEmpty
+                        ? Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 15,
                         ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    } else if (snapshot.hasData) {
-                      return singletonClass.notificationModelList.first.data!.isEmpty
-                          ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                      ),
+                    )
+                        : ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: singletonClass.notificationModelList.first.data!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final notificationData = singletonClass
+                            .notificationModelList.first.data![index];
+                        return Dismissible(
+                          key: Key(notificationData.id.toString()), // Ensure each item has a unique key
+                          direction: DismissDirection.endToStart, // Allows swipe from right to left
+                          onDismissed: (direction) {
+                            // Handle item removal
+                            setState(() {
+                              singletonClass.notificationModelList.first.data!.removeAt(index);
+                            });
+                          },
+                          background: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(Radius.circular(15)),
+                              color: Colors.red,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 2,
+                                  offset: const Offset(3, 3),
                                 ),
+                              ],
+                            ),// Background color while swiping
+                            child: const Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Icon(Icons.delete_outline_rounded, color: Colors.white),
                               ),
-                            )
-                          : ListView.builder(
-                              itemCount: singletonClass
-                                  .notificationModelList.first.data!.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final notificationData = singletonClass
-                                    .notificationModelList.first.data![index];
-                                return Container(
-                                    margin:
-                                        const EdgeInsets.symmetric(vertical: 5),
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 2,
+                                    offset: const Offset(3, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "${singletonClass.getJWTModel()!.userName}",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          formatRelativeTime("${notificationData.createdAt}"),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "${singletonClass.getJWTModel()!.userName}",
+                                                "${notificationData.notificationType}",
                                                 style: GoogleFonts.inter(
-                                                  fontSize: 12,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
+                                                  color: Colors.black,
                                                 ),
                                               ),
-                                              Spacer(),
                                               Text(
-                                                formatRelativeTime("${notificationData.createdAt}"),
+                                                "${notificationData.message}",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.grey,
                                                 ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 4,
                                               ),
                                             ],
                                           ),
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "${notificationData.notificationType}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "${notificationData.message}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.grey,
-                                                      ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines:
-                                                          4, // Limits the text to 3 lines
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 80,
-                                                width: 80,
-                                                child: Image.asset(
-                                                    _getNotificationImage("${notificationData.notificationType}")),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ));
-                              });
-                    } else {
-                      return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                            fontSize: 15,
+                                        ),
+                                        SizedBox(
+                                          height: 80,
+                                          width: 80,
+                                          child: Image.asset(_getNotificationImage("${notificationData.notificationType}")),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
+                        );
+                      },
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 15,
                         ),
-                      );
-                    }
-                  }),
-            ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            )
+
           ],
         ),
       ),

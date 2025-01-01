@@ -475,7 +475,21 @@
   "balanceToEndOfYear": "الرصيد حتى نهاية العام",
   "duration": "المدة",
   "loanInstallment": "القسط الشهري",
-  "loanCycle": "دورة القرض"
+  "loanCycle": "دورة القرض",
+  "Out": "خارج",
+  "breakTaken": "فترات الاستراحة",
+  "breakNo": "رقم الاستراحة",
+  "startTime": "وقت البدء",
+  "endTime": "وقت الانتهاء",
+  "totalDuration":"المدة الإجمالية",
+  "leaveInfo":"معلومات الإجازة",
+  "remarks":"ملاحظات",
+  "shiftInfo": "معلومات الوردية",
+  "jobTitle": "المسمى الوظيفي",
+  "jobDescription": "وصف الوظيفة",
+  "reportingManager": "المدير المباشر",
+  "employeeShift": "وردية الموظف",
+  "location": "الموقع"
 
 
 
