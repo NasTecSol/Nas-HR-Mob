@@ -1021,7 +1021,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   Container(
                                                     decoration:  BoxDecoration(
                                                       color: NasColors.onTime,
-                                                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                      borderRadius: const BorderRadius.all(Radius.circular(15)),
                                                     ),
                                                     child: Padding(
                                                       padding: const EdgeInsets.all(5.0),
@@ -1047,34 +1047,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                     ),
                                                   )
-                                                else
-                                                  Container(
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                    ),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(5.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Text(
-                                                            AppLocalizations.of(context)!.lateComings,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            'NA',
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                else Text(AppLocalizations.of(context)!.noData,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
                                               const SizedBox(width: 5),

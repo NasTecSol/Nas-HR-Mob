@@ -201,7 +201,6 @@ class _TaskScreenState extends State<TaskScreen> {
         width: 140,
         child: Card(
           color: _selectedOptionIndex == index ? getStatusColor(title) : Colors.white,
-          elevation: 100.0,
           margin: const EdgeInsets.all(10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),

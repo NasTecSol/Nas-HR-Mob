@@ -551,7 +551,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Card(
           color:
               _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          elevation: 100.0,
           margin: const EdgeInsets.all(10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),

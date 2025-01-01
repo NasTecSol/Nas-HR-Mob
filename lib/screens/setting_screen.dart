@@ -50,9 +50,10 @@ class _SettingScreenState extends State<SettingScreen> {
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(

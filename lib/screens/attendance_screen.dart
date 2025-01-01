@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/screens/attendance_detail_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +21,57 @@ class AttendanceScreen extends StatefulWidget {
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
   SingletonClass singletonClass = SingletonClass();
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  DateTime? _fromDate;
+  DateTime? _toDate;
+
+  Future<void> _selectDateRange() async {
+    DateTime now = DateTime.now();
+    DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      barrierColor: NasColors.darkBlue,
+      initialDateRange: _fromDate != null && _toDate != null
+          ? DateTimeRange(start: _fromDate!, end: _toDate!)
+          : DateTimeRange(
+        start: DateTime(now.year, now.month, 1),
+        end: now,
+      ),
+      firstDate: DateTime(2000),
+      lastDate: now,
+      saveText: AppLocalizations.of(context)!.ok,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            scaffoldBackgroundColor: Colors.white,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: NasColors.darkBlue, // Button color
+              ),
+            ),
+            colorScheme: ColorScheme.light(
+              primary: NasColors.darkBlue, // Selection color
+              onPrimary: Colors.white, // Default text color
+              secondaryContainer: NasColors.icons,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _fromDate = picked.start;
+        _toDate = picked.end;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,39 +120,43 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       ),
                     ),
                     const Spacer(),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: NasColors.darkBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        // Add your onPressed functionality here
-                      },
-                      child: SizedBox(
-                        height: 30,
-                        width: 90,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.filter_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              AppLocalizations.of(context)!.filter,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
+                        onPressed: () {
+                          _selectDateRange();
+                          getAttendanceData();
+                        },
+                        child: SizedBox(
+                          height: 30,
+                          width: 90,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.filter_alt,
                                 color: Colors.white,
-                                fontSize: 15,
+                                size: 20,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 5),
+                              Text(
+                                AppLocalizations.of(context)!.filter,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -135,133 +192,168 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 } else if (snapshot.hasData &&
                     singletonClass.attendanceDataList.isNotEmpty &&
                     singletonClass.attendanceDataList.first.data!.isNotEmpty) {
-                  final attendanceList = singletonClass.attendanceDataList.first.data!;
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: attendanceList.length,
+                    itemCount:  singletonClass.attendanceDataList.first.data!.length,
                     itemBuilder: (context, index) {
-                      final attendance = attendanceList[index];
-
-                      // Parsing and formatting the time values
+                      final attendance = singletonClass.attendanceDataList.first.data!.reversed.toList()[index];
+                      String formatDate(String updatedAt) {
+                        DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                        return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                      }
+                      String date = formatDate(attendance.updatedAt!);
                       DateTime? checkInTime = parseTime(attendance.clockInTime);
                       DateTime? checkOutTime = parseTime(attendance.clockOutTime);
                       String lateMinutes = formatMinutes(attendance.lateMinutes);
                       String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
+                      String breakTime = formatMinutes(attendance.breakTime);
 
 
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  singletonClass.getJWTModel()?.userName ?? "",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                      return GestureDetector(
+                        onTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> AttendanceDetailScreen(attendanceData: attendance)));
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: Colors.white,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    singletonClass.getJWTModel()?.userName ?? "",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                                const Spacer(),
-                                Container(
-                                  height: 20,
-                                  width: 75,
-                                  decoration: BoxDecoration(
-                                    color: getStatusColor(attendance.status),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      attendance.status,
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 10,
+                                  const Spacer(),
+                                  Container(
+                                    height: 20,
+                                    width: 75,
+                                    decoration: BoxDecoration(
+                                      color: getStatusColor(attendance.status),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        attendance.status,
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Text(
-                                  formatDateTime(checkInTime),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Transform(
-                                  transform: Matrix4.rotationY(math.pi),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.exit_to_app_outlined,
-                                    size: 20,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  "$lateMinutes Mins",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.pending,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.error,
-                                  size: 20,
-                                  color: NasColors.pending,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 70,
-                                  child: Text(
-                                    formatDateTime(checkOutTime),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                children: [
+                                  Text(
+                                    formatDateTime(checkInTime),
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
                                     ),
                                   ),
-                                ),
-                                const Icon(
-                                  Icons.exit_to_app_outlined,
-                                  size: 20,
-                                  color: Colors.black,
-                                ),
-                                const Spacer(),
-                                Text(
-                                  "$earlyCheckOut Mins",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 5),
+                                  Transform(
+                                    transform: Matrix4.rotationY(math.pi),
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.exit_to_app_outlined,
+                                      size: 20,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    "$lateMinutes Mins",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.pending,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.error,
+                                    size: 20,
+                                    color: NasColors.pending,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 70,
+                                    child: Text(
+                                      formatDateTime(checkOutTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.exit_to_app_outlined,
+                                    size: 20,
+                                    color: Colors.black,
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    "$earlyCheckOut Mins",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.onTime,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.directions_run_outlined,
+                                    size: 20,
                                     color: NasColors.onTime,
                                   ),
-                                ),
-                                Icon(
-                                  Icons.directions_run_outlined,
-                                  size: 20,
-                                  color: NasColors.onTime,
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Text(
+                                    "$date",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    "$breakTime Mins",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.coffee,
+                                    size: 20,
+                                    color: Colors.brown,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -289,17 +381,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<AttendanceData?> getAttendanceData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var client = http.Client();
+
     DateTime now = DateTime.now();
     DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
-    String firstDateString =
-        '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
-    String currentDateString =
-        '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+
+    // Use selected dates if available; otherwise, use defaults
+    String fromDateString = _fromDate != null
+        ? '${_fromDate!.month.toString().padLeft(2, '0')}-${_fromDate!.day.toString().padLeft(2, '0')}-${_fromDate!.year}'
+        : '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
+
+    String toDateString = _toDate != null
+        ? '${_toDate!.month.toString().padLeft(2, '0')}-${_toDate!.day.toString().padLeft(2, '0')}-${_toDate!.year}'
+        : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$toDateString/$fromDateString');
 
     var response = await client.get(uri);
+    log("Attendance json${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
