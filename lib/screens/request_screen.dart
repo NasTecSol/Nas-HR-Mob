@@ -2733,35 +2733,90 @@ class _RequestScreenState extends State<RequestScreen> {
       child: SizedBox(
         height: 70,
         width: 140,
-        child: Card(
-          color:
-              _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color:
-                  _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 0,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex == index
-                      ? Colors.white
-                      : NasColors.darkBlue,
+        child: Stack(
+          children: [
+            Card(
+              color: _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
+              margin: const EdgeInsets.all(10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+                side: BorderSide(
+                  color: _selectedOptionIndex == index ? Colors.white : Colors.white,
+                  width: 0,
                 ),
               ),
-            ],
-          ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: _selectedOptionIndex == index
+                          ? Colors.white
+                          : NasColors.darkBlue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Add badge for index 0 (Request Data) and index 1 (Approver Data)
+            if (index == 0)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
+                        ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length
+                        : 0}', // Request List Notification count
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            if (index == 1)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
+                        ? singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
+                        : 0}', // Approver List Notification count
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

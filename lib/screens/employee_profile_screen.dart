@@ -19,11 +19,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
-  final Supervisors? supervisors;
+  final TeamData? teamData;
 
-  final Teams? teams;
-
-  const EmployeeProfileScreen({super.key, this.supervisors, this.teams});
+  const EmployeeProfileScreen({super.key, this.teamData});
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -171,15 +169,35 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
                                     children: [
-                                      ClipOval(
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          radius: 40,
-                                          child: Image.asset(
-                                            'images/DP.jpg',
-                                            fit: BoxFit.fill,
-                                            height: 150,
-                                            width: 150,
+                                      Container(
+                                        height: 100,
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width:
+                                            2, // Adjust border width as needed
+                                          ),
+                                        ),
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            employeeDetails?.profilePic ?? '',
+                                            // URL for the network image, empty string if null
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                            errorBuilder: (BuildContext context,
+                                                Object exception,
+                                                StackTrace? stackTrace) {
+                                              // Display the default asset image if the network image fails to load
+                                              return Image.asset(
+                                                'images/DP.png',
+                                                fit: BoxFit.cover,
+                                                width: 100,
+                                                height: 100,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ),
@@ -192,7 +210,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.userName}",
+                                              "${widget.teamData!.userName}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 18,
@@ -205,7 +223,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.designation}",
+                                              "${widget.teamData!.designation}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -218,7 +236,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.grade}",
+                                              "${widget.teamData!.grade}",
                                               // Call the method to mask the account number
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
@@ -232,7 +250,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.empId}",
+                                              "${widget.teamData!.empId}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -253,7 +271,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 children: [
                                   buildOptionsCard(
                                       0, AppLocalizations.of(context)!.profile),
-                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' )...[
+                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
                                     buildOptionsCard(
                                         1, AppLocalizations.of(context)!.onLeaves),
                                     buildOptionsCard(
@@ -269,7 +287,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' )...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
@@ -518,7 +536,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 ),
                               ),
                             ],
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' ) ...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' ) ...[
                               if (_selectedOptionIndex == 1) ...[
                                 //ANNUAL LEAVE
                                 Container(
@@ -1878,7 +1896,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   Future<EmployeeDetailsData?> getEmployeeDetailsData() async {
-    String? employeeId = widget.supervisors?.empId;
+    String? employeeId = widget.teamData?.empId;
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');

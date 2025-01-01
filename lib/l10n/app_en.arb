@@ -810,7 +810,21 @@
   "balanceToEndOfYear":"Balance to end of year",
   "duration":"Duration",
   "loanInstallment":"Loan Installment",
-  "loanCycle":"Loan Cycle"
+  "loanCycle":"Loan Cycle",
+  "out":"Out",
+  "breakTaken":"Breaks Taken",
+  "breakNo":"Break no",
+  "startTime":"Start Time",
+  "endTime":"End Time",
+  "totalDuration":"Total Duration",
+  "leaveInfo":"Leave Information",
+  "remarks":"Remarks",
+  "shiftInfo":"Shift Info",
+  "jobTitle":"Job Title",
+  "jobDescription":"Job Description",
+  "reportingManager":"Reporting Manager",
+  "employeeShift":"Employee Shift",
+  "location":"Location"
 
 
 }
