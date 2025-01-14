@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
-import 'package:nashr/screens/task_screen.dart';
+import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../widgets/colors.dart';
 import 'home_screen.dart';
@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const TaskScreen(),
+    const ProjectScreen(),
     const RequestScreen(),
     const CalendarScreen(),
     const ProfileScreen()
