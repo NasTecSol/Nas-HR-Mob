@@ -41,7 +41,7 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResult = false;
-  List<SearchedResult> _employeeSearchResults = []; // Stores search results of employees
+  List<SearchedResult> _employeeSearchResults =[]; // Stores search results of employees
   List<SearchedResult?> _selectedEmployees = [];
   DateTime? fromDate;
   DateTime? toDate;
@@ -139,28 +139,27 @@ class _RequestScreenState extends State<RequestScreen> {
 
                           // Display "Penalty and Fine Requests" only if the user’s grade is `L0` or `L1`
                           if (request.requestName ==
-                              'Penalty and Fine Requests' &&
+                                  'Penalty and Fine Requests' &&
                               !(singletonClass.getJWTModel()?.grade == 'L0' ||
-                                  singletonClass.getJWTModel()?.grade == 'L1')) {
-                            return const SizedBox.shrink(); // Skip rendering this item
+                                  singletonClass.getJWTModel()?.grade ==
+                                      'L1')) {
+                            return const SizedBox
+                                .shrink(); // Skip rendering this item
                           }
-                          if (request.requestType ==
-                              'complaintRequest') {
+                          if (request.requestType == 'complaintRequest') {
                             return const SizedBox
                                 .shrink(); // Skip rendering this item if the grade condition is not met
                           }
-
 
                           return Column(
                             children: [
                               GestureDetector(
                                 onTap: () {
                                   if (request.requestType ==
-                                      'allowance_Increment' &&
+                                          'allowance_Increment' &&
                                       (singletonClass.getJWTModel()?.grade ==
-                                          'L0' ||
-                                          singletonClass.getJWTModel()
-                                              ?.grade ==
+                                              'L0' ||
+                                          singletonClass.getJWTModel()?.grade ==
                                               'L1')) {
                                     // Show alert dialog
                                     showDialog(
@@ -168,107 +167,100 @@ class _RequestScreenState extends State<RequestScreen> {
                                       builder: (BuildContext context) {
                                         return AlertDialog(
                                           title: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                           children: [
-                                             GestureDetector(
-                                               onTap: () {
-                                            Navigator.pop(
-                                                     context);
-                                            setState(() {
-                                              _selectedRequestType = request.requestType;
-                                              _showRequestBottomSheet(context, request);
-                                            });
-
-                                               },
-                                               child: Column(
-                                                 mainAxisSize:
-                                                 MainAxisSize.min,
-                                                 children: [
-                                                   ClipOval(
-                                                     child: CircleAvatar(
-                                                       backgroundColor:
-                                                       Colors.white,
-                                                       radius: 25,
-                                                       child:
-                                                       Image.asset(
-                                                         'images/person.png',
-                                                         fit:
-                                                         BoxFit.fill,
-                                                         height: 50,
-                                                         width: 50,
-                                                       ),
-                                                     ),
-                                                   ),
-                                                   Text(
-                                                     "Yourself",
-                                                     style: GoogleFonts
-                                                         .inter(
-                                                       fontWeight:
-                                                       FontWeight
-                                                           .bold,
-                                                       fontSize: 15,
-                                                     ),
-                                                   ),
-                                                 ],
-                                               ),
-                                             ),
-                                             GestureDetector(
-                                               onTap: () {
-                                                 Navigator.pop(
-                                                     context);
-                                                 setState(() {
-                                                   _selectedRequestType = request.requestType;
-                                                   _showRequestBottomSheet2(context, request);
-                                                 });
-
-                                               },
-                                               child: Column(
-                                                 mainAxisSize:
-                                                 MainAxisSize.min,
-                                                 children: [
-                                                   ClipOval(
-                                                     child: CircleAvatar(
-                                                       backgroundColor:
-                                                       Colors.white,
-                                                       radius: 25,
-                                                       child:
-                                                       Image.asset(
-                                                         'images/Group.png',
-                                                         fit:
-                                                         BoxFit.fill,
-                                                         height: 50,
-                                                         width: 50,
-                                                       ),
-                                                     ),
-                                                   ),
-                                                   Text(
-                                                     "Team",
-                                                     style: GoogleFonts
-                                                         .inter(
-                                                       fontWeight:
-                                                       FontWeight
-                                                           .bold,
-                                                       fontSize: 15,
-                                                     ),
-                                                   ),
-                                                 ],
-                                               ),
-                                             ),
-                                           ],
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    _selectedRequestType =
+                                                        request.requestType;
+                                                    _showRequestBottomSheet(
+                                                        context, request);
+                                                  });
+                                                },
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    ClipOval(
+                                                      child: CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.white,
+                                                        radius: 25,
+                                                        child: Image.asset(
+                                                          'images/person.png',
+                                                          fit: BoxFit.fill,
+                                                          height: 50,
+                                                          width: 50,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "Yourself",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    _selectedRequestType =
+                                                        request.requestType;
+                                                    _showRequestBottomSheet2(
+                                                        context, request);
+                                                  });
+                                                },
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    ClipOval(
+                                                      child: CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.white,
+                                                        radius: 25,
+                                                        child: Image.asset(
+                                                          'images/Group.png',
+                                                          fit: BoxFit.fill,
+                                                          height: 50,
+                                                          width: 50,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "Team",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-
                                         );
                                       },
                                     );
                                     _removeOverlay();
-                                  }else{
-    setState(() {
-    _selectedRequestType = request.requestType; // Set selected request type
-    });
-    _removeOverlay();
-    _showRequestBottomSheet(context, request);
-                                  }},
-
+                                  } else {
+                                    setState(() {
+                                      _selectedRequestType = request
+                                          .requestType; // Set selected request type
+                                    });
+                                    _removeOverlay();
+                                    _showRequestBottomSheet(context, request);
+                                  }
+                                },
                                 child: Container(
                                   height: 90,
                                   width: 90,
@@ -279,7 +271,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(20.0),
                                     child: Image.asset(
-                                      _getImageForEventType(request.requestType!),
+                                      _getImageForEventType(
+                                          request.requestType!),
                                     ),
                                   ),
                                 ),
@@ -309,7 +302,6 @@ class _RequestScreenState extends State<RequestScreen> {
       ),
     );
   }
-
 
   void _removeOverlay() {
     _overlayEntry?.remove();
@@ -439,7 +431,8 @@ class _RequestScreenState extends State<RequestScreen> {
                 ),
                 IconButton(
                   onPressed: () {
-                    print("Singleton Data : ${singletonClass.requestDataList.first.data!.first.employeeName}");
+                    print(
+                        "Singleton Data : ${singletonClass.requestDataList.first.data!.first.employeeName}");
                   },
                   icon: Icon(
                     Icons.filter_list_alt,
@@ -678,7 +671,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
-                                                              : AppLocalizations.of(context)!.noData,
+                                                              : AppLocalizations
+                                                                      .of(context)!
+                                                                  .noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -694,7 +689,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "Duration: ${request.requestData!.first.duration}"
-                                                              : AppLocalizations.of(context)!.noData,
+                                                              : AppLocalizations
+                                                                      .of(context)!
+                                                                  .noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -741,7 +738,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        AppLocalizations.of(context)!.balanceToDate,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .balanceToDate,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -771,7 +770,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        AppLocalizations.of(context)!.balanceToEndOfYear,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .balanceToEndOfYear,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -805,7 +806,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        AppLocalizations.of(context)!.totalLoanAmount,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .totalLoanAmount,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -826,7 +829,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanAmount}"
-                                                              : AppLocalizations.of(context)!.noData,
+                                                              : AppLocalizations
+                                                                      .of(context)!
+                                                                  .noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -840,7 +845,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        AppLocalizations.of(context)!.loanInstallment,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .loanInstallment,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -861,7 +868,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanInstallment}"
-                                                              : AppLocalizations.of(context)!.noData,
+                                                              : AppLocalizations
+                                                                      .of(context)!
+                                                                  .noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -875,7 +884,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        AppLocalizations.of(context)!.loanCycle,
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .loanCycle,
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -896,7 +907,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       .requestData!
                                                                       .isNotEmpty
                                                               ? "${request.requestData!.first.loanCycle}"
-                                                              : AppLocalizations.of(context)!.noData,
+                                                              : AppLocalizations
+                                                                      .of(context)!
+                                                                  .noData,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1386,7 +1399,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.loanDuration}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1404,7 +1419,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.duration}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1457,7 +1474,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.balanceToDate,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .balanceToDate,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1488,7 +1507,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.balanceToEndOfYear,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .balanceToEndOfYear,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1525,7 +1546,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.totalLoanAmount,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .totalLoanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1546,7 +1569,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanAmount}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1563,7 +1588,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.loanAmount,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .loanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1584,7 +1611,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanInstallment}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1601,7 +1630,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.loanCycle,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .loanCycle,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1622,7 +1653,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanCycle}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2105,7 +2138,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.loanDuration}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2123,7 +2158,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "Duration: ${request.requestData!.first.duration}"
-                                                                : AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2176,7 +2213,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.balanceToDate,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .balanceToDate,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2207,7 +2246,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.balanceToEndOfYear,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .balanceToEndOfYear,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2244,7 +2285,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.totalLoanAmount,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .totalLoanAmount,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2265,7 +2308,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanAmount}"
-                                                                :   AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2282,7 +2327,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.loanInstallment,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .loanInstallment,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2303,7 +2350,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanInstallment}"
-                                                                :   AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2320,7 +2369,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(context)!.loanCycle,
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .loanCycle,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2341,7 +2392,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanCycle}"
-                                                                :   AppLocalizations.of(context)!.noData,
+                                                                : AppLocalizations.of(
+                                                                        context)!
+                                                                    .noData,
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -2361,7 +2414,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             const EdgeInsets
                                                                 .all(10.0),
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
                                                           children: [
                                                             GestureDetector(
                                                               onTap: () {
@@ -2736,12 +2791,16 @@ class _RequestScreenState extends State<RequestScreen> {
         child: Stack(
           children: [
             Card(
-              color: _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
+              color: _selectedOptionIndex == index
+                  ? NasColors.darkBlue
+                  : Colors.white,
               margin: const EdgeInsets.all(10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
                 side: BorderSide(
-                  color: _selectedOptionIndex == index ? Colors.white : Colors.white,
+                  color: _selectedOptionIndex == index
+                      ? Colors.white
+                      : Colors.white,
                   width: 0,
                 ),
               ),
@@ -2779,9 +2838,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
-                        ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length
-                        : 0}', // Request List Notification count
+                    '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length : 0}', // Request List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -2805,9 +2862,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
-                        ? singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
-                        : 0}', // Approver List Notification count
+                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null ? singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length : 0}', // Approver List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -2920,7 +2975,7 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/loanRequest.png';
       case 'penalties_fines':
         return 'images/Penalties.png';
-        case 'allowance_Increment':
+      case 'allowance_Increment':
         return 'images/creditCard.png';
       default:
         return 'images/OverTime.png'; // Default image for company or other types
@@ -3548,11 +3603,13 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             ),
                           ],
-                        ], 
-                        if(_isTeamSelected == true)...[
-                          if((singletonClass.getJWTModel()?.grade == "L0" ||
-                              singletonClass.getJWTModel()?.grade == "L1") &&
-                              _selectedRequestType == "allowance_Increment")...[
+                        ],
+                        if (_isTeamSelected == true) ...[
+                          if ((singletonClass.getJWTModel()?.grade == "L0" ||
+                                  singletonClass.getJWTModel()?.grade ==
+                                      "L1") &&
+                              _selectedRequestType ==
+                                  "allowance_Increment") ...[
                             if (_selectedEmployees.isNotEmpty) ...[
                               SizedBox(
                                 height: 60,
@@ -3567,13 +3624,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                         Container(
                                           margin: const EdgeInsets.all(3),
                                           decoration: BoxDecoration(
-                                            borderRadius: const BorderRadius.all(
-                                                Radius.circular(15)),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(15)),
                                             color: NasColors.lightBlue,
                                             boxShadow: [
                                               BoxShadow(
-                                                color:
-                                                Colors.grey.withOpacity(0.3),
+                                                color: Colors.grey
+                                                    .withOpacity(0.3),
                                                 spreadRadius: 1,
                                                 blurRadius: 5,
                                                 offset: const Offset(0, 0),
@@ -3599,14 +3657,15 @@ class _RequestScreenState extends State<RequestScreen> {
                                               const SizedBox(width: 5),
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                    CrossAxisAlignment.center,
                                                 children: [
                                                   Text(
                                                     employee!.employeeName ??
                                                         "Unknown",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.white,
                                                     ),
                                                     overflow: TextOverflow
@@ -3616,7 +3675,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     employee.empId ?? "Unknown",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 11,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -3641,7 +3701,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                 shape: BoxShape.circle,
                                                 color: Colors.red,
                                               ),
-                                              padding: const EdgeInsets.all(4.0),
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
                                               // Adjust padding for icon size
                                               child: const Icon(
                                                 Icons.close,
@@ -3670,7 +3731,8 @@ class _RequestScreenState extends State<RequestScreen> {
                               children: [
                                 Container(
                                   height: 50,
-                                  width: MediaQuery.of(context).size.width - 100,
+                                  width:
+                                      MediaQuery.of(context).size.width - 100,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 15, vertical: 10),
                                   decoration: BoxDecoration(
@@ -3689,7 +3751,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     controller: _searchController,
                                     decoration: InputDecoration(
                                       hintText:
-                                      '${AppLocalizations.of(context)!.search}...',
+                                          '${AppLocalizations.of(context)!.search}...',
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -3732,7 +3794,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                 child: ListView.builder(
                                   itemCount: _employeeSearchResults.length,
                                   itemBuilder: (context, index) {
-                                    var employee = _employeeSearchResults[index];
+                                    var employee =
+                                        _employeeSearchResults[index];
                                     return ListTile(
                                       title: Row(
                                         children: [
@@ -3743,7 +3806,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                               shape: BoxShape.circle,
                                               image: DecorationImage(
                                                 image:
-                                                AssetImage("images/DP.png"),
+                                                    AssetImage("images/DP.png"),
                                                 fit: BoxFit.fill,
                                               ),
                                             ),
@@ -3751,7 +3814,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           const SizedBox(width: 10),
                                           Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 employee.employeeName ??
@@ -3792,24 +3855,25 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   // Adjust the height as needed to fit content
                                                   child: Row(
                                                     mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
                                                     children: [
                                                       // Low Severity Option
                                                       GestureDetector(
                                                         onTap: () {
                                                           setState(() {
                                                             employee.severity =
-                                                            1; // Set severity level to 1 for Low
+                                                                1; // Set severity level to 1 for Low
                                                             if (_selectedEmployees
                                                                 .contains(
-                                                                employee)) {
+                                                                    employee)) {
                                                               _selectedEmployees
                                                                   .remove(
-                                                                  employee);
+                                                                      employee);
                                                             } else {
                                                               _selectedEmployees
-                                                                  .add(employee);
+                                                                  .add(
+                                                                      employee);
                                                             }
                                                           });
                                                           Navigator.pop(
@@ -3817,18 +3881,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         },
                                                         child: Column(
                                                           mainAxisSize:
-                                                          MainAxisSize.min,
+                                                              MainAxisSize.min,
                                                           children: [
                                                             ClipOval(
-                                                              child: CircleAvatar(
+                                                              child:
+                                                                  CircleAvatar(
                                                                 backgroundColor:
-                                                                Colors.white,
+                                                                    Colors
+                                                                        .white,
                                                                 radius: 20,
                                                                 child:
-                                                                Image.asset(
+                                                                    Image.asset(
                                                                   'images/1.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
+                                                                  fit: BoxFit
+                                                                      .fill,
                                                                   height: 40,
                                                                   width: 40,
                                                                 ),
@@ -3836,13 +3902,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                             Text(
                                                               AppLocalizations.of(
-                                                                  context)!
+                                                                      context)!
                                                                   .low,
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                    FontWeight
+                                                                        .bold,
                                                                 fontSize: 15,
                                                               ),
                                                             ),
@@ -3854,16 +3920,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         onTap: () {
                                                           setState(() {
                                                             employee.severity =
-                                                            2; // Set severity level to 2 for Medium
+                                                                2; // Set severity level to 2 for Medium
                                                             if (_selectedEmployees
                                                                 .contains(
-                                                                employee)) {
+                                                                    employee)) {
                                                               _selectedEmployees
                                                                   .remove(
-                                                                  employee);
+                                                                      employee);
                                                             } else {
                                                               _selectedEmployees
-                                                                  .add(employee);
+                                                                  .add(
+                                                                      employee);
                                                             }
                                                           });
                                                           Navigator.pop(
@@ -3871,18 +3938,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         },
                                                         child: Column(
                                                           mainAxisSize:
-                                                          MainAxisSize.min,
+                                                              MainAxisSize.min,
                                                           children: [
                                                             ClipOval(
-                                                              child: CircleAvatar(
+                                                              child:
+                                                                  CircleAvatar(
                                                                 backgroundColor:
-                                                                Colors.white,
+                                                                    Colors
+                                                                        .white,
                                                                 radius: 20,
                                                                 child:
-                                                                Image.asset(
+                                                                    Image.asset(
                                                                   'images/2.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
+                                                                  fit: BoxFit
+                                                                      .fill,
                                                                   height: 40,
                                                                   width: 40,
                                                                 ),
@@ -3890,13 +3959,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                             Text(
                                                               AppLocalizations.of(
-                                                                  context)!
+                                                                      context)!
                                                                   .medium,
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                    FontWeight
+                                                                        .bold,
                                                                 fontSize: 15,
                                                               ),
                                                             ),
@@ -3908,16 +3977,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         onTap: () {
                                                           setState(() {
                                                             employee.severity =
-                                                            3; // Set severity level to 3 for High
+                                                                3; // Set severity level to 3 for High
                                                             if (_selectedEmployees
                                                                 .contains(
-                                                                employee)) {
+                                                                    employee)) {
                                                               _selectedEmployees
                                                                   .remove(
-                                                                  employee);
+                                                                      employee);
                                                             } else {
                                                               _selectedEmployees
-                                                                  .add(employee);
+                                                                  .add(
+                                                                      employee);
                                                             }
                                                           });
                                                           Navigator.pop(
@@ -3925,18 +3995,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         },
                                                         child: Column(
                                                           mainAxisSize:
-                                                          MainAxisSize.min,
+                                                              MainAxisSize.min,
                                                           children: [
                                                             ClipOval(
-                                                              child: CircleAvatar(
+                                                              child:
+                                                                  CircleAvatar(
                                                                 backgroundColor:
-                                                                Colors.white,
+                                                                    Colors
+                                                                        .white,
                                                                 radius: 20,
                                                                 child:
-                                                                Image.asset(
+                                                                    Image.asset(
                                                                   'images/3.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
+                                                                  fit: BoxFit
+                                                                      .fill,
                                                                   height: 40,
                                                                   width: 40,
                                                                 ),
@@ -3944,13 +4016,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                             Text(
                                                               AppLocalizations.of(
-                                                                  context)!
+                                                                      context)!
                                                                   .high,
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                    FontWeight
+                                                                        .bold,
                                                                 fontSize: 15,
                                                               ),
                                                             ),
@@ -3984,7 +4056,6 @@ class _RequestScreenState extends State<RequestScreen> {
                             ],
                           ],
                         ],
-
                         const SizedBox(height: 10),
                         Text(
                           AppLocalizations.of(context)!.notes,
@@ -4415,7 +4486,6 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                           ),
                         ],
-
                         Padding(
                           padding: const EdgeInsets.only(left: 50.0, right: 50),
                           child: GestureDetector(
@@ -4505,6 +4575,7 @@ class _RequestScreenState extends State<RequestScreen> {
       _resetBottomSheetData(); // Also reset data when sheet is closed
     });
   }
+
   void _showRequestBottomSheet2(BuildContext context, Request selectedRequest) {
     List<SubTypes> subTypeList = selectedRequest.subTypes ?? [];
 
@@ -4627,8 +4698,8 @@ class _RequestScreenState extends State<RequestScreen> {
                               if (newValue != null) {
                                 if (_selectedRequestType == 'leaveRequest') {
                                   double? remainingBalance =
-                                  _getRemainingLeaveBalance(
-                                      newValue.requestType);
+                                      _getRemainingLeaveBalance(
+                                          newValue.requestType);
 
                                   // Debug log to check the retrieved balance
                                   print(
@@ -4654,440 +4725,439 @@ class _RequestScreenState extends State<RequestScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                          if((singletonClass.getJWTModel()?.grade == "L0" ||
-                              singletonClass.getJWTModel()?.grade == "L1") &&
-                              _selectedRequestType == "allowance_Increment")...[
-                            if (_selectedEmployees.isNotEmpty) ...[
-                              SizedBox(
-                                height: 60,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: _selectedEmployees.length,
-                                  itemBuilder: (context, index) {
-                                    var employee = _selectedEmployees[index];
-                                    return Stack(
-                                      children: [
-                                        // Main container for the employee tile
-                                        Container(
-                                          margin: const EdgeInsets.all(3),
-                                          decoration: BoxDecoration(
-                                            borderRadius: const BorderRadius.all(
-                                                Radius.circular(15)),
-                                            color: NasColors.lightBlue,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color:
-                                                Colors.grey.withOpacity(0.3),
-                                                spreadRadius: 1,
-                                                blurRadius: 5,
-                                                offset: const Offset(0, 0),
-                                              ),
-                                            ],
-                                          ),
-                                          width: 150,
-                                          // Set a fixed width for each employee tile
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                height: 30,
-                                                width: 40,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  image: DecorationImage(
-                                                    image: AssetImage(
-                                                        "images/DP.png"),
-                                                    fit: BoxFit.fill,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 5),
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    employee!.employeeName ??
-                                                        "Unknown",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
-                                                    ),
-                                                    overflow: TextOverflow
-                                                        .ellipsis, // Optional: Handle long text
-                                                  ),
-                                                  Text(
-                                                    employee.empId ?? "Unknown",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
+                        if ((singletonClass.getJWTModel()?.grade == "L0" ||
+                                singletonClass.getJWTModel()?.grade == "L1") &&
+                            _selectedRequestType == "allowance_Increment") ...[
+                          if (_selectedEmployees.isNotEmpty) ...[
+                            SizedBox(
+                              height: 60,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _selectedEmployees.length,
+                                itemBuilder: (context, index) {
+                                  var employee = _selectedEmployees[index];
+                                  return Stack(
+                                    children: [
+                                      // Main container for the employee tile
+                                      Container(
+                                        margin: const EdgeInsets.all(3),
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: NasColors.lightBlue,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.3),
+                                              spreadRadius: 1,
+                                              blurRadius: 5,
+                                              offset: const Offset(0, 0),
+                                            ),
+                                          ],
                                         ),
-                                        // Small remove button on top-right
-                                        Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _selectedEmployees
-                                                    .remove(employee);
-                                              });
-                                            },
-                                            child: Container(
+                                        width: 150,
+                                        // Set a fixed width for each employee tile
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              height: 30,
+                                              width: 40,
                                               decoration: const BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                color: Colors.red,
-                                              ),
-                                              padding: const EdgeInsets.all(4.0),
-                                              // Adjust padding for icon size
-                                              child: const Icon(
-                                                Icons.close,
-                                                color: Colors.white,
-                                                size: 16, // Adjust icon size
+                                                image: DecorationImage(
+                                                  image: AssetImage(
+                                                      "images/DP.png"),
+                                                  fit: BoxFit.fill,
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                            const SizedBox(width: 5),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  employee!.employeeName ??
+                                                      "Unknown",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                  overflow: TextOverflow
+                                                      .ellipsis, // Optional: Handle long text
+                                                ),
+                                                Text(
+                                                  employee.empId ?? "Unknown",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                            Text(
-                              AppLocalizations.of(context)!.searchEmployee,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Container(
-                                  height: 50,
-                                  width: MediaQuery.of(context).size.width - 100,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
                                       ),
-                                    ],
-                                  ),
-                                  child: TextFormField(
-                                    controller: _searchController,
-                                    decoration: InputDecoration(
-                                      hintText:
-                                      '${AppLocalizations.of(context)!.search}...',
-                                      border: InputBorder.none,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      getSearchEmployeeData();
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.search,
-                                    size: 25,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_showSearchResult == true) ...[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _employeeSearchResults.clear();
-                                        });
-                                      },
-                                      child: Text(
-                                        AppLocalizations.of(context)!.clearAll,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red),
-                                      )),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 200, // Adjust as needed
-                                child: ListView.builder(
-                                  itemCount: _employeeSearchResults.length,
-                                  itemBuilder: (context, index) {
-                                    var employee = _employeeSearchResults[index];
-                                    return ListTile(
-                                      title: Row(
-                                        children: [
-                                          Container(
-                                            height: 50,
-                                            width: 60,
+                                      // Small remove button on top-right
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedEmployees
+                                                  .remove(employee);
+                                            });
+                                          },
+                                          child: Container(
                                             decoration: const BoxDecoration(
                                               shape: BoxShape.circle,
-                                              image: DecorationImage(
-                                                image:
-                                                AssetImage("images/DP.png"),
-                                                fit: BoxFit.fill,
-                                              ),
+                                              color: Colors.red,
                                             ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                employee.employeeName ??
-                                                    "Unknown",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue),
-                                              ),
-                                              Text(
-                                                employee.empId ?? "Unknown",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: GestureDetector(
-                                        onTap: () {
-                                          // Show an alert dialog when the GestureDetector is tapped
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .selectSeverityOfEmployee,
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                  ),
-                                                ),
-                                                content: SizedBox(
-                                                  height: 120,
-                                                  // Adjust the height as needed to fit content
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                    children: [
-                                                      // Low Severity Option
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            employee.severity =
-                                                            1; // Set severity level to 1 for Low
-                                                            if (_selectedEmployees
-                                                                .contains(
-                                                                employee)) {
-                                                              _selectedEmployees
-                                                                  .remove(
-                                                                  employee);
-                                                            } else {
-                                                              _selectedEmployees
-                                                                  .add(employee);
-                                                            }
-                                                          });
-                                                          Navigator.pop(
-                                                              context); // Close the dialog
-                                                        },
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                          MainAxisSize.min,
-                                                          children: [
-                                                            ClipOval(
-                                                              child: CircleAvatar(
-                                                                backgroundColor:
-                                                                Colors.white,
-                                                                radius: 20,
-                                                                child:
-                                                                Image.asset(
-                                                                  'images/1.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
-                                                                  height: 40,
-                                                                  width: 40,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                  context)!
-                                                                  .low,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      // Medium Severity Option
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            employee.severity =
-                                                            2; // Set severity level to 2 for Medium
-                                                            if (_selectedEmployees
-                                                                .contains(
-                                                                employee)) {
-                                                              _selectedEmployees
-                                                                  .remove(
-                                                                  employee);
-                                                            } else {
-                                                              _selectedEmployees
-                                                                  .add(employee);
-                                                            }
-                                                          });
-                                                          Navigator.pop(
-                                                              context); // Close the dialog
-                                                        },
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                          MainAxisSize.min,
-                                                          children: [
-                                                            ClipOval(
-                                                              child: CircleAvatar(
-                                                                backgroundColor:
-                                                                Colors.white,
-                                                                radius: 20,
-                                                                child:
-                                                                Image.asset(
-                                                                  'images/2.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
-                                                                  height: 40,
-                                                                  width: 40,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                  context)!
-                                                                  .medium,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      // High Severity Option
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            employee.severity =
-                                                            3; // Set severity level to 3 for High
-                                                            if (_selectedEmployees
-                                                                .contains(
-                                                                employee)) {
-                                                              _selectedEmployees
-                                                                  .remove(
-                                                                  employee);
-                                                            } else {
-                                                              _selectedEmployees
-                                                                  .add(employee);
-                                                            }
-                                                          });
-                                                          Navigator.pop(
-                                                              context); // Close the dialog
-                                                        },
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                          MainAxisSize.min,
-                                                          children: [
-                                                            ClipOval(
-                                                              child: CircleAvatar(
-                                                                backgroundColor:
-                                                                Colors.white,
-                                                                radius: 20,
-                                                                child:
-                                                                Image.asset(
-                                                                  'images/3.png',
-                                                                  fit:
-                                                                  BoxFit.fill,
-                                                                  height: 40,
-                                                                  width: 40,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                  context)!
-                                                                  .high,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                        child: Container(
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.green,
-                                          ),
-                                          padding: const EdgeInsets.all(8.0),
-                                          // Space around the icon
-                                          child: const Icon(
-                                            Icons.add,
-                                            color: Colors.white,
+                                            padding: const EdgeInsets.all(4.0),
+                                            // Adjust padding for icon size
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 16, // Adjust icon size
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                          Text(
+                            AppLocalizations.of(context)!.searchEmployee,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Container(
+                                height: 50,
+                                width: MediaQuery.of(context).size.width - 100,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: TextFormField(
+                                  controller: _searchController,
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        '${AppLocalizations.of(context)!.search}...',
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    getSearchEmployeeData();
+                                  });
+                                },
+                                icon: Icon(
+                                  Icons.search,
+                                  size: 25,
+                                  color: NasColors.darkBlue,
                                 ),
                               ),
                             ],
+                          ),
+                          if (_showSearchResult == true) ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _employeeSearchResults.clear();
+                                      });
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.clearAll,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red),
+                                    )),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 200, // Adjust as needed
+                              child: ListView.builder(
+                                itemCount: _employeeSearchResults.length,
+                                itemBuilder: (context, index) {
+                                  var employee = _employeeSearchResults[index];
+                                  return ListTile(
+                                    title: Row(
+                                      children: [
+                                        Container(
+                                          height: 50,
+                                          width: 60,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            image: DecorationImage(
+                                              image:
+                                                  AssetImage("images/DP.png"),
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              employee.employeeName ??
+                                                  "Unknown",
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue),
+                                            ),
+                                            Text(
+                                              employee.empId ?? "Unknown",
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: GestureDetector(
+                                      onTap: () {
+                                        // Show an alert dialog when the GestureDetector is tapped
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: Text(
+                                                AppLocalizations.of(context)!
+                                                    .selectSeverityOfEmployee,
+                                                style: GoogleFonts.inter(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                              content: SizedBox(
+                                                height: 120,
+                                                // Adjust the height as needed to fit content
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    // Low Severity Option
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          employee.severity =
+                                                              1; // Set severity level to 1 for Low
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
+                                                          } else {
+                                                            _selectedEmployees
+                                                                .add(employee);
+                                                          }
+                                                        });
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
+                                                      },
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          ClipOval(
+                                                            child: CircleAvatar(
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                              radius: 20,
+                                                              child:
+                                                                  Image.asset(
+                                                                'images/1.png',
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                                height: 40,
+                                                                width: 40,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .low,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    // Medium Severity Option
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          employee.severity =
+                                                              2; // Set severity level to 2 for Medium
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
+                                                          } else {
+                                                            _selectedEmployees
+                                                                .add(employee);
+                                                          }
+                                                        });
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
+                                                      },
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          ClipOval(
+                                                            child: CircleAvatar(
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                              radius: 20,
+                                                              child:
+                                                                  Image.asset(
+                                                                'images/2.png',
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                                height: 40,
+                                                                width: 40,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .medium,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    // High Severity Option
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          employee.severity =
+                                                              3; // Set severity level to 3 for High
+                                                          if (_selectedEmployees
+                                                              .contains(
+                                                                  employee)) {
+                                                            _selectedEmployees
+                                                                .remove(
+                                                                    employee);
+                                                          } else {
+                                                            _selectedEmployees
+                                                                .add(employee);
+                                                          }
+                                                        });
+                                                        Navigator.pop(
+                                                            context); // Close the dialog
+                                                      },
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          ClipOval(
+                                                            child: CircleAvatar(
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                              radius: 20,
+                                                              child:
+                                                                  Image.asset(
+                                                                'images/3.png',
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                                height: 40,
+                                                                width: 40,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .high,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.green,
+                                        ),
+                                        padding: const EdgeInsets.all(8.0),
+                                        // Space around the icon
+                                        child: const Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                           ],
-
+                        ],
                         const SizedBox(height: 10),
                         Text(
                           AppLocalizations.of(context)!.notes,
@@ -5165,7 +5235,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                               onSurface: Colors.white,
                                             ),
                                             textButtonTheme:
-                                            TextButtonThemeData(
+                                                TextButtonThemeData(
                                               style: TextButton.styleFrom(
                                                 foregroundColor: Colors.white,
                                               ),
@@ -5185,7 +5255,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     fromDate == null
                                         ? AppLocalizations.of(context)!.fromDate
                                         : DateFormat('yyyy-MM-dd')
-                                        .format(fromDate!),
+                                            .format(fromDate!),
                                     style: GoogleFonts.inter(
                                       fontWeight: FontWeight.w400,
                                       color: Colors.black,
@@ -5215,7 +5285,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                               onSurface: Colors.white,
                                             ),
                                             textButtonTheme:
-                                            TextButtonThemeData(
+                                                TextButtonThemeData(
                                               style: TextButton.styleFrom(
                                                 foregroundColor: Colors.white,
                                               ),
@@ -5230,12 +5300,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                         toDate = date;
                                         if (fromDate != null) {
                                           totalDays = toDate!
-                                              .difference(fromDate!)
-                                              .inDays +
+                                                  .difference(fromDate!)
+                                                  .inDays +
                                               1; // Calculate totalDays
                                         } else {
                                           totalDays =
-                                          null; // Handle case where fromDate is null
+                                              null; // Handle case where fromDate is null
                                         }
                                       });
                                     }
@@ -5244,7 +5314,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     toDate == null
                                         ? AppLocalizations.of(context)!.toDate
                                         : DateFormat('yyyy-MM-dd')
-                                        .format(toDate!),
+                                            .format(toDate!),
                                     style: GoogleFonts.inter(
                                       fontWeight: FontWeight.w400,
                                       color: Colors.black,
@@ -5269,7 +5339,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           TextButton(
                             onPressed: () async {
                               FilePickerResult? result =
-                              await FilePicker.platform.pickFiles(
+                                  await FilePicker.platform.pickFiles(
                                 type: FileType
                                     .any, // Ensures only image files are allowed
                               );
@@ -5328,12 +5398,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                     title: AppLocalizations.of(context)!
                                         .enterToAndFromDate,
                                     autoCloseDuration:
-                                    const Duration(seconds: 5),
+                                        const Duration(seconds: 5),
                                     showCancelBtn: false,
                                     showConfirmBtn: false,
                                   );
                                 } else if (selectedRequest.docRequired ==
-                                    true &&
+                                        true &&
                                     selectedFile == null) {
                                   // Validation for required document
                                   QuickAlert.show(
@@ -5342,7 +5412,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     title: AppLocalizations.of(context)!
                                         .pleaseAttachDocument,
                                     autoCloseDuration:
-                                    const Duration(seconds: 5),
+                                        const Duration(seconds: 5),
                                     showCancelBtn: false,
                                     showConfirmBtn: false,
                                   );
@@ -5365,7 +5435,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               height: 50,
                               decoration: const BoxDecoration(
                                 borderRadius:
-                                BorderRadius.all(Radius.circular(15)),
+                                    BorderRadius.all(Radius.circular(15)),
                                 gradient: LinearGradient(
                                   colors: [
                                     Color(0xFF47734D),
@@ -5416,15 +5486,17 @@ class _RequestScreenState extends State<RequestScreen> {
         height: 70,
         width: 140,
         child: Card(
-          color:
-          _selectedOptionIndexBottom == index ? NasColors.darkBlue : Colors.white,
+          color: _selectedOptionIndexBottom == index
+              ? NasColors.darkBlue
+              : Colors.white,
           elevation: 100.0,
           margin: const EdgeInsets.all(10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
             side: BorderSide(
-              color:
-              _selectedOptionIndexBottom == index ? Colors.white : Colors.white,
+              color: _selectedOptionIndexBottom == index
+                  ? Colors.white
+                  : Colors.white,
               width: 0,
             ),
           ),
@@ -5449,6 +5521,7 @@ class _RequestScreenState extends State<RequestScreen> {
       ),
     );
   }
+
   //DIALOUGE
 
   void _showConfirmationDialog(PlatformFile file) {
@@ -5667,7 +5740,6 @@ class _RequestScreenState extends State<RequestScreen> {
         "leaveType": selectedSubType,
       });
     }
-
 
     // Construct the data map for the API call
     Map<String, dynamic> data = {
