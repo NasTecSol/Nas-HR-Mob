@@ -22,8 +22,12 @@ import 'package:nashr/request_controller/notification_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
+import 'package:nashr/request_controller/project_logo_model.dart';
+import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
+import 'package:nashr/request_controller/task_attachment_model.dart';
+import 'package:nashr/request_controller/task_model.dart';
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -46,6 +50,10 @@ class SingletonClass {
   List<EmployeeData> employeeDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
+  List<ProjectsData> projectsDataList = [];
+  List<TaskAttachmentModel> taskAttachmentDataList = [];
+  List<TaskModel> taskModelList = [];
+  List<ProjectLogoModel> projectsLogoModelList = [];
   List<PenaltiesAndFineModel> penaltiesDataList = [];
   List<NotificationModel> notificationModelList = [];
   List<ComplaintsModel> complaintsDataList = [];
@@ -547,6 +555,20 @@ class SingletonClass {
     } catch (error) {
       print('Failed to send data. Error: $error');
     }
+  }
+
+  Future<TaskModel?> getTasks() async {
+    var client = http.Client();
+    var uri = Uri.parse('${baseURL}/kanban-task');
+    var response = await client.get(uri);
+    log("Task Data Log ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var taskData = TaskModel.fromJson(responseBody);
+      taskModelList.addAll([taskData]);
+      return taskData;
+    }
+    return null ; // Print the response body
   }
 
   String formatTime(String createdAt) {

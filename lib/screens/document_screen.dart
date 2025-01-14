@@ -6,7 +6,6 @@ import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/colors.dart';
-import 'package:pdfx/pdfx.dart';
 
 class DocumentScreen extends StatefulWidget {
   const DocumentScreen({super.key});
