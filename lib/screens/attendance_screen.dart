@@ -97,7 +97,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 5,
                               blurRadius: 10,
                               offset: const Offset(0, 3),
@@ -202,8 +202,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                       }
                       String date = formatDate(attendance.updatedAt!);
-                      DateTime? checkInTime = parseTime(attendance.clockInTime);
-                      DateTime? checkOutTime = parseTime(attendance.clockOutTime);
                       String lateMinutes = formatMinutes(attendance.lateMinutes);
                       String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
                       String breakTime = formatMinutes(attendance.breakTime);
@@ -257,7 +255,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    formatDateTime(checkInTime),
+                                    singletonClass.formatCheckInTime(attendance.clockInTime),
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
@@ -296,7 +294,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   SizedBox(
                                     width: 70,
                                     child: Text(
-                                      formatDateTime(checkOutTime),
+                                    singletonClass.formatCheckInTime(attendance.clockOutTime),
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -329,7 +327,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    "$date",
+                                    date,
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,

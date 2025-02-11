@@ -112,7 +112,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
+                                    color: Colors.grey.withValues(alpha: 0.4),
                                     spreadRadius: 5,
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
@@ -221,15 +221,6 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                       String formattedDate = DateFormat('MMMM dd, yyyy')
                           .format(DateTime.parse(clock.createdAt ??
                           DateTime.now().toString()));
-                      String formattedCheckInTime = DateFormat('hh:mm a')
-                          .format(DateTime.parse(clock.checkInTime ??
-                          DateTime.now().toString()));
-                      // Check if checkOutTime is null
-                      String formattedCheckOutTime = clock.checkOutTime !=
-                          null
-                          ? DateFormat('hh:mm a')
-                          .format(DateTime.parse(clock.checkOutTime!))
-                          : 'N/A'; // Provide a fallback for null check-out time
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 15),
@@ -239,7 +230,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 2,
                               blurRadius: 8,
                               offset: const Offset(
@@ -281,7 +272,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                     Row(
                                       children: [
                                         Text(
-                                          formattedCheckInTime,
+                                          singletonClass.formatCheckInTime(clock.checkInTime!),
                                           style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -312,7 +303,9 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                         ),
                                         const SizedBox(width: 10),
                                         Text(
-                                          formattedCheckOutTime,
+                                          clock.checkOutTime != null
+                                              ? singletonClass.formatCheckInTime(clock.checkOutTime!)
+                                              : 'N/A', // or any default text
                                           style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -385,7 +378,9 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
 
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$employeeId/$fromDateString/$toDateString');
     var response = await client.get(uri);
-    log("ClockingData:${response.body}");
+    log("ClockingData my clocking:${response.body}");
+    log(fromDateString);
+    log(toDateString);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var clockingData = ClockingData.fromJson(responseBody);

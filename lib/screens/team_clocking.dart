@@ -1,11 +1,16 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'dart:math' as math;
+import 'package:http/http.dart' as http;
+import '../request_controller/branch_model.dart';
+import '../request_controller/teamClocking_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:math' as math;
 
 class TeamClocking extends StatefulWidget {
   const TeamClocking({super.key});
@@ -16,15 +21,116 @@ class TeamClocking extends StatefulWidget {
 
 class _TeamClockingState extends State<TeamClocking> {
   SingletonClass singletonClass = SingletonClass();
+  late String reportingManagerId;
+  late List<Teams> filteredUnderTeams;
+  List<TeamClockingData> filteredClockingDataList = [];
+  String? selectedEmployeeId;
+
+  @override
+  void initState() {
+    super.initState();
+    reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+    List<BranchData> branchDataList = singletonClass.branchDataList;
+    var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+    filteredUnderTeams = filteredData['underTeams']!;
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    await getTeamClockingAPI();
+    filterClockingData();
+    setState(() {});
+  }
+
+  Map<String, List<Teams>> getFilteredTeams(
+      List<BranchData> branchDataList, String reportingManagerId) {
+    List<Teams> underTeams = [];
+    String? userGrade = singletonClass.getJWTModel()?.grade;
+
+    // Debugging: print branch data
+    print('Branch Data List length: ${branchDataList.length}');
+
+    for (BranchData branchData in branchDataList) {
+      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+        for (var department in departmentDetails.departments ?? []) {
+          // Check if the user is a supervisor in the department
+          bool isSupervisor = department.supervisors?.any(
+                  (supervisor) => supervisor.empId == reportingManagerId) ??
+              false;
+          print(
+              'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
+
+          if (userGrade == "L0" || userGrade == "L1") {
+            // Supervisor with L0 or L1 grade
+            for (var team in department.teams ?? []) {
+              for (var supervisor in department.supervisors ?? []) {
+                // Check if the supervisor empId matches the reportingManagerId
+                if (supervisor.empId == reportingManagerId) {
+                  // Now check if the supervisor's teamId matches the current team's teamId
+                  if (supervisor.teamId == team.teamId) {
+                    print(
+                        'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                    underTeams.add(
+                        team); // Add to underTeams if supervisor manages the team
+                  }
+                }
+              }
+            }
+          } else if (userGrade == "L2" || userGrade == "L3") {}
+        }
+      }
+    }
+    // Return both lists in a map
+    return {
+      'underTeams': underTeams,
+    };
+  }
+
+  void filterClockingData() {
+    String loggedInEmployeeId = singletonClass.getJWTModel()?.employeeId ?? '';
+    log("Logged-in Employee ID: $loggedInEmployeeId");
+
+    List<TeamClockingData> filteredClockingData = [];
+
+    // Filter based on team membership
+    for (var team in filteredUnderTeams) {
+      var teamClocking = singletonClass.teamClockingDataList.first.data
+          ?.where((clocking) =>
+              team.teamData
+                  ?.any((member) => member.employeeId == clocking.employeeId) ??
+              false)
+          .toList();
+
+      if (teamClocking != null) {
+        filteredClockingData.addAll(teamClocking);
+      }
+    }
+
+    // If an employee is selected, refine the filtered data
+    if (selectedEmployeeId != null && selectedEmployeeId!.isNotEmpty) {
+      filteredClockingData = filteredClockingData
+          .where((clocking) => clocking.employeeId == selectedEmployeeId)
+          .toList();
+    }
+
+    setState(() {
+      filteredClockingDataList = filteredClockingData;
+    });
+
+    // Log the filtered clocking data
+    log("Filtered Clocking Data: ${jsonEncode(filteredClockingDataList.map((data) => {
+          "employeeId": data.employeeId,
+          "employeeName": data.employeeName,
+          "checkInTime": data.checkInTime
+        }).toList())}");
+  }
 
   @override
   Widget build(BuildContext context) {
-    final teamClocking = singletonClass.clockingDataList.first.data;
-
     return Scaffold(
         backgroundColor: NasColors.backGround,
         body: Padding(
-            padding: const EdgeInsets.only(top: 30.0, left: 20, right: 20),
+            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
             child: Column(children: [
               Row(
                 children: [
@@ -40,7 +146,7 @@ class _TeamClockingState extends State<TeamClocking> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 5,
                               blurRadius: 10,
                               offset: const Offset(0, 3),
@@ -61,20 +167,32 @@ class _TeamClockingState extends State<TeamClocking> {
                     ),
                   ),
                   const Spacer(),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      backgroundColor: NasColors.darkBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                  PopupMenuButton<String>(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    onPressed: () {
-                      // Add your onPressed functionality here
+                    onSelected: (value) {
+                      setState(() {
+                        selectedEmployeeId = value;
+                        filterClockingData(); // Call function to filter data
+                      });
                     },
-                    child: SizedBox(
+                    itemBuilder: (BuildContext context) {
+                      return filteredUnderTeams.first.teamData!
+                          .map((data) => PopupMenuItem<String>(
+                        value: data.employeeId, // Employee ID for filtering
+                        child: Text(data.userName ?? "Unknown"), // Display employee name
+                      ))
+                          .toList();
+                    },
+                    child: Container(
                       height: 30,
                       width: 90,
+                      decoration: BoxDecoration(
+                        color: NasColors.darkBlue,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -100,7 +218,7 @@ class _TeamClockingState extends State<TeamClocking> {
                 ],
               ),
               FutureBuilder(
-                  future: singletonClass.getClockingData(),
+                  future: getTeamClockingAPI(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
@@ -110,205 +228,7 @@ class _TeamClockingState extends State<TeamClocking> {
                           child: Lottie.asset('images/loader.json'),
                         ),
                       );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    } else if (snapshot.hasData) {
-                      return singletonClass.clockingDataList.first.data!.isEmpty
-                          ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            )
-                          : Expanded(
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                              itemCount: teamClocking?.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final team = teamClocking![index];
-                                final shift = singletonClass
-                                    .branchDataList
-                                    .first
-                                    .data
-                                    ?.departmentDetails
-                                    ?.first
-                                    .shifts;
-
-                                // Parse shift times and clock times for the current index
-                                DateTime? checkInTime =
-                                    parseTime(team.checkInTime ?? '');
-                                DateTime? checkOutTime =
-                                    parseTime(team.checkOutTime ?? '');
-                                DateTime? shiftFromTime =
-                                    parseTime(shift!.first.timeFrom ?? '');
-                                DateTime? shiftToTime =
-                                    parseTime(shift.first.timeTo ?? '');
-
-                                // Calculate late and early durations
-                                var lateDuration = checkInTime != null &&
-                                        shiftFromTime != null &&
-                                        checkInTime.isAfter(shiftFromTime)
-                                    ? checkInTime.difference(shiftFromTime)
-                                    : Duration.zero;
-                                var earlyDuration = checkOutTime != null &&
-                                        shiftToTime != null &&
-                                        checkOutTime.isBefore(shiftToTime)
-                                    ? shiftToTime.difference(checkOutTime)
-                                    : Duration.zero;
-
-                                // Get user status
-                                String status =
-                                    getStatus(lateDuration, earlyDuration);
-
-                                // Format Check-In and Check-Out Times
-                                String formattedCheckInTime =
-                                    team.checkInTime != null
-                                        ? DateFormat('hh:mm a').format(
-                                            DateTime.parse(team.checkInTime!))
-                                        : "N/A";
-                                String formattedCheckOutTime =
-                                    team.checkOutTime != null
-                                        ? DateFormat('hh:mm a').format(
-                                            DateTime.parse(team.checkOutTime!))
-                                        : "N/A";
-
-                                return Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15)),
-                                    color: Colors.white,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "${team.employeeName}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            Container(
-                                              height: 20,
-                                              width: 75,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.rectangle,
-                                                color: getStatusColor(status),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  status,
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              formattedCheckInTime,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Transform(
-                                              transform:
-                                                  Matrix4.rotationY(math.pi),
-                                              // Flip horizontally
-                                              alignment: Alignment.center,
-                                              child: const Icon(
-                                                Icons.exit_to_app_outlined,
-                                                size: 20,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                              "${lateDuration.inMinutes} Mins",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: NasColors.pending,
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.error,
-                                              size: 20,
-                                              color: NasColors.pending,
-                                            ),
-                                            const SizedBox(width: 5),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 70,
-                                              child: Text(
-                                                formattedCheckOutTime,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                            const Icon(
-                                              Icons.exit_to_app_outlined,
-                                              size: 20,
-                                              color: Colors.black,
-                                            ),
-                                            const Spacer(),
-                                            SizedBox(
-                                              child: Text(
-                                                "${earlyDuration.inMinutes} Mins",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: NasColors.onTime,
-                                                ),
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.directions_run_outlined,
-                                              size: 20,
-                                              color: NasColors.onTime,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ));
-                    } else {
+                    } else if (filteredClockingDataList.isEmpty) {
                       return Center(
                         child: Text(
                           AppLocalizations.of(context)!.noData,
@@ -321,6 +241,173 @@ class _TeamClockingState extends State<TeamClocking> {
                         ),
                       );
                     }
+
+                    return Expanded(
+                        child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: filteredClockingDataList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final team = filteredClockingDataList[index];
+                        final shift = singletonClass.branchDataList.first.data
+                            ?.departmentDetails?.first.shifts;
+                        // Parse shift times and clock times for the current index
+                        DateTime? checkInTime =
+                            parseTime(team.checkInTime ?? '');
+                        DateTime? checkOutTime =
+                            parseTime(team.checkOutTime ?? '');
+                        DateTime? shiftFromTime =
+                            parseTime(shift!.first.timeFrom ?? '');
+                        DateTime? shiftToTime =
+                            parseTime(shift.first.timeTo ?? '');
+                        // Calculate late and early durations
+                        var lateDuration = checkInTime != null &&
+                                shiftFromTime != null &&
+                                checkInTime.isAfter(shiftFromTime)
+                            ? checkInTime.difference(shiftFromTime)
+                            : Duration.zero;
+                        var earlyDuration = checkOutTime != null &&
+                                shiftToTime != null &&
+                                checkOutTime.isBefore(shiftToTime)
+                            ? shiftToTime.difference(checkOutTime)
+                            : Duration.zero;
+                        // Get user status
+                        String status = getStatus(lateDuration, earlyDuration);
+
+                        // Format Check-In and Check-Out Times
+                        String formattedCheckInTime = team.checkInTime != null
+                            ? DateFormat('hh:mm a')
+                                .format(DateTime.parse(team.checkInTime!))
+                            : "N/A";
+                        String formattedCheckOutTime = team.checkOutTime != null
+                            ? DateFormat('hh:mm a')
+                                .format(DateTime.parse(team.checkOutTime!))
+                            : "N/A";
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            color: Colors.white,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      "${team.employeeName}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      height: 20,
+                                      width: 75,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        color: getStatusColor(status),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          status,
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Text(
+                                      formattedCheckInTime,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Transform(
+                                      transform: Matrix4.rotationY(math.pi),
+                                      // Flip horizontally
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.exit_to_app_outlined,
+                                        size: 20,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      "${lateDuration.inMinutes} Mins",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.pending,
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.error,
+                                      size: 20,
+                                      color: NasColors.pending,
+                                    ),
+                                    const SizedBox(width: 5),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 70,
+                                      child: Text(
+                                        formattedCheckOutTime,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.exit_to_app_outlined,
+                                      size: 20,
+                                      color: Colors.black,
+                                    ),
+                                    const Spacer(),
+                                    SizedBox(
+                                      child: Text(
+                                        "${earlyDuration.inMinutes} Mins",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: NasColors.onTime,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.directions_run_outlined,
+                                      size: 20,
+                                      color: NasColors.onTime,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ));
                   })
             ])));
   }
@@ -337,7 +424,6 @@ class _TeamClockingState extends State<TeamClocking> {
       return DateTime(now.year, now.month, now.day, parsedTime.hour,
           parsedTime.minute, parsedTime.second);
     } catch (e) {
-      print('Error parsing time: $e\n$timeString');
       return null;
     }
   }
@@ -363,5 +449,20 @@ class _TeamClockingState extends State<TeamClocking> {
       default:
         return NasColors.completed;
     }
+  }
+
+  //API CALL
+  Future<TeamClockingModel?> getTeamClockingAPI() async {
+    var client = http.Client();
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out');
+    var response = await client.get(uri);
+    log("Team ClockingData:${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var teamClocking = TeamClockingModel.fromJson(responseBody);
+      singletonClass.teamClockingDataList.addAll([teamClocking]);
+      return teamClocking;
+    }
+    return null; // Print the response body
   }
 }

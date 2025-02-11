@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _removeOverlay();
           },
           child: Material(
-            color: Colors.grey.withOpacity(0.8), // Set the opacity
+            color: Colors.grey.withValues(alpha: 0.8), // Set the opacity
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _removeOverlay();
               },
               child: Material(
-                color: Colors.grey.withOpacity(0.8),
+                color: Colors.grey.withValues(alpha:0.8),
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 100.0),
@@ -225,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
+                                            color: Colors.grey.withValues(alpha: 0.5),
                                             spreadRadius: 1,
                                             blurRadius: 0.5,
                                             offset: const Offset(0, 0), // changes position of shadow
@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
                                               offset: const Offset(0, 0), // changes position of shadow
@@ -322,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
                                               offset: const Offset(0, 0), // changes position of shadow
@@ -374,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
                                               offset: const Offset(0, 0), // changes position of shadow
@@ -431,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
                                               offset: const Offset(0, 0), // changes position of shadow
@@ -477,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
                                               offset: const Offset(0, 0), // changes position of shadow
@@ -523,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
+                                            color: Colors.grey.withValues(alpha: 0.5),
                                             spreadRadius: 1,
                                             blurRadius: 0.5,
                                             offset: const Offset(0, 0), // changes position of shadow
@@ -599,14 +599,26 @@ class _HomeScreenState extends State<HomeScreen> {
         children: <Widget>[
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            decoration:  BoxDecoration(
-              image:   DecorationImage(
-                image: dashBoardData?.profilePic != null
-                    ? NetworkImage(dashBoardData!.profilePic!)
-                    : const AssetImage('images/DP.png') as ImageProvider,
-                fit: BoxFit.cover,
-              ),),
-            child: BackdropFilter(
+            decoration: const BoxDecoration(),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty
+                    ? Image.network(
+                  dashBoardData.profilePic!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'images/DP.png',
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+                    : Image.asset(
+                  'images/DP.png',
+                  fit: BoxFit.cover,
+                ),
+                BackdropFilter(
                   filter: ImageFilter.blur(
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
@@ -615,7 +627,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.black.withOpacity(opacityAmount * 0.1),
                   ),
                 ),
+              ],
+            ),
           ),
+
           if (isExpanded)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -724,7 +739,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   // Adjust opacity for the glow effect
                                   spreadRadius: 5,
                                   // Spread the shadow to create a glow effect
@@ -755,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   // Adjust opacity for the glow effect
                                   spreadRadius: 5,
                                   // Spread the shadow to create a glow effect
@@ -786,7 +801,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   // Adjust opacity for the glow effect
                                   spreadRadius: 5,
                                   // Spread the shadow to create a glow effect
@@ -820,7 +835,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             // Adjust opacity for the glow effect
                             spreadRadius: 5,
                             // Spread the shadow to create a glow effect
@@ -897,7 +912,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: Colors.white,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
+                                          color: Colors.grey.withValues(alpha: 0.5),
                                           spreadRadius: 2,
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
@@ -936,7 +951,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   singletonClass.clockingDataList.isNotEmpty &&
                                                       singletonClass.clockingDataList.first.data!.isNotEmpty &&
                                                       singletonClass.clockingDataList.first.data!.last.checkInTime?.isNotEmpty == true
-                                                      ? singletonClass.formatDateTime(singletonClass.clockingDataList.first.data!.last.checkInTime!)
+                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkInTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -971,7 +986,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   singletonClass.clockingDataList.isNotEmpty &&
                                                       singletonClass.clockingDataList.first.data!.isNotEmpty &&
                                                       singletonClass.clockingDataList.first.data!.last.checkOutTime?.isNotEmpty == true
-                                                      ? singletonClass.formatDateTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
+                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1085,7 +1100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
+                                        color: Colors.grey.withValues(alpha: 0.5),
                                         spreadRadius: 2,
                                         blurRadius: 8,
                                         offset: const Offset(0, 3),
@@ -1417,7 +1432,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withValues(alpha: 0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0), // changes position of shadow
@@ -1467,7 +1482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withValues(alpha: 0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0), // changes position of shadow
@@ -1518,7 +1533,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withValues(alpha: 0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0), // changes position of shadow
@@ -1567,7 +1582,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withValues(alpha: 0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0), // changes position of shadow
@@ -1612,7 +1627,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey.withValues(alpha: 0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0), // changes position of shadow
@@ -1657,7 +1672,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey.withOpacity(0.5),
+                                                color: Colors.grey.withValues(alpha: 0.5),
                                                 spreadRadius: 1,
                                                 blurRadius: 0.5,
                                                 offset: const Offset(0, 0), // changes position of shadow
@@ -1699,7 +1714,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
+                                    color: Colors.grey.withValues(alpha: 0.5),
                                     spreadRadius: 2,
                                     blurRadius: 8,
                                     offset: const Offset(
@@ -1749,7 +1764,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 color: Colors.white,
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.3),
+                                                    color: Colors.grey.withValues(alpha: 0.3),
                                                     spreadRadius: 1,
                                                     blurRadius: 5,
                                                     offset: const Offset(0, 0),

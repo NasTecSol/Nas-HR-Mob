@@ -116,19 +116,22 @@ class _ProjectScreenState extends State<ProjectScreen> {
                   ),
                 ),
                 const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.add,
-                      color: NasColors.darkBlue,
-                      size: 30,
+                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.add,
+                        color: NasColors.darkBlue,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        _showRequestBottomSheet(context);
+                      },
                     ),
-                    onPressed: () {
-                      _showRequestBottomSheet(context);
-                    },
                   ),
-                ),
+                ]
+
               ],
             ),
             const SizedBox(height: 20),
