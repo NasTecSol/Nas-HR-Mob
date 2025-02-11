@@ -1,7 +1,7 @@
 
 class EmployeeDetailsData {
-  int? statusCode;
-  String? statusMessage;
+  dynamic statusCode;
+  dynamic statusMessage;
   dynamic errorMessage;
   Data? data;
 
@@ -104,7 +104,16 @@ class Data {
     assetsInfo = json["assetsInfo"] == null ? null : (json["assetsInfo"] as List).map((e) => AssetsInfo.fromJson(e)).toList();
     approvals = json["approvals"] == null ? null : (json["approvals"] as List).map((e) => Approvals.fromJson(e)).toList();
     contractInfo = json["contractInfo"] == null ? null : (json["contractInfo"] as List).map((e) => ContractInfo.fromJson(e)).toList();
-    documentsInfo = json["documentsInfo"] == null ? null : (json["documentsInfo"] as List).map((e) => DocumentsInfo.fromJson(e)).toList();
+    if (json["documentsInfo"] != null) {
+      if (json["documentsInfo"] is List) {
+        documentsInfo = (json["documentsInfo"] as List)
+            .map((e) => DocumentsInfo.fromJson(e))
+            .toList();
+      } else if (json["documentsInfo"] is String) {
+        documentsInfo = [DocumentsInfo.fromJson(json["documentsInfo"])];
+      }
+    }
+
     createdBy = json["createdBy"];
     branchId = json["branchId"];
     departmentId = json["departmentId"];
@@ -303,28 +312,40 @@ class DocumentsInfo {
 
   DocumentsInfo({this.type, this.remarks, this.url, this.format, this.empId, this.expiration, this.size});
 
-  DocumentsInfo.fromJson(Map<String, dynamic> json) {
-    type = json["type"];
-    remarks = json["remarks"];
-    url = json["URL"];
-    format = json["format"];
-    empId = json["empId"];
-    expiration = json["expiration"];
-    size = json["size"];
+  factory DocumentsInfo.fromJson(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      return DocumentsInfo(
+        type: json["type"],
+        remarks: json["remarks"],
+        url: json["URL"],
+        format: json["format"],
+        empId: json["empId"],
+        expiration: json["expiration"],
+        size: json["size"],
+      );
+    } else if (json is String) {
+      // Handle when documentsInfo is a string
+      return DocumentsInfo(
+        type: "Unknown", // Placeholder value
+        remarks: json, // Store the string in remarks
+      );
+    }
+    return DocumentsInfo();
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["type"] = type;
-    _data["remarks"] = remarks;
-    _data["URL"] = url;
-    _data["format"] = format;
-    _data["empId"] = empId;
-    _data["expiration"] = expiration;
-    _data["size"] = size;
-    return _data;
+    return {
+      "type": type,
+      "remarks": remarks,
+      "URL": url,
+      "format": format,
+      "empId": empId,
+      "expiration": expiration,
+      "size": size,
+    };
   }
 }
+
 
 class ContractInfo {
   dynamic contractId;

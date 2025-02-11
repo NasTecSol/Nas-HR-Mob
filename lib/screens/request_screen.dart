@@ -41,7 +41,8 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResult = false;
-  List<SearchedResult> _employeeSearchResults =[]; // Stores search results of employees
+  List<SearchedResult> _employeeSearchResults =
+      []; // Stores search results of employees
   List<SearchedResult?> _selectedEmployees = [];
   DateTime? fromDate;
   DateTime? toDate;
@@ -320,17 +321,38 @@ class _RequestScreenState extends State<RequestScreen> {
           children: [
             Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.requests,
-                    style: GoogleFonts.inter(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: NasColors.darkBlue,
+                if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                    singletonClass.getJWTModel()?.grade == 'L1') ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5.0, top: 15.0),
+                    child: SizedBox(
+                      width: 140,
+                      child: Text(
+                        AppLocalizations.of(context)!.requestAndApproval,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
+                if (singletonClass.getJWTModel()?.grade == 'L2' ||
+                    singletonClass.getJWTModel()?.grade == 'L3') ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5.0, top: 15.0),
+                    child: Text(
+                      AppLocalizations.of(context)!.requests,
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.only(top: 15.0),
@@ -2903,7 +2925,7 @@ class _RequestScreenState extends State<RequestScreen> {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
       case 'leave Request':
-        return localizations.leave; // Use the localized string
+        return localizations.leaveRequests; // Use the localized string
       case 'Loan Request':
         return localizations.loanRequest; // Use the localized string
       case 'Penalty and Fine Requests':
@@ -2935,14 +2957,24 @@ class _RequestScreenState extends State<RequestScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.insufficientBalance),
-          content: Text(message),
+          backgroundColor: Colors.white,
+          title: Text(
+            AppLocalizations.of(context)!.insufficientBalance,
+            style: GoogleFonts.inter(color: Colors.black),
+          ),
+          content: Text(
+            message,
+            style: GoogleFonts.inter(color: Colors.black),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text(AppLocalizations.of(context)!.ok),
+              child: Text(
+                AppLocalizations.of(context)!.ok,
+                style: GoogleFonts.inter(color: Colors.black),
+              ),
             ),
           ],
         );
@@ -3297,16 +3329,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
                                 ),
                                 child: TextFormField(
+                                  cursorColor: Colors.grey,
                                   controller: _searchController,
                                   decoration: InputDecoration(
                                     hintText:
@@ -3738,16 +3763,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
                                   ),
                                   child: TextFormField(
+                                    cursorColor: Colors.grey,
                                     controller: _searchController,
                                     decoration: InputDecoration(
                                       hintText:
@@ -4851,14 +4869,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
                                 ),
                                 child: TextFormField(
                                   controller: _searchController,
@@ -5529,16 +5539,25 @@ class _RequestScreenState extends State<RequestScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Upload'),
-          content:
-              Text('Are you sure you want to upload this file: ${file.name}?'),
+          backgroundColor: Colors.white,
+          title: Text(
+            AppLocalizations.of(context)!.confirmUpload,
+            style: GoogleFonts.inter(color: Colors.black),
+          ),
+          content: Text(
+            '${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?',
+            style: GoogleFonts.inter(color: Colors.black),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: GoogleFonts.inter(color: Colors.red),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -5548,7 +5567,10 @@ class _RequestScreenState extends State<RequestScreen> {
                 // Trigger the API call to upload the file
                 await uploadProfile();
               },
-              child: const Text('Yes'),
+              child: Text(
+                AppLocalizations.of(context)!.yes,
+                style: GoogleFonts.inter(color: Colors.black),
+              ),
             ),
           ],
         );

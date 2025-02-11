@@ -28,6 +28,7 @@ import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
+import 'package:nashr/request_controller/teamClocking_model.dart';
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -71,6 +72,7 @@ class SingletonClass {
   List<EmployeeDetailsClocking> employeeDetailsClockingDataList = [];
   List<CheckInData> checkInDataList = [];
   List<ClockingData> clockingDataList = [];
+  List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
@@ -454,7 +456,7 @@ class SingletonClass {
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/$employeeId/$firstDateString/$currentDateString');
     var response = await client.get(uri);
-    log("ClockingData:${response.body}");
+    log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var clockingData = ClockingData.fromJson(responseBody);
@@ -470,7 +472,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
     var response = await client.get(uri);
-    log(response.body);
+    log("Branch Data List ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var branch = BranchData.fromJson(responseBody);
@@ -489,12 +491,14 @@ class SingletonClass {
 
   String formatCheckInTime(String dateTimeString) {
     try {
-      DateTime dateTime = DateTime.parse(dateTimeString);
-      final formattedTime = DateFormat('h:mm a').format(dateTime);
+      DateTime utcDateTime = DateTime.parse(dateTimeString).toUtc();
+      DateTime localDateTime = utcDateTime.toLocal();
+
+      final formattedTime = DateFormat('h:mm a').format(localDateTime);
       return formattedTime;
     } catch (e) {
-      print("Error formatting time: $e"); // Handle potential parsing errors
-      return '';
+      print("Error formatting time: $e");
+      return 'N/A';
     }
   }
 
@@ -584,7 +588,7 @@ class SingletonClass {
   String formatDateTime(String dateTime) {
     try {
       final parsedDate = DateTime.parse(dateTime).toLocal();
-      return DateFormat('dd-MM-yyyy hh:mm:a').format(parsedDate);
+      return DateFormat('hh:mm:a').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
     }

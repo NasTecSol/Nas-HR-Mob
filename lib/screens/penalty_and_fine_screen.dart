@@ -80,14 +80,17 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 0.0, top: 0.0),
-                    child: Text(
-                      AppLocalizations.of(context)!.penaltiesAndFine,
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
+                  SizedBox(
+                    width: 150,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 0.0, top: 10.0),
+                      child: Text(
+                        AppLocalizations.of(context)!.penaltiesAndFine,
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
+                        ),
                       ),
                     ),
                   ),

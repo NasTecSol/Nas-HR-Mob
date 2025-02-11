@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
+import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -177,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       if (_selectedOptionIndex2 == 0)
                         IconButton(
                           onPressed: () {
-                            // Add your settings action for the "Profile" tab
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> const SettingScreen()));
                           },
                           icon: Container(
                             height: 40,
@@ -316,6 +317,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: Container(
                 color: Colors.white,
                 child: RefreshIndicator(
+                  color: NasColors.darkBlue,
+                  backgroundColor: Colors.white,
                   onRefresh: fetchLatestProfileData,
                   child: ListView(padding: EdgeInsets.zero, children: [
                     Column(
@@ -1017,13 +1020,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     await launch(documents.url);
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Could not open the document!')),
+                                      const SnackBar(content: Text('Could not open the document!')),
                                     );
                                   }
                                 } else {
                                   // Handle other file types if needed
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Unsupported file type!')),
+                                    const SnackBar(content: Text('Unsupported file type!')),
                                   );
                                 }
                               },
@@ -1674,16 +1677,27 @@ class _ProfileScreenState extends State<ProfileScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:  Text(AppLocalizations.of(context)!.confirmUpload),
+          backgroundColor: Colors.white,
+          title:  Text(AppLocalizations.of(context)!.confirmUpload,
+            style: GoogleFonts.inter(
+                color: Colors.black
+            ),),
           content:
-              Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?'),
+              Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?',
+                style: GoogleFonts.inter(
+                    color: Colors.black
+                ),),
           actions: [
             TextButton(
               onPressed: () {
                 // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
-              child:  Text(AppLocalizations.of(context)!.cancel),
+              child:  Text(AppLocalizations.of(context)!.cancel,
+                style: GoogleFonts.inter(
+                    color: Colors.red
+                ),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -1693,7 +1707,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                 // Trigger the API call to upload the file
                 await uploadProfile();
               },
-              child:  Text(AppLocalizations.of(context)!.yes),
+              child:  Text(AppLocalizations.of(context)!.yes,
+                style: GoogleFonts.inter(
+                    color: Colors.black
+                ),),
             ),
           ],
         );

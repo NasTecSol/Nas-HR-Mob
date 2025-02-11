@@ -59,7 +59,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   void initState() {
     super.initState();
     _options = widget.projectData?.projectMembers;
-    print(_options!.first.name);
   }
 
   @override

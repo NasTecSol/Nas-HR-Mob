@@ -28,16 +28,21 @@ class _SettingScreenState extends State<SettingScreen> {
   // Load the state from SharedPreferences
   Future<void> _loadBiometricState() async {
     final preferences = await SharedPreferences.getInstance();
+    bool isBiometricEnabled = preferences.getBool('biometric_enabled') ?? false;
+
     setState(() {
-      _isBiometricEnabled = preferences.getBool('biometric_enabled') ?? false;
+      _isBiometricEnabled = isBiometricEnabled;
+      _isToggled = isBiometricEnabled; // Ensure toggle matches stored value
     });
   }
+
 
   // Save the state to SharedPreferences
   Future<void> _saveBiometricState(bool value) async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool('biometric_enabled', value);
   }
+
   final AuthService _authService = AuthService();
 
   logout() async {
@@ -72,7 +77,7 @@ class _SettingScreenState extends State<SettingScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
+                                  color: Colors.grey.withValues(alpha: 0.4),
                                   spreadRadius: 5,
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
@@ -109,7 +114,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
+                        color: Colors.grey.withValues(alpha: 0.5),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 3),
@@ -135,49 +140,46 @@ class _SettingScreenState extends State<SettingScreen> {
                           });
 
                           if (_isToggled) {
-                            // Handle enabling biometric authentication
                             if (!(await _authService.checkBiometricAvailability())) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please set up biometrics in your device settings')),
+                                const SnackBar(content: Text('Please set up biometrics in your device settings')),
                               );
                               setState(() {
-                                _isToggled = false; // Reset toggle if biometrics aren't available
+                                _isToggled = false;
                               });
-                              return; // Skip further actions if biometrics aren't set up
+                              return;
                             }
 
                             bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
                             if (isAuthenticated) {
                               setState(() {
                                 _isBiometricEnabled = value;
-                                _saveBiometricState(value);
                               });
+                              await _saveBiometricState(value);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Biometric authentication enabled')),
                               );
                             } else {
+                              setState(() {
+                                _isToggled = false;
+                              });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Biometric authentication failed')),
                               );
-                              setState(() {
-                                _isToggled = false; // Reset toggle if authentication fails
-                              });
                             }
                           } else {
-                            // Handle disabling biometric authentication
-                            // Implement any necessary actions for turning off biometrics
+                            await _saveBiometricState(false); // Save state when disabling
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Biometric authentication disabled')),
                             );
                           }
                         },
-                        activeColor: NasColors.darkBlue,
-                        activeTrackColor:NasColors.icons ,
-                        inactiveTrackColor: NasColors.lightBlue, // Color of the track when inactive
-                        inactiveThumbColor: Colors.white, // Color of the thumb when inactive
+                        activeColor: Colors.white,
+                        activeTrackColor: NasColors.lightBlue,
+                        inactiveTrackColor: Colors.white,
+                        inactiveThumbColor: Colors.black,
                       ),
+
 
                     ],
                   ),
@@ -197,7 +199,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(alpha: 0.5),
                           spreadRadius: 2,
                           blurRadius: 8,
                           offset: const Offset(0, 3),
@@ -277,7 +279,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(alpha: 0.5),
                           spreadRadius: 2,
                           blurRadius: 8,
                           offset: const Offset(0, 3),

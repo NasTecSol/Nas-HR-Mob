@@ -266,8 +266,8 @@ class _TeamScreenState extends State<TeamScreen> {
                 if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1")...[
                   Row(
                     children: [
-                      buildOptionsCard(0, AppLocalizations.of(context)!.teams),
-                      buildOptionsCard(1, "My Teams"),
+                      buildOptionsCard(0, AppLocalizations.of(context)!.teamMates),
+                      buildOptionsCard(1, AppLocalizations.of(context)!.myTeams),
                     ],
                   ),
                   if (_selectedOptionIndex == 0) ...[
@@ -341,17 +341,6 @@ class _TeamScreenState extends State<TeamScreen> {
                                             ),
                                           ),
                                         ],
-                                      ),
-                                      const Spacer(),
-                                      SizedBox(
-                                        width: 40,
-                                        child: IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(
-                                            Icons.more_vert,
-                                            size: 35,
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -452,17 +441,6 @@ class _TeamScreenState extends State<TeamScreen> {
                                           ),
                                         ],
                                       ),
-                                      const Spacer(),
-                                      SizedBox(
-                                        width: 40,
-                                        child: IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(
-                                            Icons.more_vert,
-                                            size: 35,
-                                          ),
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -562,17 +540,6 @@ class _TeamScreenState extends State<TeamScreen> {
                                           ),
                                         ),
                                       ],
-                                    ),
-                                    const Spacer(),
-                                    SizedBox(
-                                      width: 40,
-                                      child: IconButton(
-                                        onPressed: () {},
-                                        icon: const Icon(
-                                          Icons.more_vert,
-                                          size: 35,
-                                        ),
-                                      ),
                                     ),
                                   ],
                                 ),
