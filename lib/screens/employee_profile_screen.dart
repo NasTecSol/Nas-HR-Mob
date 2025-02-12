@@ -827,6 +827,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                             },
                                             itemBuilder: (BuildContext context , int index){
                                               final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data![index];
+                                              int breakHours = (attendance.breakTime ~/ 60);
+                                              int breakMinutes = (attendance.breakTime % 60).round();
                                               int totalMinutes = (attendance.totalHoursWorked * 60).round();
                                               int hours = totalMinutes ~/ 60;
                                               int minutes = totalMinutes % 60;
@@ -881,12 +883,15 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                     const SizedBox(height: 5),
                                                     Row(
                                                       children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.breaks}:  ${attendance.breakTime}',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
+                                                        SizedBox(
+                                                          width:140,
+                                                          child: Text(
+                                                            '${AppLocalizations.of(context)!.breaks}:  ${breakHours} hours $breakMinutes mins',
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 15,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: NasColors.darkBlue,
+                                                            ),
                                                           ),
                                                         ),
                                                         const Spacer(),

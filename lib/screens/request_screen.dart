@@ -37,13 +37,11 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _amount = TextEditingController();
   final TextEditingController _details = TextEditingController();
   final TextEditingController _totalLoanAmount = TextEditingController();
-  final TextEditingController _installmentAmount = TextEditingController();
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResult = false;
-  List<SearchedResult> _employeeSearchResults =
-      []; // Stores search results of employees
-  List<SearchedResult?> _selectedEmployees = [];
+  final List<SearchedResult> _employeeSearchResults = [];
+  final List<SearchedResult?> _selectedEmployees = [];
   DateTime? fromDate;
   DateTime? toDate;
   SingletonClass singletonClass = SingletonClass();
@@ -54,7 +52,8 @@ class _RequestScreenState extends State<RequestScreen> {
   List<String> requestType = [];
   List<String> subTypeList = [];
   int? totalDays;
-  bool _isTeamSelected = false;
+  final bool _isTeamSelected = false;
+  String? installmentAmount;
 
   @override
   void initState() {
@@ -111,7 +110,7 @@ class _RequestScreenState extends State<RequestScreen> {
             _removeOverlay();
           },
           child: Material(
-            color: Colors.grey.withOpacity(0.8), // Set the opacity
+            color: Colors.grey.withValues(alpha: 0.8), // Set the opacity
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.only(top: 80.0),
@@ -425,7 +424,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
+                        color: Colors.grey.withValues(alpha: 0.5),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 3),
@@ -518,7 +517,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
+                                            color: Colors.grey.withValues(alpha: 0.5),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
@@ -1244,7 +1243,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                                  Colors.grey.withOpacity(0.5),
+                                                  Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -1985,7 +1984,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                                  Colors.grey.withOpacity(0.5),
+                                                  Colors.grey.withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -2430,45 +2429,45 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ],
                                                     const SizedBox(height: 10),
                                                     if (request.status ==
-                                                        'pending')
+                                                        'pending')...[
                                                       Padding(
                                                         padding:
-                                                            const EdgeInsets
-                                                                .all(10.0),
+                                                        const EdgeInsets
+                                                            .all(10.0),
                                                         child: Row(
                                                           mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
+                                                          MainAxisAlignment
+                                                              .center,
                                                           children: [
                                                             GestureDetector(
                                                               onTap: () {
                                                                 showDialog(
                                                                     context:
-                                                                        context,
+                                                                    context,
                                                                     builder:
                                                                         (BuildContext
-                                                                            context) {
+                                                                    context) {
                                                                       return AlertDialog(
                                                                         title:
-                                                                            Text(
+                                                                        Text(
                                                                           AppLocalizations.of(context)!
                                                                               .comment,
                                                                           style:
-                                                                              GoogleFonts.poppins(
+                                                                          GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                                FontWeight.w500,
+                                                                            FontWeight.w500,
                                                                             color:
-                                                                                NasColors.darkBlue,
+                                                                            NasColors.darkBlue,
                                                                             fontSize:
-                                                                                23,
+                                                                            23,
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                            Expanded(
+                                                                        Expanded(
                                                                           child:
-                                                                              Container(
+                                                                          Container(
                                                                             decoration:
-                                                                                BoxDecoration(
+                                                                            BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2484,7 +2483,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               ],
                                                                             ),
                                                                             child:
-                                                                                TextField(
+                                                                            TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
@@ -2524,7 +2523,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         actions: [
                                                                           Row(
                                                                             mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
+                                                                            MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
@@ -2534,7 +2533,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 child: TextButton(
                                                                                   onPressed: () {
                                                                                     Navigator.pop(context);
-                                                                                    patchRequestData(request.id, 'Rejected', request.toJson());
+                                                                                    patchRequestData(request.id, 'rejected', request.toJson());
                                                                                     _comment.clear();
                                                                                   },
                                                                                   child: Text(
@@ -2557,13 +2556,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 width: 120,
                                                                 height: 40,
                                                                 decoration:
-                                                                    const BoxDecoration(
+                                                                const BoxDecoration(
                                                                   borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              10)),
+                                                                  BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          10)),
                                                                   gradient:
-                                                                      LinearGradient(
+                                                                  LinearGradient(
                                                                     colors: [
                                                                       Color(
                                                                           0xFF4D4D4D),
@@ -2584,16 +2583,16 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 child: Align(
                                                                   alignment:
-                                                                      Alignment
-                                                                          .center,
+                                                                  Alignment
+                                                                      .center,
                                                                   child: Text(
                                                                     AppLocalizations.of(
-                                                                            context)!
+                                                                        context)!
                                                                         .cancel,
                                                                     style: GoogleFonts
                                                                         .inter(
                                                                       fontSize:
-                                                                          15,
+                                                                      15,
                                                                       color: Colors
                                                                           .white,
                                                                     ),
@@ -2607,31 +2606,31 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               onTap: () {
                                                                 showDialog(
                                                                     context:
-                                                                        context,
+                                                                    context,
                                                                     builder:
                                                                         (BuildContext
-                                                                            context) {
+                                                                    context) {
                                                                       return AlertDialog(
                                                                         title:
-                                                                            Text(
+                                                                        Text(
                                                                           AppLocalizations.of(context)!
                                                                               .comment,
                                                                           style:
-                                                                              GoogleFonts.poppins(
+                                                                          GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                                FontWeight.w500,
+                                                                            FontWeight.w500,
                                                                             color:
-                                                                                NasColors.darkBlue,
+                                                                            NasColors.darkBlue,
                                                                             fontSize:
-                                                                                23,
+                                                                            23,
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                            Expanded(
+                                                                        Expanded(
                                                                           child:
-                                                                              Container(
+                                                                          Container(
                                                                             decoration:
-                                                                                BoxDecoration(
+                                                                            BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2647,7 +2646,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               ],
                                                                             ),
                                                                             child:
-                                                                                TextField(
+                                                                            TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
@@ -2687,7 +2686,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         actions: [
                                                                           Row(
                                                                             mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
+                                                                            MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
@@ -2697,7 +2696,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 child: TextButton(
                                                                                   onPressed: () {
                                                                                     Navigator.pop(context);
-                                                                                    patchRequestData(request.id, 'Approved', request.toJson());
+                                                                                    patchRequestData(request.id, 'approved', request.toJson());
                                                                                     _comment.clear();
                                                                                   },
                                                                                   child: Text(
@@ -2720,13 +2719,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 width: 120,
                                                                 height: 40,
                                                                 decoration:
-                                                                    const BoxDecoration(
+                                                                const BoxDecoration(
                                                                   borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              10)),
+                                                                  BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          10)),
                                                                   gradient:
-                                                                      LinearGradient(
+                                                                  LinearGradient(
                                                                     colors: [
                                                                       Color(
                                                                           0xFF47734D),
@@ -2747,16 +2746,16 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 child: Align(
                                                                   alignment:
-                                                                      Alignment
-                                                                          .center,
+                                                                  Alignment
+                                                                      .center,
                                                                   child: Text(
                                                                     AppLocalizations.of(
-                                                                            context)!
+                                                                        context)!
                                                                         .acceptRequest,
                                                                     style: GoogleFonts
                                                                         .inter(
                                                                       fontSize:
-                                                                          15,
+                                                                      15,
                                                                       color: Colors
                                                                           .white,
                                                                     ),
@@ -2767,6 +2766,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ],
                                                         ),
                                                       ),
+                                                    ]
+
                                                   ],
                                                 ],
                                               ),
@@ -2939,7 +2940,7 @@ class _RequestScreenState extends State<RequestScreen> {
     }
   }
 
-  //Approver Colors
+  //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
         approverStatus.isEmpty ||
@@ -3103,7 +3104,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
+                                      color: Colors.grey.withValues(alpha: 0.4),
                                       spreadRadius: 5,
                                       blurRadius: 10,
                                       offset: const Offset(0, 3),
@@ -3226,7 +3227,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                                  Colors.grey.withOpacity(0.3),
+                                                  Colors.grey.withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -3656,7 +3657,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                             boxShadow: [
                                               BoxShadow(
                                                 color: Colors.grey
-                                                    .withOpacity(0.3),
+                                                    .withValues(alpha: 0.3),
                                                 spreadRadius: 1,
                                                 blurRadius: 5,
                                                 offset: const Offset(0, 0),
@@ -4282,8 +4283,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           TextFormField(
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return AppLocalizations.of(context)!
-                                    .pleaseEnterNotes;
+                                return "Please enter a value";
                               }
                               return null;
                             },
@@ -4314,6 +4314,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                 ),
                               ),
                             ),
+                            onChanged: (value) {
+                               setState((){
+                                 double parsedValue = double.tryParse(value) ?? 0.0;
+                                 int safeTotalDays = totalDays ?? 1; // Prevent null and zero division
+                                 installmentAmount = (parsedValue / safeTotalDays).toStringAsFixed(2);
+                               });
+                            },
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -4324,42 +4331,13 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                           ),
-                          TextFormField(
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return AppLocalizations.of(context)!
-                                    .pleaseEnterNotes;
-                              }
-                              return null;
-                            },
-                            controller: _installmentAmount,
-                            cursorColor: Colors.black,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                            decoration: const InputDecoration(
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors
-                                      .grey, // Color of the underline when focused
-                                ),
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors
-                                      .grey, // Color of the underline when not focused
-                                ),
-                              ),
-                              border: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors
-                                      .grey, // Default color of the underline
-                                ),
-                              ),
-                            ),
-                          ),
+                          Text( installmentAmount!.isEmpty ? "N/A" : "$installmentAmount",
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              )
+                          )
                         ],
                         const SizedBox(height: 10),
                         if (_selectedRequestType == 'penalties_fines') ...[
@@ -4641,7 +4619,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
+                                      color: Colors.grey.withValues(alpha: 0.4),
                                       spreadRadius: 5,
                                       blurRadius: 10,
                                       offset: const Offset(0, 3),
@@ -4766,7 +4744,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           boxShadow: [
                                             BoxShadow(
                                               color:
-                                                  Colors.grey.withOpacity(0.3),
+                                                  Colors.grey.withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -5718,7 +5696,7 @@ class _RequestScreenState extends State<RequestScreen> {
       requestData.add({
         "loanAmount": _totalLoanAmount.text,
         "loanCycle": "monthly",
-        "loanInstallment": _installmentAmount.text,
+        "loanInstallment": installmentAmount,
         "loanDuration": totalDuration,
         "loanType": selectedSubType,
       });

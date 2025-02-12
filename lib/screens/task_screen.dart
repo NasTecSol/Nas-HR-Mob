@@ -175,6 +175,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ),
                   const Spacer(),
+                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                    TextButton(
                       child: Text(AppLocalizations.of(context)!.createAnIssue,
                         style: GoogleFonts.inter(
