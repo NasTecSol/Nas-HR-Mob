@@ -47,7 +47,7 @@ jobs:
           cd ..
           zip -r app.ipa Payload
       - name: Upload iOS Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: iOS_App_Build
           path: build/ios/iphoneos/app.ipa
@@ -70,7 +70,7 @@ jobs:
       - run: flutter clean
       - run: flutter build apk --debug
       - name: Upload Android Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Android_App_Build
           path: build/app/outputs/apk/debug/app-debug.apk
