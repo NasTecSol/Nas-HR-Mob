@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/request_controller/task_model.dart';
@@ -9,7 +7,6 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../request_controller/projects_data_model.dart';
-import 'package:http/http.dart' as http;
 
 class TaskScreen extends StatefulWidget {
   final Data? projectData;
@@ -26,7 +23,7 @@ class _TaskScreenState extends State<TaskScreen> {
     'images/DP.png',
     'images/DP.png',
     'images/DP.png',
-    'images/DP.png', // Additional images for testing "+n" feature
+    'images/DP.png',
   ];
   @override
   void initState(){
@@ -39,7 +36,6 @@ class _TaskScreenState extends State<TaskScreen> {
     });
   }
   void filterTasks() {
-    // Check if filteredTaskList is already populated, if so, return without adding again
     if (filteredTaskList.isNotEmpty) {
       print('Filtered tasks already populated');
       return;
@@ -158,7 +154,7 @@ class _TaskScreenState extends State<TaskScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 5,
                               blurRadius: 10,
                               offset: const Offset(0, 3),
@@ -179,6 +175,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ),
                   const Spacer(),
+                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                    TextButton(
                       child: Text(AppLocalizations.of(context)!.createAnIssue,
                         style: GoogleFonts.inter(
@@ -277,11 +274,10 @@ class _TaskScreenState extends State<TaskScreen> {
                                           const Spacer(),
                                           Row(
                                             children: [
-                                              // Show project members avatars (up to 3)
                                               ...List.generate(
-                                                widget.projectData!.projectMembers!.length > 3 ? 3 : widget.projectData!.projectMembers!.length,
-                                                    (index) => Positioned(
-                                                  left: index * 30.0, // Adjust the overlap distance
+                                                totalToDoAssignees > 3 ? 3 : totalToDoAssignees,
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
                                                   child: Container(
                                                     height: 50,
                                                     width: 50,
@@ -298,10 +294,9 @@ class _TaskScreenState extends State<TaskScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              // Add "+n" indicator if there are more than 3 images
-                                              if (widget.projectData!.projectMembers!.length > 3)
-                                                Positioned(
-                                                  left: 2 * 30.0, // Position for the "+n" indicator
+                                              if (totalToDoAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
                                                   child: Container(
                                                     height: 50,
                                                     width: 50,
@@ -312,7 +307,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                                     ),
                                                     child: Center(
                                                       child: Text(
-                                                        '+${widget.projectData!.projectMembers!.length - 3}',
+                                                        '+${totalToDoAssignees - 3}',
                                                         style: const TextStyle(
                                                           color: Colors.black,
                                                           fontWeight: FontWeight.bold,
@@ -323,6 +318,8 @@ class _TaskScreenState extends State<TaskScreen> {
                                                 ),
                                             ],
                                           ),
+
+
                                         ],
                                       ),
                                       const SizedBox(height: 10),
@@ -428,55 +425,39 @@ class _TaskScreenState extends State<TaskScreen> {
                                             children: [
                                               ...List.generate(
                                                 totalInProgressAssignees > 3 ? 3 : totalInProgressAssignees,
-                                                    (index) =>
-                                                    Positioned(
-                                                      left: index * 30.0,
-                                                      // Adjust the overlap distance
-                                                      child: Container(
-                                                        height: 50,
-                                                        width: 50,
-                                                        decoration:
-                                                        BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: Colors.white,
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        child: ClipOval(
-                                                          child: Image.asset(
-                                                            imagePaths[
-                                                            index],
-                                                            fit: BoxFit
-                                                                .cover,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                              ),
-                                              // Add "+n" indicator if there are more than 3 images
-                                              if (totalInProgressAssignees > 3)
-                                                Positioned(
-                                                  left: 2 * 30.0,
-                                                  // Position for the "+n" indicator
-                                                  child:
-                                                  Container(
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
+                                                  child: Container(
                                                     height: 50,
                                                     width: 50,
-                                                    decoration:
-                                                    BoxDecoration(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white, width: 1),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        imagePaths[index], // Replace with your imagePaths list
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (totalInProgressAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       color: Colors.grey[300],
-                                                      border: Border.all(
-                                                        color: Colors.white,
-                                                        width: 2,
-                                                      ),
+                                                      border: Border.all(color: Colors.white, width: 2),
                                                     ),
                                                     child: Center(
                                                       child: Text(
-                                                        '+${totalInProgressAssignees  - 3}',
-                                                        style:
-                                                        const TextStyle(
+                                                        '+${totalInProgressAssignees - 3}',
+                                                        style: const TextStyle(
                                                           color: Colors.black,
                                                           fontWeight: FontWeight.bold,
                                                         ),
@@ -486,6 +467,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                                 ),
                                             ],
                                           ),
+
                                         ],
                                       ),
                                       const SizedBox(height: 10),
@@ -602,55 +584,39 @@ class _TaskScreenState extends State<TaskScreen> {
                                             children: [
                                               ...List.generate(
                                                 totalCompletedAssignees > 3 ? 3 : totalCompletedAssignees,
-                                                    (index) =>
-                                                    Positioned(
-                                                      left: index * 30.0,
-                                                      // Adjust the overlap distance
-                                                      child: Container(
-                                                        height: 50,
-                                                        width: 50,
-                                                        decoration:
-                                                        BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: Colors.white,
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        child: ClipOval(
-                                                          child: Image.asset(
-                                                            imagePaths[
-                                                            index],
-                                                            fit: BoxFit
-                                                                .cover,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                              ),
-                                              // Add "+n" indicator if there are more than 3 images
-                                              if (totalCompletedAssignees  > 3)
-                                                Positioned(
-                                                  left: 2 * 30.0,
-                                                  // Position for the "+n" indicator
-                                                  child:
-                                                  Container(
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
+                                                  child: Container(
                                                     height: 50,
                                                     width: 50,
-                                                    decoration:
-                                                    BoxDecoration(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white, width: 1),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        imagePaths[index], // Replace with your imagePaths list
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (totalCompletedAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       color: Colors.grey[300],
-                                                      border: Border.all(
-                                                        color: Colors.white,
-                                                        width: 2,
-                                                      ),
+                                                      border: Border.all(color: Colors.white, width: 2),
                                                     ),
                                                     child: Center(
                                                       child: Text(
-                                                        '+${totalCompletedAssignees  - 3}',
-                                                        style:
-                                                        const TextStyle(
+                                                        '+${totalCompletedAssignees - 3}',
+                                                        style: const TextStyle(
                                                           color: Colors.black,
                                                           fontWeight: FontWeight.bold,
                                                         ),

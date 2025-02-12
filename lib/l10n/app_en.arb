@@ -1,7 +1,7 @@
 {
   "dashboard": "Dashboard",
   "approvals": "Approvals",
-  "teams": "Teams",
+  "teamMates": "Team mates",
   "manageTime": "Manage Time",
   "finance": "Finance",
   "documents": "Documents",
@@ -344,7 +344,6 @@
   "reporting": "Reporting",
   "lateArrival": "Late Arrival",
   "presentCount": "Present Count",
-  "absentCount": "Absent Count",
   "publicHolidays": "Public Holidays",
   "leaveSummary": "Leave Summary",
   "dashboard": "Dashboard",
@@ -769,7 +768,7 @@
   "enterToAndFromDate":"Please select both From Date and To Date",
   "selectSubType":"Please select subtype",
   "penalties":"Penalties",
-  "penaltiesAndFine":"Penalties and Fine",
+  "penaltiesAndFine":"Penalties & Fine",
   "againstMe":"Against me",
   "teams":"Team's",
   "applyRequests":"Apply Requests",
@@ -856,6 +855,8 @@
   "typeYourProjectDescriptionHere":"Type your project description here",
   "typeYourProjectKeyHere":"Type your project key here",
   "typeYourTeamNameHere":"Type your team name here",
-  "project":"Project"
+  "project":"Projects",
+  "myTeams":"My Team",
+  "requestAndApproval":"Request & Approvals"
 
 }

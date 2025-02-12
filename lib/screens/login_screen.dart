@@ -143,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Consumer<LanguageChangeController>(
                             builder: (context, provider, child) {
                               return PopupMenuButton(
+                                color: Colors.white,
                                 icon: const Icon(Icons.language_rounded),
                                 onSelected: (Language item) {
                                   if (Language.english.name == item.name) {
