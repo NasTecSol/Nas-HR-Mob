@@ -543,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(height: 5),
                                   // Add spacing between image and text
                                   Text(
-                                    'Penalties',
+                                    ' ${AppLocalizations.of(context)!.penalties}',
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -1692,7 +1692,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 5),
                                       // Add spacing between image and text
                                       Text(
-                                       'Penalties',
+                                       AppLocalizations.of(context)!.penalties,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,

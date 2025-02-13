@@ -42,6 +42,24 @@ class _TeamScreenState extends State<TeamScreen> {
       "Imad Shareef",
       "imadshareef.nastecol@gmail.com",
     ),
+    TeamModel(
+      "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+      "Imad Shareef",
+      "imadshareef.nastecol@gmail.com",
+    ),
+    TeamModel(
+      "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+      "Imad Shareef",
+      "imadshareef.nastecol@gmail.com",
+    ),
+  ];
+
+  final List<String> images = [
+    "https://img.freepik.com/premium-photo/happy-fashionable-handsome-man_739685-5867.jpg?w=740",
+    "https://img.freepik.com/premium-photo/smiling-businessman-formal-wear-using-tablet-while-standing-rooftop_1289061-391.jpg?w=740",
+    "https://img.freepik.com/premium-vector/man-suit-tie-is-smiling-looking-camera_697880-29692.jpg?w=740",
+    "https://img.freepik.com/free-photo/confident-handsome-guy-posing-against-white-wall_176420-32936.jpg?t=st=1723452897~exp=1723456497~hmac=d1063ee18ade6b4f24d492b93758d241342ffeca0abc0759b44bfe7a0986bb4c&w=996",
+    "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
   ];
   int _selectedOptionIndex = 0;
   late String reportingManagerId;
@@ -63,7 +81,7 @@ class _TeamScreenState extends State<TeamScreen> {
 
     // Debug Logs
     print('filteredTeams length: ${filteredTeams.length}');
-    print('filteredTeams data: ${filteredTeams}');
+    print('filteredTeams data: $filteredTeams');
   }
 
   Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
@@ -159,7 +177,7 @@ class _TeamScreenState extends State<TeamScreen> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
+                                color: Colors.grey.withValues(alpha: 0.4),
                                 spreadRadius: 5,
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
@@ -236,7 +254,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
+                        color: Colors.grey.withValues(alpha: 0.5),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 3),
@@ -278,7 +296,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemCount: filteredTeams.first.teamData!.length,
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredTeams.first.teamData![index];
-                        final team1 = teams[index];
+                        String imageUrl = images[index % images.length];
                         bool isSupervisor = team.empId == reportingManagerId;
                         return Column(
                           children: [
@@ -308,7 +326,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage('${team1.imageURL}'),
+                                            image: NetworkImage('$imageUrl'),
                                             fit: BoxFit.fill,
                                           ),
                                         ),
@@ -377,7 +395,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemCount: filteredUnderTeams.first.teamData!.length,
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredUnderTeams.first.teamData![index];
-                        final team1 = teams[index];
+                        String imageUrl = images[index % images.length];
                         bool isSupervisor = team.empId == reportingManagerId;
                         return Column(
                           children: [
@@ -407,7 +425,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage('${team1.imageURL}'),
+                                            image: NetworkImage('$imageUrl'),
                                             fit: BoxFit.fill,
                                           ),
                                         ),
@@ -478,7 +496,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     itemCount: filteredTeams.first.teamData!.length,
                     itemBuilder: (BuildContext context, int index) {
                       final team = filteredTeams.first.teamData![index];
-                      final team1 = teams[index];
+                      String imageUrl = images[index % images.length];
                       return Column(
                         children: [
                           GestureDetector(
@@ -507,7 +525,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         image: DecorationImage(
-                                          image: NetworkImage('${team1.imageURL}'),
+                                          image: NetworkImage('$imageUrl'),
                                           fit: BoxFit.fill,
                                         ),
                                       ),
