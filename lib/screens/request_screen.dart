@@ -2158,7 +2158,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "Duration: ${request.requestData!.first.loanDuration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
                                                                 : AppLocalizations.of(
                                                                         context)!
                                                                     .noData,
@@ -2178,7 +2178,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "Duration: ${request.requestData!.first.duration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
                                                                 : AppLocalizations.of(
                                                                         context)!
                                                                     .noData,
@@ -4331,12 +4331,13 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                           ),
-                          Text( installmentAmount!.isEmpty ? "N/A" : "$installmentAmount",
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              )
+                          Text(
+                            (installmentAmount == null || installmentAmount!.isEmpty) ? "N/A" : "$installmentAmount",
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
                           )
                         ],
                         const SizedBox(height: 10),

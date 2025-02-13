@@ -499,7 +499,6 @@
     "type": "النوع",
     "comments": "التعليقات",
     "selectStatus": "اختر الحالة",
-    "duration": "المدة",
     "subject": "الموضوع",
     "selectAssignee": "اختر المسؤول",
     "selectType": "اختر النوع",
@@ -520,5 +519,6 @@
     "typeYourTeamNameHere": "اكتب اسم فريقك هنا",
     "project": "مشروع",
     "myTeams": "فريقي",
-    "requestAndApproval": "الطلبات والموافقات"
+    "requestAndApproval": "الطلبات والموافقات",
+    "teamMates":"زملاء الفريق"
 }

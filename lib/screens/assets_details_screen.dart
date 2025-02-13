@@ -35,7 +35,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
         padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(
