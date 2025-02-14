@@ -1,7 +1,7 @@
 
 class EmployeeDetailsData {
-  int? statusCode;
-  String? statusMessage;
+  dynamic statusCode;
+  dynamic statusMessage;
   dynamic errorMessage;
   Data? data;
 
@@ -27,28 +27,28 @@ class EmployeeDetailsData {
 }
 
 class Data {
-  String? id;
-  String? userName;
-  String? password;
+  dynamic id;
+  dynamic userName;
+  dynamic password;
   List<Email>? email;
-  String? firstName;
-  String? middleName;
-  String? lastName;
-  String? martialStatus;
-  String? religion;
+  dynamic firstName;
+  dynamic middleName;
+  dynamic lastName;
+  dynamic martialStatus;
+  dynamic religion;
   Address? address;
-  String? nic;
+  dynamic nic;
   IqamaNumber? iqamaNumber;
   Passport? passport;
-  String? imigrationSatus;
-  String? dob;
+  dynamic imigrationSatus;
+  dynamic dob;
   dynamic age;
   List<PhoneNumber>? phoneNumber;
-  String? gender;
-  String? role;
-  String? profession;
-  String? nationality;
-  String? profilePic;
+  dynamic gender;
+  dynamic role;
+  dynamic profession;
+  dynamic nationality;
+  dynamic profilePic;
   FamilyInfo? familyInfo;
   List<EducationInfo>? educationInfo;
   List<ExperienceBackground>? experienceBackground;
@@ -61,11 +61,11 @@ class Data {
   List<Approvals>? approvals;
   List<ContractInfo>? contractInfo;
   List<DocumentsInfo>? documentsInfo;
-  String? createdBy;
-  String? branchId;
-  String? departmentId;
-  String? organizationId;
-  int? v;
+  dynamic createdBy;
+  dynamic branchId;
+  dynamic departmentId;
+  dynamic organizationId;
+  dynamic v;
   LeaveBalance? leaveBalance;
 
   Data({this.id, this.userName, this.password, this.email, this.firstName, this.middleName, this.lastName, this.martialStatus, this.religion, this.address, this.nic, this.iqamaNumber, this.passport, this.imigrationSatus, this.dob, this.age, this.phoneNumber, this.gender, this.role, this.profession, this.nationality, this.profilePic, this.familyInfo, this.educationInfo, this.experienceBackground, this.bankingInfo, this.employeeInfo, this.salaryInfo, this.socialLinks, this.loanInfo, this.assetsInfo, this.approvals, this.contractInfo, this.documentsInfo, this.createdBy, this.branchId, this.departmentId, this.organizationId, this.v, this.leaveBalance});
@@ -104,7 +104,16 @@ class Data {
     assetsInfo = json["assetsInfo"] == null ? null : (json["assetsInfo"] as List).map((e) => AssetsInfo.fromJson(e)).toList();
     approvals = json["approvals"] == null ? null : (json["approvals"] as List).map((e) => Approvals.fromJson(e)).toList();
     contractInfo = json["contractInfo"] == null ? null : (json["contractInfo"] as List).map((e) => ContractInfo.fromJson(e)).toList();
-    documentsInfo = json["documentsInfo"] == null ? null : (json["documentsInfo"] as List).map((e) => DocumentsInfo.fromJson(e)).toList();
+    if (json["documentsInfo"] != null) {
+      if (json["documentsInfo"] is List) {
+        documentsInfo = (json["documentsInfo"] as List)
+            .map((e) => DocumentsInfo.fromJson(e))
+            .toList();
+      } else if (json["documentsInfo"] is String) {
+        documentsInfo = [DocumentsInfo.fromJson(json["documentsInfo"])];
+      }
+    }
+
     createdBy = json["createdBy"];
     branchId = json["branchId"];
     departmentId = json["departmentId"];
@@ -224,8 +233,8 @@ class LeaveBalance {
 }
 
 class SickLeave {
-  int? entitlement;
-  int? remaining;
+  dynamic entitlement;
+  dynamic remaining;
   dynamic used;
 
   SickLeave({this.entitlement, this.remaining, this.used});
@@ -246,8 +255,8 @@ class SickLeave {
 }
 
 class CasualLeave {
-  int? entitlement;
-  int? remaining;
+  dynamic entitlement;
+  dynamic remaining;
   dynamic used;
 
   CasualLeave({this.entitlement, this.remaining, this.used});
@@ -268,10 +277,10 @@ class CasualLeave {
 }
 
 class AnnualLeave {
-  String? currentMonth;
-  int? entitlement;
-  int? remaining;
-  int? used;
+  dynamic currentMonth;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used});
 
@@ -293,48 +302,60 @@ class AnnualLeave {
 }
 
 class DocumentsInfo {
-  String? type;
-  String? remarks;
-  String? url;
-  String? format;
-  String? empId;
-  String? expiration;
-  String? size;
+  dynamic type;
+  dynamic remarks;
+  dynamic url;
+  dynamic format;
+  dynamic empId;
+  dynamic expiration;
+  dynamic size;
 
   DocumentsInfo({this.type, this.remarks, this.url, this.format, this.empId, this.expiration, this.size});
 
-  DocumentsInfo.fromJson(Map<String, dynamic> json) {
-    type = json["type"];
-    remarks = json["remarks"];
-    url = json["URL"];
-    format = json["format"];
-    empId = json["empId"];
-    expiration = json["expiration"];
-    size = json["size"];
+  factory DocumentsInfo.fromJson(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      return DocumentsInfo(
+        type: json["type"],
+        remarks: json["remarks"],
+        url: json["URL"],
+        format: json["format"],
+        empId: json["empId"],
+        expiration: json["expiration"],
+        size: json["size"],
+      );
+    } else if (json is String) {
+      // Handle when documentsInfo is a string
+      return DocumentsInfo(
+        type: "Unknown", // Placeholder value
+        remarks: json, // Store the string in remarks
+      );
+    }
+    return DocumentsInfo();
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["type"] = type;
-    _data["remarks"] = remarks;
-    _data["URL"] = url;
-    _data["format"] = format;
-    _data["empId"] = empId;
-    _data["expiration"] = expiration;
-    _data["size"] = size;
-    return _data;
+    return {
+      "type": type,
+      "remarks": remarks,
+      "URL": url,
+      "format": format,
+      "empId": empId,
+      "expiration": expiration,
+      "size": size,
+    };
   }
 }
 
+
 class ContractInfo {
-  String? contractId;
-  String? contractStatus;
-  String? contractType;
-  String? contractStartDate;
-  String? contractExpiry;
-  String? probabtionStartDate;
-  String? probationPeriod;
-  String? probationstatus;
+  dynamic contractId;
+  dynamic contractStatus;
+  dynamic contractType;
+  dynamic contractStartDate;
+  dynamic contractExpiry;
+  dynamic probabtionStartDate;
+  dynamic probationPeriod;
+  dynamic probationstatus;
 
   ContractInfo({this.contractId, this.contractStatus, this.contractType, this.contractStartDate, this.contractExpiry, this.probabtionStartDate, this.probationPeriod, this.probationstatus});
 
@@ -364,10 +385,10 @@ class ContractInfo {
 }
 
 class Approvals {
-  String? approvalId;
-  String? approvalType;
-  String? approvalTitle;
-  String? approvalStatus;
+  dynamic approvalId;
+  dynamic approvalType;
+  dynamic approvalTitle;
+  dynamic approvalStatus;
 
   Approvals({this.approvalId, this.approvalType, this.approvalTitle, this.approvalStatus});
 
@@ -389,11 +410,11 @@ class Approvals {
 }
 
 class AssetsInfo {
-  String? assetName;
-  String? assetType;
-  int? assetId;
-  String? issueDateFrom;
-  String? issueDateTo;
+  dynamic assetName;
+  dynamic assetType;
+  dynamic assetId;
+  dynamic issueDateFrom;
+  dynamic issueDateTo;
 
   AssetsInfo({this.assetName, this.assetId ,this.assetType, this.issueDateFrom, this.issueDateTo});
 
@@ -417,13 +438,13 @@ class AssetsInfo {
 }
 
 class LoanInfo {
-  String? totalLoanAmount;
-  String? loanIssueDate;
-  String? loanDuration;
-  String? installmentAmount;
-  String? paidAmount;
-  String? totalInstallments;
-  String? paidInstallments;
+  dynamic totalLoanAmount;
+  dynamic loanIssueDate;
+  dynamic loanDuration;
+  dynamic installmentAmount;
+  dynamic paidAmount;
+  dynamic totalInstallments;
+  dynamic paidInstallments;
 
   LoanInfo({this.totalLoanAmount, this.loanIssueDate, this.loanDuration, this.installmentAmount, this.paidAmount, this.totalInstallments, this.paidInstallments});
 
@@ -451,10 +472,10 @@ class LoanInfo {
 }
 
 class SocialLinks {
-  String? platformName;
-  String? platformIcon;
-  String? platformUrl;
-  String? profileUrl;
+  dynamic platformName;
+  dynamic platformIcon;
+  dynamic platformUrl;
+  dynamic profileUrl;
 
   SocialLinks({this.platformName, this.platformIcon, this.platformUrl, this.profileUrl});
 
@@ -476,14 +497,14 @@ class SocialLinks {
 }
 
 class SalaryInfo {
-  String? baseSalary;
-  String? currency;
-  String? timeCyclePeriod;
+  dynamic baseSalary;
+  dynamic currency;
+  dynamic timeCyclePeriod;
   List<AllowanceBenefits>? allowanceBenefits;
   List<Deductions>? deductions;
   TaxInfo? taxInfo;
-  String? allowanceContribution;
-  String? netSalary;
+  dynamic allowanceContribution;
+  dynamic netSalary;
 
   SalaryInfo({this.baseSalary, this.currency, this.timeCyclePeriod, this.allowanceBenefits, this.deductions, this.taxInfo, this.allowanceContribution, this.netSalary});
 
@@ -519,9 +540,9 @@ class SalaryInfo {
 }
 
 class TaxInfo {
-  String? texPercentage;
-  int? deductableAmount;
-  String? timeCycle;
+  dynamic texPercentage;
+  dynamic deductableAmount;
+  dynamic timeCycle;
 
   TaxInfo({this.texPercentage, this.deductableAmount, this.timeCycle});
 
@@ -541,10 +562,10 @@ class TaxInfo {
 }
 
 class Deductions {
-  String? deductionTitle;
-  String? deductionType;
-  String? amount;
-  String? basedOn;
+  dynamic deductionTitle;
+  dynamic deductionType;
+  dynamic amount;
+  dynamic basedOn;
 
   Deductions({this.deductionTitle, this.deductionType, this.amount, this.basedOn});
 
@@ -566,10 +587,10 @@ class Deductions {
 }
 
 class AllowanceBenefits {
-  String? allowanceTitle;
-  String? allowanceType;
-  String? amount;
-  String? basedOn;
+  dynamic allowanceTitle;
+  dynamic allowanceType;
+  dynamic amount;
+  dynamic basedOn;
 
   AllowanceBenefits({this.allowanceTitle, this.allowanceType, this.amount, this.basedOn});
 
@@ -591,24 +612,24 @@ class AllowanceBenefits {
 }
 
 class EmployeeInfo {
-  String? depId;
-  String? depName;
-  String? jobTitle;
-  String? jobDescription;
-  String? reportingManager;
-  String? jobRank;
-  String? designation;
-  String? grade;
-  String? workDomain;
-  String? location;
-  String? employeeStatus;
-  String? employeeType;
-  String? employeeShift;
-  String? joiningDate;
-  String? leavingDate;
-  String? hiringDate;
-  String? noticePeriod;
-  String? empId;
+  dynamic depId;
+  dynamic depName;
+  dynamic jobTitle;
+  dynamic jobDescription;
+  dynamic reportingManager;
+  dynamic jobRank;
+  dynamic designation;
+  dynamic grade;
+  dynamic workDomain;
+  dynamic location;
+  dynamic employeeStatus;
+  dynamic employeeType;
+  dynamic employeeShift;
+  dynamic joiningDate;
+  dynamic leavingDate;
+  dynamic hiringDate;
+  dynamic noticePeriod;
+  dynamic empId;
 
   EmployeeInfo({this.depId, this.depName, this.jobTitle, this.jobDescription, this.reportingManager, this.jobRank, this.designation, this.grade, this.workDomain, this.location, this.employeeStatus, this.employeeType, this.employeeShift, this.joiningDate, this.leavingDate, this.hiringDate, this.noticePeriod, this.empId});
 
@@ -658,13 +679,13 @@ class EmployeeInfo {
 }
 
 class BankingInfo {
-  String? title;
-  String? accountNumber;
-  String? branchCode;
-  String? accountType;
-  String? country;
-  String? empSwiftCode;
-  String? bankName;
+  dynamic title;
+  dynamic accountNumber;
+  dynamic branchCode;
+  dynamic accountType;
+  dynamic country;
+  dynamic empSwiftCode;
+  dynamic bankName;
 
   BankingInfo({this.title, this.accountNumber, this.branchCode, this.accountType, this.country, this.empSwiftCode, this.bankName});
 
@@ -692,14 +713,14 @@ class BankingInfo {
 }
 
 class ExperienceBackground {
-  String? jobTitle;
-  String? company;
-  String? referenceName;
-  String? referenceContact;
-  String? duration;
-  String? from;
-  String? to;
-  String? description;
+  dynamic jobTitle;
+  dynamic company;
+  dynamic referenceName;
+  dynamic referenceContact;
+  dynamic duration;
+  dynamic from;
+  dynamic to;
+  dynamic description;
 
   ExperienceBackground({this.jobTitle, this.company, this.referenceName, this.referenceContact, this.duration, this.from, this.to, this.description});
 
@@ -729,13 +750,13 @@ class ExperienceBackground {
 }
 
 class EducationInfo {
-  String? degreeName;
-  String? degreeType;
-  String? fieldofStudy;
-  String? institute;
-  String? from;
-  String? to;
-  String? results;
+  dynamic degreeName;
+  dynamic degreeType;
+  dynamic fieldofStudy;
+  dynamic institute;
+  dynamic from;
+  dynamic to;
+  dynamic results;
 
   EducationInfo({this.degreeName, this.degreeType, this.fieldofStudy, this.institute, this.from, this.to, this.results});
 
@@ -763,10 +784,10 @@ class EducationInfo {
 }
 
 class FamilyInfo {
-  String? fatherName;
-  String? motherName;
+  dynamic fatherName;
+  dynamic motherName;
   FamilyAddress? familyAddress;
-  String? familyContactNumber;
+  dynamic familyContactNumber;
   List<EmergencyContactInfo>? emergencyContactInfo;
 
   FamilyInfo({this.fatherName, this.motherName, this.familyAddress, this.familyContactNumber, this.emergencyContactInfo});
@@ -795,10 +816,10 @@ class FamilyInfo {
 }
 
 class EmergencyContactInfo {
-  String? relationName;
-  String? relationType;
-  String? relationContactNumber;
-  String? relationAddress;
+  dynamic relationName;
+  dynamic relationType;
+  dynamic relationContactNumber;
+  dynamic relationAddress;
 
   EmergencyContactInfo({this.relationName, this.relationType, this.relationContactNumber, this.relationAddress});
 
@@ -820,9 +841,9 @@ class EmergencyContactInfo {
 }
 
 class FamilyAddress {
-  String? streetAddress;
-  String? city;
-  String? country;
+  dynamic streetAddress;
+  dynamic city;
+  dynamic country;
 
   FamilyAddress({this.streetAddress, this.city, this.country});
 
@@ -842,8 +863,8 @@ class FamilyAddress {
 }
 
 class PhoneNumber {
-  String? mobileNumber;
-  String? landlineNumber;
+  dynamic mobileNumber;
+  dynamic landlineNumber;
 
   PhoneNumber({this.mobileNumber, this.landlineNumber});
 
@@ -861,9 +882,9 @@ class PhoneNumber {
 }
 
 class Passport {
-  String? id;
-  String? issueDate;
-  String? expiryDate;
+  dynamic id;
+  dynamic issueDate;
+  dynamic expiryDate;
 
   Passport({this.id, this.issueDate, this.expiryDate});
 
@@ -883,9 +904,9 @@ class Passport {
 }
 
 class IqamaNumber {
-  String? id;
-  String? issueDate;
-  String? expiryDate;
+  dynamic id;
+  dynamic issueDate;
+  dynamic expiryDate;
 
   IqamaNumber({this.id, this.issueDate, this.expiryDate});
 
@@ -905,9 +926,9 @@ class IqamaNumber {
 }
 
 class Address {
-  String? streetAddress;
-  String? city;
-  String? country;
+  dynamic streetAddress;
+  dynamic city;
+  dynamic country;
 
   Address({this.streetAddress, this.city, this.country});
 
@@ -927,8 +948,8 @@ class Address {
 }
 
 class Email {
-  String? personalEmail;
-  String? workEmail;
+  dynamic personalEmail;
+  dynamic workEmail;
 
   Email({this.personalEmail, this.workEmail});
 

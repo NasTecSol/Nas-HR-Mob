@@ -1,4 +1,3 @@
-
 class BranchData {
   int? statusCode;
   String? statusMessage;
@@ -34,8 +33,9 @@ class Data {
   String? createdAt;
   String? updatedAt;
   int? v;
+  String? branchName;
 
-  Data({this.id, this.parentCompanyId, this.branchCompanyId, this.departmentDetails, this.createdAt, this.updatedAt, this.v});
+  Data({this.id, this.parentCompanyId, this.branchCompanyId, this.departmentDetails, this.createdAt, this.updatedAt, this.v, this.branchName});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -45,6 +45,7 @@ class Data {
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
+    branchName = json["branchName"];
   }
 
   Map<String, dynamic> toJson() {
@@ -58,6 +59,7 @@ class Data {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    _data["branchName"] = branchName;
     return _data;
   }
 }
@@ -168,14 +170,16 @@ class Teams {
 
 class TeamData {
   String? empId;
+  String? employeeId;
   String? userName;
   String? designation;
   String? grade;
 
-  TeamData({this.empId, this.userName, this.designation, this.grade});
+  TeamData({this.empId, this.employeeId, this.userName, this.designation, this.grade});
 
   TeamData.fromJson(Map<String, dynamic> json) {
     empId = json["empId"];
+    employeeId = json["employeeId"];
     userName = json["userName"];
     designation = json["designation"];
     grade = json["grade"];
@@ -184,6 +188,7 @@ class TeamData {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["empId"] = empId;
+    _data["employeeId"] = employeeId;
     _data["userName"] = userName;
     _data["designation"] = designation;
     _data["grade"] = grade;
@@ -193,15 +198,17 @@ class TeamData {
 
 class Supervisors {
   String? empId;
+  String? employeeId;
   String? userName;
   String? designation;
   String? grade;
   String? teamId;
 
-  Supervisors({this.empId, this.userName, this.designation, this.grade, this.teamId});
+  Supervisors({this.empId, this.employeeId, this.userName, this.designation, this.grade, this.teamId});
 
   Supervisors.fromJson(Map<String, dynamic> json) {
     empId = json["empId"];
+    employeeId = json["employeeId"];
     userName = json["userName"];
     designation = json["designation"];
     grade = json["grade"];
@@ -211,6 +218,7 @@ class Supervisors {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["empId"] = empId;
+    _data["employeeId"] = employeeId;
     _data["userName"] = userName;
     _data["designation"] = designation;
     _data["grade"] = grade;

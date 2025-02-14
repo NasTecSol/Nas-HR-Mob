@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
-import 'package:nashr/screens/task_screen.dart';
+import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../widgets/colors.dart';
 import 'home_screen.dart';
@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const TaskScreen(),
+    const ProjectScreen(),
     const RequestScreen(),
     const CalendarScreen(),
     const ProfileScreen()
@@ -169,8 +169,8 @@ class _MainScreenState extends State<MainScreen> {
                                 Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'Pending').length +
-                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'Pending').length
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length +
+                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
                                       : 0}', // Request List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -179,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
                                   textAlign: TextAlign.center,
                                 ) : Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'Pending').length
+                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length
                                       : 0}', // Approver List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,

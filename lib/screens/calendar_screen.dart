@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nashr/screens/task_screen.dart';
+import 'package:nashr/screens/project_screen.dart';
 import '../widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CalendarScreen extends StatefulWidget {
@@ -551,7 +551,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Card(
           color:
               _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          elevation: 100.0,
           margin: const EdgeInsets.all(10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),

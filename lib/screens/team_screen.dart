@@ -42,65 +42,92 @@ class _TeamScreenState extends State<TeamScreen> {
       "Imad Shareef",
       "imadshareef.nastecol@gmail.com",
     ),
+    TeamModel(
+      "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+      "Imad Shareef",
+      "imadshareef.nastecol@gmail.com",
+    ),
+    TeamModel(
+      "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+      "Imad Shareef",
+      "imadshareef.nastecol@gmail.com",
+    ),
   ];
 
+  final List<String> images = [
+    "https://img.freepik.com/premium-photo/happy-fashionable-handsome-man_739685-5867.jpg?w=740",
+    "https://img.freepik.com/premium-photo/smiling-businessman-formal-wear-using-tablet-while-standing-rooftop_1289061-391.jpg?w=740",
+    "https://img.freepik.com/premium-vector/man-suit-tie-is-smiling-looking-camera_697880-29692.jpg?w=740",
+    "https://img.freepik.com/free-photo/confident-handsome-guy-posing-against-white-wall_176420-32936.jpg?t=st=1723452897~exp=1723456497~hmac=d1063ee18ade6b4f24d492b93758d241342ffeca0abc0759b44bfe7a0986bb4c&w=996",
+    "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
+  ];
+  int _selectedOptionIndex = 0;
   late String reportingManagerId;
-  late List<Supervisors> filteredSupervisors;
+  late List<Teams> filteredTeams;
+  late List<Teams> filteredUnderTeams;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize reportingManagerId
-    reportingManagerId = singletonClass.employeeDataList.first.data!.employeeInfo!.first.reportingManager ?? '';
+    reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     List<BranchData> branchDataList = singletonClass.branchDataList;
 
-    // Initialize filteredSupervisors
-    filteredSupervisors = getFilteredSupervisors(branchDataList, reportingManagerId);
+    // Get the filtered teams
+    var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+
+    // Assign the filtered teams (ownTeams and underTeams) to the filteredTeams list
+    filteredTeams = filteredData['ownTeams']!; // or underTeams if you need that specifically
+    filteredUnderTeams = filteredData['underTeams']!; // or underTeams if you need that specifically
+
+    // Debug Logs
+    print('filteredTeams length: ${filteredTeams.length}');
+    print('filteredTeams data: $filteredTeams');
   }
 
-  // Extract supervisors from the list of BranchData models
-  List<Supervisors> getFilteredSupervisors(List<BranchData> branchDataList, String reportingManagerId) {
-    List<Supervisors> filteredSupervisors = [];
+  Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
+    List<Teams> ownTeams = [];
+    List<Teams> underTeams = [];
+    String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    for (var branchData in branchDataList) {
-      if (branchData.data?.departmentDetails != null) {
-        for (var departmentDetails in branchData.data!.departmentDetails!) {
-          if (departmentDetails.departments != null) {
-            for (var department in departmentDetails.departments!) {
-              if (department.supervisors != null) {
-                // Filter supervisors where empId matches reportingManagerId
-                var matchingSupervisors = department.supervisors!
-                    .where((supervisor) => supervisor.empId == reportingManagerId)
-                    .toList();
+    // Debugging: print branch data
+    print('Branch Data List length: ${branchDataList.length}');
 
-                if (matchingSupervisors.isNotEmpty) {
-                  // Add matching supervisors to filtered list
-                  filteredSupervisors.addAll(matchingSupervisors);
+    for (BranchData branchData in branchDataList) {
+      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+        for (var department in departmentDetails.departments ?? []) {
+          // Check if the user is a supervisor in the department
+          bool isSupervisor = department.supervisors?.any((supervisor) => supervisor.empId == reportingManagerId) ?? false;
+          print('Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-                  // Add team members of the matched supervisor
-                  for (var supervisor in matchingSupervisors) {
-                    var team = department.teams?.firstWhere(
-                          (team) => team.teamId == supervisor.teamId,
-                      orElse: () => Teams(teamId: '', teamData: []), // Return an empty Teams object if not found
-                    );
+          if (userGrade == "L0" || userGrade == "L1") {
+            // Supervisor with L0 or L1 grade
+            for (var team in department.teams ?? []) {
+              bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
+              if (isUserInTeam) {
+                print('Adding under team: ${team.teamId}');
+                ownTeams.addAll([team]); // Add to underTeams if the user is part of the team
+              }
 
-                    if (team != null && team.teamData != null) {
-                      // Convert team members to Supervisors type and add to the filtered list
-                      for (var member in team.teamData!) {
-                        filteredSupervisors.add(
-                          Supervisors(
-                            empId: member.empId,
-                            userName: member.userName,
-                            designation: member.designation,
-                            grade: member.grade,
-                            teamId: supervisor.teamId, // Keeping the same team ID
-                          ),
-                        );
-                      }
-                    }
+
+              // Check if the supervisor manages the team based on teamId match
+              for (var supervisor in department.supervisors ?? []) {
+                // Check if the supervisor empId matches the reportingManagerId
+                if (supervisor.empId == reportingManagerId) {
+                  // Now check if the supervisor's teamId matches the current team's teamId
+                  if (supervisor.teamId == team.teamId) {
+                    print('Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                    underTeams.add(team); // Add to underTeams if supervisor manages the team
                   }
                 }
+              }
+            }
+          } else if (userGrade == "L2" || userGrade == "L3") {
+            // Non-Supervisor: Add teams where the user is a member to underTeams
+            for (var team in department.teams ?? []) {
+              bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
+              if (isUserInTeam) {
+                print('Adding under team: ${team.teamId}');
+                ownTeams.addAll([team]); // Add to underTeams if the user is part of the team
               }
             }
           }
@@ -108,8 +135,18 @@ class _TeamScreenState extends State<TeamScreen> {
       }
     }
 
-    return filteredSupervisors;
+    // Return both lists in a map
+    return {
+      'ownTeams': ownTeams,
+      'underTeams': underTeams,
+    };
   }
+
+
+
+
+
+
 
 
   @override
@@ -140,7 +177,7 @@ class _TeamScreenState extends State<TeamScreen> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
+                                color: Colors.grey.withValues(alpha: 0.4),
                                 spreadRadius: 5,
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
@@ -217,7 +254,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
+                        color: Colors.grey.withValues(alpha: 0.5),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 3),
@@ -244,115 +281,312 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Check if filteredSupervisors has data
-                filteredSupervisors.isNotEmpty
-                    ? ListView.builder(
-                  padding: const EdgeInsets.all(5),
-                  shrinkWrap: true,
-                  itemCount: filteredSupervisors.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final team = filteredSupervisors[index];
-                    final team1 = teams[index];
-                    bool isSupervisor = team.empId == reportingManagerId;
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EmployeeProfileScreen(
-                                  supervisors: team,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            decoration: BoxDecoration(
-                              color: NasColors.containerColor,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    height: 50,
-                                    width: 60,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        image: NetworkImage('${team1.imageURL}'),
-                                        fit: BoxFit.fill,
-                                      ),
+                if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1")...[
+                  Row(
+                    children: [
+                      buildOptionsCard(0, AppLocalizations.of(context)!.teamMates),
+                      buildOptionsCard(1, AppLocalizations.of(context)!.myTeams),
+                    ],
+                  ),
+                  if (_selectedOptionIndex == 0) ...[
+                    filteredTeams.isNotEmpty
+                        ? ListView.builder(
+                      padding: const EdgeInsets.all(5),
+                      shrinkWrap: true,
+                      itemCount: filteredTeams.first.teamData!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final team = filteredTeams.first.teamData![index];
+                        String imageUrl = images[index % images.length];
+                        bool isSupervisor = team.empId == reportingManagerId;
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EmployeeProfileScreen(
+                                      teamData: team,
                                     ),
                                   ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: NasColors.containerColor,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        "${team.userName}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
+                                      Container(
+                                        height: 50,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: NetworkImage('$imageUrl'),
+                                            fit: BoxFit.fill,
+                                          ),
                                         ),
                                       ),
-                                      Text(
-                                        isSupervisor ? 'Supervisor' : 'Employee',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      Text(
-                                        "${team.designation}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${team.userName}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                          Text(
+                                            isSupervisor ? 'Supervisor' : 'Employee',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${team.designation}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  const Spacer(),
-                                  SizedBox(
-                                    width: 40,
-                                    child: IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.more_vert,
-                                        size: 35,
-                                      ),
+                                ),
+                              ),
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                        : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (_selectedOptionIndex == 1) ...[
+                    filteredUnderTeams.isNotEmpty
+                        ? ListView.builder(
+                      padding: const EdgeInsets.all(5),
+                      shrinkWrap: true,
+                      itemCount: filteredUnderTeams.first.teamData!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final team = filteredUnderTeams.first.teamData![index];
+                        String imageUrl = images[index % images.length];
+                        bool isSupervisor = team.empId == reportingManagerId;
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EmployeeProfileScreen(
+                                      teamData: team,
                                     ),
                                   ),
-                                ],
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: NasColors.containerColor,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 50,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: NetworkImage('$imageUrl'),
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${team.userName}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                          Text(
+                                            isSupervisor ? 'Supervisor' : 'Employee',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${team.designation}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                        : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+
+                if (singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")...[
+                  filteredTeams.isNotEmpty
+                      ? ListView.builder(
+                    padding: const EdgeInsets.all(5),
+                    shrinkWrap: true,
+                    itemCount: filteredTeams.first.teamData!.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final team = filteredTeams.first.teamData![index];
+                      String imageUrl = images[index % images.length];
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EmployeeProfileScreen(
+                                    teamData: team,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              decoration: BoxDecoration(
+                                color: NasColors.containerColor,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 50,
+                                      width: 60,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: NetworkImage('$imageUrl'),
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${team.userName}",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: NasColors.darkBlue,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Employee',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          "${team.designation}",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
+                          Divider(
+                            thickness: 1,
+                            color: Colors.grey[300],
+                          ),
+                        ],
+                      );
+                    },
+                  )
+                      : Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
                         ),
-                        Divider(
-                          thickness: 1,
-                          color: Colors.grey[300],
-                        ),
-                      ],
-                    );
-                  },
-                )
-                    : Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      AppLocalizations.of(context)!.noData,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
                       ),
                     ),
                   ),
-                ),
+                ]
+
               ],
             ),
           ),
@@ -360,7 +594,49 @@ class _TeamScreenState extends State<TeamScreen> {
       ),
     );
   }
-
+  Widget buildOptionsCard(int index, String title) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedOptionIndex = index;
+        });
+      },
+      child: SizedBox(
+        height: 65,
+        width: 140,
+        child: Card(
+          color:
+          _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
+          margin: const EdgeInsets.all(10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+            side: BorderSide(
+              color:
+              _selectedOptionIndex == index ? Colors.white : Colors.white,
+              width: 0,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: _selectedOptionIndex == index
+                      ? Colors.white
+                      : NasColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class TeamModel {

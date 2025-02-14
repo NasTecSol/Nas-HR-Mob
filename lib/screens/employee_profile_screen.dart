@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/branch_model.dart';
@@ -15,15 +13,12 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
-  final Supervisors? supervisors;
+  final TeamData? teamData;
 
-  final Teams? teams;
-
-  const EmployeeProfileScreen({super.key, this.supervisors, this.teams});
+  const EmployeeProfileScreen({super.key, this.teamData});
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -85,7 +80,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
+                                  color: Colors.grey.withValues(alpha: 0.4),
                                   spreadRadius: 5,
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
@@ -160,7 +155,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
+                                      color: Colors.grey.withValues(alpha: 0.4),
                                       spreadRadius: 5,
                                       blurRadius: 10,
                                       offset: const Offset(0, 3),
@@ -171,15 +166,35 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
                                     children: [
-                                      ClipOval(
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          radius: 40,
-                                          child: Image.asset(
-                                            'images/DP.jpg',
-                                            fit: BoxFit.fill,
-                                            height: 150,
-                                            width: 150,
+                                      Container(
+                                        height: 100,
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width:
+                                            2, // Adjust border width as needed
+                                          ),
+                                        ),
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            employeeDetails?.profilePic ?? '',
+                                            // URL for the network image, empty string if null
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                            errorBuilder: (BuildContext context,
+                                                Object exception,
+                                                StackTrace? stackTrace) {
+                                              // Display the default asset image if the network image fails to load
+                                              return Image.asset(
+                                                'images/DP.png',
+                                                fit: BoxFit.cover,
+                                                width: 100,
+                                                height: 100,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ),
@@ -192,7 +207,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.userName}",
+                                              "${widget.teamData!.userName}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 18,
@@ -205,7 +220,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.designation}",
+                                              "${widget.teamData!.designation}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -218,7 +233,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.grade}",
+                                              "${widget.teamData!.grade}",
                                               // Call the method to mask the account number
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
@@ -232,7 +247,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${widget.supervisors!.empId}",
+                                              "${widget.teamData!.empId}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -253,7 +268,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 children: [
                                   buildOptionsCard(
                                       0, AppLocalizations.of(context)!.profile),
-                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' )...[
+                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
                                     buildOptionsCard(
                                         1, AppLocalizations.of(context)!.onLeaves),
                                     buildOptionsCard(
@@ -269,7 +284,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' )...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
@@ -300,7 +315,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
+                                      color: Colors.grey.withValues(alpha: 0.4),
                                       // Shadow color with opacity
                                       spreadRadius: 5,
                                       // Spread radius
@@ -518,7 +533,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 ),
                               ),
                             ],
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L0' ) ...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' ) ...[
                               if (_selectedOptionIndex == 1) ...[
                                 //ANNUAL LEAVE
                                 Container(
@@ -527,7 +542,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
+                                        color: Colors.grey.withValues(alpha: 0.4),
                                         // Shadow color with opacity
                                         spreadRadius: 5,
                                         // Spread radius
@@ -622,7 +637,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
+                                        color: Colors.grey.withValues(alpha: 0.4),
                                         // Shadow color with opacity
                                         spreadRadius: 5,
                                         // Spread radius
@@ -716,7 +731,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
+                                        color: Colors.grey.withValues(alpha: 0.4),
                                         // Shadow color with opacity
                                         spreadRadius: 5,
                                         // Spread radius
@@ -761,7 +776,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
+                                        color: Colors.grey.withValues(alpha: 0.4),
                                         spreadRadius: 5,
                                         blurRadius: 10,
                                         offset: const Offset(
@@ -812,6 +827,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                             },
                                             itemBuilder: (BuildContext context , int index){
                                               final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data![index];
+                                              int breakHours = (attendance.breakTime ~/ 60);
+                                              int breakMinutes = (attendance.breakTime % 60).round();
+                                              int totalMinutes = (attendance.totalHoursWorked * 60).round();
+                                              int hours = totalMinutes ~/ 60;
+                                              int minutes = totalMinutes % 60;
                                               return Padding(
                                                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                                                 child: Column(
@@ -828,11 +848,12 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                         ),
                                                         const Spacer(),
                                                         Text(
-                                                          '${attendance.location}',
+                                                           attendance.status == 'absent' ? AppLocalizations.of(context)!.absent :
+                                                          AppLocalizations.of(context)!.present,
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.bold,
-                                                            color: NasColors.darkBlue,
+                                                            color: attendance.status == 'absent' ? Colors.red : NasColors.onTime,
                                                           ),
                                                         ),
                                                       ],
@@ -841,7 +862,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                     Row(
                                                       children: [
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.checkIn}:  ${attendance.clockInTime}',
+                                                          '${AppLocalizations.of(context)!.checkIn}:  ${singletonClass.formatCheckInTime(attendance.clockInTime)}',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,
@@ -850,7 +871,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                         ),
                                                         const Spacer(),
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.checkOut}: ${attendance.clockOutTime}',
+                                                          '${AppLocalizations.of(context)!.checkOut}: ${singletonClass.formatCheckInTime(attendance.clockOutTime)}',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,
@@ -862,17 +883,20 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                     const SizedBox(height: 5),
                                                     Row(
                                                       children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.breaks}:  ${attendance.breakTime}',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
+                                                        SizedBox(
+                                                          width:140,
+                                                          child: Text(
+                                                            '${AppLocalizations.of(context)!.breaks}:  ${breakHours} hours $breakMinutes mins',
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 15,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: NasColors.darkBlue,
+                                                            ),
                                                           ),
                                                         ),
                                                         const Spacer(),
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.worked}: ${attendance.totalHoursWorked}',
+                                                          '${AppLocalizations.of(context)!.worked}: $hours hours $minutes mins',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,
@@ -899,7 +923,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
+                                        color: Colors.grey.withValues(alpha: 0.4),
                                         spreadRadius: 5,
                                         blurRadius: 10,
                                         offset: const Offset(
@@ -1068,623 +1092,111 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 ),
                               ],
                               if (_selectedOptionIndex == 4) ...[
-                                ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: singletonClass.employeeDetailsDataList.first.data!.documentsInfo!.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      final documents =  singletonClass.employeeDetailsDataList.first.data!.documentsInfo![index];
-                                      final images = documentInfoDummy[index];
-                                      return Transform.translate(
-                                        offset: Offset(0, index == 0 ? 0 : -10),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            showModalBottomSheet<void>(
-                                              backgroundColor: NasColors.darkBlue,
-                                              enableDrag: true,
-                                              isDismissible: true,
-                                              isScrollControlled: true,
-                                              shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.only(
-                                                  topRight: Radius.circular(20),
-                                                  topLeft: Radius.circular(20),
-                                                ),
-                                              ),
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                // Pass the document data to the bottom sheet
-                                                return Container(
-                                                  height: MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                      0.9,
-                                                  width: double.infinity,
-                                                  color: Colors.transparent,
-                                                  child: Padding(
-                                                    padding:
-                                                    const EdgeInsets.all(15.0),
-                                                    child: ListView(
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              "${documents.type}",
-                                                              // Display the type of the tapped document
-                                                              maxLines: 2,
-                                                              style:
-                                                              GoogleFonts.inter(
-                                                                fontSize: 20,
-                                                                fontWeight:
-                                                                FontWeight.w500,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                            const Spacer(),
-                                                            TextButton(
-                                                                onPressed: () {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                },
-                                                                child: Text(
-                                                                  "Done",
-                                                                  style: GoogleFonts
-                                                                      .inter(
-                                                                    fontSize: 18,
-                                                                    fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                                    color:
-                                                                    Colors.white,
-                                                                  ),
-                                                                ))
-                                                          ],
-                                                        ),
-                                                        ClipRRect(
-                                                          borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                          child: Image.asset(
-                                                            images.imageUrl,
-                                                            height: 250,
-                                                            width: double.infinity,
-                                                            fit: BoxFit.cover,
-                                                            alignment:
-                                                            Alignment.topCenter,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 10),
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                              decoration:
-                                                              BoxDecoration(
-                                                                shape:
-                                                                BoxShape.circle,
-                                                                color: NasColors
-                                                                    .lightBlue,
-                                                              ),
-                                                              child: IconButton(
-                                                                onPressed: () async {
-                                                                  try {
-                                                                    // Load the asset image as bytes
-                                                                    final byteData =
-                                                                    await rootBundle
-                                                                        .load(
-                                                                        'images/iqama.png'); // Update with your asset path
+                                Column(
+                                  children: [
+                                    singletonClass.employeeDetailsDataList.first.data!.documentsInfo!.isNotEmpty
+                                        ? ListView.builder(
+                                      padding: EdgeInsets.zero,
+                                      shrinkWrap: true,
+                                      itemCount: singletonClass.employeeDetailsDataList.first.data!.documentsInfo!.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        final documents = singletonClass.employeeDetailsDataList.first.data!.documentsInfo![index];
+                                        final fileType = documents.format?.split('.').last.toLowerCase(); // Null check for documents.type
+                                        final isImage = fileType != null && ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+                                        final isPdf = fileType == 'pdf';
 
-                                                                    // Get the temporary directory
-                                                                    final tempDir =
-                                                                    await getTemporaryDirectory();
-
-                                                                    // Create a temporary file in the directory
-                                                                    final file = File(
-                                                                        '${tempDir.path}/iqama.png');
-
-                                                                    // Write the image bytes to the temporary file
-                                                                    await file
-                                                                        .writeAsBytes(
-                                                                        byteData
-                                                                            .buffer
-                                                                            .asUint8List());
-
-                                                                    // Share the temporary file
-                                                                    await Share
-                                                                        .shareXFiles([
-                                                                      XFile(file.path)
-                                                                    ], text: 'Check out this image!');
-                                                                  } catch (e) {
-                                                                    // Handle any errors that occur during the process
-                                                                    debugPrint(
-                                                                        'Error sharing image: $e');
-                                                                    ScaffoldMessenger
-                                                                        .of(context)
-                                                                        .showSnackBar(
-                                                                      SnackBar(
-                                                                          content: Text(
-                                                                              'Failed to share image: $e')),
-                                                                    );
-                                                                  }
-                                                                },
-                                                                icon: const Icon(
-                                                                    Icons.ios_share,
-                                                                    color:
-                                                                    Colors.white),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(width: 10),
-                                                            Container(
-                                                              decoration:
-                                                              BoxDecoration(
-                                                                shape:
-                                                                BoxShape.circle,
-                                                                color: NasColors
-                                                                    .lightBlue,
-                                                              ),
-                                                              child: IconButton(
-                                                                onPressed: () {
-                                                                  // Copy the image URL or any text to the clipboard
-                                                                  Clipboard.setData(
-                                                                      ClipboardData(
-                                                                          text: images
-                                                                              .imageUrl)); // Text to be copied
-                                                                },
-                                                                icon: const Icon(
-                                                                    Icons.copy,
-                                                                    color:
-                                                                    Colors.white),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(width: 10),
-                                                            Container(
-                                                              decoration:
-                                                              BoxDecoration(
-                                                                shape:
-                                                                BoxShape.circle,
-                                                                color: NasColors
-                                                                    .lightBlue,
-                                                              ),
-                                                              child: IconButton(
-                                                                onPressed: () {
-                                                                  // Action for the favorite button
-                                                                },
-                                                                icon: const Icon(
-                                                                    Icons.star,
-                                                                    color:
-                                                                    Colors.white),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        const SizedBox(height: 10),
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                            borderRadius:
-                                                            const BorderRadius
-                                                                .all(
-                                                                Radius.circular(
-                                                                    15)),
-                                                            color:
-                                                            NasColors.lightBlue,
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                            const EdgeInsets.all(
-                                                                10.0),
-                                                            child: Column(
-                                                              children: [
-                                                                Row(
-                                                                  children: [
-                                                                    Column(
-                                                                      crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Name in Arabic",
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                        Text(
-                                                                          images.name,
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        // Copy the image URL or any text to the clipboard
-                                                                        Clipboard.setData(
-                                                                            ClipboardData(
-                                                                                text:
-                                                                                images.name)); // Text to be copied
-                                                                      },
-                                                                      icon: const Icon(
-                                                                          Icons.copy,
-                                                                          color: Colors
-                                                                              .white),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 5),
-                                                                const Divider(
-                                                                  height: 1,
-                                                                  color: Colors.white,
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 10),
-                                                                Row(
-                                                                  children: [
-                                                                    Column(
-                                                                      crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Card Number",
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            height:
-                                                                            5),
-                                                                        Text(
-                                                                          images
-                                                                              .cardNumber,
-                                                                          textAlign:
-                                                                          TextAlign
-                                                                              .left,
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        // Copy the image URL or any text to the clipboard
-                                                                        Clipboard.setData(
-                                                                            ClipboardData(
-                                                                                text:
-                                                                                images.cardNumber)); // Text to be copied
-                                                                      },
-                                                                      icon: const Icon(
-                                                                          Icons.copy,
-                                                                          color: Colors
-                                                                              .white),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 5),
-                                                                const Divider(
-                                                                  height: 1,
-                                                                  color: Colors.white,
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 10),
-                                                                Row(
-                                                                  crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                                  children: [
-                                                                    Column(
-                                                                      crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Date of Birth in Hijri",
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            height:
-                                                                            5),
-                                                                        Text(
-                                                                          images
-                                                                              .dateOfBirthInHijri,
-                                                                          textAlign:
-                                                                          TextAlign
-                                                                              .left,
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        // Copy the image URL or any text to the clipboard
-                                                                        Clipboard.setData(
-                                                                            ClipboardData(
-                                                                                text:
-                                                                                images.dateOfBirthInHijri)); // Text to be copied
-                                                                      },
-                                                                      icon: const Icon(
-                                                                          Icons.copy,
-                                                                          color: Colors
-                                                                              .white),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 5),
-                                                                const Divider(
-                                                                  height: 1,
-                                                                  color: Colors.white,
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 10),
-                                                                Row(
-                                                                  children: [
-                                                                    Column(
-                                                                      crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Expiry date in Hijri",
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            height:
-                                                                            5),
-                                                                        Text(
-                                                                          images
-                                                                              .expiryDateInHijri,
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        // Copy the image URL or any text to the clipboard
-                                                                        Clipboard.setData(
-                                                                            ClipboardData(
-                                                                                text:
-                                                                                images.expiryDateInHijri)); // Text to be copied
-                                                                      },
-                                                                      icon: const Icon(
-                                                                          Icons.copy,
-                                                                          color: Colors
-                                                                              .white),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 5),
-                                                                const Divider(
-                                                                  height: 1,
-                                                                  color: Colors.white,
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 10),
-                                                                Row(
-                                                                  children: [
-                                                                    Column(
-                                                                      crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Place of Birth",
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            height:
-                                                                            5),
-                                                                        Text(
-                                                                          images
-                                                                              .placeOfBirth,
-                                                                          maxLines: 4,
-                                                                          softWrap:
-                                                                          true,
-                                                                          style: GoogleFonts
-                                                                              .inter(
-                                                                            fontSize:
-                                                                            15,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .normal,
-                                                                            color: Colors
-                                                                                .white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        // Copy the image URL or any text to the clipboard
-                                                                        Clipboard.setData(
-                                                                            ClipboardData(
-                                                                                text:
-                                                                                images.placeOfBirth)); // Text to be copied
-                                                                      },
-                                                                      icon: const Icon(
-                                                                          Icons.copy,
-                                                                          color: Colors
-                                                                              .white),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 5),
-                                                                const Divider(
-                                                                  height: 1,
-                                                                  color: Colors.white,
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
+                                        return Transform.translate(
+                                          offset: Offset(0, index == 0 ? 0 : -10),
+                                          child: GestureDetector(
+                                            onTap: () async {
+                                              if (isImage || isPdf) {
+                                                // Open the document URL using the default viewer (image viewer or PDF viewer)
+                                                if (await canLaunchUrl(documents.url)) {
+                                                  await launchUrl(documents.url);
+                                                } else {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('Could not open the document!')),
+                                                  );
+                                                }
+                                              } else {
+                                                // Handle other file types if needed
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Unsupported file type!')),
                                                 );
-                                              },
-                                            );
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.only(
-                                                top: 10.0, left: 30, right: 30),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                if (index != 0)
+                                              }
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(12),
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  if (index != 0)
+                                                    const BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: 10,
+                                                      spreadRadius: 10,
+                                                      offset: Offset(0, -6),
+                                                    ),
                                                   const BoxShadow(
                                                     color: Colors.black12,
                                                     blurRadius: 10,
-                                                    spreadRadius: 10,
-                                                    offset: Offset(0,
-                                                        -6), // Top shadow added only for items after the first one
+                                                    offset: Offset(0, 5),
                                                   ),
-                                                const BoxShadow(
-                                                  color: Colors.black12,
-                                                  blurRadius: 10,
-                                                  offset: Offset(0,
-                                                      5), // Bottom shadow to enhance overlap effect
-                                                ),
-                                              ],
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "${documents.type}",
-                                                  maxLines: 2,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
+                                                ],
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "${documents.type}",
+                                                    maxLines: 2,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: NasColors.darkBlue,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(height: 10),
-                                                ClipRRect(
-                                                  borderRadius:
-                                                  BorderRadius.circular(10),
-                                                  child: Image.asset(
-                                                    images.imageUrl,
-                                                    height: 60,
-                                                    width: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                    alignment: Alignment.topCenter,
+                                                  const SizedBox(height: 10),
+                                                  ClipRRect(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    child: isImage
+                                                        ? Image.network(
+                                                      documents.url,
+                                                      height: 60,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.cover,
+                                                      alignment: Alignment.topCenter,
+                                                    )
+                                                        : Icon(
+                                                      isPdf ? Icons.picture_as_pdf : Icons.insert_drive_file,
+                                                      size: 60,
+                                                      color: NasColors.darkBlue,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
+                                        );
+                                      },
+                                    )
+                                        : Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Text(
+                                          AppLocalizations.of(context)!.noData,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: NasColors.darkBlue,
+                                          ),
                                         ),
-                                      );
-                                    }),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                               if (_selectedOptionIndex == 5) ...[
                                 ListView.builder(
@@ -1708,7 +1220,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               color: NasColors.containerColor,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.3),
+                                                  color: Colors.grey.withValues(alpha: 0.3),
                                                   spreadRadius: 2,
                                                   blurRadius: 8,
                                                   offset: const Offset(0,
@@ -1878,7 +1390,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   Future<EmployeeDetailsData?> getEmployeeDetailsData() async {
-    String? employeeId = widget.supervisors?.empId;
+    String? employeeId = widget.teamData?.empId;
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
@@ -1909,10 +1421,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$firstDateString/$currentDateString');
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
 
     var response = await client.get(uri);
-    print("//////?????${response.body}");
+    print("Employee Attendance Data${response.body}");
     print(employeeId);
     print(firstDateString);
     print(currentDateString);

@@ -1,4 +1,3 @@
-
 class AttendanceData {
   int? statusCode;
   String? statusMessage;
@@ -11,7 +10,11 @@ class AttendanceData {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    data = json["data"] == null
+        ? null
+        : (json["data"] as List<dynamic>)
+        .map((e) => Data.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -19,7 +22,7 @@ class AttendanceData {
     _data["statusCode"] = statusCode;
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
-    if(data != null) {
+    if (data != null) {
       _data["data"] = data?.map((e) => e.toJson()).toList();
     }
     return _data;
@@ -39,7 +42,7 @@ class Data {
   dynamic totalHoursWorked;
   dynamic location;
   dynamic status;
-  List<dynamic>? breaksTaken;
+  List<BreaksTaken>? breaksTaken;
   dynamic breakTime;
   dynamic lateMinutes;
   List<dynamic>? penalties;
@@ -52,7 +55,32 @@ class Data {
   dynamic updatedAt;
   dynamic v;
 
-  Data({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+  Data({
+    this.id,
+    this.employeeId,
+    this.empId,
+    this.name,
+    this.companyId,
+    this.branchId,
+    this.date,
+    this.clockInTime,
+    this.clockOutTime,
+    this.totalHoursWorked,
+    this.location,
+    this.status,
+    this.breaksTaken,
+    this.breakTime,
+    this.lateMinutes,
+    this.penalties,
+    this.leaveDetails,
+    this.shift,
+    this.workingHoursPerday,
+    this.earlyCheckOut,
+    this.remarks,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -67,7 +95,11 @@ class Data {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
-    breaksTaken = json["breaksTaken"] ?? [];
+    breaksTaken = json['breaksTaken'] == null
+        ? null
+        : (json['breaksTaken'] as List<dynamic>)
+        .map((e) => BreaksTaken.fromJson(e as Map<String, dynamic>))
+        .toList();
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
     penalties = json["penalties"] ?? [];
@@ -95,14 +127,12 @@ class Data {
     _data["totalHoursWorked"] = totalHoursWorked;
     _data["location"] = location;
     _data["status"] = status;
-    if(breaksTaken != null) {
-      _data["breaksTaken"] = breaksTaken;
+    if (breaksTaken != null) {
+      _data["breaksTaken"] = breaksTaken!.map((e) => e.toJson()).toList();
     }
     _data["breakTime"] = breakTime;
     _data["lateMinutes"] = lateMinutes;
-    if(penalties != null) {
-      _data["penalties"] = penalties;
-    }
+    _data["penalties"] = penalties;
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
     _data["workingHoursPerday"] = workingHoursPerday;
@@ -111,6 +141,28 @@ class Data {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    return _data;
+  }
+}
+
+class BreaksTaken {
+  String? startTime;
+  String? endTime;
+  double? durationMinutes;
+
+  BreaksTaken({this.startTime, this.endTime, this.durationMinutes});
+
+  BreaksTaken.fromJson(Map<String, dynamic> json) {
+    startTime = json['startTime'];
+    endTime = json['endTime'];
+    durationMinutes = json['durationMinutes']?.toDouble();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data['startTime'] = startTime;
+    _data['endTime'] = endTime;
+    _data['durationMinutes'] = durationMinutes;
     return _data;
   }
 }

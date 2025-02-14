@@ -22,8 +22,13 @@ import 'package:nashr/request_controller/notification_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
+import 'package:nashr/request_controller/project_logo_model.dart';
+import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
+import 'package:nashr/request_controller/task_attachment_model.dart';
+import 'package:nashr/request_controller/task_model.dart';
+import 'package:nashr/request_controller/teamClocking_model.dart';
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -46,6 +51,10 @@ class SingletonClass {
   List<EmployeeData> employeeDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
+  List<ProjectsData> projectsDataList = [];
+  List<TaskAttachmentModel> taskAttachmentDataList = [];
+  List<TaskModel> taskModelList = [];
+  List<ProjectLogoModel> projectsLogoModelList = [];
   List<PenaltiesAndFineModel> penaltiesDataList = [];
   List<NotificationModel> notificationModelList = [];
   List<ComplaintsModel> complaintsDataList = [];
@@ -63,6 +72,7 @@ class SingletonClass {
   List<EmployeeDetailsClocking> employeeDetailsClockingDataList = [];
   List<CheckInData> checkInDataList = [];
   List<ClockingData> clockingDataList = [];
+  List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
@@ -446,7 +456,7 @@ class SingletonClass {
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/$employeeId/$firstDateString/$currentDateString');
     var response = await client.get(uri);
-    log("ClockingData:${response.body}");
+    log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var clockingData = ClockingData.fromJson(responseBody);
@@ -462,7 +472,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
     var response = await client.get(uri);
-    log(response.body);
+    log("Branch Data List ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var branch = BranchData.fromJson(responseBody);
@@ -481,12 +491,14 @@ class SingletonClass {
 
   String formatCheckInTime(String dateTimeString) {
     try {
-      DateTime dateTime = DateTime.parse(dateTimeString);
-      final formattedTime = DateFormat('h:mm a').format(dateTime);
+      DateTime utcDateTime = DateTime.parse(dateTimeString).toUtc();
+      DateTime localDateTime = utcDateTime.toLocal();
+
+      final formattedTime = DateFormat('h:mm a').format(localDateTime);
       return formattedTime;
     } catch (e) {
-      print("Error formatting time: $e"); // Handle potential parsing errors
-      return '';
+      print("Error formatting time: $e");
+      return 'N/A';
     }
   }
 
@@ -549,6 +561,20 @@ class SingletonClass {
     }
   }
 
+  Future<TaskModel?> getTasks() async {
+    var client = http.Client();
+    var uri = Uri.parse('${baseURL}/kanban-task');
+    var response = await client.get(uri);
+    log("Task Data Log ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var taskData = TaskModel.fromJson(responseBody);
+      taskModelList.addAll([taskData]);
+      return taskData;
+    }
+    return null ; // Print the response body
+  }
+
   String formatTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);
     return DateFormat('hh:mm a').format(createdDate);
@@ -562,7 +588,7 @@ class SingletonClass {
   String formatDateTime(String dateTime) {
     try {
       final parsedDate = DateTime.parse(dateTime).toLocal();
-      return DateFormat('dd-MM-yyyy hh:mm:a').format(parsedDate);
+      return DateFormat('hh:mm:a').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
     }

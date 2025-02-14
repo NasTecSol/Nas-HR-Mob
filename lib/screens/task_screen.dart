@@ -1,269 +1,700 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/request_controller/task_model.dart';
+import 'package:nashr/screens/create_task_screen.dart';
+import 'package:nashr/screens/task_detail_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../request_controller/projects_data_model.dart';
+
 class TaskScreen extends StatefulWidget {
-  const TaskScreen({super.key});
+  final Data? projectData;
+  const TaskScreen({super.key, this.projectData});
 
   @override
   State<TaskScreen> createState() => _TaskScreenState();
 }
 
 class _TaskScreenState extends State<TaskScreen> {
-  final List<TaskModel> tasks = [
-    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00", "Nas-Hr Project"),
-    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00", "Nas-Hr Project"),
-    TaskModel("N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
+  SingletonClass singletonClass = SingletonClass();
+  List<Dattaa> filteredTaskList = [];
+  final List<String> imagePaths = [
+    'images/DP.png',
+    'images/DP.png',
+    'images/DP.png',
+    'images/DP.png',
   ];
-  int _selectedOptionIndex = 0;
-  int? _expandedIndex; // Keeps track of the index of the expanded container
-
-  void _toggleExpand(int index) {
+  @override
+  void initState(){
+    super.initState();
     setState(() {
-      if (_expandedIndex == index) {
-        _expandedIndex = null; // Collapse if the same item is clicked again
-      } else {
-        _expandedIndex = index; // Expand the clicked item
-      }
+      filterTasks();
+    });
+    setState(() {
+
     });
   }
+  void filterTasks() {
+    if (filteredTaskList.isNotEmpty) {
+      print('Filtered tasks already populated');
+      return;
+    }
+
+    List<Dattaa> newFilteredTaskList = [];
+
+    // Loop through TaskModel list
+    for (TaskModel taskModel in singletonClass.taskModelList) {
+      // Check if the taskModel has data
+      if (taskModel.data != null) {
+        // Loop through the task data inside each taskModel
+        for (var task in taskModel.data!) {
+          // Compare the projectId from the task with the projectId from widget.projectData
+          if (task.projectId == widget.projectData?.id) {
+            // If task is not already in the newFilteredTaskList, add it
+            if (!newFilteredTaskList.any((existingTask) => existingTask.id == task.id)) {
+              newFilteredTaskList.add(task);
+            }
+          }
+        }
+      }
+    }
+
+    // Only update filteredTaskList if new tasks were found
+    if (newFilteredTaskList.isNotEmpty) {
+      setState(() {
+        filteredTaskList = newFilteredTaskList;
+      });
+
+      // Optionally, log the number of filtered tasks
+      print('Filtered tasks: ${filteredTaskList.length}');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    List<TaskModel> filteredTasks = _selectedOptionIndex == 0
-        ? tasks // Show all tasks if "All" is selected
-        : tasks.where((task) => task.status == _getStatusFromIndex(_selectedOptionIndex)).toList();
+    // Filter tasks by status
+    List<Dattaa> toDoTasks = filteredTaskList.where((task) => task.status == "TODO").toList();
+    List<Dattaa> inProgressTask = filteredTaskList.where((task) => task.status == "InProgress").toList();
+    List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "completed").toList();
 
-    return Scaffold(
-      backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 50.0 , left: 20.0 , right: 20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 15.0 , top: 15.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.tasks,
-                    style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue),
-                  ),
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  buildOptionsCard(0,  AppLocalizations.of(context)!.all),
-                  buildOptionsCard(1,  AppLocalizations.of(context)!.inProgress),
-                  buildOptionsCard(2,  AppLocalizations.of(context)!.pending),
-                  buildOptionsCard(3,  AppLocalizations.of(context)!.completed),
-                ],
-              ),
-            ),
-            Expanded( // Use Expanded to allow ListView to take remaining space
-              child: ListView.builder(
-                padding: const EdgeInsets.all(5),
-                itemCount: filteredTasks.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final task = filteredTasks[index];
-                  return GestureDetector(
-                    onTap: () => _toggleExpand(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(15)),
-                        color:  Colors.white,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded( // Use Expanded to fill the remaining space
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded( // Expand the text to fill available space
-                                        child: Text(
-                                          "${task.taskName}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 20,
-                                        width: 75,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
-                                          color: _getColorForVerificationStatus(task.status!),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "${task.status}",
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                 if (_expandedIndex == index) ...[
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.calendar_month_outlined,
-                                        color: _getColorForVerificationStatus(task.status!),
-                                        size: 25,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        "${task.duration}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: _getColorForVerificationStatus(task.status!),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Text(
-                                      "${task.projectName}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                  ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+// Get the total number of tasks for each status
+    int totalToDoTasks = toDoTasks.length;
+    int totalInProgressTasks = inProgressTask.length;
+    int totalCompletedTasks = completedTask.length;
 
-  Widget buildOptionsCard(int index, String title) {
-    Color getStatusColor(String title) {
-      switch (title) {
-        case 'Completed':
-          return NasColors.completed;
-        case 'Pending':
-          return NasColors.pending;
-        case 'InProgress':
-          return NasColors.onTime;
-        default:
-          return NasColors.darkBlue; // Default color
+// Initialize variables for assignees and tags
+    int totalToDoAssignees = 0;
+    int totalInProgressAssignees = 0;
+    int totalCompletedAssignees = 0;
+    String toDoTags = "";
+    String inProgressTags = "";
+    String completedTags = "";
+
+// Accumulate data for "to-do" tasks
+    for (var task in toDoTasks) {
+      totalToDoAssignees += task.assignTo!.length;
+      if (task.tag != null) {
+        toDoTags += ("${task.tag!}, "); // Append tags (comma separated)
       }
     }
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
-      },
-      child: SizedBox(
-        height: 70,
-        width: 140,
-        child: Card(
-          color: _selectedOptionIndex == index ? getStatusColor(title) : Colors.white,
-          elevation: 100.0,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color: _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 0.0,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+
+// Remove trailing comma and space from "to-do" tags string
+    if (toDoTags.isNotEmpty) {
+      toDoTags = toDoTags.substring(0, toDoTags.length - 2);
+    }
+
+// Accumulate data for "in-progress" tasks
+    for (var task in inProgressTask) {
+      totalInProgressAssignees += task.assignTo!.length;
+      if (task.tag != null) {
+        inProgressTags += ("${task.tag!}, "); // Append tags (comma separated)
+      }
+    }
+
+// Remove trailing comma and space from "in-progress" tags string
+    if (inProgressTags.isNotEmpty) {
+      inProgressTags = inProgressTags.substring(0, inProgressTags.length - 2);
+    }
+
+// Accumulate data for "completed" tasks
+    for (var task in completedTask) {
+      totalCompletedAssignees += task.assignTo!.length;
+      if (task.tag != null) {
+        completedTags += ("${task.tag!}, "); // Append tags (comma separated)
+      }
+    }
+
+// Remove trailing comma and space from "completed" tags string
+    if (completedTags.isNotEmpty) {
+      completedTags = completedTags.substring(0, completedTags.length - 2);
+    }
+    return  Scaffold(
+      backgroundColor: NasColors.backGround,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [ Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex == index ? Colors.white : NasColors.darkBlue,
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.4),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_outlined,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  Text(
+                      AppLocalizations.of(context)!.tasks,
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  const Spacer(),
+                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                   TextButton(
+                      child: Text(AppLocalizations.of(context)!.createAnIssue,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: NasColors.darkBlue,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateTaskScreen(projectData: widget.projectData,)));
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: 520,
+                      width: 20, // Adjusted the width for visibility
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          bottomLeft: Radius.circular(15),
+                        ),
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(topRight: Radius.circular(15),
+                          bottomRight: Radius.circular(15)),
+                          color: Colors.grey[200],
+                        ),
+                        child: Padding(
+                            padding: const EdgeInsets.only(left: 8.0,right: 8.0),
+                          child: Column(
+                            children: [
+                              //To Do Code
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(toDoTasks: toDoTasks,projectData: widget.projectData,)));
+                                },
+                                child: SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            height: 35,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10),
+                                              color: NasColors.pending,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(top: 5.0),
+                                              child: Text(AppLocalizations.of(context)!.tdo,
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Text("$totalToDoAssignees ${AppLocalizations.of(context)!.assignee}",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.task_outlined, size: 25),
+                                          Text("${AppLocalizations.of(context)!.tasks}: $totalToDoTasks",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Row(
+                                            children: [
+                                              ...List.generate(
+                                                totalToDoAssignees > 3 ? 3 : totalToDoAssignees,
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white, width: 1),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        imagePaths[index], // Replace with your imagePaths list
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (totalToDoAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.grey[300],
+                                                      border: Border.all(color: Colors.white, width: 2),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        '+${totalToDoAssignees - 3}',
+                                                        style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+
+
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.tag, size: 25),
+                                          SizedBox(
+                                            width: 300,
+                                            child: Text("${AppLocalizations.of(context)!.tag}: $toDoTags",
+                                              maxLines: 5,
+                                              textAlign: TextAlign.start,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Text('*'),
+                                          Expanded(
+                                            child: LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                // Calculate the number of dots based on available width
+                                                int dotCount = (constraints.maxWidth / 10).floor();
+                                                return Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: List.generate(dotCount, (_) => const Text('.')),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const Text('*'),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              //In Progress Code
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(inProgressTasks: inProgressTask,projectData: widget.projectData,)));
+                                },
+                                child: SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            height: 35,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10),
+                                              color: NasColors.onTime,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(top: 5.0),
+                                              child: Text(AppLocalizations.of(context)!.inProgress,
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Text("$totalInProgressAssignees ${AppLocalizations.of(context)!.assignee}",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.task_outlined,
+                                            size: 25,
+                                          ),
+                                          Text("${AppLocalizations.of(context)!.tasks}: $totalInProgressTasks",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Row(
+                                            children: [
+                                              ...List.generate(
+                                                totalInProgressAssignees > 3 ? 3 : totalInProgressAssignees,
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white, width: 1),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        imagePaths[index], // Replace with your imagePaths list
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (totalInProgressAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.grey[300],
+                                                      border: Border.all(color: Colors.white, width: 2),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        '+${totalInProgressAssignees - 3}',
+                                                        style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.tag,
+                                            size: 25,),
+                                          Text(AppLocalizations.of(context)!.tag,
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(inProgressTags,
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Text('*'),
+                                          Expanded(
+                                            child: LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                // Calculate the number of dots based on available width
+                                                int dotCount = (constraints.maxWidth / 10).floor();
+                                                return Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: List.generate(dotCount, (_) => const Text('.')),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const Text('*'),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              // Completed Code
+                              GestureDetector(
+                                onTap: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(completedTask: completedTask,projectData: widget.projectData,)));
+                                },
+                                child: SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            height: 35,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10),
+                                              color: NasColors.completed,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(top: 5.0),
+                                              child: Text(AppLocalizations.of(context)!.completed,
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Text("$totalCompletedAssignees ${AppLocalizations.of(context)!.assignee}",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.task_outlined,
+                                            size: 25,
+                                          ),
+                                          Text("${AppLocalizations.of(context)!.tasks}: $totalCompletedTasks",
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Row(
+                                            children: [
+                                              ...List.generate(
+                                                totalCompletedAssignees > 3 ? 3 : totalCompletedAssignees,
+                                                    (index) => Transform.translate(
+                                                  offset: Offset(index * -15.0, 0), // Adjust overlap distance
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(color: Colors.white, width: 1),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        imagePaths[index], // Replace with your imagePaths list
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (totalCompletedAssignees > 3)
+                                                Transform.translate(
+                                                  offset: const Offset(-30.0, 0), // Adjust overlap for "+n"
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.grey[300],
+                                                      border: Border.all(color: Colors.white, width: 2),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        '+${totalCompletedAssignees - 3}',
+                                                        style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.tag,
+                                            size: 25,),
+                                          Text(AppLocalizations.of(context)!.tag,
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(completedTags,
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                              ,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Text('*'),
+                                          Expanded(
+                                            child: LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                // Calculate the number of dots based on available width
+                                                int dotCount = (constraints.maxWidth / 10).floor();
+                                                return Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: List.generate(dotCount, (_) => const Text('.')),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const Text('*'),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+
             ],
           ),
+        ],
         ),
       ),
     );
   }
-
-  String _getStatusFromIndex(int index) {
-    switch (index) {
-      case 1:
-        return 'InProgress';
-      case 2:
-        return 'Pending';
-      case 3:
-        return 'Completed';
-      default:
-        return '';
-    }
-  }
-
-  Color _getColorForVerificationStatus(String verificationStatus) {
-    switch (verificationStatus) {
-      case 'Completed':
-        return NasColors.completed;
-      case 'Pending':
-        return NasColors.pending;
-      case 'InProgress':
-        return NasColors.onTime;
-      case 'All':
-        return NasColors.darkBlue;
-      default:
-        return Colors.grey; // or any other default color
-    }
-  }
-}
-
-class TaskModel {
-  String? taskName;
-  String? status;
-  String? duration;
-  String? projectName;
-
-  TaskModel(this.taskName, this.status, this.duration, this.projectName);
 }

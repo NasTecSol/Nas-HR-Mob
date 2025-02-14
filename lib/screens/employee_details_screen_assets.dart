@@ -25,9 +25,10 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           Padding(
-            padding: const EdgeInsets.all(15.0),
+            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(
