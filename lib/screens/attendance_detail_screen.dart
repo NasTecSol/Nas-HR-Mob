@@ -24,7 +24,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
     double totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
         ? 0.0
         : widget.attendanceData!.breaksTaken!
-        .map((breakTaken) => breakTaken.durationMinutes ?? 0.0) // Ensure non-null values
+        .map((breakTaken) => breakTaken.durationMinutes ?? 0.0)
         .reduce((value, element) => value + element);
     String totalDurationString = formatMinutes(totalDurationMinutes.toString());
     return  Scaffold(
@@ -131,7 +131,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                               ],
                             )
                           ],
-                          if (widget.attendanceData!.earlyCheckOut > 0)...[
+                          if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
                             Row(
                               children: [
                                 Icon(
@@ -139,12 +139,14 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                   size: 25,
                                   color: NasColors.onTime,
                                 ),
-                                Text(AppLocalizations.of(context)!.earlyCheckOut,
+                                Text(
+                                  AppLocalizations.of(context)!.earlyCheckOut,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
                                     color: NasColors.darkBlue,
-                                  ),),
+                                  ),
+                                ),
                               ],
                             )
                           ],
@@ -184,13 +186,15 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                 color: NasColors.darkBlue,
                               ),),
                           ],
-                          if(widget.attendanceData!.earlyCheckOut > 0) ...[
-                            Text(earlyCheckOut,
+                          if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
+                            Text(
+                              widget.attendanceData!.earlyCheckOut.toString(), // Ensure it's a String
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.normal,
                                 color: NasColors.darkBlue,
-                              ),),
+                              ),
+                            ),
                           ],
                           Text(formatDateTime(checkOutTime),
                             style: GoogleFonts.inter(

@@ -826,7 +826,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               );
                                             },
                                             itemBuilder: (BuildContext context , int index){
-                                              final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data![index];
+                                              final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data!.reversed.toList()[index];
                                               int breakHours = (attendance.breakTime ~/ 60);
                                               int breakMinutes = (attendance.breakTime % 60).round();
                                               int totalMinutes = (attendance.totalHoursWorked * 60).round();
@@ -886,7 +886,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                         SizedBox(
                                                           width:140,
                                                           child: Text(
-                                                            '${AppLocalizations.of(context)!.breaks}:  ${breakHours} hours $breakMinutes mins',
+                                                            '${AppLocalizations.of(context)!.breaks}:  $breakHours hours $breakMinutes mins',
                                                             style: GoogleFonts.inter(
                                                               fontSize: 15,
                                                               fontWeight: FontWeight.w500,

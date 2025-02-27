@@ -247,7 +247,7 @@ class _TeamClockingState extends State<TeamClocking> {
                       padding: EdgeInsets.zero,
                       itemCount: filteredClockingDataList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final team = filteredClockingDataList[index];
+                        final team = filteredClockingDataList.reversed.toList()[index];
                         final shift = singletonClass.branchDataList.first.data
                             ?.departmentDetails?.first.shifts;
                         // Parse shift times and clock times for the current index
@@ -293,6 +293,19 @@ class _TeamClockingState extends State<TeamClocking> {
                             padding: const EdgeInsets.all(10.0),
                             child: Column(
                               children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      singletonClass.formatDate2(team.createdAt.toString()),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
                                 Row(
                                   children: [
                                     Text(
