@@ -326,7 +326,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage('$imageUrl'),
+                                            image: NetworkImage(imageUrl),
                                             fit: BoxFit.fill,
                                           ),
                                         ),
@@ -425,7 +425,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage('$imageUrl'),
+                                            image: NetworkImage(imageUrl),
                                             fit: BoxFit.fill,
                                           ),
                                         ),
@@ -525,7 +525,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         image: DecorationImage(
-                                          image: NetworkImage('$imageUrl'),
+                                          image: NetworkImage(imageUrl),
                                           fit: BoxFit.fill,
                                         ),
                                       ),
