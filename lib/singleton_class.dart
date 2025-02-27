@@ -16,6 +16,7 @@ import 'package:nashr/request_controller/employee_details_attendance_model.dart'
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
+import 'package:nashr/request_controller/event_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
@@ -29,6 +30,7 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
+import 'package:nashr/screens/calendar_screen.dart';
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -74,6 +76,7 @@ class SingletonClass {
   List<ClockingData> clockingDataList = [];
   List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
+  List<EventModel> eventDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
   String? fcmToken;
@@ -492,9 +495,8 @@ class SingletonClass {
   String formatCheckInTime(String dateTimeString) {
     try {
       DateTime utcDateTime = DateTime.parse(dateTimeString).toUtc();
-      DateTime localDateTime = utcDateTime.toLocal();
 
-      final formattedTime = DateFormat('h:mm a').format(localDateTime);
+      final formattedTime = DateFormat('h:mm a').format(utcDateTime);
       return formattedTime;
     } catch (e) {
       print("Error formatting time: $e");
