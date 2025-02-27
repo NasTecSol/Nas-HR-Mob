@@ -624,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     sigmaY: blurAmount,
                   ),
                   child: Container(
-                    color: Colors.black.withOpacity(opacityAmount * 0.1),
+                      color: Colors.black.withValues(alpha: (opacityAmount * 0.1 * 2))
                   ),
                 ),
               ],
@@ -873,8 +873,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         blurRadius: 10.0,
                         spreadRadius: 0.5,
                         offset: Offset(
-                          0.0, // Move to right 10 horizontally
-                          -10.0, // Move to bottom 10 vertically
+                          0.0, -10.0,
                         ),
                       )
                     ],
@@ -1061,7 +1060,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ],
                                                       ),
                                                     ),
-                                                  )
+                                                  ) 
                                                 else Text(AppLocalizations.of(context)!.noData,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1906,7 +1905,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> checkIn(String type) async {
     String currentTime = DateTime.now().toIso8601String();
     String checkInTime = '${currentTime.split('.')[0]}.000Z';
-    print("checkintime >>>${checkInTime}");
 
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
@@ -1914,10 +1912,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "checkInTime": checkInTime,
       "type": type,
       "totalTime" : checkInTime,
-      // Adjust this if needed for total time calculation
     };
-    print(data);
-
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
     setState(() {

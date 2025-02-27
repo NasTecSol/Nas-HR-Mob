@@ -101,30 +101,46 @@ class _MainScreenState extends State<MainScreen> {
                         alignment: Alignment.center,
                         decoration: index == 3
                             ? BoxDecoration(
-                          borderRadius:
-                          const BorderRadius.all(Radius.circular(15)),
+                          borderRadius: BorderRadius.circular(15),
                           color: NasColors.darkBlue,
                         )
                             : null,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            radius: 35,
-                            child: ClipOval(
-                              child: Image.network(
-                                dashBoardData?.profilePic ?? '', // URL for the network image, empty string if null
-                                fit: BoxFit.cover,
-                                width: 70,
-                                height: 70,
-                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                  // Display the default asset image if the network image fails to load
-                                  return Image.asset(
-                                    'images/DP.png',
-                                    fit: BoxFit.cover,
-                                    width: 70,
-                                    height: 70,
-                                  );
-                                },
-                              ),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 35,
+                          child: ClipOval(
+                            child: (dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty)
+                                ? Image.network(
+                              dashBoardData!.profilePic!,
+                              fit: BoxFit.cover,
+                              width: 70,
+                              height: 70,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'images/DP.png',
+                                  fit: BoxFit.cover,
+                                  width: 70,
+                                  height: 70,
+                                );
+                              },
+                            )
+                                : Image.asset(
+                              'images/DP.png', // Default image if profilePic is null/empty
+                              fit: BoxFit.cover,
+                              width: 70,
+                              height: 70,
+                            ),
                           ),
                         ),
                       ),
