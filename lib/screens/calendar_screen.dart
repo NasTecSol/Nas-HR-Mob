@@ -1,8 +1,15 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/project_screen.dart';
+import 'package:nashr/singleton_class.dart';
+import '../request_controller/event_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -12,6 +19,7 @@ class CalendarScreen extends StatefulWidget {
 
 class _CalendarScreenState extends State<CalendarScreen> {
   int _selectedOptionIndex = 0;
+  SingletonClass singletonClass = SingletonClass();
 
   final List<MeetingModel> meetings = [
     MeetingModel("Scrum Meeting", "10:00 AM", "B201-With Danial + 5 People"),
@@ -29,19 +37,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         "N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
   ];
 
-  final List<EventModel> events = [
-    EventModel("Upcoming Birthdays", "Suleman Azeem Khan #082", "July 6 12:00",
+  final List<EventModels> events = [
+    EventModels("Upcoming Birthdays", "Suleman Azeem Khan #082", "July 6 12:00",
         "Nas-Hr Project"),
-    EventModel("Company Outing", "Visit to NasTecSol Company", "July 7 11:00",
+    EventModels("Company Outing", "Visit to NasTecSol Company", "July 7 11:00",
         "Danial Rana & 6 others"),
-    EventModel("Holiday", "Eid-Ul-Fitr Holiday", "July 8 01:00", "Happy Eid!"),
+    EventModels("Holiday", "Eid-Ul-Fitr Holiday", "July 8 01:00", "Happy Eid!"),
   ];
 
   String _getDayOfWeek(DateTime date) {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
   }
-
-  int _selectedDateIndex = 0;
+  DateTime _selectedDate = DateTime.now();
+  int? _selectedDateIndex;
 
   // Sample list of dates
   final List<DateTime> _dates = List.generate(30, (index) {
@@ -53,7 +61,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.only(top: 50.0 , left: 20.0, right: 20.0),
+        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -85,14 +93,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
             const SizedBox(height: 20),
-             Text(
-                AppLocalizations.of(context)!.selectDate,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: NasColors.darkBlue,
-                ),
+            Text(
+              AppLocalizations.of(context)!.selectDate,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: NasColors.darkBlue,
               ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 80, // Adjust as needed
@@ -106,7 +114,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     onTap: () {
                       setState(() {
                         _selectedDateIndex = index;
+                        _selectedDate = date; // Store selected date
                       });
+                      fetchEvents();
                     },
                     child: Container(
                       width: 55, // Adjust the width as needed
@@ -283,7 +293,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               children: [
                                 Container(
                                   height: 120,
-                                  width: 20, // Adjusted the width for visibility
+                                  width: 20,
+                                  // Adjusted the width for visibility
                                   decoration: BoxDecoration(
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(15),
@@ -387,23 +398,40 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ],
               ),
-            if (_selectedOptionIndex == 2)
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                // Set the Column to shrink-wrap its children
-                children: [
-                  Flexible(
-                    // Use Flexible instead of Expanded
-                    fit: FlexFit.loose,
-                    // Allow the child to take only the space it needs
-                    child: ListView.builder(
+            if (_selectedOptionIndex == 2) ...[
+              FutureBuilder<EventModel?>(
+                future: getEventData(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/loader.json'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
+                    final eventList = snapshot.data!.data!; // Extracting event list
+
+                    return ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(10),
                       shrinkWrap: true,
-                      // Ensure the ListView doesn't take up unnecessary space
-                      itemCount: events.length,
+                      itemCount: eventList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final event = events[index];
+                        final event = eventList[index];
+
                         return Directionality(
                           textDirection: TextDirection.ltr,
                           child: Column(
@@ -423,16 +451,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 15),
                                 decoration: BoxDecoration(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(15)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.3),
                                       spreadRadius: 2,
                                       blurRadius: 8,
-                                      offset: const Offset(
-                                          0, 0), // changes position of shadow
+                                      offset: const Offset(0, 0),
                                     ),
                                   ],
                                 ),
@@ -441,7 +467,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     Container(
                                       height: 165,
                                       width: 80,
-                                      // Adjusted the width for visibility
                                       decoration: BoxDecoration(
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(15),
@@ -449,28 +474,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                         color: NasColors.darkBlue,
                                         image: DecorationImage(
-                                          image: AssetImage(
-                                            _getImageForEventType(event
-                                                .eventType!), // Use a method to get the appropriate image
-                                          ),
+                                          image: AssetImage(_getImageForEventType(event.eventType!)),
                                           fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 8.0, top: 2),
+                                      padding: const EdgeInsets.only(left: 8.0, top: 2),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const SizedBox(height: 20),
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${event.eventTile}",
+                                              "${event.eventName}",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -481,38 +500,36 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           ),
                                           const SizedBox(height: 15),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
-                                              Align(
-                                                  alignment: Alignment.topLeft,
-                                                  child: Icon(
-                                                    Icons.calendar_month_outlined,
-                                                    color: NasColors.darkBlue,
-                                                    size: 30,
-                                                  )),
-                                              Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Text(
-                                                  "${event.duration}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
+                                               Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: NasColors.darkBlue,
+                                                size: 30,
+                                              ),
+                                              Text(
+                                                singletonClass.formatDate2(event.date!),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue,
                                                 ),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 20),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              "${event.remarks}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey,
+                                          SizedBox(
+                                            width: 250,
+                                            child: Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                "${event.eventDescription}",
+                                                maxLines: 5,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -528,14 +545,67 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                         );
                       },
-                    ),
-                  ),
-                ],
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
+            ],
           ],
         ),
       ),
     );
+  }
+  void fetchEvents() {
+    setState(() {}); // Trigger rebuild to update FutureBuilder
+  }
+  //API CALL
+  Future<EventModel?> getEventData() async {
+    String? employeeId = singletonClass.getJWTModel()?.empId;
+    var client = http.Client();
+
+    DateTime startDate, endDate;
+
+    if (_selectedDateIndex == null) {
+      // Default: Send first & last date of the year
+      startDate = DateTime(DateTime.now().year, 1, 1);
+      endDate = DateTime(DateTime.now().year, 12, 31, 23, 59, 59, 999);
+    } else {
+      // If user selects a date, send the same date as start & end
+      startDate = _selectedDate;
+      endDate = _selectedDate;
+    }
+
+    // Format dates as 'yyyy-MM-dd'
+    String startDateString = "${startDate.toIso8601String().split('T')[0]}";
+    String endDateString = "${endDate.toIso8601String().split('T')[0]}";
+
+    print(startDateString);
+    print(endDateString);
+    var uri = Uri.parse('${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
+
+
+    var response = await client.get(uri);
+    log("Event Data : ${response.body}");
+
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var eventData = EventModel.fromJson(responseBody);
+      singletonClass.eventDataList.add(eventData);
+      return eventData;
+    }
+
+    return null;
   }
 
   Widget buildOptionsCard(int index, String title) {
@@ -617,11 +687,11 @@ class MeetingModel {
   MeetingModel(this.meetingName, this.time, this.members);
 }
 
-class EventModel {
+class EventModels {
   String? eventType;
   String? eventTile;
   String? duration;
   String? remarks;
 
-  EventModel(this.eventType, this.eventTile, this.duration, this.remarks);
+  EventModels(this.eventType, this.eventTile, this.duration, this.remarks);
 }

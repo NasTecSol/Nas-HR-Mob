@@ -30,9 +30,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   final Location _location = Location();
 
   // Company location (example coordinates)
-  final double _companyLatitude = 33.57227317548423; // Example latitude
-  final double _companyLongitude = 73.14761580269642; // Example longitude
-  final double _radiusInMeters = 200.0; // 100 meters radius
+  final double _companyLatitude = 33.57227317548423;
+  final double _companyLongitude = 73.14761580269642;
+  final double _radiusInMeters = 100.0;
 
   @override
   void initState() {
