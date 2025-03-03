@@ -273,15 +273,6 @@ class _TeamClockingState extends State<TeamClocking> {
                         // Get user status
                         String status = getStatus(lateDuration, earlyDuration);
 
-                        // Format Check-In and Check-Out Times
-                        String formattedCheckInTime = team.checkInTime != null
-                            ? DateFormat('hh:mm a')
-                                .format(DateTime.parse(team.checkInTime!))
-                            : "N/A";
-                        String formattedCheckOutTime = team.checkOutTime != null
-                            ? DateFormat('hh:mm a')
-                                .format(DateTime.parse(team.checkOutTime!))
-                            : "N/A";
 
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 10),
@@ -342,8 +333,8 @@ class _TeamClockingState extends State<TeamClocking> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    Text(
-                                      formattedCheckInTime,
+                                    Text( team.checkInTime != null ?
+                                      singletonClass.formatCheckInTime(team.checkInTime!) : 'N/A',
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -383,8 +374,8 @@ class _TeamClockingState extends State<TeamClocking> {
                                   children: [
                                     SizedBox(
                                       width: 70,
-                                      child: Text(
-                                        formattedCheckOutTime,
+                                      child: Text( team.checkOutTime != null ?
+                                        singletonClass.formatCheckInTime(team.checkOutTime!) : 'N/A',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,

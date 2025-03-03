@@ -1457,7 +1457,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
     var response = await client.get(uri);
 
-    log(response.body);
+    log("Employee Clock in / out data : ${response.body}");
 
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);

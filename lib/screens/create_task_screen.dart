@@ -10,7 +10,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/main_screen.dart';
-import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -38,7 +37,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   DateTime? fromDate;
   DateTime? toDate;
   int? totalDays;
-  final List<String>? _typeList = [
+  final List<String> _typeList = [
     'BUG',
     'FEATURE',
     'IMPROVEMENT',

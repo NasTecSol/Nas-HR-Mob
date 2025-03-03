@@ -1911,7 +1911,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "employeeName": singletonClass.getJWTModel()?.userName,
       "checkInTime": checkInTime,
       "type": type,
-      "totalTime" : checkInTime,
+      "totalTime" : "0",
     };
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
