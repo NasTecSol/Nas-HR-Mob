@@ -494,9 +494,9 @@ class SingletonClass {
 
   String formatCheckInTime(String dateTimeString) {
     try {
-      DateTime utcDateTime = DateTime.parse(dateTimeString).toUtc();
+      DateTime localTime = DateTime.parse(dateTimeString).toLocal();
 
-      final formattedTime = DateFormat('h:mm a').format(utcDateTime);
+      final formattedTime = DateFormat('h:mm a').format(localTime);
       return formattedTime;
     } catch (e) {
       print("Error formatting time: $e");
