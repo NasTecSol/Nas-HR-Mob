@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/screens/create_event_screen.dart';
 import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../request_controller/event_model.dart';
@@ -48,6 +49,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   String _getDayOfWeek(DateTime date) {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
   }
+
   DateTime _selectedDate = DateTime.now();
   int? _selectedDateIndex;
 
@@ -65,21 +67,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.calendar,
-                    style: GoogleFonts.inter(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: NasColors.darkBlue,
-                    ),
+            Row(children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 5.0, top: 15.0),
+                child: Text(
+                  AppLocalizations.of(context)!.calendar,
+                  style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: NasColors.darkBlue,
                   ),
                 ),
+              ),
+              const Spacer(),
+              if (_selectedOptionIndex == 2) ...[
+                if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                    singletonClass.getJWTModel()?.grade == 'L1') ...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.add,
+                        color: NasColors.darkBlue,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const CreateEventScreen()));
+                      },
+                    ),
+                  ),
+                ]
               ],
-            ),
+            ]),
             const SizedBox(height: 20),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -280,7 +299,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
+                                  color: Colors.grey.withValues(alpha: 0.5),
                                   spreadRadius: 2,
                                   blurRadius: 8,
                                   offset: const Offset(
@@ -421,8 +440,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                       ),
                     );
-                  } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
-                    final eventList = snapshot.data!.data!; // Extracting event list
+                  } else if (snapshot.hasData &&
+                      snapshot.data != null &&
+                      snapshot.data!.data!.isNotEmpty) {
+                    final eventList =
+                        snapshot.data!.data!; // Extracting event list
 
                     return ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -449,13 +471,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                               const SizedBox(height: 10),
                               Container(
-                                margin: const EdgeInsets.symmetric(vertical: 15),
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 15),
                                 decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(15)),
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.3),
+                                      color: Colors.grey.withValues(alpha: 0.3),
                                       spreadRadius: 2,
                                       blurRadius: 8,
                                       offset: const Offset(0, 0),
@@ -474,16 +498,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                         color: NasColors.darkBlue,
                                         image: DecorationImage(
-                                          image: AssetImage(_getImageForEventType(event.eventType!)),
+                                          image: AssetImage(
+                                              _getImageForEventType(
+                                                  event.eventType!)),
                                           fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 8.0, top: 2),
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0, top: 2),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const SizedBox(height: 20),
                                           Align(
@@ -500,15 +529,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           ),
                                           const SizedBox(height: 15),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
-                                               Icon(
+                                              Icon(
                                                 Icons.calendar_month_outlined,
                                                 color: NasColors.darkBlue,
                                                 size: 30,
                                               ),
                                               Text(
-                                                singletonClass.formatDate2(event.date!),
+                                                singletonClass
+                                                    .formatDate2(event.date!),
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
@@ -566,9 +597,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+
   void fetchEvents() {
     setState(() {}); // Trigger rebuild to update FutureBuilder
   }
+
   //API CALL
   Future<EventModel?> getEventData() async {
     String? employeeId = singletonClass.getJWTModel()?.empId;
@@ -592,8 +625,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     print(startDateString);
     print(endDateString);
-    var uri = Uri.parse('${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
-
+    var uri = Uri.parse(
+        '${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
 
     var response = await client.get(uri);
     log("Event Data : ${response.body}");

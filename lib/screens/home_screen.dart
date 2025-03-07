@@ -12,6 +12,7 @@ import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
+import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -35,12 +36,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   SingletonClass singletonClass = SingletonClass();
-  final List<ActivityModel> activity = [
-    ActivityModel("Late Comings", "08-07-2024", "9:00 PM", "late"),
-    ActivityModel(
-        "Leave Request", "08-07-2024", "Going on Vocations", "Approved"),
-    ActivityModel("Salary Increment", "08-07-2024", "Salary Wadhao", "Pending"),
-  ];
   double blurAmount = 10.0;
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
@@ -255,6 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 20),
                               if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
@@ -552,6 +548,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 20),
+                              if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        _removeOverlay();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamAttendanceScreen()));
+                                      },
+                                      child: Container(
+                                        height: 65,
+                                        width: 65,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withValues(alpha: 0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 0.5,
+                                              offset: const Offset(0, 0), // changes position of shadow
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child:  Image.asset(
+                                            'images/teamClocking.png',
+                                            fit: BoxFit.contain,
+                                            width: 30,
+                                            height: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    // Add spacing between image and text
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .teamAttendance,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -860,6 +903,7 @@ class _HomeScreenState extends State<HomeScreen> {
               expand: true,
               builder:
                   (BuildContext context, ScrollController scrollController) {
+
                 return Container(
                   decoration:  BoxDecoration(
                     color: NasColors.backGround,
@@ -1074,7 +1118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   child: Text(
                                                     singletonClass.clockingDataList.isNotEmpty &&
                                                         singletonClass.clockingDataList.first.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.clockingDataList.first.data!.last.totalTime?.toString() ?? 'NA'}'
+                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.formatMinutes(int.tryParse(singletonClass.clockingDataList.first.data!.first.totalTime ?? '0') ?? 0)}'
                                                         : '${AppLocalizations.of(context)!.worked} NA',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1143,253 +1187,234 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           Padding(
-                               padding: const EdgeInsets.all(10.0),
-                               child: Directionality(
-                                 textDirection: TextDirection.ltr,
-                                 child: GestureDetector(
-                                   onHorizontalDragUpdate: (details) {
-                                     setState(() {
-                                       final lastData = singletonClass.clockingDataList.isNotEmpty &&
-                                           singletonClass.clockingDataList.first.data != null &&
-                                           singletonClass.clockingDataList.first.data!.isNotEmpty
-                                           ? singletonClass.clockingDataList.first.data!.last
-                                           : null;
+                            padding: const EdgeInsets.all(10.0),
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: GestureDetector(
+                                onHorizontalDragUpdate: (details) {
+                                  setState(() {
+                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
+                                        singletonClass.clockingDataList.first.data != null &&
+                                        singletonClass.clockingDataList.first.data!.isNotEmpty
+                                        ? singletonClass.clockingDataList.first.data!.last
+                                        : null;
 
-                                       final checkOutTime = lastData?.checkOutTime;
-                                       final checkInTime = lastData?.checkInTime;
-                                       if (checkInTime == null || checkOutTime != null) {
-                                         _dragPosition += details.primaryDelta!;
-                                         // Check if the swipe has crossed 70% of screen width
-                                         if (_dragPosition >
-                                             MediaQuery.of(context).size.width *
-                                                 0.7) {
-                                           _isSliderCompleted = true;
-                                         }
-                                       } else if (checkInTime.isNotEmpty || checkOutTime!.isEmpty) {
-                                         _dragPosition += details.primaryDelta!;
-                                         // Check if the swipe has crossed -70% of screen width for check-out
-                                         if (_dragPosition <
-                                             -MediaQuery.of(context).size.width *
-                                                 0.7) {
-                                           _isSliderCompleted = true;
-                                         }
-                                       }
-                                     });
-                                   },
-                                   onHorizontalDragEnd: (details) {
-                                     setState(() {
-                                       final lastData = singletonClass.clockingDataList.isNotEmpty &&
-                                           singletonClass.clockingDataList.first.data != null &&
-                                           singletonClass.clockingDataList.first.data!.isNotEmpty
-                                           ? singletonClass.clockingDataList.first.data!.last
-                                           : null;
+                                    final checkInTime = lastData?.checkInTime;
+                                    final checkOutTime = lastData?.checkOutTime;
 
-                                       final checkOutTime = lastData?.checkOutTime;
-                                       final checkInTime = lastData?.checkInTime;
-                                       if ( checkInTime == null || checkOutTime != null) {
-                                         if (_isSliderCompleted &&
-                                             details.velocity.pixelsPerSecond.dx >
-                                                 0) {
-                                           // Swiped from left to right and check-in is not completed
-                                           _overlayEntry = _createOverlayEntry();
-                                           Overlay.of(context)
-                                               .insert(_overlayEntry!);
-                                           setState(() {
-                                             _dragPosition =
-                                             0; // Reset to start position
-                                             _isSliderCompleted = false;
-                                           });
-                                         } else {
-                                           // Reset if swipe didn't meet the criteria for check-in
-                                           setState(() {
-                                             _dragPosition = 0;
-                                             _isSliderCompleted = false;
-                                           });
-                                         }
-                                       } else if (checkInTime.isNotEmpty || checkOutTime! .isEmpty) {
-                                         if (_isSliderCompleted &&
-                                             details.velocity.pixelsPerSecond.dx <
-                                                 0) {
-                                         } else {
-                                           // Reset if swipe didn't meet the criteria for check-out
-                                           setState(() {
-                                             _dragPosition = 0;
-                                             _isSliderCompleted = false;
-                                           });
-                                         }
-                                       }
-                                     });
+                                    if (checkInTime == null || checkOutTime != null) {
+                                      _dragPosition += details.primaryDelta!;
+                                      if (_dragPosition > MediaQuery.of(context).size.width * 0.7) {
+                                        _isSliderCompleted = true;
+                                      }
+                                    } else if (checkInTime.isNotEmpty && checkOutTime == null) {
+                                      _dragPosition += details.primaryDelta!;
+                                      if (_dragPosition < -MediaQuery.of(context).size.width * 0.7) {
+                                        _isSliderCompleted = true;
+                                      }
+                                    }
+                                  });
+                                },
+                                onHorizontalDragEnd: (details) {
+                                  setState(() {
+                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
+                                        singletonClass.clockingDataList.first.data != null &&
+                                        singletonClass.clockingDataList.first.data!.isNotEmpty
+                                        ? singletonClass.clockingDataList.first.data!.last
+                                        : null;
 
-                                   },
-                                   child: Container(
-                                     alignment: Alignment.topLeft,
-                                     decoration: const BoxDecoration(
-                                       borderRadius:
-                                       BorderRadius.all(Radius.circular(15)),
-                                       gradient: LinearGradient(
-                                         colors: [
-                                           Color(0xFF444658),
-                                           Color(0xFF677587),
-                                           Color(0xFF78889D),
-                                           Color(0xFF9DB2CE),
-                                           Color(0xFF8799B1),
-                                         ],
-                                         begin: Alignment.topRight,
-                                         end: Alignment.bottomLeft,
-                                       ),
-                                     ),
-                                     height: 60,
-                                     child: singletonClass.clockingDataList.isNotEmpty &&
-                                         singletonClass.clockingDataList.first.data != null &&
-                                         singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                         singletonClass.clockingDataList.first.data!.last.checkOutTime == null
-                                         ? Padding(
-                                       padding: const EdgeInsets.only(
-                                           top: 5.0, left: 30),
-                                       child: Row(
-                                         children: [
-                                           IconButton(
-                                             onPressed: () async {
-                                               if (singletonClass.clockingDataList.isNotEmpty &&
-                                                   singletonClass.clockingDataList.first.data != null &&
-                                                   singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                                   singletonClass.clockingDataList.first.data!.last.checkOutTime == null) {
-                                                 showDialog(
-                                                   context: context,
-                                                   builder: (BuildContext context) => AlertDialog(
-                                                     title: Row(
-                                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                       children: [
-                                                         const Icon(Icons.warning, color: Colors.yellow),
-                                                         Text(AppLocalizations.of(context)!.areYouSure,
-                                                           style: GoogleFonts.inter(
-                                                             fontSize: 15,
-                                                             fontWeight: FontWeight.w600,
-                                                             color: Colors.black,
-                                                           ),
-                                                         ),
-                                                       ],
-                                                     ),
-                                                     actions: [
-                                                       Row(
-                                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                         children: [
-                                                           InkWell(
-                                                             onTap: () => Navigator.of(context).pop(),
-                                                             child: Row(
-                                                               mainAxisSize: MainAxisSize.min,
-                                                               children: [
-                                                                 const Icon(Icons.cancel, color: Colors.red), // Icon
-                                                                 const SizedBox(width: 5),
-                                                                 Text(
-                                                                   AppLocalizations.of(context)!.cancel,
-                                                                   style: GoogleFonts.inter(
-                                                                     fontSize: 15,
-                                                                     fontWeight: FontWeight.w600,
-                                                                     color: Colors.red,
-                                                                   ),
-                                                                 ),
-                                                               ],
-                                                             ),
-                                                           ),
-                                                           const SizedBox(width: 8),
-                                                           InkWell(
-                                                             onTap: () async {
-                                                               Navigator.pop(context);
-                                                               await checkOut();
-                                                             },
-                                                             child: Row(
-                                                               mainAxisSize: MainAxisSize.min,
-                                                               children: [
-                                                                 const Icon(Icons.logout, color: Colors.black),
-                                                                 const SizedBox(width: 5),
-                                                                 Text(
-                                                                   AppLocalizations.of(context)!.yes,
-                                                                   style: GoogleFonts.inter(
-                                                                     fontSize: 15,
-                                                                     fontWeight: FontWeight.w600,
-                                                                     color: Colors.black,
-                                                                   ),
-                                                                 ),
-                                                               ],
-                                                             ),
-                                                           ),
-                                                         ],
-                                                       ),
+                                    final checkInTime = lastData?.checkInTime;
+                                    final checkOutTime = lastData?.checkOutTime;
 
-                                                     ],
-                                                   ),
+                                    if (checkInTime == null || checkOutTime != null) {
+                                      if (_isSliderCompleted &&
+                                          details.velocity.pixelsPerSecond.dx > 0) {
+                                        _overlayEntry = _createOverlayEntry();
+                                        Overlay.of(context).insert(_overlayEntry!);
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
+                                      }
+                                    } else if (checkInTime.isNotEmpty && checkOutTime == null) {
+                                      if (_isSliderCompleted &&
+                                          details.velocity.pixelsPerSecond.dx < 0) {
+                                        _overlayEntry = _createOverlayEntry();
+                                        Overlay.of(context).insert(_overlayEntry!);
+                                      } else {
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
+                                      }
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  alignment: Alignment.topLeft,
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF444658),
+                                        Color(0xFF677587),
+                                        Color(0xFF78889D),
+                                        Color(0xFF9DB2CE),
+                                        Color(0xFF8799B1),
+                                      ],
+                                      begin: Alignment.topRight,
+                                      end: Alignment.bottomLeft,
+                                    ),
+                                  ),
+                                  height: 60,
+                                  child: (() {
+                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
+                                        singletonClass.clockingDataList.first.data != null &&
+                                        singletonClass.clockingDataList.first.data!.isNotEmpty
+                                        ? singletonClass.clockingDataList.first.data!.last
+                                        : null;
 
-                                                 );
-                                               }
-                                             },
-                                             icon: SizedBox(
-                                               width: 35,
-                                               // Set width of the icon
-                                               height: 35,
-                                               // Set height of the icon
-                                               child: Image.asset(
-                                                   'images/exit.png'),
-                                             ),
-                                           ),
-                                           const SizedBox(width: 20),
-                                           Align(
-                                             alignment: Alignment.center,
-                                             child: Text(
-                                               AppLocalizations.of(context)!.pressButtonToCheckOut,
-                                               style: GoogleFonts.inter(
-                                                 fontSize: 15,
-                                                 fontWeight: FontWeight.w600,
-                                                 color: Colors.white,
-                                               ),
-                                             ),
-                                           ),
-                                         ],
-                                       ),
-                                     )
-                                         : Transform.translate(
-                                       offset: Offset(_dragPosition, -1),
-                                       child: Padding(
-                                         padding: const EdgeInsets.all(8.0),
-                                         child: Row(
-                                           children: [
-                                             Container(
-                                               width: 60,
-                                               height: 50,
-                                               decoration:
-                                               const BoxDecoration(
-                                                 borderRadius:
-                                                 BorderRadius.all(
-                                                     Radius.circular(
-                                                         15)),
-                                                 color: Colors.white,
-                                               ),
-                                               child: Lottie.asset(
-                                                   'images/swiper.json'),
-                                             ),
-                                             const SizedBox(width: 50),
-                                             Align(
-                                               alignment: Alignment.center,
-                                               child: Text(
-                                                 AppLocalizations.of(
-                                                     context)!
-                                                     .swipeToCheckIn,
-                                                 style: GoogleFonts.inter(
-                                                   fontSize: 15,
-                                                   fontWeight:
-                                                   FontWeight.w600,
-                                                   color: Colors.white,
-                                                 ),
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                       ),
-                                     ),
-                                   ),
-                                 ),
-                               ),
-                             ),
+                                    final checkInTime = lastData?.checkInTime;
+                                    final checkOutTime = lastData?.checkOutTime;
+
+                                    if (checkInTime != null && checkOutTime == null) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 5.0, left: 30),
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                              onPressed: () async {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext context) => AlertDialog(
+                                                    title: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                      children: [
+                                                        const Icon(Icons.warning, color: Colors.yellow),
+                                                        Text(
+                                                          AppLocalizations.of(context)!.areYouSure,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    actions: [
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          InkWell(
+                                                            onTap: () => Navigator.of(context).pop(),
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                const Icon(Icons.cancel, color: Colors.red),
+                                                                const SizedBox(width: 5),
+                                                                Text(
+                                                                  AppLocalizations.of(context)!.cancel,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.red,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          InkWell(
+                                                            onTap: () async {
+                                                              Navigator.pop(context);
+                                                              await checkOut();
+                                                            },
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                const Icon(Icons.logout, color: Colors.black),
+                                                                const SizedBox(width: 5),
+                                                                Text(
+                                                                  AppLocalizations.of(context)!.yes,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.black,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                              icon: SizedBox(
+                                                width: 35,
+                                                height: 35,
+                                                child: Image.asset('images/exit.png'),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 20),
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                AppLocalizations.of(context)!.pressButtonToCheckOut,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      return Transform.translate(
+                                        offset: Offset(_dragPosition, -1),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 60,
+                                                height: 50,
+                                                decoration: const BoxDecoration(
+                                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  color: Colors.white,
+                                                ),
+                                                child: Lottie.asset('images/swiper.json'),
+                                              ),
+                                              const SizedBox(width: 50),
+                                              Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.swipeToCheckIn,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  })(),
+                                ),
+                              ),
+                            ),
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -1903,15 +1928,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> checkIn(String type) async {
-    String currentTime = DateTime.now().toIso8601String();
+    String currentTime = DateTime.now().toUtc().toIso8601String();
     String checkInTime = '${currentTime.split('.')[0]}.000Z';
+    print(checkInTime);
 
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
       "employeeName": singletonClass.getJWTModel()?.userName,
       "checkInTime": checkInTime,
       "type": type,
-      "totalTime" : checkInTime,
     };
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
@@ -2001,7 +2026,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //CHECK OUT API CALL
   Future<void> checkOut() async {
-    String currentTime = DateTime.now().toIso8601String();
+    String currentTime = DateTime.now().toUtc().toIso8601String();
     String checkOutTime = '${currentTime.split('.')[0]}.000Z';
     String? checkInTime = singletonClass.clockingDataList.first.data?.last.checkInTime;
     DateTime checkInDateTime = DateTime.parse(checkInTime!);
@@ -2106,11 +2131,3 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class ActivityModel {
-  String? activityName;
-  String? date;
-  String? time;
-  String? status;
-
-  ActivityModel(this.activityName, this.date, this.time, this.status);
-}
