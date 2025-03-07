@@ -857,6 +857,7 @@
   "typeYourTeamNameHere":"Type your team name here",
   "project":"Projects",
   "myTeams":"My Team",
-  "requestAndApproval":"Request & Approvals"
+  "requestAndApproval":"Request & Approvals",
+  "teamAttendance":"Team's Attendance"
 
 }
