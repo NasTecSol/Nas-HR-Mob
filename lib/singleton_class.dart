@@ -30,7 +30,8 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
-import 'package:nashr/screens/calendar_screen.dart';
+import 'package:nashr/request_controller/team_attendance_model.dart';
+
 class SingletonClass {
   factory SingletonClass() {
     if (_singleton == null) {
@@ -67,6 +68,7 @@ class SingletonClass {
   List<EmployeeDetailsAssetsModel> employeeDetailsAssetsModel = [];
   List<EmployeeDetailsAttendanceData> employeeDetailsAttendanceDataList = [];
   List<AttendanceData> attendanceDataList = [];
+  List<TeamAttendanceModel> teamAttendanceDataList = [];
   List<ApproverRequestData> approverDataList = [];
   List<CompanyData> companyDataList = [];
   List<RequestDateModel> requestDataList = [];
@@ -494,9 +496,9 @@ class SingletonClass {
 
   String formatCheckInTime(String dateTimeString) {
     try {
-      DateTime utcDateTime = DateTime.parse(dateTimeString).toUtc();
+      DateTime localTime = DateTime.parse(dateTimeString).toLocal();
 
-      final formattedTime = DateFormat('h:mm a').format(utcDateTime);
+      final formattedTime = DateFormat('h:mm a').format(localTime);
       return formattedTime;
     } catch (e) {
       print("Error formatting time: $e");
@@ -515,10 +517,10 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$firstDateString/$currentDateString');
+        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
 
     var response = await client.get(uri);
-    print("//////?????${response.body}");
+    log("attendance of user${response.body}");
     print(employeeId);
     print(firstDateString);
     print(currentDateString);
@@ -595,6 +597,13 @@ class SingletonClass {
       return 'Invalid date';
     }
   }
+
+  String formatMinutes(int totalMinutes) {
+    int hours = totalMinutes ~/ 60;  // Get hours
+    int minutes = totalMinutes % 60; // Get remaining minutes
+    return "$hours h $minutes min";  // Return formatted string
+  }
+
 }
 
 
