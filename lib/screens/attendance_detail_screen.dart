@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../request_controller/attendance_model.dart';
@@ -15,12 +16,10 @@ class AttendanceDetailScreen extends StatefulWidget {
 }
 
 class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
+  SingletonClass singletonClass = SingletonClass();
   @override
   Widget build(BuildContext context) {
-    DateTime? checkInTime = parseTime(widget.attendanceData!.clockInTime);
-    DateTime? checkOutTime = parseTime(widget.attendanceData!.clockOutTime);
     String lateMinutes = formatMinutes(widget.attendanceData!.lateMinutes);
-    String earlyCheckOut = formatMinutes(widget.attendanceData!.earlyCheckOut);
     double totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
         ? 0.0
         : widget.attendanceData!.breaksTaken!
@@ -46,7 +45,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 5,
                               blurRadius: 10,
                               offset: const Offset(0, 3),
@@ -172,7 +171,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(formatDateTime(checkInTime),
+                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockInTime),
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
@@ -196,7 +195,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                               ),
                             ),
                           ],
-                          Text(formatDateTime(checkOutTime),
+                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockOutTime),
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
@@ -277,7 +276,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                       color: NasColors.lightGrey,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.4),
+                                          color: Colors.grey.withValues(alpha: 0.4),
                                           spreadRadius: 1,
                                           blurRadius: 1,
                                           offset: const Offset(0, 3),
@@ -306,7 +305,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                       color: NasColors.lightGrey,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.4),
+                                          color: Colors.grey.withValues(alpha: 0.4),
                                           spreadRadius: 1,
                                           blurRadius: 1,
                                           offset: const Offset(0, 3),
@@ -334,7 +333,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                       color: NasColors.lightGrey,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.4),
+                                          color: Colors.grey.withValues(alpha: 0.4),
                                           spreadRadius: 1,
                                           blurRadius: 1,
                                           offset: const Offset(0, 3),
@@ -362,7 +361,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                       color: NasColors.lightGrey,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withOpacity(0.4),
+                                          color: Colors.grey.withValues(alpha: 0.4),
                                           spreadRadius: 1,
                                           blurRadius: 1,
                                           offset: const Offset(0, 3),
@@ -371,7 +370,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.only(top: 15.0),
-                                      child: Text("$duration",
+                                      child: Text(duration,
                                         style: GoogleFonts.inter(
                                           fontSize: 15,
                                           fontWeight: FontWeight.normal,
@@ -406,7 +405,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                               color: NasColors.lightGrey,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
+                                  color: Colors.grey.withValues(alpha: 0.4),
                                   spreadRadius: 1,
                                   blurRadius: 1,
                                   offset: const Offset(0, 3),
@@ -435,7 +434,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                               color: NasColors.lightGrey,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
+                                  color: Colors.grey.withValues(alpha: 0.4),
                                   spreadRadius: 1,
                                   blurRadius: 1,
                                   offset: const Offset(0, 3),
@@ -445,7 +444,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                             child:  Padding(
                               padding: const EdgeInsets.only(top: 15.0),
                               child: Text(
-                                "$totalDurationString", // Dynamically setting the break number
+                                totalDurationString, // Dynamically setting the break number
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
