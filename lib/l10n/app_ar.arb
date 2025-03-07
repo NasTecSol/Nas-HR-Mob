@@ -520,5 +520,6 @@
     "project": "مشروع",
     "myTeams": "فريقي",
     "requestAndApproval": "الطلبات والموافقات",
-    "teamMates":"زملاء الفريق"
+    "teamMates":"زملاء الفريق",
+    "teamAttendance": "حضور الفريق"
 }
