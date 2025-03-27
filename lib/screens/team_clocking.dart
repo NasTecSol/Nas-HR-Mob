@@ -458,7 +458,7 @@ class _TeamClockingState extends State<TeamClocking> {
   //API CALL
   Future<TeamClockingModel?> getTeamClockingAPI() async {
     var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out');
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/all');
     var response = await client.get(uri);
     log("Team ClockingData:${response.body}");
     if (response.statusCode == 200) {

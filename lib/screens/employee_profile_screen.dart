@@ -814,7 +814,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                             padding: EdgeInsets.zero,
                                             shrinkWrap: true,
                                             physics: const NeverScrollableScrollPhysics(),
-                                            itemCount: singletonClass.employeeDetailsAttendanceDataList.first.data!.length,
+                                            itemCount: singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data!.length,
                                             separatorBuilder: (BuildContext context, int index) {
                                               return const Padding(
                                                 padding: EdgeInsets.only(left: 10.0 , right: 10.0),
@@ -826,10 +826,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               );
                                             },
                                             itemBuilder: (BuildContext context , int index){
-                                              final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data!.reversed.toList()[index];
-                                              int breakHours = (attendance.breakTime ~/ 60);
-                                              int breakMinutes = (attendance.breakTime % 60).round();
-                                              int totalMinutes = (attendance.totalHoursWorked * 60).round();
+                                              final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data!.reversed.toList()[index];
+                                              int breakHours = (attendance.breakTime! ~/ 60);
+                                              int breakMinutes = (attendance.breakTime! % 60).round();
+                                              int totalMinutes = (attendance.totalHoursWorked! * 60).round();
                                               int hours = totalMinutes ~/ 60;
                                               int minutes = totalMinutes % 60;
                                               return Padding(
@@ -862,7 +862,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                     Row(
                                                       children: [
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.checkIn}:  ${singletonClass.formatCheckInTime(attendance.clockInTime)}',
+                                                          '${AppLocalizations.of(context)!.checkIn}:  ${singletonClass.formatCheckInTime(attendance.clockInTime!)}',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,
@@ -871,7 +871,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                         ),
                                                         const Spacer(),
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.checkOut}: ${singletonClass.formatCheckInTime(attendance.clockOutTime)}',
+                                                          '${AppLocalizations.of(context)!.checkOut}: ${singletonClass.formatCheckInTime(attendance.clockOutTime!)}',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 15,
                                                             fontWeight: FontWeight.w500,

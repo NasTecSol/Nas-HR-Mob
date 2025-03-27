@@ -79,7 +79,7 @@ class _MainScreenState extends State<MainScreen> {
               borderRadius: const BorderRadius.all(Radius.circular(20)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
+                  color: Colors.grey.withValues(alpha: 0.5),
                   spreadRadius: 2,
                   blurRadius: 8,
                   offset: const Offset(0, 3),
@@ -111,7 +111,7 @@ class _MainScreenState extends State<MainScreen> {
                           child: ClipOval(
                             child: (dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty)
                                 ? Image.network(
-                              dashBoardData!.profilePic!,
+                              dashBoardData.profilePic!,
                               fit: BoxFit.cover,
                               width: 70,
                               height: 70,
@@ -185,7 +185,7 @@ class _MainScreenState extends State<MainScreen> {
                                 Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length +
+                                      ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length +
                                       singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
                                       : 0}', // Request List Notification count
                                   style: const TextStyle(
@@ -194,8 +194,8 @@ class _MainScreenState extends State<MainScreen> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ) : Text(
-                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length
+                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null && singletonClass.requestDataList.first.data!.data != null
+                                      ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length
                                       : 0}', // Approver List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,

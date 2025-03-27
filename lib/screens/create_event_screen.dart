@@ -110,7 +110,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   ),
                 ),
                 Text(
-                  AppLocalizations.of(context)!.create,
+                  "Create a Event",
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -118,14 +118,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   ),
                 ),
                 Spacer(),
-                TextButton(
-                  child: Text(
-                    "Create",
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: NasColors.darkBlue,
-                    ),
+                IconButton(
+                  icon: Icon(Icons.check,
+                    color: Colors.black,
                   ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
