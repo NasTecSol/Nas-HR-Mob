@@ -80,7 +80,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ),
               const Spacer(),
-              if (_selectedOptionIndex == 2) ...[
                 if (singletonClass.getJWTModel()?.grade == 'L0' ||
                     singletonClass.getJWTModel()?.grade == 'L1') ...[
                   Padding(
@@ -96,7 +95,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       },
                     ),
                   ),
-                ]
               ],
             ]),
             const SizedBox(height: 20),
@@ -172,138 +170,219 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            if (_selectedOptionIndex == 0)
-              Column(
-                children: [
-                  const Divider(
-                    color: Colors.grey,
-                    height: 2,
-                    thickness: 1,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Text(
-                        "3 Meetings",
-                        style: GoogleFonts.inter(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                      const Spacer(),
-                      SizedBox(
+            if (_selectedOptionIndex == 0) ...[
+              FutureBuilder<EventModel?>(
+                future: getEventData(), // Fetch event data
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(
                         height: 200,
                         width: 200,
-                        child: Image.asset("images/meeting.png"),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(
-                    color: Colors.grey,
-                    height: 2,
-                    thickness: 1,
-                  ),
-                  // Use ListView.builder directly within the ListView
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    // Disable scrolling for inner ListView
-                    shrinkWrap: true,
-                    // Make ListView take up only the necessary space
-                    itemCount: meetings.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final meeting = meetings[index];
-                      return Column(
-                        children: [
-                          const SizedBox(height: 50),
-                          Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              "${meeting.meetingName}",
+                        child: Lottie.asset('images/loader.json'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  } else if (snapshot.hasData && snapshot.data != null) {
+                    // Filter meetings where category is "General Meeting" or "Work Meeting"
+                    final meetingList = snapshot.data!.data!
+                        .where((event) =>
+                    event.category == "General Meeting" ||
+                        event.category == "Work Meeting")
+                        .toList();
+
+                    if (meetingList.isEmpty) {
+                      return Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black , fontWeight: FontWeight.w500),
+                        ),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        const Divider(
+                          color: Colors.grey,
+                          height: 2,
+                          thickness: 1,
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Text(
+                              "${meetingList.length} Meetings",
                               style: GoogleFonts.inter(
-                                fontSize: 22,
+                                fontSize: 25,
                                 fontWeight: FontWeight.bold,
                                 color: NasColors.darkBlue,
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 50),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child: Divider(
-                                  color: Colors.grey,
-                                  height: 2,
-                                  thickness: 1,
-                                  endIndent:
-                                      10, // Adds spacing between the line and text
+                            const Spacer(),
+                            SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Image.asset("images/meeting.png"),
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        const Divider(
+                          color: Colors.grey,
+                          height: 2,
+                          thickness: 1,
+                        ),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: meetingList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final meeting = meetingList[index];
+                            String membersList = "No Members Available";
+
+                            if (meeting.members != null && meeting.members is List<Members>) {
+                              List<String?> names = meeting.members!.map((e) => e.name).toList();
+
+                              if (names.isNotEmpty) {
+                                membersList = names.join(", ");
+                              }
+                            }
+                            return Column(
+                              children: [
+                                const SizedBox(height: 50),
+                                Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(
+                                    meeting.eventName ?? "No Meeting Name",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                "${meeting.time}",
-                                style: GoogleFonts.inter(
-                                  color: NasColors.darkBlue,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(height: 50),
+                                Row(
+                                  children: <Widget>[
+                                    const Expanded(
+                                      child: Divider(
+                                        color: Colors.grey,
+                                        height: 2,
+                                        thickness: 1,
+                                        endIndent: 10,
+                                      ),
+                                    ),
+                                    Text(
+                                      meeting.month ?? "No Time",
+                                      style: GoogleFonts.inter(
+                                        color: NasColors.darkBlue,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Expanded(
+                                      child: Divider(
+                                        color: Colors.grey,
+                                        height: 2,
+                                        thickness: 1,
+                                        indent: 10,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const Expanded(
-                                child: Divider(
-                                  color: Colors.grey,
-                                  height: 2,
-                                  thickness: 1,
-                                  indent:
-                                      10, // Adds spacing between the text and line
+                                Text(
+                                  membersList,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.grey,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            "${meeting.members}",
-                            style: GoogleFonts.inter(
-                              color: Colors.grey,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                       AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                      ),
+                    );
+                  }
+                },
               ),
-            if (_selectedOptionIndex == 1)
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                // Set the Column to shrink-wrap its children
-                children: [
-                  Flexible(
-                    // Use Flexible instead of Expanded
-                    fit: FlexFit.loose,
-                    // Allow the child to take only the space it needs
-                    child: ListView.builder(
+            ],
+            if (_selectedOptionIndex == 1) ...[
+              FutureBuilder<EventModel?>(
+                future: getEventData(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/loader.json'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  } else if (snapshot.hasData && snapshot.data != null) {
+                    // Extract event list & filter by category "Task Deadlines"
+                    final eventList = snapshot.data!.data!
+                        .where((event) => event.category == "Task Deadlines")
+                        .toList();
+
+                    if (eventList.isEmpty) {
+                      return Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black,fontWeight: FontWeight.w500),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
                       padding: const EdgeInsets.all(5),
                       shrinkWrap: true,
-                      // Ensure the ListView doesn't take up unnecessary space
-                      itemCount: tasks.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: eventList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final task = tasks[index];
+                        final task = eventList[index];
                         return Directionality(
                           textDirection: TextDirection.ltr,
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 15),
                             decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(15)),
+                              borderRadius: const BorderRadius.all(Radius.circular(15)),
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey.withValues(alpha: 0.5),
                                   spreadRadius: 2,
                                   blurRadius: 8,
-                                  offset: const Offset(
-                                      0, 3), // changes position of shadow
+                                  offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
@@ -311,32 +390,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Container(
-                                  height: 120,
+                                  height: 150,
                                   width: 20,
-                                  // Adjusted the width for visibility
                                   decoration: BoxDecoration(
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(15),
                                       bottomLeft: Radius.circular(15),
                                     ),
-                                    color: _getColorForVerificationStatus(
-                                        task.status!),
+                                    color: _getColorForVerificationStatus("Pending"),
                                   ),
                                 ),
                                 Expanded(
-                                  // Use Expanded to fill the remaining space
                                   child: Padding(
                                     padding: const EdgeInsets.all(15.0),
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Expanded(
-                                              // Expand the text to fill available space
                                               child: Text(
-                                                "${task.taskName}",
+                                                task.eventName ?? "No Task Name",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
@@ -344,27 +418,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                 ),
                                               ),
                                             ),
-                                            Container(
-                                              height: 20,
-                                              width: 75,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.rectangle,
-                                                color:
-                                                    _getColorForVerificationStatus(
-                                                        task.status!),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  "${task.status}",
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              task.eventType ?? "Unknown",
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                                fontSize: 13,
                                               ),
                                             ),
                                           ],
@@ -374,20 +439,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           children: [
                                             Icon(
                                               Icons.calendar_month_outlined,
-                                              color:
-                                                  _getColorForVerificationStatus(
-                                                      task.status!),
+                                              color: _getColorForVerificationStatus("Pending"),
                                               size: 25,
                                             ),
                                             const SizedBox(width: 10),
                                             Text(
-                                              "${task.duration}",
+                                              task.month ?? "No Duration",
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w500,
-                                                color:
-                                                    _getColorForVerificationStatus(
-                                                        task.status!),
+                                                color: _getColorForVerificationStatus("Pending"),
                                               ),
                                             ),
                                           ],
@@ -396,7 +457,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         Align(
                                           alignment: Alignment.topLeft,
                                           child: Text(
-                                            "${task.projectName}",
+                                            task.eventDescription ?? "No Project Name",
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               color: Colors.grey,
@@ -413,10 +474,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                         );
                       },
-                    ),
-                  ),
-                ],
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        "No data available",
+                        style: GoogleFonts.inter(fontSize: 15, color: Colors.grey),
+                      ),
+                    );
+                  }
+                },
               ),
+            ],
             if (_selectedOptionIndex == 2) ...[
               FutureBuilder<EventModel?>(
                 future: getEventData(),
@@ -440,11 +509,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                       ),
                     );
-                  } else if (snapshot.hasData &&
-                      snapshot.data != null &&
-                      snapshot.data!.data!.isNotEmpty) {
-                    final eventList =
-                        snapshot.data!.data!; // Extracting event list
+                  } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
+                    // 🔹 Filter events to only show "Standup" and "Celebrations"
+                    final eventList = snapshot.data!.data!
+                        .where((event) => event.category == "Standup" || event.category == "Celebration")
+                        .toList();
+
+                    if (eventList.isEmpty) {
+                      return Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }
 
                     return ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -461,7 +543,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  "${event.eventType}",
+                                  event.eventType ?? "Unknown Type",
                                   style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -471,11 +553,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                               const SizedBox(height: 10),
                               Container(
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 15),
+                                margin: const EdgeInsets.symmetric(vertical: 15),
                                 decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(15)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
@@ -498,27 +578,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                         color: NasColors.darkBlue,
                                         image: DecorationImage(
-                                          image: AssetImage(
-                                              _getImageForEventType(
-                                                  event.eventType!)),
+                                          image: AssetImage(_getImageForEventType(event.eventType ?? "")),
                                           fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 8.0, top: 2),
+                                      padding: const EdgeInsets.only(left: 8.0, top: 2),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const SizedBox(height: 20),
                                           Align(
                                             alignment: Alignment.topLeft,
                                             child: Text(
-                                              "${event.eventName}",
+                                              event.eventName ?? "Unnamed Event",
                                               maxLines: 2,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
@@ -529,8 +604,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           ),
                                           const SizedBox(height: 15),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
                                             children: [
                                               Icon(
                                                 Icons.calendar_month_outlined,
@@ -538,8 +611,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                 size: 30,
                                               ),
                                               Text(
-                                                singletonClass
-                                                    .formatDate2(event.date!),
+                                                singletonClass.formatDate2(event.date ?? ""),
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
@@ -554,7 +626,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                             child: Align(
                                               alignment: Alignment.topLeft,
                                               child: Text(
-                                                "${event.eventDescription}",
+                                                event.eventDescription ?? "No Description",
                                                 maxLines: 5,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
@@ -592,6 +664,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
               ),
             ],
+
           ],
         ),
       ),

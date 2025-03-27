@@ -30,7 +30,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
   void initState() {
     super.initState();
     _approverDataFuture =
-        singletonClass.getComplaintsApproverData(); // Initialize Future in initState
+        singletonClass.getPenaltiesApprover(); // Initialize Future in initState
   }
 
   void _toggleExpand(int index) {
@@ -67,7 +67,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
+                                color: Colors.grey.withValues(alpha: 0.4),
                                 spreadRadius: 5,
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
@@ -106,7 +106,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // Add your onPressed functionality here
+                       print(singletonClass.penaltiesDataList.first.data!.data!.length);
                       },
                       child: SizedBox(
                         height: 30,
@@ -169,7 +169,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                                  .penaltiesDataList.first.data!.isEmpty
+                                  .penaltiesDataList.first.data!.data!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -184,11 +184,11 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: singletonClass
-                                      .penaltiesDataList.first.data!.length,
+                                      .penaltiesDataList.first.data!.data!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .penaltiesDataList.first.data![index];
+                                        .penaltiesDataList.first.data!.data![index];
                                     return AnimatedContainer(
                                       duration:
                                           const Duration(milliseconds: 300),
@@ -200,7 +200,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
+                                            color: Colors.grey.withValues(alpha: 0.5),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
@@ -297,138 +297,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                   singletonClass.getJWTModel()?.grade == 'L1') ...[
                 if (_selectedOptionIndex == 0) ...[
                   Expanded(
-                    // Wrap ListView with Expanded
                     child: FutureBuilder(
-                        future: singletonClass.getPenalties(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/loader.json'),
-                              ),
-                            );
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text('Error: ${snapshot.error}'),
-                            );
-                          } else if (snapshot.hasData) {
-                            return singletonClass
-                                    .penaltiesDataList.first.data!.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    padding: const EdgeInsets.all(5),
-                                    itemCount: singletonClass
-                                        .penaltiesDataList.first.data!.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      final request = singletonClass
-                                          .penaltiesDataList.first.data![index];
-                                      return AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 5),
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(15)),
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              height: 80,
-                                              width: 15,
-                                              // Adjusted the width for visibility
-                                              decoration: const BoxDecoration(
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(15),
-                                                  bottomLeft:
-                                                      Radius.circular(15),
-                                                ),
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              // Use Expanded to fill the remaining space
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(15.0),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Text(
-                                                            "${request.requestData!
-                                                                .first.date}",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "SAR ${request.requestData!.first.amount}",
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.red,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Text(
-                                                      "${request.requestData!.first
-                                                          .remark}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                          } else {
+                      future: singletonClass.getPenalties(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/loader.json'),
+                            ),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (snapshot.hasData) {
+                          if (singletonClass.penaltiesDataList.isEmpty ||
+                              singletonClass.penaltiesDataList.first.data == null ||
+                              singletonClass.penaltiesDataList.first.data!.data == null ||
+                              singletonClass.penaltiesDataList.first.data!.data!.isEmpty) {
                             return Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -441,7 +329,101 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                               ),
                             );
                           }
-                        }),
+                          return ListView.builder(
+                            padding: const EdgeInsets.all(5),
+                            itemCount: singletonClass.penaltiesDataList.first.data!.data!.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final request =
+                              singletonClass.penaltiesDataList.first.data!.data![index];
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(vertical: 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withValues(alpha: 0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      height: 80,
+                                      width: 15,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          bottomLeft: Radius.circular(15),
+                                        ),
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(15.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    request.requestData?.first.date ?? 'No Date',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "SAR ${request.requestData?.first.amount ?? '0'}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Text(
+                                              request.requestData?.first.remark ?? 'No Remark',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          return Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.noData,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
                 if (_selectedOptionIndex == 1) ...[
@@ -465,7 +447,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             );
                           } else if (snapshot.hasData) {
                             return  singletonClass.penaltiesApproverDataList.isEmpty ||
-                                singletonClass.penaltiesApproverDataList.first.data!.isEmpty
+                                singletonClass.penaltiesApproverDataList.first.data!.data!.isEmpty
                                 ? Center(
                                     child: Text(
                                       AppLocalizations.of(context)!.noData,
@@ -480,11 +462,11 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     itemCount: singletonClass
-                                        .penaltiesApproverDataList.first.data!.length,
+                                        .penaltiesApproverDataList.first.data!.data!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       final request = singletonClass
-                                          .penaltiesApproverDataList.first.data![index];
+                                          .penaltiesApproverDataList.first.data!.data![index];
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(
@@ -499,8 +481,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
+                                                color: Colors.grey.withValues(alpha: 0.5),
                                                 spreadRadius: 2,
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 3),

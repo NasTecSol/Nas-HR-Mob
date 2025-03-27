@@ -23,7 +23,7 @@ class TeamAttendanceScreen extends StatefulWidget {
 class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   final SingletonClass singletonClass = SingletonClass();
   late String reportingManagerId;
-  List<Teams> filteredUnderTeams = [];
+  late List<Teams> filteredUnderTeams;
   List<TeamAttendanceData> filteredAttendanceDataList = [];
   String? selectedEmployeeId;
 
@@ -31,34 +31,54 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   void initState() {
     super.initState();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
-    filterTeams();
+    List<BranchData> branchDataList = singletonClass.branchDataList;
+    var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+    filteredUnderTeams = filteredData['underTeams']!;
     loadData();
   }
 
-  void filterTeams() {
-    List<BranchData> branchDataList = singletonClass.branchDataList;
-    String? userGrade = singletonClass.getJWTModel()?.grade;
+  Map<String, List<Teams>> getFilteredTeams(
+      List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> underTeams = [];
+    String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    for (var branch in branchDataList) {
-      for (var departmentDetails in branch.data?.departmentDetails ?? []) {
+    // Debugging: print branch data
+    print('Branch Data List length: ${branchDataList.length}');
+
+    for (BranchData branchData in branchDataList) {
+      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
-          for (var team in department.teams ?? []) {
-            bool isUserSupervisor = department.supervisors?.any(
-                    (supervisor) => supervisor.empId == reportingManagerId) ??
-                false;
+          // Check if the user is a supervisor in the department
+          bool isSupervisor = department.supervisors?.any(
+                  (supervisor) => supervisor.empId == reportingManagerId) ??
+              false;
+          print(
+              'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-            if (isUserSupervisor && (userGrade == "L0" || userGrade == "L1")) {
-              underTeams.add(team);
+          if (userGrade == "L0" || userGrade == "L1") {
+            // Supervisor with L0 or L1 grade
+            for (var team in department.teams ?? []) {
+              for (var supervisor in department.supervisors ?? []) {
+                // Check if the supervisor empId matches the reportingManagerId
+                if (supervisor.empId == reportingManagerId) {
+                  // Now check if the supervisor's teamId matches the current team's teamId
+                  if (supervisor.teamId == team.teamId) {
+                    print(
+                        'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                    underTeams.add(
+                        team); // Add to underTeams if supervisor manages the team
+                  }
+                }
+              }
             }
-          }
+          } else if (userGrade == "L2" || userGrade == "L3") {}
         }
       }
     }
-
-    setState(() {
-      filteredUnderTeams = underTeams;
-    });
+    // Return both lists in a map
+    return {
+      'underTeams': underTeams,
+    };
   }
 
   Future<void> loadData() async {
@@ -411,7 +431,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       case "Present":
         return NasColors.onTime;
       default:
-        return NasColors.completed;
+        return NasColors.red;
     }
   }
 

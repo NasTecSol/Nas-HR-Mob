@@ -404,10 +404,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 20),
                         Padding(
-                          padding: const EdgeInsets.all(20.0),
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -456,8 +456,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 ),
-                              const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                const SizedBox(height: 20),
+                              ],
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -503,6 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 ),
+                              ],
                               const SizedBox(height: 20),
                               Column(
                                 children: [
@@ -1044,8 +1046,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
                                               if (singletonClass.attendanceDataList.isNotEmpty &&
-                                                  singletonClass.attendanceDataList.first.data!.isNotEmpty)
-                                                if ((singletonClass.attendanceDataList.first.data!.last.lateMinutes ?? 0) > 0)
+                                                  singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
+                                                if ((singletonClass.attendanceDataList.first.data!.data!.first.lateMinutes ?? 0) > 0)
                                                   Container(
                                                     decoration: const BoxDecoration(
                                                       color: Colors.red,
@@ -1064,7 +1066,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.last.lateMinutes),
+                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.lateMinutes),
                                                             style: GoogleFonts.inter(
                                                               fontSize: 10,
                                                               fontWeight: FontWeight.bold,
@@ -1075,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       ),
                                                     ),
                                                   )
-                                                else if ((singletonClass.attendanceDataList.first.data!.last.earlyCheckOut ?? 0) > 0)
+                                                else if ((singletonClass.attendanceDataList.first.data!.data!.first.earlyCheckOut ?? 0) > 0)
                                                   Container(
                                                     decoration:  BoxDecoration(
                                                       color: NasColors.onTime,
@@ -1094,7 +1096,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             ),
                                                           ),
                                                           Text(
-                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.last.earlyCheckOut),
+                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.earlyCheckOut),
                                                             style: GoogleFonts.inter(
                                                               fontSize: 10,
                                                               fontWeight: FontWeight.bold,
@@ -1104,7 +1106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ],
                                                       ),
                                                     ),
-                                                  ) 
+                                                  )
                                                 else Text(AppLocalizations.of(context)!.noData,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1171,8 +1173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const SizedBox(height: 4),
                                         Text(
                                           singletonClass.attendanceDataList.isNotEmpty &&
-                                              singletonClass.attendanceDataList.first.data!.isNotEmpty
-                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.last.breaksTaken)
+                                              singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.data!.last.breaksTaken)
                                               : 'NA',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,

@@ -1,17 +1,16 @@
-
-class RequestDateModel {
+class RequestDataModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  List<Data>? data;
+  Data? data;
 
-  RequestDateModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  RequestDataModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
-  RequestDateModel.fromJson(Map<String, dynamic> json) {
+  RequestDataModel.fromJson(Map<String, dynamic> json) {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
+    data = json["data"] == null ? null : Data.fromJson(json["data"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -20,13 +19,42 @@ class RequestDateModel {
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
     if(data != null) {
-      _data["data"] = data?.map((e) => e.toJson()).toList();
+      _data["data"] = data?.toJson();
     }
     return _data;
   }
 }
 
 class Data {
+  List<Data1>? data;
+  int? total;
+  int? page;
+  int? limit;
+  int? totalPages;
+
+  Data({this.data, this.total, this.page, this.limit, this.totalPages});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data1.fromJson(e)).toList();
+    total = json["total"];
+    page = json["page"];
+    limit = json["limit"];
+    totalPages = json["totalPages"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(data != null) {
+      _data["data"] = data?.map((e) => e.toJson()).toList();
+    }
+    _data["total"] = total;
+    _data["page"] = page;
+    _data["limit"] = limit;
+    _data["totalPages"] = totalPages;
+    return _data;
+  }
+}
+class Data1 {
   String? id;
   String? employeeId;
   String? employeeName;
@@ -45,9 +73,9 @@ class Data {
   int? v;
   String? status;
 
-  Data({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
+  Data1({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  Data1.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     employeeId = json["employeeId"];
     employeeName = json["employeeName"];
