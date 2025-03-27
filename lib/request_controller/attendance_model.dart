@@ -2,7 +2,7 @@ class AttendanceData {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  List<Data>? data;
+  Data? data;
 
   AttendanceData({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
@@ -10,11 +10,7 @@ class AttendanceData {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null
-        ? null
-        : (json["data"] as List<dynamic>)
-        .map((e) => Data.fromJson(e as Map<String, dynamic>))
-        .toList();
+    data = json["data"] == null ? null : Data.fromJson(json["data"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -22,67 +18,72 @@ class AttendanceData {
     _data["statusCode"] = statusCode;
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
-    if (data != null) {
-      _data["data"] = data?.map((e) => e.toJson()).toList();
+    if(data != null) {
+      _data["data"] = data?.toJson();
     }
     return _data;
   }
 }
 
 class Data {
-  dynamic id;
-  dynamic employeeId;
-  dynamic empId;
-  dynamic name;
-  dynamic companyId;
-  dynamic branchId;
-  dynamic date;
-  dynamic clockInTime;
-  dynamic clockOutTime;
-  dynamic totalHoursWorked;
-  dynamic location;
-  dynamic status;
-  List<BreaksTaken>? breaksTaken;
-  dynamic breakTime;
-  dynamic lateMinutes;
-  List<dynamic>? penalties;
-  dynamic leaveDetails;
-  dynamic shift;
-  dynamic workingHoursPerday;
-  dynamic earlyCheckOut;
-  dynamic remarks;
-  dynamic createdAt;
-  dynamic updatedAt;
-  dynamic v;
+  List<Data1>? data;
+  int? totalRecords;
+  int? page;
+  int? limit;
+  int? totalPages;
 
-  Data({
-    this.id,
-    this.employeeId,
-    this.empId,
-    this.name,
-    this.companyId,
-    this.branchId,
-    this.date,
-    this.clockInTime,
-    this.clockOutTime,
-    this.totalHoursWorked,
-    this.location,
-    this.status,
-    this.breaksTaken,
-    this.breakTime,
-    this.lateMinutes,
-    this.penalties,
-    this.leaveDetails,
-    this.shift,
-    this.workingHoursPerday,
-    this.earlyCheckOut,
-    this.remarks,
-    this.createdAt,
-    this.updatedAt,
-    this.v,
-  });
+  Data({this.data, this.totalRecords, this.page, this.limit, this.totalPages});
 
   Data.fromJson(Map<String, dynamic> json) {
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data1.fromJson(e)).toList();
+    totalRecords = json["totalRecords"];
+    page = json["page"];
+    limit = json["limit"];
+    totalPages = json["totalPages"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(data != null) {
+      _data["data"] = data?.map((e) => e.toJson()).toList();
+    }
+    _data["totalRecords"] = totalRecords;
+    _data["page"] = page;
+    _data["limit"] = limit;
+    _data["totalPages"] = totalPages;
+    return _data;
+  }
+}
+
+class Data1 {
+  String? id;
+  String? employeeId;
+  String? empId;
+  String? name;
+  String? companyId;
+  String? branchId;
+  String? date;
+  String? clockInTime;
+  String? clockOutTime;
+  int? totalHoursWorked;
+  String? location;
+  String? status;
+  List<Break>? breaksTaken;
+  int? breakTime;
+  int? lateMinutes;
+  List<dynamic>? penalties;
+  dynamic leaveDetails;
+  String? shift;
+  int? workingHoursPerday;
+  dynamic earlyCheckOut;
+  String? remarks;
+  String? createdAt;
+  String? updatedAt;
+  int? v;
+
+  Data1({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+
+  Data1.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     employeeId = json["employeeId"];
     empId = json["empId"];
@@ -95,11 +96,9 @@ class Data {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
-    breaksTaken = json['breaksTaken'] == null
-        ? null
-        : (json['breaksTaken'] as List<dynamic>)
-        .map((e) => BreaksTaken.fromJson(e as Map<String, dynamic>))
-        .toList();
+    breaksTaken = json["breaksTaken"] != null
+        ? (json["breaksTaken"] as List).map((e) => Break.fromJson(e)).toList()
+        : [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
     penalties = json["penalties"] ?? [];
@@ -132,7 +131,9 @@ class Data {
     }
     _data["breakTime"] = breakTime;
     _data["lateMinutes"] = lateMinutes;
-    _data["penalties"] = penalties;
+    if(penalties != null) {
+      _data["penalties"] = penalties;
+    }
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
     _data["workingHoursPerday"] = workingHoursPerday;
@@ -145,24 +146,28 @@ class Data {
   }
 }
 
-class BreaksTaken {
-  String? startTime;
-  String? endTime;
-  double? durationMinutes;
+class Break {
+  dynamic startTime;
+  dynamic endTime;
+  dynamic durationMinutes;
 
-  BreaksTaken({this.startTime, this.endTime, this.durationMinutes});
+  Break({this.startTime, this.endTime, this.durationMinutes});
 
-  BreaksTaken.fromJson(Map<String, dynamic> json) {
-    startTime = json['startTime'];
-    endTime = json['endTime'];
-    durationMinutes = json['durationMinutes']?.toDouble();
+  Break.fromJson(Map<String, dynamic> json) {
+    startTime = json["startTime"] != null ? DateTime.parse(json["startTime"]) : null;
+    endTime = json["endTime"] != null ? DateTime.parse(json["endTime"]) : null;
+    durationMinutes = json["durationMinutes"];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data['startTime'] = startTime;
-    _data['endTime'] = endTime;
-    _data['durationMinutes'] = durationMinutes;
+    final Map<String, dynamic> _data = {};
+    if (startTime != null) {
+      _data["startTime"] = startTime!.toUtc().toIso8601String();
+    }
+    if (endTime != null) {
+      _data["endTime"] = endTime!.toUtc().toIso8601String();
+    }
+    _data["durationMinutes"] = durationMinutes;
     return _data;
   }
 }

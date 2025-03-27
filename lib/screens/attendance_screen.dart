@@ -191,12 +191,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   );
                 } else if (snapshot.hasData &&
                     singletonClass.attendanceDataList.isNotEmpty &&
-                    singletonClass.attendanceDataList.first.data!.isNotEmpty) {
+                    singletonClass.attendanceDataList.first.data!.data!.isNotEmpty) {
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount:  singletonClass.attendanceDataList.first.data!.length,
+                    itemCount:  singletonClass.attendanceDataList.first.data!.data!.length,
                     itemBuilder: (context, index) {
-                      final attendance = singletonClass.attendanceDataList.first.data!.reversed.toList()[index];
+                      final attendance = singletonClass.attendanceDataList.first.data!.data![index];
                       String formatDate(String updatedAt) {
                         DateTime updatedAtDateTime = DateTime.parse(updatedAt);
                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
@@ -232,15 +232,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   ),
                                   const Spacer(),
                                   Container(
-                                    height: 20,
-                                    width: 75,
+                                    height: attendance.status == "Missing CheckIn/Out" ? 30 : 20,
+                                    width: attendance.status == "Missing CheckIn/Out" ? 120 : 75,
                                     decoration: BoxDecoration(
-                                      color: getStatusColor(attendance.status),
+                                      color: getStatusColor(attendance.status!),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Center(
                                       child: Text(
-                                        attendance.status,
+                                        attendance.status!,
+                                        textAlign: TextAlign.center,
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -249,13 +250,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       ),
                                     ),
                                   ),
+
                                 ],
                               ),
                               const SizedBox(height: 20),
                               Row(
                                 children: [
                                   Text(
-                                    singletonClass.formatCheckInTime(attendance.clockInTime),
+                                    singletonClass.formatCheckInTime(attendance.clockInTime!),
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
@@ -294,7 +296,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   SizedBox(
                                     width: 70,
                                     child: Text(
-                                    singletonClass.formatCheckInTime(attendance.clockOutTime),
+                                    singletonClass.formatCheckInTime(attendance.clockOutTime!),
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -378,6 +380,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<AttendanceData?> getAttendanceData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
+    print(employeeId);
     var client = http.Client();
 
     DateTime now = DateTime.now();
@@ -395,8 +398,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$toDateString/$fromDateString');
 
+    print(toDateString);
+    print(fromDateString);
     var response = await client.get(uri);
-    log("Attendance json${response.body}");
+    log("Attendance of login user${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
@@ -409,8 +414,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Color getStatusColor(String status) {
     switch (status) {
       case "Absent":
-        return NasColors.pending;
+        return NasColors.red;
       case "Present":
+        return NasColors.onTime;
+      case "Quarterly":
+        return NasColors.pending;
+      case "Missing CheckIn/Out":
         return NasColors.onTime;
       default:
         return NasColors.completed;
@@ -441,7 +450,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString(); // Round up to the nearest integer
     } catch (e) {
-      print('Error formatting minutes: $e');
       return '--';
     }
   }

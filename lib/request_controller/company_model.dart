@@ -53,7 +53,33 @@ class Data {
   List<ApprovalGroupData>? approvalGroupData;
   List<Request>? request;
 
-  Data({this.id, this.name, this.title, this.city, this.country, this.address, this.shortCode, this.licenseId, this.establishmentNo, this.commericalReg, this.license, this.phoneNumber, this.email, this.extension, this.rules, this.policies, this.assets, this.documents, this.createdBy, this.organizationId, this.createdAt, this.updatedAt, this.v, this.approvalGroupData, this.request});
+  Data({
+    this.id,
+    this.name,
+    this.title,
+    this.city,
+    this.country,
+    this.address,
+    this.shortCode,
+    this.licenseId,
+    this.establishmentNo,
+    this.commericalReg,
+    this.license,
+    this.phoneNumber,
+    this.email,
+    this.extension,
+    this.rules,
+    this.policies,
+    this.assets,
+    this.documents,
+    this.createdBy,
+    this.organizationId,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
+    this.approvalGroupData,
+    this.request,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -66,21 +92,46 @@ class Data {
     licenseId = json["licenseId"];
     establishmentNo = json["establishmentNo"];
     commericalReg = json["commericalReg"];
-    license = json["license"] == null ? null : License.fromJson(json["license"]);
+    license = json["license"] != null ? License.fromJson(json["license"]) : null;
     phoneNumber = json["phoneNumber"];
     email = json["email"];
     extension = json["extension"];
-    rules = json["rules"] == null ? null : (json["rules"] as List).map((e) => Rules.fromJson(e)).toList();
-    policies = json["policies"] == null ? null : (json["policies"] as List).map((e) => Policies.fromJson(e)).toList();
-    assets = json["assets"] == null ? null : List<String>.from(json["assets"]);
-    documents = json["documents"] == null ? null : List<String>.from(json["documents"]);
+
+    // Ensure rules is a list
+    rules = (json["rules"] is List)
+        ? (json["rules"] as List).map((e) => Rules.fromJson(e)).toList()
+        : [];
+
+    // Ensure policies is a list
+    policies = (json["policies"] is List)
+        ? (json["policies"] as List).map((e) => Policies.fromJson(e)).toList()
+        : [];
+
+    // Ensure assets is a list of strings
+    assets = (json["assets"] is List)
+        ? (json["assets"] as List).map((e) => e.toString()).toList()
+        : [];
+
+    // Ensure documents is a list of strings
+    documents = (json["documents"] is List)
+        ? (json["documents"] as List).map((e) => e.toString()).toList()
+        : [];
+
     createdBy = json["createdBy"];
     organizationId = json["organizationId"];
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
-    approvalGroupData = json["approvalGroupData"] == null ? null : (json["approvalGroupData"] as List).map((e) => ApprovalGroupData.fromJson(e)).toList();
-    request = json["request"] == null ? null : (json["request"] as List).map((e) => Request.fromJson(e)).toList();
+
+    // Ensure approvalGroupData is a list
+    approvalGroupData = (json["approvalGroupData"] is List)
+        ? (json["approvalGroupData"] as List).map((e) => ApprovalGroupData.fromJson(e)).toList()
+        : [];
+
+    // Ensure request is a list
+    request = (json["request"] is List)
+        ? (json["request"] as List).map((e) => Request.fromJson(e)).toList()
+        : [];
   }
 
   Map<String, dynamic> toJson() {
@@ -95,38 +146,49 @@ class Data {
     _data["licenseId"] = licenseId;
     _data["establishmentNo"] = establishmentNo;
     _data["commericalReg"] = commericalReg;
-    if(license != null) {
+
+    if (license != null) {
       _data["license"] = license?.toJson();
     }
+
     _data["phoneNumber"] = phoneNumber;
     _data["email"] = email;
     _data["extension"] = extension;
-    if(rules != null) {
+
+    if (rules != null) {
       _data["rules"] = rules?.map((e) => e.toJson()).toList();
     }
-    if(policies != null) {
+
+    if (policies != null) {
       _data["policies"] = policies?.map((e) => e.toJson()).toList();
     }
-    if(assets != null) {
+
+    if (assets != null) {
       _data["assets"] = assets;
     }
-    if(documents != null) {
+
+    if (documents != null) {
       _data["documents"] = documents;
     }
+
     _data["createdBy"] = createdBy;
     _data["organizationId"] = organizationId;
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
-    if(approvalGroupData != null) {
+
+    if (approvalGroupData != null) {
       _data["approvalGroupData"] = approvalGroupData?.map((e) => e.toJson()).toList();
     }
-    if(request != null) {
+
+    if (request != null) {
       _data["request"] = request?.map((e) => e.toJson()).toList();
     }
+
     return _data;
   }
 }
+
 
 class Request {
   int? groupId;

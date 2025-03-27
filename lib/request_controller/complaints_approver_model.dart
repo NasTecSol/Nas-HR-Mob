@@ -1,9 +1,8 @@
-
 class ComplaintsApproverModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  List<Data>? data;
+  Data? data;
 
   ComplaintsApproverModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
@@ -11,13 +10,8 @@ class ComplaintsApproverModel {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    if (json["data"] != null && json["data"] is List) {
-      data = (json["data"] as List).map((e) => Data.fromJson(e)).toList();
-    } else {
-      data = [];
-    }
+    data = json["data"] == null ? null : Data.fromJson(json["data"]);
   }
-
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
@@ -25,16 +19,47 @@ class ComplaintsApproverModel {
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
     if(data != null) {
-      _data["data"] = data?.map((e) => e.toJson()).toList();
+      _data["data"] = data?.toJson();
     }
     return _data;
   }
 }
 
 class Data {
+  List<Data1>? data;
+  int? total;
+  int? page;
+  int? limit;
+  int? totalPages;
+
+  Data({this.data, this.total, this.page, this.limit, this.totalPages});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data1.fromJson(e)).toList();
+    total = json["total"];
+    page = json["page"];
+    limit = json["limit"];
+    totalPages = json["totalPages"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(data != null) {
+      _data["data"] = data?.map((e) => e.toJson()).toList();
+    }
+    _data["total"] = total;
+    _data["page"] = page;
+    _data["limit"] = limit;
+    _data["totalPages"] = totalPages;
+    return _data;
+  }
+}
+
+class Data1 {
   String? id;
   String? employeeId;
   String? employeeName;
+  String? empId;
   String? companyId;
   String? branchId;
   String? policyId;
@@ -49,12 +74,13 @@ class Data {
   int? v;
   String? status;
 
-  Data({this.id, this.employeeId, this.employeeName, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
+  Data1({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  Data1.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     employeeId = json["employeeId"];
     employeeName = json["employeeName"];
+    empId = json["empId"];
     companyId = json["companyId"];
     branchId = json["branchId"];
     policyId = json["policyId"];
@@ -75,6 +101,7 @@ class Data {
     _data["_id"] = id;
     _data["employeeId"] = employeeId;
     _data["employeeName"] = employeeName;
+    _data["empId"] = empId;
     _data["companyId"] = companyId;
     _data["branchId"] = branchId;
     _data["policyId"] = policyId;
@@ -115,15 +142,13 @@ class Approvers {
     comments = json["comments"];
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["approverId"] = approverId;
-    _data["approverName"] = approverName;
-    _data["status"] = status;
-    _data["timeStamps"] = timeStamps;
-    _data["comments"] = comments;
-    return _data;
-  }
+  Map<String, dynamic> toJson() => {
+    "approverId": approverId,
+    "approverName": approverName,
+    "status": status,
+    "timeStamps": timeStamps,
+    "comments": comments,
+  };
 }
 
 class RequestData {
@@ -137,11 +162,13 @@ class RequestData {
   dynamic loanInstallment;
   dynamic loanDuration;
   dynamic loanType;
-  dynamic fine_penality;
+  dynamic finePenalty;
   int? amount;
   dynamic details;
   dynamic dateTime;
   dynamic remark;
+  dynamic title;
+  dynamic description;
 
   RequestData({
     this.employees,
@@ -154,15 +181,19 @@ class RequestData {
     this.loanInstallment,
     this.loanDuration,
     this.loanType,
-    this.fine_penality,
+    this.finePenalty,
     this.amount,
     this.details,
     this.dateTime,
     this.remark,
+    this.title,
+    this.description
   });
 
   RequestData.fromJson(Map<String, dynamic> json) {
-    employees = json["employees"] == null ? null : (json["employees"] as List).map((e) => Employees.fromJson(e)).toList();
+    employees = json["employees"] != null
+        ? List<Employees>.from(json["employees"].map((e) => Employees.fromJson(e)))
+        : null;
     startDate = json["startDate"];
     endDate = json["endDate"];
     duration = json["duration"];
@@ -172,33 +203,35 @@ class RequestData {
     loanInstallment = json["loanInstallment"];
     loanDuration = json["loanDuration"];
     loanType = json["loanType"];
-    fine_penality = json["fine_penality"];
+    finePenalty = json["fine_penality"];
     amount = json["amount"];
     details = json["details"];
     dateTime = json["date&time"];
     remark = json["remark"];
+    title = json["title"];
+    description = json["description"];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    if(employees != null) {
-      _data["employees"] = employees?.map((e) => e.toJson()).toList();
-    }
-    _data["startDate"] = startDate;
-    _data["endDate"] = endDate;
-    _data["duration"] = duration;
-    _data["leaveType"] = leaveType;
-    _data["loanAmount"] = loanAmount;
-    _data["loanCycle"] = loanCycle;
-    _data["loanInstallment"] = loanInstallment;
-    _data["loanDuration"] = loanDuration;
-    _data["loanType"] = loanType;
-    _data["fine_penality"] = fine_penality;
-    _data["amount"] = amount;
-    _data["details"] = details;
-    _data["date&time"] = dateTime;
-    _data["remark"] = remark;
-    return _data;
+    return {
+      "employees": employees?.map((e) => e.toJson()).toList(),
+      "startDate": startDate,
+      "endDate": endDate,
+      "duration": duration,
+      "leaveType": leaveType,
+      "loanAmount": loanAmount,
+      "loanCycle": loanCycle,
+      "loanInstallment": loanInstallment,
+      "loanDuration": loanDuration,
+      "loanType": loanType,
+      "fine_penality": finePenalty,
+      "amount": amount,
+      "details": details,
+      "date&time": dateTime,
+      "remark": remark,
+      "title": title,
+      "description": description
+    };
   }
 }
 
@@ -215,11 +248,29 @@ class Employees {
     severity = json["severity"];
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["empId"] = empId;
-    _data["name"] = name;
-    _data["severity"] = severity;
-    return _data;
+  Map<String, dynamic> toJson() => {
+    "empId": empId,
+    "name": name,
+    "severity": severity,
+  };
+}
+
+class Attachments {
+  String? fileName;
+  String? fileType;
+  String? fileContent;
+
+  Attachments({this.fileName, this.fileType, this.fileContent});
+
+  Attachments.fromJson(Map<String, dynamic> json) {
+    fileName = json["fileName"];
+    fileType = json["fileType"];
+    fileContent = json["fileContent"];
   }
+
+  Map<String, dynamic> toJson() => {
+    "fileName": fileName,
+    "fileType": fileType,
+    "fileContent": fileContent,
+  };
 }

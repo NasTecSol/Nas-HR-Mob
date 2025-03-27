@@ -453,7 +453,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 IconButton(
                   onPressed: () {
                     print(
-                        "Singleton Data : ${singletonClass.requestDataList.first.data!.first.employeeName}");
+                        "Singleton Data : ${singletonClass.requestDataList.first.data!.data!.first.employeeName}");
                   },
                   icon: Icon(
                     Icons.filter_list_alt,
@@ -485,7 +485,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         );
                       } else if (snapshot.hasData) {
                         return singletonClass
-                                .requestDataList.first.data!.isEmpty
+                                .requestDataList.first.data!.data!.isEmpty
                             ? Center(
                                 child: Text(
                                   AppLocalizations.of(context)!.noData,
@@ -500,10 +500,10 @@ class _RequestScreenState extends State<RequestScreen> {
                             : ListView.builder(
                                 padding: const EdgeInsets.all(5),
                                 itemCount: singletonClass
-                                    .requestDataList.first.data!.length,
+                                    .requestDataList.first.data!.data!.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   final request = singletonClass
-                                      .requestDataList.first.data![index];
+                                      .requestDataList.first.data!.data![index];
                                   return GestureDetector(
                                     onTap: () => _toggleExpand(index),
                                     child: AnimatedContainer(
@@ -1209,7 +1209,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                                  .requestDataList.first.data!.isEmpty
+                                  .requestDataList.first.data!.data!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -1224,11 +1224,11 @@ class _RequestScreenState extends State<RequestScreen> {
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: singletonClass
-                                      .requestDataList.first.data!.length,
+                                      .requestDataList.first.data!.data!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .requestDataList.first.data![index];
+                                        .requestDataList.first.data!.data![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -2861,7 +2861,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null ? singletonClass.requestDataList.first.data!.where((request) => request.status == 'approved').length : 0}', // Request List Notification count
+                    '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length : 0}', // Request List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
