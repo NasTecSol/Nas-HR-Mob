@@ -376,7 +376,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
         ? '${_toDate!.month.toString().padLeft(2, '0')}-${_toDate!.day.toString().padLeft(2, '0')}-${_toDate!.year}'
         : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$employeeId/$fromDateString/$toDateString');
+    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$fromDateString&endDate=$toDateString');
     var response = await client.get(uri);
     log("ClockingData my clocking:${response.body}");
     log(fromDateString);
