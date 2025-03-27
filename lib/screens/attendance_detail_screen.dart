@@ -8,7 +8,7 @@ import '../request_controller/attendance_model.dart';
 import 'dart:math' as math;
 
 class AttendanceDetailScreen extends StatefulWidget {
-  final Data? attendanceData;
+  final Data1? attendanceData;
   const AttendanceDetailScreen({super.key, this.attendanceData});
 
   @override
@@ -20,7 +20,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     String lateMinutes = formatMinutes(widget.attendanceData!.lateMinutes);
-    double totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
+    dynamic totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
         ? 0.0
         : widget.attendanceData!.breaksTaken!
         .map((breakTaken) => breakTaken.durationMinutes ?? 0.0)
@@ -60,13 +60,34 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      formatDate(widget.attendanceData!.createdAt),
+                      singletonClass.formatDate2(widget.attendanceData!.createdAt!),
                       style: GoogleFonts.inter(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: NasColors.darkBlue,
                       ),
                     ),
+                    const Spacer(),
+                    Container(
+                      height: widget.attendanceData!.status == "Missing CheckIn/Out" ? 30 : 20,
+                      width: widget.attendanceData!.status == "Missing CheckIn/Out" ? 120 : 75,
+                      decoration: BoxDecoration(
+                        color: getStatusColor(widget.attendanceData!.status!),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          widget.attendanceData!.status!,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
                 Row(
@@ -113,42 +134,47 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                             ],
                           ),
                           const SizedBox(width: 10),
-                          if (widget.attendanceData!.lateMinutes > 0)...[
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.error,
-                                  size: 25,
-                                  color: NasColors.pending,
-                                ),
-                                Text(AppLocalizations.of(context)!.late,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.normal,
-                                    color: NasColors.darkBlue,
-                                  ),),
+                          Column(
+                            children: [
+
+                              if (widget.attendanceData!.lateMinutes! > 0)...[
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error,
+                                      size: 25,
+                                      color: NasColors.pending,
+                                    ),
+                                    Text(AppLocalizations.of(context)!.late,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),),
+                                  ],
+                                )
                               ],
-                            )
-                          ],
-                          if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.directions_run_outlined,
-                                  size: 25,
-                                  color: NasColors.onTime,
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.earlyCheckOut,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.normal,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
+                              if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions_run_outlined,
+                                      size: 25,
+                                      color: NasColors.onTime,
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.earlyCheckOut,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                )
                               ],
-                            )
-                          ],
+                            ],
+                          ),
                           const SizedBox(width: 10),
                           Row(
                             children: [
@@ -171,13 +197,13 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockInTime),
+                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockInTime!),
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
                               color: NasColors.darkBlue,
                             ),),
-                          if (widget.attendanceData!.lateMinutes > 0)...[
+                          if (widget.attendanceData!.lateMinutes! > 0)...[
                             Text(lateMinutes,
                               style: GoogleFonts.inter(
                                 fontSize: 15,
@@ -187,7 +213,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                           ],
                           if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
                             Text(
-                              widget.attendanceData!.earlyCheckOut.toString(), // Ensure it's a String
+                              widget.attendanceData!.earlyCheckOut.toString(),
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.normal,
@@ -195,7 +221,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                               ),
                             ),
                           ],
-                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockOutTime),
+                          Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockOutTime!),
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
@@ -523,57 +549,50 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
 
     );
   }
-  DateTime? parseTime(String timeString) {
+
+  DateTime? parseTime(String? timeString) {
+    if (timeString == null || timeString.isEmpty) return null;
     try {
-      final timeOnlyString = timeString.contains('T')
-          ? timeString.split('T')[1].split('.')[0]
-          : timeString.split('.')[0];
-      final timeFormat = DateFormat.Hms();
-      DateTime now = DateTime.now();
-      DateTime parsedTime = timeFormat.parse(timeOnlyString);
-      return DateTime(now.year, now.month, now.day, parsedTime.hour,
-          parsedTime.minute, parsedTime.second);
+      // Parse full ISO 8601 datetime string
+      DateTime parsedDateTime = DateTime.parse(timeString).toLocal();
+      return parsedDateTime; // Return local time
     } catch (e) {
       print('Error parsing time: $e\n$timeString');
       return null;
     }
   }
 
-  //FORMAT DATE
-  String formatDate(dynamic dateTime) {
-    if (dateTime == null) return '--:--';
-    try {
-      if (dateTime is String) {
-        // Parse string to DateTime
-        DateTime parsedDate = DateTime.parse(dateTime);
-        return DateFormat("dd-MM-yyyy").format(parsedDate);
-      } else if (dateTime is DateTime) {
-        // Format DateTime directly
-        return DateFormat("dd-MM-yyyy").format(dateTime);
-      }
-      return '--:--';
-    } catch (e) {
-      print('Error formatting date: $e\n$dateTime');
-      return '--:--';
-    }
-  }
-
+// Format DateTime to show AM/PM format
   String formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '--:--';
-    return DateFormat("hh:mm a").format(dateTime); // Format as "02:30 PM"
+    return DateFormat("hh:mm a").format(dateTime); // Example: "02:30 PM"
   }
 
+// Format minutes properly
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
-      // Ensure the value is treated as a double and then round it
-      double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
-      return '${roundedMinutes.ceil()} mins'; // Round up to the nearest integer and append " mins"
+      int roundedMinutes = (minutes is int) ? minutes : int.parse(minutes.toString());
+      return '$roundedMinutes mins'; // Example: "15 mins"
     } catch (e) {
       print('Error formatting minutes: $e');
       return '--';
     }
   }
 
+  Color getStatusColor(String status) {
+    switch (status) {
+      case "Absent":
+        return NasColors.red;
+      case "Present":
+        return NasColors.onTime;
+      case "Quarterly":
+        return NasColors.pending;
+      case "Missing CheckIn/Out":
+        return NasColors.onTime;
+      default:
+        return NasColors.completed;
+    }
+  }
 
 }

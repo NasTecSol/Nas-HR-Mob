@@ -1,0 +1,2 @@
+/Users/sulemanniazzi/Documents/Nas-HR-Mob/android/app/.cxx/RelWithDebInfo/205ck3iw/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/Users/sulemanniazzi/Documents/Nas-HR-Mob/android/app/.cxx/RelWithDebInfo/205ck3iw/arm64-v8a/CMakeFiles/edit_cache.dir

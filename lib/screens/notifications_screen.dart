@@ -71,45 +71,45 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 ),
                 const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(top: 0.0),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      backgroundColor: NasColors.darkBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      // Add your onPressed functionality here
-                    },
-                    child: SizedBox(
-                      height: 30,
-                      width: 90,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.filter_alt,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            AppLocalizations.of(context)!.filter,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.only(top: 0.0),
+                //   child: TextButton(
+                //     style: TextButton.styleFrom(
+                //       padding: EdgeInsets.zero,
+                //       backgroundColor: NasColors.darkBlue,
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(15),
+                //       ),
+                //     ),
+                //     onPressed: () {
+                //       // Add your onPressed functionality here
+                //     },
+                //     child: SizedBox(
+                //       height: 30,
+                //       width: 90,
+                //       child: Row(
+                //         mainAxisAlignment: MainAxisAlignment.center,
+                //         children: [
+                //           const Icon(
+                //             Icons.filter_alt,
+                //             color: Colors.white,
+                //             size: 20,
+                //           ),
+                //           const SizedBox(width: 5),
+                //           Text(
+                //             AppLocalizations.of(context)!.filter,
+                //             textAlign: TextAlign.center,
+                //             style: GoogleFonts.inter(
+                //               fontWeight: FontWeight.bold,
+                //               color: Colors.white,
+                //               fontSize: 15,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             Expanded(

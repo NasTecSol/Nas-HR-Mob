@@ -50,7 +50,7 @@ class _ComplaintsState extends State<Complaints> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withValues(alpha: 0.4),
                               spreadRadius: 5,
                               blurRadius: 10,
                               offset: const Offset(0, 3),
@@ -250,7 +250,7 @@ class _ComplaintsState extends State<Complaints> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                              .complaintsDataList.first.data!.isEmpty
+                              .complaintsDataList.first.data!.data!.isEmpty
                               ? Center(
                             child: Text(
                               AppLocalizations.of(context)!.noData,
@@ -265,11 +265,11 @@ class _ComplaintsState extends State<Complaints> {
                               : ListView.builder(
                             padding: const EdgeInsets.all(5),
                             itemCount: singletonClass
-                                .complaintsDataList.first.data!.length,
+                                .complaintsDataList.first.data!.data!.length,
                             itemBuilder:
                                 (BuildContext context, int index) {
                               final request = singletonClass
-                                  .complaintsDataList.first.data![index];
+                                  .complaintsDataList.first.data!.data![index];
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 10),
@@ -281,7 +281,7 @@ class _ComplaintsState extends State<Complaints> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.grey
-                                          .withOpacity(0.3),
+                                          .withValues(alpha: 0.3),
                                       spreadRadius: 2,
                                       blurRadius: 8,
                                       offset: const Offset(0,
@@ -392,7 +392,7 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else if (snapshot.hasData) {
                             return singletonClass
-                                .complaintsDataList.first.data!.isEmpty
+                                .complaintsDataList.first.data!.data!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -407,11 +407,11 @@ class _ComplaintsState extends State<Complaints> {
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
                               itemCount: singletonClass
-                                  .complaintsDataList.first.data!.length,
+                                  .complaintsDataList.first.data!.data!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
                                 final request = singletonClass
-                                    .complaintsDataList.first.data![index];
+                                    .complaintsDataList.first.data!.data![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(
                                           vertical: 10),
@@ -423,7 +423,7 @@ class _ComplaintsState extends State<Complaints> {
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.grey
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(0,
@@ -531,7 +531,7 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else {
                             return singletonClass
-                                .complaintsApproverDataList.first.data!.isEmpty
+                                .complaintsApproverDataList.first.data!.data!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -546,11 +546,11 @@ class _ComplaintsState extends State<Complaints> {
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
                               itemCount: singletonClass
-                                  .complaintsApproverDataList.first.data!.length,
+                                  .complaintsApproverDataList.first.data!.data!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
                                 final request = singletonClass
-                                    .complaintsApproverDataList.first.data![index];
+                                    .complaintsApproverDataList.first.data!.data![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(vertical: 10),
                                       decoration: BoxDecoration(
@@ -559,7 +559,7 @@ class _ComplaintsState extends State<Complaints> {
                                         color: NasColors.containerColor,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.3),
+                                            color: Colors.grey.withValues(alpha: 0.3),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(
@@ -604,7 +604,24 @@ class _ComplaintsState extends State<Complaints> {
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 20),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                SizedBox(
+                                                  height: 40,
+                                                  width: 200,
+                                                  child: Text(
+                                                    "${request.requestData!.first.title}",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 10),
                                             Row(
                                               children: [
                                                 SizedBox(
@@ -621,7 +638,7 @@ class _ComplaintsState extends State<Complaints> {
                                                 ),
                                                 const Spacer(),
                                                 Text(
-                                                  "July 20-Tuesday",
+                                                  singletonClass.formatDate2(request.createdAt!),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,

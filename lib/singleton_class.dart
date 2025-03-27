@@ -71,7 +71,7 @@ class SingletonClass {
   List<TeamAttendanceModel> teamAttendanceDataList = [];
   List<ApproverRequestData> approverDataList = [];
   List<CompanyData> companyDataList = [];
-  List<RequestDateModel> requestDataList = [];
+  List<RequestDataModel> requestDataList = [];
   List<EmployeeDetailsData> employeeDetailsDataList = [];
   List<EmployeeDetailsClocking> employeeDetailsClockingDataList = [];
   List<CheckInData> checkInDataList = [];
@@ -119,7 +119,7 @@ class SingletonClass {
     approverDataList = approverReq;
   }
 
-  void setRequestData(List<RequestDateModel> requestData) {
+  void setRequestData(List<RequestDataModel> requestData) {
     // Method to set the company list
     requestDataList = requestData;
   }
@@ -215,7 +215,7 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
-  Future<RequestDateModel?> getRequestData() async {
+  Future<RequestDataModel?> getRequestData() async {
     String? employeeId = getJWTModel()?.employeeId;
 
     // Request body with the required parameter
@@ -240,22 +240,22 @@ class SingletonClass {
       if (response.statusCode == 201) {
         // Parse the response body
         var responseBody = json.decode(response.body);
-        var requestData = RequestDateModel.fromJson(responseBody);
+        var requestData = RequestDataModel.fromJson(responseBody);
 
         // Set the data into the application state (singleton or other storage)
         setRequestData([requestData]);
 
         // Print the parsed data for debugging
         print(
-            "Singleton Data: ${requestDataList.first.data!.first.employeeName}");
+            "Singleton Data: ${requestDataList.first.data!.data!.first.employeeName}");
 
         return requestData;
       } else {
-        log("Error: Received status code ${response.statusCode}");
+        log("Error request Data: Received status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      log('Error: $e');
+      log('Error request data: $e');
       return null;
     }
   }
@@ -292,11 +292,11 @@ class SingletonClass {
         complaintsDataList.addAll([requestData]);
         return requestData;
       } else {
-        log("Error: Received status code ${response.statusCode}");
+        log("Error Complaints Data: Received status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      log('Error: $e');
+      log('Error Complaints Data: $e');
       return null;
     }
   }
@@ -306,7 +306,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/request/penalties_fines/$employeeId');
     var response = await client.get(uri);
-    log(response.body);
+    log("Penalties Data ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var requestData = PenaltiesAndFineModel.fromJson(responseBody);
@@ -350,11 +350,11 @@ class SingletonClass {
 
         return requestData;
       } else {
-        log("Error: Received status code ${response.statusCode}");
+        log("Error : Received status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      log('Error: $e');
+      log('Error Approver Data: $e');
       return null;
     }
   }
@@ -362,6 +362,7 @@ class SingletonClass {
   //Approver for complaints
   Future<ComplaintsApproverModel?> getComplaintsApproverData() async {
     String? employeeId = getJWTModel()?.employeeId;
+    print("vghjk$employeeId");
     Map<String, dynamic> requestBody = {
       "requestTypes": ["complaintRequest"],
     };
@@ -388,11 +389,11 @@ class SingletonClass {
         complaintsApproverDataList.addAll([requestData]);
         return requestData;
       } else {
-        log("Error: Received status code ${response.statusCode}");
+        log("Error complaints Log approver: Received status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      log('Error: $e');
+      log('Error complaints Log approver: $e');
       return null;
     }
   }
@@ -426,11 +427,11 @@ class SingletonClass {
         penaltiesApproverDataList.addAll([requestData]);
         return requestData;
       } else {
-        log("Error: Received status code ${response.statusCode}");
+        log("Error penalties Log approver: Received status code ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      log('Error: $e');
+      log('Error penalties Log approver: $e');
       return null;
     }
   }
@@ -459,7 +460,7 @@ class SingletonClass {
     String firstDateString = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
-    var uri = Uri.parse('$baseURL/c-emp-check-in-out/$employeeId/$firstDateString/$currentDateString');
+    var uri = Uri.parse('$baseURL/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
     var response = await client.get(uri);
     log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
