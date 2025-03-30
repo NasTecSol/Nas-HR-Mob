@@ -77,7 +77,7 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          widget.attendanceData!.status!,
+                          _translateStatus(widget.attendanceData!.status , context),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.bold,
@@ -548,6 +548,29 @@ class _AttendanceDetailScreenState extends State<AttendanceDetailScreen> {
             ),)
 
     );
+  }
+
+
+  String _translateStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    // Check for null values
+    if (status == null) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'Quarterly':
+        return localizations.quarterly;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      default:
+        return status;
+    }
   }
 
   DateTime? parseTime(String? timeString) {

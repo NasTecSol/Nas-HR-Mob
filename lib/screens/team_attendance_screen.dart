@@ -290,15 +290,16 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 ),
                                 const Spacer(),
                                 Container(
-                                  height: 20,
-                                  width: 75,
+                                  height: attendance.status == "Missing CheckIn/Out" ? 30 : 20,
+                                  width: attendance.status == "Missing CheckIn/Out" ? 120 : 75,
                                   decoration: BoxDecoration(
-                                    color: getStatusColor(attendance.status),
+                                    color: getStatusColor(attendance.status!),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Center(
                                     child: Text(
-                                      attendance.status,
+                                      _translateStatus(attendance.status, context),
+                                      textAlign: TextAlign.center,
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
@@ -333,7 +334,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                  "$lateMinutes Mins",
+                                  "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -369,7 +370,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                  "$earlyCheckOut Mins",
+                                  "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -394,9 +395,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     color: Colors.black,
                                   ),
                                 ),
-                                Spacer(),
+                                const Spacer(),
                                 Text(
-                                  "$breakTime Mins",
+                                  "$breakTime ${AppLocalizations.of(context)!.minutes}",
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -424,14 +425,39 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     );
   }
 
+  String _translateStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    // Check for null values
+    if (status == null) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'Quarterly':
+        return localizations.quarterly;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      default:
+        return status;
+    }
+  }
   Color getStatusColor(String status) {
     switch (status) {
       case "Absent":
-        return NasColors.pending;
+        return NasColors.red;
       case "Present":
         return NasColors.onTime;
+      case "Quarterly":
+        return NasColors.pending;
+      case "Missing CheckIn/Out":
+        return NasColors.onTime;
       default:
-        return NasColors.red;
+        return NasColors.completed;
     }
   }
 
