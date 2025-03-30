@@ -110,10 +110,10 @@ class _RequestScreenState extends State<RequestScreen> {
             _removeOverlay();
           },
           child: Material(
-            color: Colors.grey.withValues(alpha: 0.8), // Set the opacity
+            color: Colors.grey.withValues(alpha: 0.8),
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.only(top: 80.0),
+                padding: const EdgeInsets.only(top: 70.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -126,8 +126,6 @@ class _RequestScreenState extends State<RequestScreen> {
                         color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // Add spacing between widgets
                     Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -136,36 +134,22 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass
                               .companyDataList.first.data!.request![index];
-
-                          // Display "Penalty and Fine Requests" only if the user’s grade is `L0` or `L1`
-                          if (request.requestName ==
-                                  'Penalty and Fine Requests' &&
-                              !(singletonClass.getJWTModel()?.grade == 'L0' ||
-                                  singletonClass.getJWTModel()?.grade ==
-                                      'L1')) {
-                            return const SizedBox
-                                .shrink(); // Skip rendering this item
+                          if (request.requestName == 'Penalty and Fine Requests' && !(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
+                            return const SizedBox.shrink();
                           }
                           if (request.requestType == 'complaintRequest') {
-                            return const SizedBox
-                                .shrink(); // Skip rendering this item if the grade condition is not met
+                            return const SizedBox.shrink();
                           }
-
                           return Column(
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  if (request.requestType ==
-                                          'allowance_Increment' &&
-                                      (singletonClass.getJWTModel()?.grade ==
-                                              'L0' ||
-                                          singletonClass.getJWTModel()?.grade ==
-                                              'L1')) {
-                                    // Show alert dialog
+                                  if (request.requestType == 'allowance_Increment' && (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
+                                          backgroundColor: Colors.white,
                                           title: Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
@@ -198,7 +182,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "Yourself",
+                                                      AppLocalizations.of(context)!.yourSelf,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -236,7 +220,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "Team",
+                                                      AppLocalizations.of(context)!.teams,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -2935,21 +2919,73 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.overTime;
       case 'Training':
         return localizations.training;
+      case "Complaint Request":
+        return localizations.complaints;
+      case "Allowance Increment":
+        return localizations.salaryAndAllowances;
+      case 'Document Request':
+        return localizations.document;
+      case "Expense Request":
+        return localizations.expiration;
       default:
         return status!; // Fallback to the original status if not found
     }
   }
 
+
+  String _translateRequestSubtype(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Sick Leave':
+        return localizations.sickLeave;
+      case 'Annual Leave':
+        return localizations.annualLeave;
+      case 'Casual Leave':
+        return localizations.casualLeave;
+      case 'Advance Salary Request':
+        return localizations.advanceSalaryRequest;
+      case 'LongTerm Loan Request':
+        return localizations.longTermLoanRequest;
+      case "Housing Allowance":
+        return localizations.housingAllowance;
+      case "Traveling Allowance":
+        return localizations.travellingAllowance;
+      case 'Salary Incremental Allowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salary Slip":
+        return localizations.salarySlip;
+      case "Promotional Letter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advance":
+        return localizations.advance;
+      case "Expense":
+        return localizations.expense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Bad Behaviour":
+        return localizations.badBehaviour;
+      default:
+        return status!;
+    }
+  }
   //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
         approverStatus.isEmpty ||
         approverStatus == 'pending') {
-      return NasColors
-          .pending; // Use pending color if status is empty or pending
+      return NasColors.pending; // Use pending color if status is empty or pending
     } else {
-      return NasColors
-          .completed; // Use completed color if status is other than pending
+      return NasColors.completed; // Use completed color if status is other than pending
     }
   }
 
@@ -3010,6 +3046,8 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/Penalties.png';
       case 'allowance_Increment':
         return 'images/creditCard.png';
+      case 'documentRequest':
+        return 'images/files.png';
       default:
         return 'images/OverTime.png'; // Default image for company or other types
     }
@@ -3130,7 +3168,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppLocalizations.of(context)!.subType,
+                          _translateRequest(selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3148,7 +3186,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              AppLocalizations.of(context)!.selectSubType,
+                              "${AppLocalizations.of(context)!.select} ${_translateRequest(selectedRequest.requestName, context)} ${AppLocalizations.of(context)!.type}",
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -3166,7 +3204,8 @@ class _RequestScreenState extends State<RequestScreen> {
                               return DropdownMenuItem<SubTypes>(
                                 value: subType,
                                 child: Text(
-                                  subType.requestName ?? '',
+                                  _translateRequestSubtype(
+                                  subType.requestName! , context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -3182,15 +3221,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                       _getRemainingLeaveBalance(
                                           newValue.requestType);
 
-                                  // Debug log to check the retrieved balance
-                                  print(
-                                      'Remaining Balance for ${newValue.requestName}: $remainingBalance');
-
                                   if (remainingBalance == null ||
                                       remainingBalance <= 0) {
                                     // Show warning if the selected leave balance is insufficient
                                     _showWarningDialog(context,
-                                        'Insufficient ${newValue.requestName} Balance');
+                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName , context)}');
                                   } else {
                                     setState(() {
                                       _selectedSubType = newValue;
@@ -4646,7 +4681,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppLocalizations.of(context)!.subType,
+                          _translateRequest(selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -4664,7 +4699,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              AppLocalizations.of(context)!.selectSubType,
+                              "${AppLocalizations.of(context)!.select} ${_translateRequest(selectedRequest.requestName, context)} ${AppLocalizations.of(context)!.type}",
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -4682,7 +4717,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               return DropdownMenuItem<SubTypes>(
                                 value: subType,
                                 child: Text(
-                                  subType.requestName ?? '',
+                                _translateRequestSubtype( subType.requestName, context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -4697,16 +4732,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                   double? remainingBalance =
                                       _getRemainingLeaveBalance(
                                           newValue.requestType);
-
-                                  // Debug log to check the retrieved balance
-                                  print(
-                                      'Remaining Balance for ${newValue.requestName}: $remainingBalance');
-
                                   if (remainingBalance == null ||
                                       remainingBalance <= 0) {
-                                    // Show warning if the selected leave balance is insufficient
                                     _showWarningDialog(context,
-                                        'Insufficient ${newValue.requestName} Balance');
+                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
                                   } else {
                                     setState(() {
                                       _selectedSubType = newValue;

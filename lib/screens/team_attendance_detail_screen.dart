@@ -20,7 +20,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
   @override
   Widget build(BuildContext context) {
     String lateMinutes = formatMinutes(widget.attendanceData!.lateMinutes);
-    double totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
+    dynamic totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
         ? 0.0
         : widget.attendanceData!.breaksTaken!
         .map((breakTaken) => breakTaken.durationMinutes ?? 0.0)
@@ -60,13 +60,34 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  formatDate(widget.attendanceData!.createdAt),
+                  singletonClass.formatDate2(widget.attendanceData!.createdAt),
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: NasColors.darkBlue,
                   ),
                 ),
+                const Spacer(),
+                Container(
+                  height: widget.attendanceData!.status == "Missing CheckIn/Out" ? 30 : 20,
+                  width: widget.attendanceData!.status == "Missing CheckIn/Out" ? 120 : 75,
+                  decoration: BoxDecoration(
+                    color: getStatusColor(widget.attendanceData!.status!),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _translateStatus(widget.attendanceData!.status, context),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+
               ],
             ),
             Row(
@@ -262,8 +283,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         itemCount: widget.attendanceData!.breaksTaken!.length,
                         itemBuilder: (context , index){
                           final breakTaken = widget.attendanceData!.breaksTaken![index];
-                          DateTime? startTime = parseTime(breakTaken.startTime.toString());
-                          DateTime? endTime = parseTime(breakTaken.endTime.toString());
+                          DateTime? startTime = parseTime(breakTaken.startTime.toString())?.toLocal();
+                          DateTime? endTime = parseTime(breakTaken.endTime.toString())?.toLocal();
                           String duration = formatMinutes(breakTaken.durationMinutes);
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -522,56 +543,62 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
         ),),
     );
   }
+  String _translateStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
 
-  DateTime? parseTime(String timeString) {
-    try {
-      final timeOnlyString = timeString.contains('T')
-          ? timeString.split('T')[1].split('.')[0]
-          : timeString.split('.')[0];
-      final timeFormat = DateFormat.Hms();
-      DateTime now = DateTime.now();
-      DateTime parsedTime = timeFormat.parse(timeOnlyString);
-      return DateTime(now.year, now.month, now.day, parsedTime.hour,
-          parsedTime.minute, parsedTime.second);
-    } catch (e) {
-      print('Error parsing time: $e\n$timeString');
-      return null;
+    // Check for null values
+    if (status == null) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'Quarterly':
+        return localizations.quarterly;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      default:
+        return status;
     }
   }
-
-  //FORMAT DATE
-  String formatDate(dynamic dateTime) {
-    if (dateTime == null) return '--:--';
-    try {
-      if (dateTime is String) {
-        // Parse string to DateTime
-        DateTime parsedDate = DateTime.parse(dateTime);
-        return DateFormat("dd-MM-yyyy").format(parsedDate);
-      } else if (dateTime is DateTime) {
-        // Format DateTime directly
-        return DateFormat("dd-MM-yyyy").format(dateTime);
-      }
-      return '--:--';
-    } catch (e) {
-      print('Error formatting date: $e\n$dateTime');
-      return '--:--';
-    }
+  DateTime? parseTime(String? dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty) return null;
+    DateTime dateTime = DateTime.parse(dateTimeString);
+    return dateTime.toUtc();
   }
+
 
   String formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '--:--';
-    return DateFormat("hh:mm a").format(dateTime); // Format as "02:30 PM"
+    return DateFormat("hh:mm a").format(dateTime.toLocal()); // Convert before formatting
   }
 
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
-      // Ensure the value is treated as a double and then round it
       double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
-      return '${roundedMinutes.ceil()} mins'; // Round up to the nearest integer and append " mins"
+      return '${roundedMinutes.ceil()} mins';
     } catch (e) {
       print('Error formatting minutes: $e');
       return '--';
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status) {
+      case "Absent":
+        return NasColors.red;
+      case "Present":
+        return NasColors.onTime;
+      case "Quarterly":
+        return NasColors.pending;
+      case "Missing CheckIn/Out":
+        return NasColors.onTime;
+      default:
+        return NasColors.completed;
     }
   }
 }
