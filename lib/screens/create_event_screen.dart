@@ -110,16 +110,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   ),
                 ),
                 Text(
-                  "Create a Event",
+                  AppLocalizations.of(context)!.createAEvent,
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: NasColors.darkBlue,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 IconButton(
-                  icon: Icon(Icons.check,
+                  icon: const Icon(Icons.check,
                     color: Colors.black,
                   ),
                   onPressed: () {
@@ -147,9 +147,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Please fill all fields"),
-                          duration: Duration(seconds: 4),
+                         SnackBar(
+                          content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
+                          duration: const Duration(seconds: 4),
                         ),
                       );
                     }
@@ -169,7 +169,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     children: [
                       const SizedBox(height: 20),
                       Text(
-                        "Event Name",
+                        AppLocalizations.of(context)!.eventName,
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       TextFormField(
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please Enter event name";
+                            return  AppLocalizations.of(context)!.pleaseFillAllFields;
                           }
                           return null;
                         },
@@ -195,7 +195,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: const BorderSide(color: Colors.grey),
                           ),
-                          hintText: "Type event name here!",
+                          hintText:  AppLocalizations.of(context)!.typeEventNameHere,
                           hintStyle: GoogleFonts.inter(
                             fontSize: 14,
                             color: Colors.grey,
@@ -213,7 +213,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Event Description",
+                        AppLocalizations.of(context)!.eventDescription,
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -224,7 +224,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       TextFormField(
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please Enter event description";
+                            return  AppLocalizations.of(context)!.pleaseFillAllFields;
                           }
                           return null;
                         },
@@ -239,7 +239,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: const BorderSide(color: Colors.grey),
                           ),
-                          hintText: "Type event description here!",
+                          hintText:  AppLocalizations.of(context)!.typeEventDescriptionHere,
                           hintStyle: GoogleFonts.inter(
                             fontSize: 14,
                             color: Colors.grey,
@@ -560,7 +560,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Event Category",
+                        AppLocalizations.of(context)!.eventCategory,
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -587,9 +587,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               _eventType.clear();
                             });
                           },
-                          hint: const Text(
-                            'Select Category',
-                            style: TextStyle(color: Colors.grey),
+                          hint:  Text(
+                            AppLocalizations.of(context)!.selectCategory,
+                            style: const TextStyle(color: Colors.grey),
                           ),
                           value: _selectedCategory,
                           isExpanded: true,
@@ -601,7 +601,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Event Type",
+                        AppLocalizations.of(context)!.eventType,
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -636,7 +636,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 borderRadius: BorderRadius.circular(12.0),
                                 borderSide: const BorderSide(color: Colors.grey),
                               ),
-                              hintText: "Type event type or select from list!",
+                              hintText:  AppLocalizations.of(context)!.typeEventTypeOrSelectFromList,
                               hintStyle: GoogleFonts.inter(
                                 fontSize: 14,
                                 color: Colors.grey,
