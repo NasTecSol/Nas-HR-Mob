@@ -186,7 +186,7 @@ class _MainScreenState extends State<MainScreen> {
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
                                       ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length +
-                                      singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length
+                                      singletonClass.approverDataList.first.data!.data!.where((request) => request.status == 'pending').length
                                       : 0}', // Request List Notification count
                                   style: const TextStyle(
                                     color: Colors.white,

@@ -220,7 +220,7 @@ class SingletonClass {
 
     // Request body with the required parameter
     Map<String, dynamic> requestBody = {
-      "requestTypes": ["leaveRequest","loanRequest"],
+      "requestTypes": ["leaveRequest","loanRequest","expenseRequest","allowance_Increment","documentRequest"],
     };
 
     var uri = Uri.parse('$baseURL/request/employee/$employeeId');
@@ -320,7 +320,7 @@ class SingletonClass {
   Future<ApproverRequestData?> getApproverData() async {
     String? employeeId = getJWTModel()?.employeeId;
     Map<String, dynamic> requestBody = {
-      "requestTypes": ["leaveRequest","loanRequest"],
+      "requestTypes": ["leaveRequest","loanRequest","expenseRequest","allowance_Increment","documentRequest"],
     };
     var uri = Uri.parse('$baseURL/request/approver/$employeeId');
 
@@ -343,10 +343,6 @@ class SingletonClass {
 
         // Set the data into the application state (singleton or other storage)
         setApproverDataList([requestData]);
-
-        // Print the parsed data for debugging
-        print(
-            "Singleton Data approver: ${approverDataList.first.data!.first.employeeName}");
 
         return requestData;
       } else {

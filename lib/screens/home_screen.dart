@@ -1118,15 +1118,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass.clockingDataList.isNotEmpty &&
-                                                        singletonClass.clockingDataList.first.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.formatMinutes(int.tryParse(singletonClass.clockingDataList.first.data!.first.totalTime ?? '0') ?? 0)}'
+                                                    singletonClass.attendanceDataList.isNotEmpty &&
+                                                        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                        ? '${AppLocalizations.of(context)!.worked} '
+                                                        '${singletonClass.formatMinutes(
+                                                        double.tryParse(
+                                                            singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0'
+                                                        )?.round() ?? 0
+                                                    )}'
                                                         : '${AppLocalizations.of(context)!.worked} NA',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
+
                                                 ),
                                               ),
                                             ],

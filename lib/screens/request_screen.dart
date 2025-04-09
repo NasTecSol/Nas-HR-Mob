@@ -1934,7 +1934,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                                  .approverDataList.first.data!.isEmpty
+                                  .approverDataList.first.data!.data!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -1949,11 +1949,11 @@ class _RequestScreenState extends State<RequestScreen> {
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: singletonClass
-                                      .approverDataList.first.data!.length,
+                                      .approverDataList.first.data!.data!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .approverDataList.first.data![index];
+                                        .approverDataList.first.data!.data![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -2432,6 +2432,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         (BuildContext
                                                                     context) {
                                                                       return AlertDialog(
+                                                                        backgroundColor: Colors.white,
                                                                         title:
                                                                         Text(
                                                                           AppLocalizations.of(context)!
@@ -2595,6 +2596,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         (BuildContext
                                                                     context) {
                                                                       return AlertDialog(
+                                                                        backgroundColor: Colors.white,
                                                                         title:
                                                                         Text(
                                                                           AppLocalizations.of(context)!
@@ -2869,7 +2871,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null ? singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length : 0}', // Approver List Notification count
+                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null ? singletonClass.approverDataList.first.data!.data!.where((request) => request.status == 'pending').length : 0}', // Approver List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -2910,11 +2912,11 @@ class _RequestScreenState extends State<RequestScreen> {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
       case 'leave Request':
-        return localizations.leaveRequests; // Use the localized string
+        return localizations.leaveRequests;
       case 'Loan Request':
-        return localizations.loanRequest; // Use the localized string
+        return localizations.loanRequest;
       case 'Penalty and Fine Requests':
-        return localizations.penaltiesAndFine; // Use the localized string
+        return localizations.penaltiesAndFine;
       case 'OverTime':
         return localizations.overTime;
       case 'Training':
@@ -2922,16 +2924,41 @@ class _RequestScreenState extends State<RequestScreen> {
       case "Complaint Request":
         return localizations.complaints;
       case "Allowance Increment":
-        return localizations.salaryAndAllowances;
+        return localizations.allowanceIncrement;
       case 'Document Request':
-        return localizations.document;
+        return localizations.documentRequest;
       case "Expense Request":
-        return localizations.expiration;
+        return localizations.expenseRequest;
       default:
-        return status!; // Fallback to the original status if not found
+        return status!;
     }
   }
 
+  String _translateBottomText(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'leave Request':
+        return localizations.leaveRequestBottom;
+      case 'Loan Request':
+        return localizations.loanRequestBottom;
+      case 'Penalty and Fine Requests':
+        return localizations.penaltiesAndFineBottom;
+      case 'OverTime':
+        return localizations.overTime;
+      case 'Training':
+        return localizations.training;
+      case "Complaint Request":
+        return localizations.complaints;
+      case "Allowance Increment":
+        return localizations.allowanceIncrementBottom;
+      case 'Document Request':
+        return localizations.documentRequestBottom;
+      case "Expense Request":
+        return localizations.expenseRequestBottom;
+      default:
+        return status!;
+    }
+  }
 
   String _translateRequestSubtype(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -2960,10 +2987,10 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.contract;
       case "ID Card":
         return localizations.idCard;
-      case "Advance":
-        return localizations.advance;
-      case "Expense":
-        return localizations.expense;
+      case "Advance Expense":
+        return localizations.advanceExpense;
+      case "Business Expense":
+        return localizations.businessExpense;
       case "Reimbursement":
         return localizations.reimbursement;
       case "Disbursement":
@@ -3092,6 +3119,7 @@ class _RequestScreenState extends State<RequestScreen> {
       _employeeSearchResults.clear();
       _selectedEmployees.clear();
       _showSearchResult = false;
+      selectedFile = null;
     });
   }
 
@@ -3168,7 +3196,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _translateRequest(selectedRequest.requestName, context),
+                          "${_translateBottomText(selectedRequest.requestName, context)}",
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3186,7 +3214,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              "${AppLocalizations.of(context)!.select} ${_translateRequest(selectedRequest.requestName, context)} ${AppLocalizations.of(context)!.type}",
+                              "${_translateRequest(selectedRequest.requestName, context)}",
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -4471,30 +4499,48 @@ class _RequestScreenState extends State<RequestScreen> {
                         if (selectedRequest.docRequired == true) ...[
                           TextButton(
                             onPressed: () async {
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .any, // Ensures only image files are allowed
+                              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                type: FileType.image,
                               );
 
-                              if (result != null &&
-                                  result.files.single.path != null) {
+                              if (result != null && result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
 
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
+                                // Show the image immediately
+                                setState(() => selectedFile = file);
 
-                                print('Selected file: ${file.name}');
+                                // Start upload in the background
+                                final results = await uploadProfile(file);
+                                final success = results["success"] as bool;
+                                final message = results["message"] as String;
 
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
+                                if (!success && context.mounted) {
+                                  setState(() => selectedFile = null);
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(AppLocalizations.of(context)!.uploadFailed),
+                                      content: Text(message),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(),
+                                          child: Text(AppLocalizations.of(context)!.ok,
+                                            style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
                               } else {
-                                // User canceled the file picker
                                 print('File selection canceled.');
                               }
+
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -4514,6 +4560,45 @@ class _RequestScreenState extends State<RequestScreen> {
                                     fontSize: 15,
                                   ),
                                 ),
+                                SizedBox(width: 10),
+                                Column(
+                                  children: [
+                                    if (selectedFile != null)
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          ClipOval(
+                                            child: Image.file(
+                                              File(selectedFile!.path!),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: -5,
+                                            right: -5,
+                                            child: GestureDetector(
+                                              onTap: () => setState(() => selectedFile = null),
+                                              child: Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                              ),
+                                            ),)
+                                        ],
+                                      ),
+                                  ],
+                                )
                               ],
                             ),
                           ),
@@ -4681,7 +4766,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _translateRequest(selectedRequest.requestName, context),
+                          _translateBottomText(selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -5356,30 +5441,49 @@ class _RequestScreenState extends State<RequestScreen> {
                         if (selectedRequest.docRequired == true) ...[
                           TextButton(
                             onPressed: () async {
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .any, // Ensures only image files are allowed
+                              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                type: FileType.image,
                               );
 
-                              if (result != null &&
-                                  result.files.single.path != null) {
+                              if (result != null && result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
 
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
+                                // Show the image immediately
+                                setState(() => selectedFile = file);
 
-                                print('Selected file: ${file.name}');
+                                // Start upload in the background
+                                final results = await uploadProfile(file);
+                                final success = results["success"] as bool;
+                                final message = results["message"] as String;
 
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
+                                if (!success && context.mounted) {
+                                  setState(() => selectedFile = null);
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      backgroundColor: Colors.white,
+                                      title: Text("Upload Failed"),
+                                      content: Text(message),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(),
+                                          child: Text("OK",
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
                               } else {
-                                // User canceled the file picker
                                 print('File selection canceled.');
                               }
+
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -5399,6 +5503,45 @@ class _RequestScreenState extends State<RequestScreen> {
                                     fontSize: 15,
                                   ),
                                 ),
+                                SizedBox(width: 10),
+                                Column(
+                                  children: [
+                                    if (selectedFile != null)
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          ClipOval(
+                                            child: Image.file(
+                                              File(selectedFile!.path!),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: -5,
+                                            right: -5,
+                                            child: GestureDetector(
+                                              onTap: () => setState(() => selectedFile = null),
+                                              child: Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                              ),
+                                            ),)
+                                        ],
+                                      ),
+                                  ],
+                                )
                               ],
                             ),
                           ),
@@ -5540,133 +5683,52 @@ class _RequestScreenState extends State<RequestScreen> {
     );
   }
 
-  //DIALOUGE
-
-  void _showConfirmationDialog(PlatformFile file) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            AppLocalizations.of(context)!.confirmUpload,
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          content: Text(
-            '${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?',
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Close the dialog and do nothing
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                AppLocalizations.of(context)!.cancel,
-                style: GoogleFonts.inter(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Close the dialog
-                Navigator.of(context).pop();
-
-                // Trigger the API call to upload the file
-                await uploadProfile();
-              },
-              child: Text(
-                AppLocalizations.of(context)!.yes,
-                style: GoogleFonts.inter(color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   //S3 CALL
-  Future<void> uploadProfile() async {
-    if (selectedFile == null) {
-      print("No file selected.");
-      return; // Exit the function if no file is selected
-    }
-
-    // Check if bytes are available
-    if (selectedFile!.bytes == null) {
-      // Load the bytes of the selected file manually
-      print("Loading bytes for the selected file...");
-      try {
-        final file = File(selectedFile!.path!); // Convert PlatformFile to File
-        final fileBytes = await file.readAsBytes();
-
-        // If bytes are still null, return early
-        if (fileBytes.isEmpty) {
-          print("No bytes available for the selected file.");
-          return; // Exit the function if no valid bytes are available
-        }
-
-        // Proceed with uploading the file after loading bytes
-        _uploadFileWithBytes(fileBytes);
-      } catch (e) {
-        print('Error reading file: $e');
-      }
-    } else {
-      // If bytes are already available, upload directly
-      _uploadFileWithBytes(selectedFile!.bytes!);
-    }
-  }
-
-  void _uploadFileWithBytes(Uint8List fileBytes) async {
-    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
-
-    setState(() {
-      isLoading = true; // Corrected to set isLoading to true
-    });
-
+  Future<Map<String, dynamic>> uploadProfile(PlatformFile file) async {
     try {
+      Uint8List fileBytes;
+      if (file.bytes != null) {
+        fileBytes = file.bytes!;
+      } else {
+        fileBytes = await File(file.path!).readAsBytes();
+      }
+
+      var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
       var request = http.MultipartRequest('POST', uri);
 
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
-      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
-          'application/octet-stream';
+      final mimeType = lookupMimeType(file.path ?? '') ?? 'application/octet-stream';
 
-      // Add the file to the request as bytes
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: file.name,
+        contentType: MediaType.parse(mimeType),
       ));
 
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
+      request.fields['attachmentName'] = file.name;
+      request.fields['attachmentType'] = file.extension ?? '';
 
-      // Send the request
       var response = await request.send();
-
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        AttachmentResponse attachmentResponse =
-            AttachmentResponse.fromJson(decodedJson);
+        AttachmentResponse attachmentResponse = AttachmentResponse.fromJson(decodedJson);
         singletonClass.attachmentResponseDataList = [attachmentResponse];
+        return {"success": true, "message": ""};
       } else {
-        print('Upload failed: ${response.statusCode}');
+        return {"success": false, "message": "Upload failed: ${response.statusCode}\n\n$responseBody"};
       }
     } catch (e) {
-      print('Error: $e');
+      return {"success": false, "message": "Error: $e"};
     }
   }
+
+
+
 
   //POST API CALL
   Future<void> postRequest() async {

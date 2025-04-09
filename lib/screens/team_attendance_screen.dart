@@ -264,7 +264,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     String earlyCheckOut =
                         formatMinutes(attendance.earlyCheckOut);
                     String breakTime = formatMinutes(attendance.breakTime);
-
                     return GestureDetector(
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context)=> TeamAttendanceDetailScreen(attendanceData: attendance)));
