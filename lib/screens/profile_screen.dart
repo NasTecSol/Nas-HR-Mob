@@ -12,7 +12,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:signature/signature.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
 import '../widgets/colors.dart';
@@ -32,7 +32,53 @@ class _ProfileScreenState extends State<ProfileScreen>
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
   int _selectedOptionIndex2 = 0;
-  bool _expanded = false; // Initialize the expanded state
+  bool _expanded = false;
+  final SignatureController _controller = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
+  bool _isEditing = false;
+  File? _signatureImageFile;
+  @override
+  void initState() {
+    super.initState();
+    _loadSignature();
+  }
+
+  Future<void> _loadSignature() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/signature.png');
+    if (file.existsSync()) {
+      setState(() {
+        _signatureImageFile = file;
+      });
+    }
+  }
+
+  Future<void> _saveSignature() async {
+    if (_controller.isNotEmpty) {
+      final Uint8List? data = await _controller.toPngBytes();
+      if (data != null) {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/signature.png');
+        await file.writeAsBytes(data);
+        await _loadSignature(); // ⬅️ Reload the signature file after saving
+        setState(() {
+          _isEditing = false;
+        });
+      }
+    }
+  }
+
+
+  void _resetSignature() {
+    _controller.clear();
+  }
+
+  void _startEditing() {
+    _controller.clear();
+    setState(() {
+      _isEditing = true;
+    });
+  }
+
 
   final List<Document> documentInfoDummy = [
     // Example data, replace with your actual document data
@@ -61,12 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    setState(() {});
-  }
 
   Future<void> fetchLatestProfileData() async {
     setState(() {
@@ -305,6 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         buildOptionsCard2(3, AppLocalizations.of(context)!.loans),
                         buildOptionsCard2(4, AppLocalizations.of(context)!.familyInfo),
                         buildOptionsCard2(5, AppLocalizations.of(context)!.shiftInfo),
+                        buildOptionsCard2(6, AppLocalizations.of(context)!.signature),
                       ],
                     ),
                   ),
@@ -1562,6 +1603,84 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ],
                       )
+                    ],
+                  )),
+            ),
+          ],
+          if (_selectedOptionIndex2 == 6)...[
+            Expanded(
+              child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      Stack(
+                        children: [
+                          // Signature Display or Placeholder
+                          Column(
+                            children: [
+                              _isEditing
+                                  ? Column(
+                                children: [
+                                  Signature(
+                                    controller: _controller,
+                                    height: 400,
+                                    backgroundColor: Colors.grey[200]!,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _resetSignature,
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        child: Text(AppLocalizations.of(context)!.cancel,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: _saveSignature,
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                        child: Text(AppLocalizations.of(context)!.save,
+                                          style: GoogleFonts.inter(
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                                  : Column(
+                                children: [
+                                  _signatureImageFile != null
+                                      ? Image.file(_signatureImageFile!, height: 250)
+                                      : Container(
+                                    height: 250,
+                                    alignment: Alignment.center,
+                                    color: Colors.grey[200],
+                                    child: Text('No signature available'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              onPressed: _startEditing,
+                              icon: Icon(
+                                _signatureImageFile != null ? Icons.edit : Icons.add,
+                                color: Colors.black,
+                              ),
+                              tooltip: _signatureImageFile != null ? 'Edit Signature' : 'Add Signature',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   )),
             ),

@@ -179,7 +179,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         ),
                                         child: ClipOval(
                                           child: Image.network(
-                                            employeeDetails?.profilePic ?? '',
+                                            employeeDetails?.first.profilePic ?? '',
                                             // URL for the network image, empty string if null
                                             fit: BoxFit.cover,
                                             width: 100,
@@ -356,7 +356,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails!.gender}",
+                                          "${employeeDetails!.first.gender}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -379,7 +379,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.nationality}",
+                                          "${employeeDetails.first.nationality}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -402,7 +402,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.dob}",
+                                          "${employeeDetails.first.dob}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -425,7 +425,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.age}",
+                                          "${employeeDetails.first.age}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -449,7 +449,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.martialStatus}",
+                                          "${employeeDetails.first.martialStatus}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -472,7 +472,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.phoneNumber!.first.mobileNumber}",
+                                          "${employeeDetails.first.phoneNumber!.first.mobileNumber}",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -495,7 +495,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.address!.streetAddress}",
+                                          "${employeeDetails.first.address!.streetAddress}",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
@@ -519,7 +519,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${employeeDetails.passport!.id}",
+                                          "${employeeDetails.first.passport!.id}",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
@@ -585,7 +585,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 Text(
-                                                  "${employeeDetails!.leaveBalance!.annualLeave?.used}",
+                                                  "${employeeDetails!.first.leaveBalance!.annualLeave?.used}",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
@@ -614,7 +614,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 Text(
-                                                  "${employeeDetails.leaveBalance!.annualLeave?.remaining}",
+                                                  "${employeeDetails.first.leaveBalance!.annualLeave?.remaining}",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
@@ -680,7 +680,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 Text(
-                                                  "${employeeDetails.leaveBalance!.sickLeave?.used}",
+                                                  "${employeeDetails.first.leaveBalance!.sickLeave?.used}",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
@@ -709,7 +709,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                 ),
                                                 const SizedBox(height: 20),
                                                 Text(
-                                                  "${employeeDetails.leaveBalance!.sickLeave?.remaining}",
+                                                  "${employeeDetails.first.leaveBalance!.sickLeave?.remaining}",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
@@ -1094,13 +1094,13 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               if (_selectedOptionIndex == 4) ...[
                                 Column(
                                   children: [
-                                    singletonClass.employeeDetailsDataList.first.data!.documentsInfo!.isNotEmpty
+                                    singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo!.isNotEmpty
                                         ? ListView.builder(
                                       padding: EdgeInsets.zero,
                                       shrinkWrap: true,
-                                      itemCount: singletonClass.employeeDetailsDataList.first.data!.documentsInfo!.length,
+                                      itemCount: singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo!.length,
                                       itemBuilder: (BuildContext context, int index) {
-                                        final documents = singletonClass.employeeDetailsDataList.first.data!.documentsInfo![index];
+                                        final documents = singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo![index];
                                         final fileType = documents.format?.split('.').last.toLowerCase(); // Null check for documents.type
                                         final isImage = fileType != null && ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
                                         final isPdf = fileType == 'pdf';
@@ -1202,9 +1202,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     shrinkWrap: true,
-                                    itemCount:  singletonClass.employeeDetailsDataList.first.data!.assetsInfo!.length,
+                                    itemCount:  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo!.length,
                                     itemBuilder: (BuildContext context, int index) {
-                                      final assets =  singletonClass.employeeDetailsDataList.first.data!.assetsInfo![index];
+                                      final assets =  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo![index];
                                       return Directionality(
                                         textDirection: TextDirection.ltr,
                                         child: GestureDetector(
@@ -1407,7 +1407,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
    //EMPLOYEE ATTENDANCE DATA API CALL
   Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData() async {
-    String? employeeId = singletonClass.employeeDetailsDataList.first.data?.id;
+    String? employeeId = singletonClass.employeeDetailsDataList.first.data?.first.id;
     var client = http.Client();
 
     // Get current date
@@ -1441,7 +1441,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   //EMPLOYEE CLOCKING DATA API CALL
   Future<EmployeeDetailsClocking?> getEmployeeClocking() async {
-    String? employeeId = singletonClass.employeeDetailsDataList.first.data?.id;
+    String? employeeId = singletonClass.employeeDetailsDataList.first.data?.first.id;
     var client = http.Client();
     // Get current date
     DateTime now = DateTime.now();
