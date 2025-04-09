@@ -1,3 +1,4 @@
+#!/bin/bash
 #!/bin/sh
 
 # Fail this script if any subcommand fails.
