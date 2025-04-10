@@ -6,7 +6,7 @@ set -e
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 
 # Clone Flutter SDK (custom repo or standard one).
-git clone https://github.com/flutter/flutter.git --depth 1 -b 3.29.4 $HOME/flutter
+git clone https://github.com/flutter/flutter.git --depth 1 -b 3.27.4 $HOME/flutter
 
 # Add Flutter to PATH.
 export PATH="$PATH:$HOME/flutter/bin"
