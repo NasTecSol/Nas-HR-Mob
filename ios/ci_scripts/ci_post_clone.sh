@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-# Exit immediately if a command exits with a non-zero status.
 set -e
 
 # Change working directory to the root of your cloned repo.
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 
 # Clone Flutter SDK (custom repo or standard one).
-git clone https://github.com/NasTecSol/Nas-HR-Mob.git --depth 1 -b stable "$HOME/flutter"
+git clone https://github.com/flutter/flutter.git --depth 1 -b 3.29.4 $HOME/flutter
 
 # Add Flutter to PATH.
 export PATH="$PATH:$HOME/flutter/bin"
@@ -19,7 +18,8 @@ flutter precache --ios
 flutter pub get
 
 # Install CocoaPods via Homebrew without auto-updating Homebrew.
-HOMEBREW_NO_AUTO_UPDATE=1 brew install cocoapods
+HOMEBREW_NO_AUTO_UPDATE=1
+brew install cocoapods
 
 # Navigate to the iOS directory and install pod dependencies.
 cd ios
