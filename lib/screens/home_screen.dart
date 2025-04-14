@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
@@ -33,7 +35,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   SingletonClass singletonClass = SingletonClass();
   double blurAmount = 10.0;
@@ -43,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = false;
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
+  String? _openLocation;
+  String? _backgroundLocation;
 
   @override
   void initState() {
@@ -55,10 +59,35 @@ class _HomeScreenState extends State<HomeScreen> {
         showHeaderContent = isExpanded;
         blurAmount = isExpanded ? 10.0 : 0.0;
       });
+      WidgetsBinding.instance.addObserver(this);
+      trackOpenLocation();
     });
     setState(() {
 
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      trackBackgroundLocation();
+    }
+  }
+
+  Future<void> trackOpenLocation() async {
+    _openLocation = await getCurrentLatLong();
+    updateRemoteLocation();
+  }
+
+  Future<void> trackBackgroundLocation() async {
+    _backgroundLocation = await getCurrentLatLong();
+    updateRemoteLocation();
   }
 
 
@@ -773,8 +802,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                            const NotificationsScreen()));
+                            updateRemoteLocation();
+                            // Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                            // const NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -2137,5 +2167,97 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
   }
+
+  //Update CALL
+  void updateRemoteLocation() async {
+    String? employeeID = singletonClass.getJWTModel()?.employeeId;
+    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+
+    // Fallbacks if any location is null
+    String finalLocation = '${_openLocation ?? "0.0,0.0"}|${_backgroundLocation ?? "0.0,0.0"}';
+
+    Map<String, dynamic> data = {
+      "lastLocation": finalLocation
+    };
+
+    String jsonData = jsonEncode(data);
+    log("remote Location Json$jsonData");
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonData,
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+
+      final decodedResponse = json.decode(response.body);
+      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.success,
+          type: QuickAlertType.success,
+        );
+      } else {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: 'Failed to send data. Error: $error',
+        type: QuickAlertType.error,
+      );
+    }
+  }
+
+  // Current Location
+  Future<String> getCurrentLatLong() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return '0.0,0.0'; // Or handle it differently
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return '0.0,0.0';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return '0.0,0.0';
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    return '${position.latitude},${position.longitude}';
+  }
+
 }
 

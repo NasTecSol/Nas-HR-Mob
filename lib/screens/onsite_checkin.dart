@@ -30,16 +30,31 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   final Location _location = Location();
 
   // Company location (example coordinates)
-  final double _companyLatitude = 33.57227317548423;
-  final double _companyLongitude = 73.14761580269642;
   final double _radiusInMeters = 100.0;
+  late final double _companyLatitude;
+  late final double _companyLongitude;
 
   @override
   void initState() {
     super.initState();
+    _parseCompanyLocation();
     _getCurrentLocation();
     _loadMapState();
   }
+
+  void _parseCompanyLocation() {
+    final String? locString = singletonClass.remoteAttendanceModelList.isNotEmpty && singletonClass.remoteAttendanceModelList.first.data!.remoteAttendanceLoc!.isNotEmpty
+        ? SingletonClass().remoteAttendanceModelList.first.data?.remoteAttendanceLoc
+        : null;
+    if (locString != null && locString.contains(',')) {
+      final parts = locString.split(',');
+      if (parts.length == 2) {
+        _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
+        _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
+      }
+    }
+  }
+
 
 
   Future<void> _loadMapState() async {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
@@ -15,6 +16,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:signature/signature.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
+import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -56,16 +58,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (_controller.isNotEmpty) {
       final Uint8List? data = await _controller.toPngBytes();
       if (data != null) {
-        final dir = await getApplicationDocumentsDirectory();
-        final file = File('${dir.path}/signature.png');
-        await file.writeAsBytes(data);
-        await _loadSignature(); // ⬅️ Reload the signature file after saving
+        await _uploadSignatureToApi(data);
         setState(() {
           _isEditing = false;
         });
       }
     }
   }
+
 
 
   void _resetSignature() {
@@ -1655,14 +1655,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                               )
                                   : Column(
                                 children: [
-                                  _signatureImageFile != null
-                                      ? Image.file(_signatureImageFile!, height: 250)
+                                  singletonClass.signatureModelList.isNotEmpty &&
+                                      singletonClass.signatureModelList.first.data!.url != null
+                                      ? Image.network(
+                                    singletonClass.signatureModelList.first.data!.url!,
+                                    height: 250,
+                                  )
                                       : Container(
                                     height: 250,
                                     alignment: Alignment.center,
                                     color: Colors.grey[200],
                                     child: Text('No signature available'),
-                                  ),
+                                  )
                                 ],
                               ),
                             ],
@@ -1946,6 +1950,68 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+
+  //Signature CALL
+  Future<void> _uploadSignatureToApi(Uint8List data) async {
+    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final mimeType = 'image/png';
+
+      var request = http.MultipartRequest('POST', uri);
+      request.files.add(http.MultipartFile(
+        'file',
+        http.ByteStream.fromBytes(data),
+        data.length,
+        filename: 'signature.png',
+        contentType: MediaType.parse(mimeType),
+      ));
+
+      request.fields['attachmentName'] = 'signature.png';
+      request.fields['attachmentType'] = 'png';
+
+      var response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(responseBody);
+        SignatureModel profileResponse = SignatureModel.fromJson(decodedJson);
+        singletonClass.signatureModelList = [profileResponse];
+
+        updateSignature();
+        singletonClass.getEmployeeData();
+
+        setState(() {
+          isLoading = false;
+        });
+
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.success,
+          type: QuickAlertType.success,
+        );
+      } else {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (e) {
+      print('Upload error: $e');
+    }
+  }
+
   //PATCH CALL
   void updateEmployeeData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
@@ -2012,6 +2078,89 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } catch (e) {
       print('Error: $e');
+    }
+  }
+
+  void updateSignature() async {
+    String? employeeID = singletonClass.getJWTModel()?.employeeId;
+    String url = '${singletonClass.baseURL}/employee/updateEMPSignature/$employeeID';
+
+    // Define the JSON data to send
+    Map<String, dynamic> data = {
+      "empSignature": "${singletonClass.signatureModelList.first.data!.url}",
+    };
+
+    // Convert data to JSON string
+    String jsonData = jsonEncode(data);
+    log("Signature Json$jsonData");
+
+    // Make the PATCH request
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonData,
+      );
+      setState(() {
+        isLoading = false;
+      });
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['statusCode'] == 200) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.success,
+            type: QuickAlertType.success,
+          );
+        } else if (decodedResponse['statusCode'] == 400) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.internalServerError,
+            type: QuickAlertType.error,
+          );
+        }
+      } else if (response.statusCode == 400 || response.statusCode == 500) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('Error: ${response.statusCode}');
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: 'Error: ${response.statusCode}',
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: 'Failed to send data. Error: $error',
+        type: QuickAlertType.error,
+      );
     }
   }
 }

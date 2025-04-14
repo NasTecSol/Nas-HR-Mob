@@ -2,7 +2,7 @@ class TeamAttendanceModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  List<TeamAttendanceData>? data;
+  Data? data;
 
   TeamAttendanceModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
@@ -10,7 +10,7 @@ class TeamAttendanceModel {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => TeamAttendanceData.fromJson(e)).toList();
+    data = json["data"] == null ? null : Data.fromJson(json["data"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -19,8 +19,38 @@ class TeamAttendanceModel {
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
     if(data != null) {
+      _data["data"] = data?.toJson();
+    }
+    return _data;
+  }
+}
+
+class Data {
+  List<TeamAttendanceData>? data;
+  int? totalRecords;
+  int? page;
+  int? limit;
+  int? totalPages;
+
+  Data({this.data, this.totalRecords, this.page, this.limit, this.totalPages});
+
+  Data.fromJson(Map<String, dynamic> json) {
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => TeamAttendanceData.fromJson(e)).toList();
+    totalRecords = json["totalRecords"];
+    page = json["page"];
+    limit = json["limit"];
+    totalPages = json["totalPages"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(data != null) {
       _data["data"] = data?.map((e) => e.toJson()).toList();
     }
+    _data["totalRecords"] = totalRecords;
+    _data["page"] = page;
+    _data["limit"] = limit;
+    _data["totalPages"] = totalPages;
     return _data;
   }
 }
@@ -38,10 +68,10 @@ class TeamAttendanceData {
   dynamic totalHoursWorked;
   dynamic location;
   dynamic status;
-  List<BreaksTaken>? breaksTaken;
+  List<dynamic>? breaksTaken;
   dynamic breakTime;
   dynamic lateMinutes;
-  List<dynamic>? penalties;
+  List<Penalties>? penalties;
   dynamic leaveDetails;
   dynamic shift;
   dynamic workingHoursPerday;
@@ -49,7 +79,7 @@ class TeamAttendanceData {
   dynamic remarks;
   dynamic createdAt;
   dynamic updatedAt;
-  dynamic v;
+  int? v;
 
   TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 
@@ -66,10 +96,10 @@ class TeamAttendanceData {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
-    breaksTaken = json["breaksTaken"] == null ? null : (json["breaksTaken"] as List).map((e) => BreaksTaken.fromJson(e)).toList();
+    breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
-    penalties = json["penalties"] ?? [];
+    penalties = json["penalties"] == null ? null : (json["penalties"] as List).map((e) => Penalties.fromJson(e)).toList();
     leaveDetails = json["leaveDetails"];
     shift = json["shift"];
     workingHoursPerday = json["workingHoursPerday"];
@@ -95,12 +125,12 @@ class TeamAttendanceData {
     _data["location"] = location;
     _data["status"] = status;
     if(breaksTaken != null) {
-      _data["breaksTaken"] = breaksTaken?.map((e) => e.toJson()).toList();
+      _data["breaksTaken"] = breaksTaken;
     }
     _data["breakTime"] = breakTime;
     _data["lateMinutes"] = lateMinutes;
     if(penalties != null) {
-      _data["penalties"] = penalties;
+      _data["penalties"] = penalties?.map((e) => e.toJson()).toList();
     }
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
@@ -110,6 +140,34 @@ class TeamAttendanceData {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    return _data;
+  }
+}
+
+class Penalties {
+  int? uniqueId;
+  String? action;
+  int? percentage;
+  int? lateMinute;
+  int? occurrence;
+
+  Penalties({this.uniqueId, this.action, this.percentage, this.lateMinute, this.occurrence});
+
+  Penalties.fromJson(Map<String, dynamic> json) {
+    uniqueId = json["uniqueId"];
+    action = json["action"];
+    percentage = json["percentage"];
+    lateMinute = json["lateMinute"];
+    occurrence = json["occurrence"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["uniqueId"] = uniqueId;
+    _data["action"] = action;
+    _data["percentage"] = percentage;
+    _data["lateMinute"] = lateMinute;
+    _data["occurrence"] = occurrence;
     return _data;
   }
 }
