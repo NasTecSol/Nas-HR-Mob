@@ -53,7 +53,8 @@ class _RequestScreenState extends State<RequestScreen> {
   List<String> subTypeList = [];
   int? totalDays;
   final bool _isTeamSelected = false;
-  String? installmentAmount;
+  int? installmentAmount;
+  String? totalMonths;
 
   @override
   void initState() {
@@ -134,7 +135,11 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass
                               .companyDataList.first.data!.request![index];
-                          if (request.requestName == 'Penalty and Fine Requests' && !(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
+                          if (request.requestName ==
+                                  'Penalty and Fine Requests' &&
+                              !(singletonClass.getJWTModel()?.grade == 'L0' ||
+                                  singletonClass.getJWTModel()?.grade ==
+                                      'L1')) {
                             return const SizedBox.shrink();
                           }
                           if (request.requestType == 'complaintRequest') {
@@ -144,7 +149,12 @@ class _RequestScreenState extends State<RequestScreen> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  if (request.requestType == 'allowance_Increment' && (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
+                                  if (request.requestType ==
+                                          'allowance_Increment' &&
+                                      (singletonClass.getJWTModel()?.grade ==
+                                              'L0' ||
+                                          singletonClass.getJWTModel()?.grade ==
+                                              'L1')) {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -182,7 +192,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      AppLocalizations.of(context)!.yourSelf,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .yourSelf,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -220,7 +232,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      AppLocalizations.of(context)!.teams,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .teams,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -501,7 +515,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withValues(alpha: 0.5),
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.5),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
@@ -1212,7 +1227,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .requestDataList.first.data!.data![index];
+                                        .requestDataList
+                                        .first
+                                        .data!
+                                        .data![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1226,8 +1244,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.5),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -1948,12 +1966,15 @@ class _RequestScreenState extends State<RequestScreen> {
                                 )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
-                                  itemCount: singletonClass
-                                      .approverDataList.first.data!.data!.length,
+                                  itemCount: singletonClass.approverDataList
+                                      .first.data!.data!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = singletonClass
-                                        .approverDataList.first.data!.data![index];
+                                        .approverDataList
+                                        .first
+                                        .data!
+                                        .data![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1967,8 +1988,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.5),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -2413,46 +2434,47 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ],
                                                     const SizedBox(height: 10),
                                                     if (request.status ==
-                                                        'pending')...[
+                                                        'pending') ...[
                                                       Padding(
                                                         padding:
-                                                        const EdgeInsets
-                                                            .all(10.0),
+                                                            const EdgeInsets
+                                                                .all(10.0),
                                                         child: Row(
                                                           mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
+                                                              MainAxisAlignment
+                                                                  .center,
                                                           children: [
                                                             GestureDetector(
                                                               onTap: () {
                                                                 showDialog(
                                                                     context:
-                                                                    context,
+                                                                        context,
                                                                     builder:
                                                                         (BuildContext
-                                                                    context) {
+                                                                            context) {
                                                                       return AlertDialog(
-                                                                        backgroundColor: Colors.white,
+                                                                        backgroundColor:
+                                                                            Colors.white,
                                                                         title:
-                                                                        Text(
+                                                                            Text(
                                                                           AppLocalizations.of(context)!
                                                                               .comment,
                                                                           style:
-                                                                          GoogleFonts.poppins(
+                                                                              GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                            FontWeight.w500,
+                                                                                FontWeight.w500,
                                                                             color:
-                                                                            NasColors.darkBlue,
+                                                                                NasColors.darkBlue,
                                                                             fontSize:
-                                                                            23,
+                                                                                23,
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                        Expanded(
+                                                                            Expanded(
                                                                           child:
-                                                                          Container(
+                                                                              Container(
                                                                             decoration:
-                                                                            BoxDecoration(
+                                                                                BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2468,7 +2490,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               ],
                                                                             ),
                                                                             child:
-                                                                            TextField(
+                                                                                TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
@@ -2508,7 +2530,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         actions: [
                                                                           Row(
                                                                             mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
+                                                                                MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
@@ -2541,13 +2563,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 width: 120,
                                                                 height: 40,
                                                                 decoration:
-                                                                const BoxDecoration(
+                                                                    const BoxDecoration(
                                                                   borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          10)),
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              10)),
                                                                   gradient:
-                                                                  LinearGradient(
+                                                                      LinearGradient(
                                                                     colors: [
                                                                       Color(
                                                                           0xFF4D4D4D),
@@ -2568,16 +2590,16 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 child: Align(
                                                                   alignment:
-                                                                  Alignment
-                                                                      .center,
+                                                                      Alignment
+                                                                          .center,
                                                                   child: Text(
                                                                     AppLocalizations.of(
-                                                                        context)!
+                                                                            context)!
                                                                         .cancel,
                                                                     style: GoogleFonts
                                                                         .inter(
                                                                       fontSize:
-                                                                      15,
+                                                                          15,
                                                                       color: Colors
                                                                           .white,
                                                                     ),
@@ -2591,32 +2613,33 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               onTap: () {
                                                                 showDialog(
                                                                     context:
-                                                                    context,
+                                                                        context,
                                                                     builder:
                                                                         (BuildContext
-                                                                    context) {
+                                                                            context) {
                                                                       return AlertDialog(
-                                                                        backgroundColor: Colors.white,
+                                                                        backgroundColor:
+                                                                            Colors.white,
                                                                         title:
-                                                                        Text(
+                                                                            Text(
                                                                           AppLocalizations.of(context)!
                                                                               .comment,
                                                                           style:
-                                                                          GoogleFonts.poppins(
+                                                                              GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                            FontWeight.w500,
+                                                                                FontWeight.w500,
                                                                             color:
-                                                                            NasColors.darkBlue,
+                                                                                NasColors.darkBlue,
                                                                             fontSize:
-                                                                            23,
+                                                                                23,
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                        Expanded(
+                                                                            Expanded(
                                                                           child:
-                                                                          Container(
+                                                                              Container(
                                                                             decoration:
-                                                                            BoxDecoration(
+                                                                                BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2632,7 +2655,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               ],
                                                                             ),
                                                                             child:
-                                                                            TextField(
+                                                                                TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
@@ -2672,7 +2695,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         actions: [
                                                                           Row(
                                                                             mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
+                                                                                MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
@@ -2705,13 +2728,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 width: 120,
                                                                 height: 40,
                                                                 decoration:
-                                                                const BoxDecoration(
+                                                                    const BoxDecoration(
                                                                   borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          10)),
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              10)),
                                                                   gradient:
-                                                                  LinearGradient(
+                                                                      LinearGradient(
                                                                     colors: [
                                                                       Color(
                                                                           0xFF47734D),
@@ -2732,16 +2755,16 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 child: Align(
                                                                   alignment:
-                                                                  Alignment
-                                                                      .center,
+                                                                      Alignment
+                                                                          .center,
                                                                   child: Text(
                                                                     AppLocalizations.of(
-                                                                        context)!
+                                                                            context)!
                                                                         .acceptRequest,
                                                                     style: GoogleFonts
                                                                         .inter(
                                                                       fontSize:
-                                                                      15,
+                                                                          15,
                                                                       color: Colors
                                                                           .white,
                                                                     ),
@@ -2753,7 +2776,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                     ]
-
                                                   ],
                                                 ],
                                               ),
@@ -3005,14 +3027,17 @@ class _RequestScreenState extends State<RequestScreen> {
         return status!;
     }
   }
+
   //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
         approverStatus.isEmpty ||
         approverStatus == 'pending') {
-      return NasColors.pending; // Use pending color if status is empty or pending
+      return NasColors
+          .pending; // Use pending color if status is empty or pending
     } else {
-      return NasColors.completed; // Use completed color if status is other than pending
+      return NasColors
+          .completed; // Use completed color if status is other than pending
     }
   }
 
@@ -3233,7 +3258,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 value: subType,
                                 child: Text(
                                   _translateRequestSubtype(
-                                  subType.requestName! , context),
+                                      subType.requestName!, context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -3253,7 +3278,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       remainingBalance <= 0) {
                                     // Show warning if the selected leave balance is insufficient
                                     _showWarningDialog(context,
-                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName , context)}');
+                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
                                   } else {
                                     setState(() {
                                       _selectedSubType = newValue;
@@ -3289,8 +3314,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: NasColors.lightBlue,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.3),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -4192,128 +4217,300 @@ class _RequestScreenState extends State<RequestScreen> {
                             color: Colors.grey,
                           ),
                         ),
-                        Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate: fromDate ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2101),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return Theme(
-                                          data: ThemeData.light().copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              surface: NasColors.lightBlue,
-                                              primary: Colors.white,
-                                              onPrimary: Colors.black,
-                                              onSurface: Colors.white,
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors.white,
+                        if (_selectedRequestType != 'loanRequest') ...[
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: fromDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (date != null) {
-                                      setState(() {
-                                        fromDate = date;
-                                      });
-                                    }
-                                  },
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (date != null) {
+                                        setState(() {
+                                          fromDate = date;
+
+                                          // Recalculate totalDays and totalMonths if toDate is also selected
+                                          if (toDate != null) {
+                                            final daysDiff = toDate!
+                                                    .difference(fromDate!)
+                                                    .inDays +
+                                                1;
+                                            totalDays = daysDiff;
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      fromDate == null
+                                          ? AppLocalizations.of(context)!
+                                              .fromDate
+                                          : DateFormat('yyyy-MM-dd')
+                                              .format(fromDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: toDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (date != null) {
+                                        setState(() {
+                                          toDate = date;
+
+                                          if (fromDate != null) {
+                                            final daysDiff = toDate!
+                                                    .difference(fromDate!)
+                                                    .inDays +
+                                                1;
+                                            totalDays = daysDiff;
+                                          } else {
+                                            totalDays = null;
+                                            totalMonths = null;
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      toDate == null
+                                          ? AppLocalizations.of(context)!.toDate
+                                          : DateFormat('yyyy-MM-dd')
+                                              .format(toDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 10),
+                        if (_selectedRequestType == 'loanRequest') ...[
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: fromDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+
+                                      if (date != null) {
+                                        setState(() {
+                                          fromDate = DateTime(date.year,
+                                              date.month);
+
+                                          if (toDate != null) {
+                                            int totalMonthCount =
+                                                ((toDate!.year -
+                                                            fromDate!.year) *
+                                                        12 +
+                                                    (toDate!.month -
+                                                        fromDate!.month) +
+                                                    1);
+                                            totalMonths =
+                                                totalMonthCount.toString();
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      fromDate == null
+                                          ? AppLocalizations.of(context)!
+                                              .fromDate
+                                          : DateFormat('yyyy-MM')
+                                              .format(fromDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: toDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+
+                                      if (date != null) {
+                                        setState(() {
+                                          toDate = DateTime(date.year,
+                                              date.month); // ignore day
+
+                                          if (fromDate != null) {
+                                            int totalMonthCount =
+                                                ((toDate!.year -
+                                                            fromDate!.year) *
+                                                        12 +
+                                                    (toDate!.month -
+                                                        fromDate!.month) +
+                                                    1);
+                                            totalMonths =
+                                                totalMonthCount.toString();
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      toDate == null
+                                          ? AppLocalizations.of(context)!.toDate
+                                          : DateFormat('yyyy-MM')
+                                              .format(toDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1,
+                                color: Colors.grey,
+                              ),
+                              if (totalMonths != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
-                                    fromDate == null
-                                        ? AppLocalizations.of(context)!.fromDate
-                                        : DateFormat('yyyy-MM-dd')
-                                            .format(fromDate!),
+                                    'Total Months: $totalMonths',
                                     style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
-                                Icon(
-                                  Icons.calendar_month_outlined,
-                                  size: 30,
-                                  color: NasColors.darkBlue,
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate: toDate ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2101),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return Theme(
-                                          data: ThemeData.light().copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              surface: NasColors.lightBlue,
-                                              primary: Colors.white,
-                                              onPrimary: Colors.black,
-                                              onSurface: Colors.white,
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (date != null) {
-                                      setState(() {
-                                        toDate = date;
-                                        if (fromDate != null) {
-                                          totalDays = toDate!
-                                                  .difference(fromDate!)
-                                                  .inDays +
-                                              1; // Calculate totalDays
-                                        } else {
-                                          totalDays =
-                                              null; // Handle case where fromDate is null
-                                        }
-                                      });
-                                    }
-                                  },
-                                  child: Text(
-                                    toDate == null
-                                        ? AppLocalizations.of(context)!.toDate
-                                        : DateFormat('yyyy-MM-dd')
-                                            .format(toDate!),
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.calendar_month_outlined,
-                                  size: 30,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ],
-                            ),
-                            Container(
-                              height: 1,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+                        ],
                         const SizedBox(height: 10),
                         if (_selectedRequestType == "leaveRequest") ...[
                           Text(
@@ -4378,11 +4575,17 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             ),
                             onChanged: (value) {
-                               setState((){
-                                 double parsedValue = double.tryParse(value) ?? 0.0;
-                                 int safeTotalDays = totalDays ?? 1; // Prevent null and zero division
-                                 installmentAmount = (parsedValue / safeTotalDays).toStringAsFixed(2);
-                               });
+                              setState(() {
+                                double parsedValue = double.tryParse(value) ?? 0.0;
+                                double safeTotalMonths = double.tryParse(totalMonths ?? "0") ?? 0.0;
+
+                                if (safeTotalMonths > 0) {
+                                  installmentAmount = (parsedValue / safeTotalMonths).round(); // or .toInt() if you want to truncate
+                                } else {
+                                  installmentAmount = 0;
+                                }
+                              });
+
                             },
                           ),
                           const SizedBox(height: 10),
@@ -4395,7 +4598,9 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                           ),
                           Text(
-                            (installmentAmount == null || installmentAmount!.isEmpty) ? "N/A" : "$installmentAmount",
+                            (installmentAmount == null)
+                                ? "N/A"
+                                : "$installmentAmount",
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -4499,11 +4704,13 @@ class _RequestScreenState extends State<RequestScreen> {
                         if (selectedRequest.docRequired == true) ...[
                           TextButton(
                             onPressed: () async {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles(
                                 type: FileType.image,
                               );
 
-                              if (result != null && result.files.single.path != null) {
+                              if (result != null &&
+                                  result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
 
                                 // Show the image immediately
@@ -4520,27 +4727,27 @@ class _RequestScreenState extends State<RequestScreen> {
                                   showDialog(
                                     context: context,
                                     builder: (_) => AlertDialog(
-                                      title: Text(AppLocalizations.of(context)!.uploadFailed),
+                                      title: Text(AppLocalizations.of(context)!
+                                          .uploadFailed),
                                       content: Text(message),
                                       actions: [
                                         TextButton(
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          child: Text(AppLocalizations.of(context)!.ok,
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text(
+                                            AppLocalizations.of(context)!.ok,
                                             style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black
-                                            ),
+                                                color: Colors.black),
                                           ),
                                         ),
                                       ],
                                     ),
                                   );
                                 }
-
                               } else {
                                 print('File selection canceled.');
                               }
-
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -4580,7 +4787,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                             top: -5,
                                             right: -5,
                                             child: GestureDetector(
-                                              onTap: () => setState(() => selectedFile = null),
+                                              onTap: () => setState(
+                                                  () => selectedFile = null),
                                               child: Container(
                                                 width: 20,
                                                 height: 20,
@@ -4594,7 +4802,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   size: 14,
                                                 ),
                                               ),
-                                            ),)
+                                            ),
+                                          )
                                         ],
                                       ),
                                   ],
@@ -4766,7 +4975,8 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _translateBottomText(selectedRequest.requestName, context),
+                          _translateBottomText(
+                              selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -4802,7 +5012,8 @@ class _RequestScreenState extends State<RequestScreen> {
                               return DropdownMenuItem<SubTypes>(
                                 value: subType,
                                 child: Text(
-                                _translateRequestSubtype( subType.requestName, context),
+                                  _translateRequestSubtype(
+                                      subType.requestName, context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -4858,8 +5069,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: NasColors.lightBlue,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.3),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -5441,24 +5652,21 @@ class _RequestScreenState extends State<RequestScreen> {
                         if (selectedRequest.docRequired == true) ...[
                           TextButton(
                             onPressed: () async {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                type: FileType.image,
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles(
+                                type: FileType.any,
                               );
-
-                              if (result != null && result.files.single.path != null) {
+                              if (result != null &&
+                                  result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
-
                                 // Show the image immediately
                                 setState(() => selectedFile = file);
-
                                 // Start upload in the background
                                 final results = await uploadProfile(file);
                                 final success = results["success"] as bool;
                                 final message = results["message"] as String;
-
                                 if (!success && context.mounted) {
                                   setState(() => selectedFile = null);
-
                                   showDialog(
                                     context: context,
                                     builder: (_) => AlertDialog(
@@ -5467,23 +5675,22 @@ class _RequestScreenState extends State<RequestScreen> {
                                       content: Text(message),
                                       actions: [
                                         TextButton(
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          child: Text("OK",
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text(
+                                            "OK",
                                             style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black
-                                            ),
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
                                           ),
                                         ),
                                       ],
                                     ),
                                   );
                                 }
-
                               } else {
                                 print('File selection canceled.');
                               }
-
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -5523,7 +5730,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                             top: -5,
                                             right: -5,
                                             child: GestureDetector(
-                                              onTap: () => setState(() => selectedFile = null),
+                                              onTap: () => setState(
+                                                  () => selectedFile = null),
                                               child: Container(
                                                 width: 20,
                                                 height: 20,
@@ -5537,7 +5745,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   size: 14,
                                                 ),
                                               ),
-                                            ),)
+                                            ),
+                                          )
                                         ],
                                       ),
                                   ],
@@ -5683,7 +5892,6 @@ class _RequestScreenState extends State<RequestScreen> {
     );
   }
 
-
   //S3 CALL
   Future<Map<String, dynamic>> uploadProfile(PlatformFile file) async {
     try {
@@ -5697,7 +5905,8 @@ class _RequestScreenState extends State<RequestScreen> {
       var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
       var request = http.MultipartRequest('POST', uri);
 
-      final mimeType = lookupMimeType(file.path ?? '') ?? 'application/octet-stream';
+      final mimeType =
+          lookupMimeType(file.path ?? '') ?? 'application/octet-stream';
 
       request.files.add(http.MultipartFile(
         'file',
@@ -5716,19 +5925,20 @@ class _RequestScreenState extends State<RequestScreen> {
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        AttachmentResponse attachmentResponse = AttachmentResponse.fromJson(decodedJson);
+        AttachmentResponse attachmentResponse =
+            AttachmentResponse.fromJson(decodedJson);
         singletonClass.attachmentResponseDataList = [attachmentResponse];
         return {"success": true, "message": ""};
       } else {
-        return {"success": false, "message": "Upload failed: ${response.statusCode}\n\n$responseBody"};
+        return {
+          "success": false,
+          "message": "Upload failed: ${response.statusCode}\n\n$responseBody"
+        };
       }
     } catch (e) {
       return {"success": false, "message": "Error: $e"};
     }
   }
-
-
-
 
   //POST API CALL
   Future<void> postRequest() async {
@@ -5738,6 +5948,7 @@ class _RequestScreenState extends State<RequestScreen> {
     String? firstName = singletonClass.employeeDataList.first.data!.firstName;
     String? middleName = singletonClass.employeeDataList.first.data!.middleName;
     String? lastName = singletonClass.employeeDataList.first.data!.lastName;
+    String? policyId = singletonClass.companyDataList.first.data!.policies!.first.policyId;
     String? employeeName = [firstName, middleName, lastName]
         .where((name) => name != null && name.isNotEmpty)
         .join(' ');
@@ -5750,11 +5961,8 @@ class _RequestScreenState extends State<RequestScreen> {
     String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
     int totalDays = toDate!.difference(fromDate!).inDays + 1;
     String totalDaysString = totalDays.toString();
-    int totalMonths =
-        (toDate!.year - fromDate!.year) * 12 + toDate!.month - fromDate!.month;
-    String totalDuration = selectedRequestType == "loanRequest"
-        ? totalMonths.toString()
-        : totalDays.toString();
+    int? loanAmount = int.tryParse(_totalLoanAmount.text);
+    int? totalMonth = int.tryParse(totalMonths!);
 
     // Check if requestType and subType are selected
     if (selectedRequestType == null || selectedSubType == null) {
@@ -5786,10 +5994,10 @@ class _RequestScreenState extends State<RequestScreen> {
 
     if (selectedRequestType == 'loanRequest') {
       requestData.add({
-        "loanAmount": _totalLoanAmount.text,
+        "loanAmount": loanAmount,
         "loanCycle": "monthly",
         "loanInstallment": installmentAmount,
-        "loanDuration": totalDuration,
+        "loanDuration": totalMonth,
         "loanType": selectedSubType,
       });
     } else if (selectedRequestType == 'penalties_fines') {
@@ -5840,7 +6048,7 @@ class _RequestScreenState extends State<RequestScreen> {
       "empId": singletonClass.getJWTModel()?.empId,
       "employeeName": employeeName,
       "branchId": branchId,
-      "policyId": "123",
+      "policyId": policyId,
       "requestType": selectedRequestType,
       "subType": selectedSubType,
       "requestData": requestData,
@@ -5850,7 +6058,7 @@ class _RequestScreenState extends State<RequestScreen> {
     };
 
     String body = json.encode(data);
-    print(body);
+    print("Request JSON POST ${body}");
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
 
     setState(() {
@@ -5872,7 +6080,7 @@ class _RequestScreenState extends State<RequestScreen> {
       });
 
       final decodedResponse = json.decode(response.body);
-      print(decodedResponse);
+      print("REQUEST RESPONSE ${decodedResponse}");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
