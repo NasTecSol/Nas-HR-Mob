@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +14,6 @@ import 'dart:math' as math;
 import '../request_controller/branch_model.dart';
 
 class TeamAttendanceScreen extends StatefulWidget {
-
   const TeamAttendanceScreen({super.key});
 
   @override
@@ -26,6 +26,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   late List<Teams> filteredUnderTeams;
   List<TeamAttendanceData> filteredAttendanceDataList = [];
   String? selectedEmployeeId;
+  DateTime? _selectedDate;
+  int? _selectedDateIndex;
+  final List<DateTime> _dates = [];
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   @override
   void initState() {
@@ -34,7 +39,27 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     List<BranchData> branchDataList = singletonClass.branchDataList;
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
+    _setDefaultDates();
+    _initDates(start: _startDate!, end: _endDate!);
     loadData();
+  }
+
+  void _setDefaultDates() {
+    final now = DateTime.now();
+    _startDate = DateTime(now.year, now.month, 1);
+    _endDate = now;
+  }
+
+  void _initDates({required DateTime start, required DateTime end}) {
+    _dates.clear();
+    final now = DateTime.now();
+    for (var date = start;
+    !date.isAfter(end) && !date.isAfter(now);
+    date = date.add(const Duration(days: 1))) {
+      _dates.add(date);
+    }
+    _selectedDateIndex = null;
+    _selectedDate =  null ;
   }
 
   Map<String, List<Teams>> getFilteredTeams(
@@ -42,91 +67,101 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    // Debugging: print branch data
-    print('Branch Data List length: ${branchDataList.length}');
-
     for (BranchData branchData in branchDataList) {
       for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
-          // Check if the user is a supervisor in the department
-          bool isSupervisor = department.supervisors?.any(
-                  (supervisor) => supervisor.empId == reportingManagerId) ??
-              false;
-          print(
-              'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
-
           if (userGrade == "L0" || userGrade == "L1") {
-            // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               for (var supervisor in department.supervisors ?? []) {
-                // Check if the supervisor empId matches the reportingManagerId
-                if (supervisor.empId == reportingManagerId) {
-                  // Now check if the supervisor's teamId matches the current team's teamId
-                  if (supervisor.teamId == team.teamId) {
-                    print(
-                        'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
-                    underTeams.add(
-                        team); // Add to underTeams if supervisor manages the team
-                  }
+                if (supervisor.empId == reportingManagerId &&
+                    supervisor.teamId == team.teamId) {
+                  underTeams.add(team);
                 }
               }
             }
-          } else if (userGrade == "L2" || userGrade == "L3") {}
+          }
         }
       }
     }
-    // Return both lists in a map
-    return {
-      'underTeams': underTeams,
-    };
+    return {'underTeams': underTeams};
   }
 
   Future<void> loadData() async {
-    await getTeamAttendanceData();
+    await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
     filterAttendanceData();
   }
 
-  void filterAttendanceData() {
-    List<TeamAttendanceData> filteredData = [];
-    List<TeamAttendanceData>? allAttendanceData =
-        singletonClass.teamAttendanceDataList.first.data;
-
-    if (allAttendanceData != null && filteredUnderTeams.isNotEmpty) {
-      for (var team in filteredUnderTeams) {
-        var teamClocking = allAttendanceData
-            .where((clocking) =>
-                team.teamData?.any(
-                    (member) => member.employeeId == clocking.employeeId) ??
-                false)
-            .toList();
-
-        filteredData.addAll(teamClocking);
+  Future<TeamAttendanceModel?> getTeamAttendanceData({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    Set<String> employeeIds = {};
+    for (var team in filteredUnderTeams) {
+      for (var member in team.teamData ?? []) {
+        employeeIds.add(member.employeeId!);
       }
     }
+    String ids = employeeIds.join(',');
+    String? startDateStr;
+    String? endDateStr;
 
-    if (selectedEmployeeId != null && selectedEmployeeId!.isNotEmpty) {
-      filteredData = filteredData
-          .where((clocking) => clocking.employeeId == selectedEmployeeId)
-          .toList();
+    if(startDate != null && endDate != null){
+     startDateStr = '${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}-${startDate.year}';
+     endDateStr = '${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}-${endDate.year}'; }
+    else {
+      DateTime now = DateTime.now();
+      DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
+       startDateStr = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
+       endDateStr = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
     }
 
-    setState(() {
-      filteredAttendanceDataList = filteredData;
-    });
-  }
+    var uri = Uri.parse(
+      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr',
+    );
 
-  Future<TeamAttendanceModel?> getTeamAttendanceData() async {
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-attendance');
     var response = await http.get(uri);
+    log("TEAM DATA LOG : ${response.body}");
+    log("TEAM ID's : $ids");
 
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = TeamAttendanceModel.fromJson(responseBody);
-      singletonClass.teamAttendanceDataList.addAll([attendance]);
+      singletonClass.teamAttendanceDataList.clear();
+      singletonClass.teamAttendanceDataList.add(attendance);
       return attendance;
     }
     return null;
   }
+
+  void filterAttendanceData() {
+    List<TeamAttendanceData> allAttendanceData =
+        singletonClass.teamAttendanceDataList.first.data!.data ?? [];
+
+    List<TeamAttendanceData> filtered = allAttendanceData;
+
+    if (selectedEmployeeId != null) {
+      filtered = filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
+    }
+
+    if (_selectedDate != null) {
+      filtered = filtered.where((attendance) {
+        DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
+        return updatedAt.year == _selectedDate!.year &&
+            updatedAt.month == _selectedDate!.month &&
+            updatedAt.day == _selectedDate!.day;
+      }).toList();
+    }
+
+    setState(() {
+      filteredAttendanceDataList = filtered;
+    });
+  }
+
+
+  String _getDayOfWeek(DateTime date) {
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -136,289 +171,366 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.4),
-                              spreadRadius: 5,
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_outlined,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 180,
-                      child: Text(
-                        AppLocalizations.of(context)!.teamAttendance,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    PopupMenuButton<String>(
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
                       color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      onSelected: (value) {
-                        setState(() {
-                          selectedEmployeeId = value;
-                          filterAttendanceData(); // Call function to filter data
-                        });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return filteredUnderTeams.first.teamData!
-                            .map((data) => PopupMenuItem<String>(
-                                  value: data.employeeId,
-                                  // Employee ID for filtering
-                                  child: Text(data.userName ??
-                                      "Unknown"), // Display employee name
-                                ))
-                            .toList();
-                      },
-                      child: Container(
-                        height: 30,
-                        width: 90,
-                        decoration: BoxDecoration(
-                          color: NasColors.darkBlue,
-                          borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 5,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.filter_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              AppLocalizations.of(context)!.filter,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.teamAttendance,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: NasColors.darkBlue,
+                  ),
+                ),
+                const Spacer(),
+                PopupMenuButton<String>(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  onSelected: (value) {
+                    selectedEmployeeId = value;
+                    filterAttendanceData();
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return filteredUnderTeams.first.teamData!
+                        .map((data) => PopupMenuItem<String>(
+                              value: data.employeeId,
+                              child: Text(data.userName ?? "Unknown"),
+                            ))
+                        .toList();
+                  },
+                  child: Container(
+                    height: 30,
+                    width: 90,
+                    decoration: BoxDecoration(
+                      color: NasColors.darkBlue,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.filter_alt,
+                            color: Colors.white, size: 20),
+                        const SizedBox(width: 5),
+                        Text(
+                          AppLocalizations.of(context)!.filter,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Expanded(
-            child: FutureBuilder(
-              future: getTeamAttendanceData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Lottie.asset('images/loader.json',
-                        height: 200, width: 200),
-                  );
-                } else if (filteredAttendanceDataList.isEmpty) {
-                  return Center(
-                    child: Text(AppLocalizations.of(context)!.noData),
-                  );
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: filteredAttendanceDataList.length,
-                  itemBuilder: (context, index) {
-                    final attendance =
-                        filteredAttendanceDataList.reversed.toList()[index];
-                    String formatDate(String updatedAt) {
-                      DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                      return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
-                    }
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  final DateTime now = DateTime.now();
+                  final DateTime lastSelectableDate = now;
 
-                    String date = formatDate(attendance.updatedAt!);
-                    String lateMinutes = formatMinutes(attendance.lateMinutes);
-                    String earlyCheckOut =
-                        formatMinutes(attendance.earlyCheckOut);
-                    String breakTime = formatMinutes(attendance.breakTime);
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=> TeamAttendanceDetailScreen(attendanceData: attendance)));
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: Colors.white,
+                  final DateTimeRange? picked = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime(now.year - 2),
+                    lastDate: lastSelectableDate,
+                    builder: (BuildContext context, Widget? child) {
+                      return Theme(
+                        data: ThemeData.light().copyWith(
+                          scaffoldBackgroundColor: Colors.white,
+                          textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                              foregroundColor: NasColors.darkBlue, // Button color
+                            ),
+                          ),
+                          colorScheme: ColorScheme.light(
+                            primary: NasColors.darkBlue, // Selection color
+                            onPrimary: Colors.white, // Default text color
+                            secondaryContainer: NasColors.icons,
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  attendance.name ?? "N/A",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Container(
-                                  height: attendance.status == "Missing CheckIn/Out" ? 30 : 20,
-                                  width: attendance.status == "Missing CheckIn/Out" ? 120 : 75,
-                                  decoration: BoxDecoration(
-                                    color: getStatusColor(attendance.status!),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _translateStatus(attendance.status, context),
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Text(
-                                  singletonClass.formatCheckInTime(
-                                      attendance.clockInTime),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Transform(
-                                  transform: Matrix4.rotationY(math.pi),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.exit_to_app_outlined,
-                                    size: 20,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.pending,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.error,
-                                  size: 20,
-                                  color: NasColors.pending,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 70,
-                                  child: Text(
-                                    singletonClass.formatCheckInTime(
-                                        attendance.clockOutTime),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.exit_to_app_outlined,
-                                  size: 20,
-                                  color: Colors.black,
-                                ),
-                                const Spacer(),
-                                Text(
-                                  "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.onTime,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.directions_run_outlined,
-                                  size: 20,
-                                  color: NasColors.onTime,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Text(
-                                  date,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  "$breakTime ${AppLocalizations.of(context)!.minutes}",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.coffee,
-                                  size: 20,
-                                  color: Colors.brown,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                        child: child!,
+                      );
+                    },
+                    initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+                  );
+
+                  if (picked != null) {
+                    _startDate = picked.start;
+                    _endDate = picked.end;
+                    _initDates(start: picked.start, end: picked.end);
+                    await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
+                    filterAttendanceData();
+                  }
+                },
+                icon:  Icon(Icons.date_range,color: NasColors.darkBlue,),
+                label: Text(
+                  AppLocalizations.of(context)!.selectDate,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    color: NasColors.darkBlue,
+                  ),
+                ),
+
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _dates.length,
+              itemBuilder: (ctx, i) {
+                final date = _dates[i];
+                final selected = _selectedDateIndex == i;
+                return GestureDetector(
+                  onTap: () {
+                    _selectedDateIndex = i;
+                    _selectedDate = date;
+                    filterAttendanceData();
                   },
+                  child: Container(
+                    width: 55,
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      color: selected ? NasColors.darkBlue : Colors.transparent,
+                      borderRadius: BorderRadius.circular(35),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("${date.day}",
+                            style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: selected ? Colors.white : Colors.grey)),
+                        Text(_getDayOfWeek(date),
+                            style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: selected ? Colors.white : Colors.grey)),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
           ),
+          const SizedBox(height: 20),
+          Expanded(
+              child: FutureBuilder(
+                  future: getTeamAttendanceData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Lottie.asset('images/loader.json',
+                            height: 200, width: 200),
+                      );
+                    } else if (filteredAttendanceDataList.isEmpty) {
+                      return Center(
+                        child: Text(AppLocalizations.of(context)!.noData),
+                      );
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount:filteredAttendanceDataList.length,
+                      itemBuilder: (ctx, i) {
+                        final attendance = filteredAttendanceDataList[i];
+
+                        String formatDate(String updatedAt) {
+                          DateTime updatedAtDateTime =
+                              DateTime.parse(updatedAt);
+                          return DateFormat('dd-MM-yyyy')
+                              .format(updatedAtDateTime);
+                        }
+
+                        String date = formatDate(attendance.updatedAt!);
+                        String lateMinutes =
+                            formatMinutes(attendance.lateMinutes);
+                        String earlyCheckOut =
+                            formatMinutes(attendance.earlyCheckOut);
+                        String breakTime = formatMinutes(attendance.breakTime);
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TeamAttendanceDetailScreen(
+                                    attendanceData: attendance),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      attendance.name ?? "N/A",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      height: attendance.status ==
+                                              "Missing CheckIn/Out"
+                                          ? 30
+                                          : 20,
+                                      width: attendance.status ==
+                                              "Missing CheckIn/Out"
+                                          ? 120
+                                          : 75,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            getStatusColor(attendance.status!),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          _translateStatus(
+                                              attendance.status, context),
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Text(
+                                      singletonClass.formatCheckInTime(
+                                          attendance.clockInTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Transform(
+                                      transform: Matrix4.rotationY(math.pi),
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.exit_to_app_outlined,
+                                        size: 20,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.pending,
+                                      ),
+                                    ),
+                                    Icon(Icons.error,
+                                        size: 20, color: NasColors.pending),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Text(
+                                      singletonClass.formatCheckInTime(
+                                          attendance.clockOutTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Icon(Icons.exit_to_app_outlined,
+                                        size: 20),
+                                    const Spacer(),
+                                    Text(
+                                      "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.onTime,
+                                      ),
+                                    ),
+                                    Icon(Icons.directions_run_outlined,
+                                        size: 20, color: NasColors.onTime),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Text(date,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        )),
+                                    const Spacer(),
+                                    Text(
+                                      "$breakTime ${AppLocalizations.of(context)!.minutes}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const Icon(Icons.coffee,
+                                        size: 20, color: Colors.brown),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  })),
         ],
       ),
     );
@@ -426,11 +538,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
   String _translateStatus(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-
-    // Check for null values
-    if (status == null) {
-      return localizations.noData;
-    }
+    if (status == null) return localizations.noData;
 
     switch (status) {
       case 'Absent':
@@ -445,6 +553,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         return status;
     }
   }
+
   Color getStatusColor(String status) {
     switch (status) {
       case "Absent":
@@ -460,40 +569,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     }
   }
 
-  DateTime? parseTime(String timeString) {
-    try {
-      final timeOnlyString = timeString.contains('T')
-          ? timeString.split('T')[1].split('.')[0]
-          : timeString.split('.')[0];
-      final timeFormat = DateFormat.Hms();
-      DateTime now = DateTime.now();
-      DateTime parsedTime = timeFormat.parse(timeOnlyString);
-      return DateTime(now.year, now.month, now.day, parsedTime.hour,
-          parsedTime.minute, parsedTime.second);
-    } catch (e) {
-      print('Error parsing time: $e\n$timeString');
-      return null;
-    }
-  }
-
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
-      // Ensure the value is treated as a double and then round it
       double roundedMinutes = (minutes is int)
           ? minutes.toDouble()
           : double.parse(minutes.toString());
-      return roundedMinutes
-          .ceil()
-          .toString(); // Round up to the nearest integer
+      return roundedMinutes.ceil().toString();
     } catch (e) {
-      print('Error formatting minutes: $e');
       return '--';
     }
-  }
-
-  String formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return '--:--';
-    return DateFormat("hh:mm a").format(dateTime); // Format as "02:30 PM"
   }
 }

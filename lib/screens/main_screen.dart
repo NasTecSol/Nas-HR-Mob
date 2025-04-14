@@ -56,7 +56,6 @@ class _MainScreenState extends State<MainScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    final dashBoardData = singletonClass.employeeDataList.first.data;
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -109,9 +108,9 @@ class _MainScreenState extends State<MainScreen> {
                           backgroundColor: Colors.white,
                           radius: 35,
                           child: ClipOval(
-                            child: (dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty)
+                            child: (singletonClass.employeeDataList.first.data?.profilePic != null && singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
                                 ? Image.network(
-                              dashBoardData.profilePic!,
+                              singletonClass.employeeDataList.first.data!.profilePic!,
                               fit: BoxFit.cover,
                               width: 70,
                               height: 70,

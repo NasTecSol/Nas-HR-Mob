@@ -693,8 +693,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
 
     // Format dates as 'yyyy-MM-dd'
-    String startDateString = "${startDate.toIso8601String().split('T')[0]}";
-    String endDateString = "${endDate.toIso8601String().split('T')[0]}";
+    String startDateString = startDate.toIso8601String().split('T')[0];
+    String endDateString = endDate.toIso8601String().split('T')[0];
 
     print(startDateString);
     print(endDateString);

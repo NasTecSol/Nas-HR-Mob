@@ -25,8 +25,10 @@ import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
+import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
+import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
@@ -54,6 +56,8 @@ class SingletonClass {
   List<EmployeeData> employeeDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
+  List<SignatureModel> signatureModelList = [];
+  List<RemoteAttendanceModel> remoteAttendanceModelList = [];
   List<ProjectsData> projectsDataList = [];
   List<TaskAttachmentModel> taskAttachmentDataList = [];
   List<TaskModel> taskModelList = [];
@@ -195,6 +199,22 @@ class SingletonClass {
       var employeeData = EmployeeData.fromJson(responseBody);
       setEmployeeData([employeeData]);
       return employeeData;
+    }
+    return null ; // Print the response body
+  }
+
+  //Remote Attendance Data
+  Future<RemoteAttendanceModel?> getRemoteAttendanceData() async {
+    String? employeeId =  getJWTModel()?.employeeId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/employee/getEMPRemoteLocation/$employeeId');
+    var response = await client.get(uri);
+    log("Remote Attendance Data : ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var remoteData = RemoteAttendanceModel.fromJson(responseBody);
+      remoteAttendanceModelList.addAll([remoteData]);
+      return remoteData;
     }
     return null ; // Print the response body
   }
