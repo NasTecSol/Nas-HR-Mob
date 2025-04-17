@@ -566,7 +566,8 @@
     "signature": "التوقيع",
     "selectComplaintType": "اختار نوع الشكوى",
     "complaintAgainstColleague": "شكوى ضد الزميل",
-     "complaintAgainstSupervisor": "شكوى ضد المشرف",
-     "generalComplaint": "شكوى عامة"
+    "complaintAgainstSupervisor": "شكوى ضد المشرف",
+    "generalComplaint": "شكوى عامة",
+    "createLetter": "إنشاء خطاب"
 
 }
