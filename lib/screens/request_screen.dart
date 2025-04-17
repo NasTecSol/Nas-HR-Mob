@@ -12,8 +12,10 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../request_controller/approver_request_data_model.dart';
 import '../request_controller/attachment_response_model.dart';
 import '../request_controller/company_model.dart';
+import '../request_controller/request_data_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
@@ -55,6 +57,10 @@ class _RequestScreenState extends State<RequestScreen> {
   final bool _isTeamSelected = false;
   int? installmentAmount;
   String? totalMonths;
+  int _currentPage = 0;
+  int _totalPages = 1;
+  int _requestCurrentPage = 0;
+  int _requestTotalPages = 1;
 
   @override
   void initState() {
@@ -68,14 +74,16 @@ class _RequestScreenState extends State<RequestScreen> {
           .cast<String>()
           .toList();
     }
-    singletonClass.getRequestData();
-    singletonClass.getApproverData();
+    _fetchApproverData(0);
+    _fetchRequestData(0);
+    getRequestData();
+    getApproverData();
     setState(() {
-      singletonClass.getRequestData();
-      singletonClass.getApproverData();
+      getRequestData();
+      getApproverData();
     });
-    _approverDataFuture = singletonClass.getApproverData();
-    _requestDataFuture = singletonClass.getRequestData();
+    _approverDataFuture = getApproverData();
+    _requestDataFuture = getRequestData();
     setState(() {});
   }
 
@@ -93,6 +101,26 @@ class _RequestScreenState extends State<RequestScreen> {
         _expandedIndex = index;
       }
     });
+  }
+
+  Future<void> _fetchApproverData(int page) async {
+    final data = await getApproverData(page: page);
+    if (data != null) {
+      setState(() {
+        _currentPage = page;
+        _totalPages = data.data?.totalPages ?? 1;
+      });
+    }
+  }
+
+  Future<void> _fetchRequestData(int page) async {
+    final data = await getRequestData(page: page);
+    if (data != null) {
+      setState(() {
+        _requestCurrentPage = page;
+        _requestTotalPages = data.data?.totalPages ?? 1;
+      });
+    }
   }
 
 //Overlay
@@ -467,7 +495,7 @@ class _RequestScreenState extends State<RequestScreen> {
               Expanded(
                 // Wrap ListView with Expanded
                 child: FutureBuilder(
-                    future: _requestDataFuture,
+                    future: getRequestData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
@@ -1183,7 +1211,140 @@ class _RequestScreenState extends State<RequestScreen> {
                         );
                       }
                     }),
-              )
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _requestCurrentPage > 0
+                                ? () =>
+                                    _fetchRequestData(_requestCurrentPage - 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_back_ios_sharp),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // First Page
+                        GestureDetector(
+                          onTap: () => _fetchApproverData(0),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _requestCurrentPage == 0
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '1',
+                              style: GoogleFonts.inter(
+                                color: _requestCurrentPage == 0
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Ellipsis and Last Page
+                        if (_requestTotalPages > 3) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text('...'),
+                          ),
+                          GestureDetector(
+                            onTap: () =>
+                                _fetchRequestData(_requestTotalPages - 1),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _requestCurrentPage ==
+                                        _requestTotalPages - 1
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '$_requestTotalPages',
+                                style: GoogleFonts.inter(
+                                  color: _requestCurrentPage ==
+                                          _requestTotalPages - 1
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else
+                          // Show intermediate pages if total <= 3
+                          for (int i = 1; i < _requestTotalPages; i++)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: GestureDetector(
+                                onTap: () => _fetchRequestData(i),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _requestCurrentPage == i
+                                        ? NasColors.darkBlue
+                                        : NasColors.onTime.withOpacity(0.31),
+                                  ),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: GoogleFonts.inter(
+                                      color: _requestCurrentPage == i
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _requestCurrentPage <
+                                    _requestTotalPages - 1
+                                ? () =>
+                                    _fetchRequestData(_requestCurrentPage + 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_forward_ios_sharp),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1') ...[
@@ -1191,7 +1352,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 Expanded(
                   // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: _requestDataFuture,
+                      future: getRequestData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1929,13 +2090,145 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         }
                       }),
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _requestCurrentPage > 0
+                                  ? () =>
+                                      _fetchRequestData(_requestCurrentPage - 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_back_ios_sharp),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // First Page
+                          GestureDetector(
+                            onTap: () => _fetchRequestData(0),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _requestCurrentPage == 0
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '1',
+                                style: GoogleFonts.inter(
+                                  color: _requestCurrentPage == 0
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Ellipsis and Last Page
+                          if (_requestTotalPages > 3) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text('...'),
+                            ),
+                            GestureDetector(
+                              onTap: () =>
+                                  _fetchRequestData(_requestTotalPages - 1),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _requestCurrentPage ==
+                                          _requestTotalPages - 1
+                                      ? NasColors.darkBlue
+                                      : NasColors.onTime.withOpacity(0.31),
+                                ),
+                                child: Text(
+                                  '$_requestTotalPages',
+                                  style: GoogleFonts.inter(
+                                    color: _requestCurrentPage ==
+                                            _requestTotalPages - 1
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else
+                            // Show intermediate pages if total <= 3
+                            for (int i = 1; i < _requestTotalPages; i++)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: GestureDetector(
+                                  onTap: () => _fetchRequestData(i),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _requestCurrentPage == i
+                                          ? NasColors.darkBlue
+                                          : NasColors.onTime.withOpacity(0.31),
+                                    ),
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: GoogleFonts.inter(
+                                        color: _requestCurrentPage == i
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _requestCurrentPage <
+                                      _requestTotalPages - 1
+                                  ? () =>
+                                      _fetchRequestData(_requestCurrentPage + 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_forward_ios_sharp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
               if (_selectedOptionIndex == 1) ...[
                 Expanded(
-                  // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: _approverDataFuture,
+                      future: getApproverData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -2470,7 +2763,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                            Expanded(
+                                                                            SingleChildScrollView(
+                                                                          // 🔧 Fixes overflow
                                                                           child:
                                                                               Container(
                                                                             decoration:
@@ -2485,7 +2779,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 BoxShadow(
                                                                                   color: Colors.white,
                                                                                   blurRadius: 15,
-                                                                                  offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
+                                                                                  offset: Offset(0.10, 10.0),
                                                                                 ),
                                                                               ],
                                                                             ),
@@ -2494,20 +2788,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
-                                                                              // Minimum number of lines the text field will have
                                                                               maxLines: null,
-                                                                              // No limit to the number of lines, it will expand
                                                                               decoration: InputDecoration(
                                                                                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                                                                                 focusedBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set focused border color
+                                                                                  borderSide: BorderSide(color: NasColors.darkBlue),
                                                                                 ),
                                                                                 enabledBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set border color when not focused
+                                                                                  borderSide: BorderSide(color: NasColors.darkBlue),
                                                                                 ),
                                                                               ),
                                                                               style: const TextStyle(
@@ -2520,9 +2808,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               cursorColor: Colors.black,
                                                                               onTapOutside: (event) {
                                                                                 FocusManager.instance.primaryFocus?.unfocus();
-                                                                              },
-                                                                              onChanged: (value) {
-                                                                                // Handle any changes here
                                                                               },
                                                                             ),
                                                                           ),
@@ -2612,161 +2897,119 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             GestureDetector(
                                                               onTap: () {
                                                                 showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return AlertDialog(
-                                                                        backgroundColor:
-                                                                            Colors.white,
-                                                                        title:
-                                                                            Text(
-                                                                          AppLocalizations.of(context)!
-                                                                              .comment,
-                                                                          style:
-                                                                              GoogleFonts.poppins(
-                                                                            fontWeight:
-                                                                                FontWeight.w500,
-                                                                            color:
-                                                                                NasColors.darkBlue,
-                                                                            fontSize:
-                                                                                23,
-                                                                          ),
+                                                                  context: context,
+                                                                  builder: (BuildContext context) {
+                                                                    return AlertDialog(
+                                                                      backgroundColor: Colors.white,
+                                                                      title: Text(
+                                                                        AppLocalizations.of(context)!.comment,
+                                                                        style: GoogleFonts.poppins(
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.darkBlue,
+                                                                          fontSize: 23,
                                                                         ),
-                                                                        content:
-                                                                            Expanded(
-                                                                          child:
-                                                                              Container(
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color: Colors.white,
-                                                                              borderRadius: BorderRadius.circular(10.0),
-                                                                              border: Border.all(
-                                                                                color: NasColors.darkBlue,
-                                                                                width: 1.0,
-                                                                              ),
-                                                                              boxShadow: const [
-                                                                                BoxShadow(
-                                                                                  color: Colors.white,
-                                                                                  blurRadius: 15,
-                                                                                  offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
-                                                                                ),
-                                                                              ],
+                                                                      ),
+                                                                      content: SingleChildScrollView(
+                                                                        child: Container(
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                            border: Border.all(
+                                                                              color: NasColors.darkBlue,
+                                                                              width: 1.0,
                                                                             ),
-                                                                            child:
-                                                                                TextField(
-                                                                              textAlign: TextAlign.center,
-                                                                              controller: _comment,
-                                                                              minLines: 1,
-                                                                              // Minimum number of lines the text field will have
-                                                                              maxLines: null,
-                                                                              // No limit to the number of lines, it will expand
-                                                                              decoration: InputDecoration(
-                                                                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                                                                focusedBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set focused border color
-                                                                                ),
-                                                                                enabledBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set border color when not focused
-                                                                                ),
-                                                                              ),
-                                                                              style: const TextStyle(
-                                                                                color: Colors.black,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                fontSize: 12,
-                                                                              ),
-                                                                              autofocus: false,
-                                                                              textInputAction: TextInputAction.done,
-                                                                              cursorColor: Colors.black,
-                                                                              onTapOutside: (event) {
-                                                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                                              },
-                                                                              onChanged: (value) {
-                                                                                // Handle any changes here
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        actions: [
-                                                                          Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            children: [
-                                                                              Container(
-                                                                                decoration: BoxDecoration(
-                                                                                  color: NasColors.completed,
-                                                                                  borderRadius: BorderRadius.circular(10),
-                                                                                ),
-                                                                                child: TextButton(
-                                                                                  onPressed: () {
-                                                                                    Navigator.pop(context);
-                                                                                    patchRequestData(request.id, 'approved', request.toJson());
-                                                                                    _comment.clear();
-                                                                                  },
-                                                                                  child: Text(
-                                                                                    AppLocalizations.of(context)!.accept,
-                                                                                    style: GoogleFonts.poppins(
-                                                                                      fontWeight: FontWeight.w500,
-                                                                                      color: Colors.white,
-                                                                                      fontSize: 12,
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(
+                                                                                color: Colors.white,
+                                                                                blurRadius: 15,
+                                                                                offset: Offset(0.10, 10.0),
                                                                               ),
                                                                             ],
                                                                           ),
-                                                                        ],
-                                                                      );
-                                                                    });
+                                                                          child: TextField(
+                                                                            textAlign: TextAlign.center,
+                                                                            controller: _comment,
+                                                                            minLines: 1,
+                                                                            maxLines: null,
+                                                                            decoration: InputDecoration(
+                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                              focusedBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                              enabledBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                            ),
+                                                                            style: const TextStyle(
+                                                                              color: Colors.black,
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 12,
+                                                                            ),
+                                                                            autofocus: false,
+                                                                            textInputAction: TextInputAction.done,
+                                                                            cursorColor: Colors.black,
+                                                                            onTapOutside: (event) {
+                                                                              FocusManager.instance.primaryFocus?.unfocus();
+                                                                            },
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: NasColors.completed,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: TextButton(
+                                                                                onPressed: () {
+                                                                                  Navigator.pop(context);
+                                                                                  patchRequestData(request.id, 'approved', request.toJson());
+                                                                                  _comment.clear();
+                                                                                },
+                                                                                child: Text(
+                                                                                  AppLocalizations.of(context)!.accept,
+                                                                                  style: GoogleFonts.poppins(
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 12,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  },
+                                                                );
                                                               },
                                                               child: Container(
                                                                 width: 120,
                                                                 height: 40,
-                                                                decoration:
-                                                                    const BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              10)),
-                                                                  gradient:
-                                                                      LinearGradient(
+                                                                decoration: const BoxDecoration(
+                                                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                                  gradient: LinearGradient(
                                                                     colors: [
-                                                                      Color(
-                                                                          0xFF47734D),
-                                                                      Color(
-                                                                          0xFF5B9362),
-                                                                      Color(
-                                                                          0xFF66A56E),
-                                                                      Color(
-                                                                          0xFF76BE7F),
-                                                                      Color(
-                                                                          0xFF86D991),
+                                                                      Color(0xFF47734D),
+                                                                      Color(0xFF5B9362),
+                                                                      Color(0xFF66A56E),
+                                                                      Color(0xFF76BE7F),
+                                                                      Color(0xFF86D991),
                                                                     ],
-                                                                    begin: Alignment
-                                                                        .topRight,
-                                                                    end: Alignment
-                                                                        .bottomLeft,
+                                                                    begin: Alignment.topRight,
+                                                                    end: Alignment.bottomLeft,
                                                                   ),
                                                                 ),
                                                                 child: Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
+                                                                  alignment: Alignment.center,
                                                                   child: Text(
-                                                                    AppLocalizations.of(
-                                                                            context)!
-                                                                        .acceptRequest,
-                                                                    style: GoogleFonts
-                                                                        .inter(
-                                                                      fontSize:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .white,
+                                                                    AppLocalizations.of(context)!.acceptRequest,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize: 15,
+                                                                      color: Colors.white,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -2800,7 +3043,134 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         }
                       }),
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _currentPage > 0
+                                  ? () => _fetchApproverData(_currentPage - 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_back_ios_sharp),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // First Page
+                          GestureDetector(
+                            onTap: () => _fetchApproverData(0),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentPage == 0
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '1',
+                                style: GoogleFonts.inter(
+                                  color: _currentPage == 0
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Ellipsis and Last Page
+                          if (_totalPages > 3) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text('...'),
+                            ),
+                            GestureDetector(
+                              onTap: () => _fetchApproverData(_totalPages - 1),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _currentPage == _totalPages - 1
+                                      ? NasColors.darkBlue
+                                      : NasColors.onTime.withOpacity(0.31),
+                                ),
+                                child: Text(
+                                  '$_totalPages',
+                                  style: GoogleFonts.inter(
+                                    color: _currentPage == _totalPages - 1
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else
+                            // Show intermediate pages if total <= 3
+                            for (int i = 1; i < _totalPages; i++)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: GestureDetector(
+                                  onTap: () => _fetchApproverData(i),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _currentPage == i
+                                          ? NasColors.darkBlue
+                                          : NasColors.onTime.withOpacity(0.31),
+                                    ),
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: GoogleFonts.inter(
+                                        color: _currentPage == i
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _currentPage < _totalPages - 1
+                                  ? () => _fetchApproverData(_currentPage + 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_forward_ios_sharp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ],
           ],
@@ -4393,8 +4763,8 @@ class _RequestScreenState extends State<RequestScreen> {
 
                                       if (date != null) {
                                         setState(() {
-                                          fromDate = DateTime(date.year,
-                                              date.month);
+                                          fromDate =
+                                              DateTime(date.year, date.month);
 
                                           if (toDate != null) {
                                             int totalMonthCount =
@@ -4576,16 +4946,19 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                             onChanged: (value) {
                               setState(() {
-                                double parsedValue = double.tryParse(value) ?? 0.0;
-                                double safeTotalMonths = double.tryParse(totalMonths ?? "0") ?? 0.0;
+                                double parsedValue =
+                                    double.tryParse(value) ?? 0.0;
+                                double safeTotalMonths =
+                                    double.tryParse(totalMonths ?? "0") ?? 0.0;
 
                                 if (safeTotalMonths > 0) {
-                                  installmentAmount = (parsedValue / safeTotalMonths).round(); // or .toInt() if you want to truncate
+                                  installmentAmount = (parsedValue /
+                                          safeTotalMonths)
+                                      .round(); // or .toInt() if you want to truncate
                                 } else {
                                   installmentAmount = 0;
                                 }
                               });
-
                             },
                           ),
                           const SizedBox(height: 10),
@@ -5948,7 +6321,8 @@ class _RequestScreenState extends State<RequestScreen> {
     String? firstName = singletonClass.employeeDataList.first.data!.firstName;
     String? middleName = singletonClass.employeeDataList.first.data!.middleName;
     String? lastName = singletonClass.employeeDataList.first.data!.lastName;
-    String? policyId = singletonClass.companyDataList.first.data!.policies!.first.policyId;
+    String? policyId =
+        singletonClass.companyDataList.first.data!.policies!.first.policyId;
     String? employeeName = [firstName, middleName, lastName]
         .where((name) => name != null && name.isNotEmpty)
         .join(' ');
@@ -6095,7 +6469,7 @@ class _RequestScreenState extends State<RequestScreen> {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        await singletonClass.getRequestData();
+        await getRequestData();
         Navigator.pop(context);
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??
@@ -6130,7 +6504,6 @@ class _RequestScreenState extends State<RequestScreen> {
   //PATCH API CALL
   void patchRequestData(String? requestID, String status,
       Map<String, dynamic> requestData) async {
-    // Define the URL where you want to send the data
     String url = '${singletonClass.baseURL}/request/$requestID';
 
     // Define the JSON data to send
@@ -6248,8 +6621,8 @@ class _RequestScreenState extends State<RequestScreen> {
 
       // Create a SearchedResult instance
       SearchedResult result = SearchedResult(
-        empId: employeeData.data?.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.firstName,
+        empId: employeeData.data?.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.first.firstName,
       );
 
       print(">>>>$result");
@@ -6270,6 +6643,116 @@ class _RequestScreenState extends State<RequestScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
       );
+    }
+  }
+
+  Future<ApproverRequestData?> getApproverData(
+      {int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+
+    // Request body (stays the same)
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+      ],
+    };
+
+    // Updated URI with query parameters
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/approver/$employeeId?limit=$limit&page=$page',
+    );
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+
+        // Optionally: merge or update list if pagination is used for loading more
+        if (page == 0) {
+          singletonClass.setApproverDataList([requestData]);
+        } else {
+          final existing = singletonClass.approverDataList;
+          singletonClass.setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
+  //Request
+  Future<RequestDataModel?> getRequestData(
+      {int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+
+    // Request body with the required parameter
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+      ],
+    };
+
+    // Updated URI with query parameters
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/employee/$employeeId?limit=$limit&page=$page',
+    );
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = RequestDataModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        if (page == 0) {
+          singletonClass.setRequestData([requestData]);
+        } else {
+          final existing = singletonClass.requestDataList;
+          singletonClass.setRequestData([...existing, requestData]);
+        }
+        return requestData;
+      } else {
+        log("Error request Data: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error request data: $e');
+      return null;
     }
   }
 }

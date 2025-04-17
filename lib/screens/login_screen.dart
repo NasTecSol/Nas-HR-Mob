@@ -404,8 +404,6 @@ class _LoginScreenState extends State<LoginScreen> {
             singletonClass.getClockingData();
             singletonClass.getBranchData();
             singletonClass.getCompanyData();
-            singletonClass.getRequestData();
-            singletonClass.getApproverData();
             singletonClass.getEmployeeAttendanceData();
             singletonClass.getNotifications();
             singletonClass.sendFCMToken();

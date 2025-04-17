@@ -2,6 +2,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/screens/create_hr_letter_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -84,7 +85,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         const Spacer(),
                         IconButton(
                           onPressed: () {
-                            // Add your settings action
+                           Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateHrLetterScreen()));
                           },
                           icon: Container(
                             height: 40,
