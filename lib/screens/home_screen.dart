@@ -802,9 +802,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       children: [
                         IconButton(
                           onPressed: () {
-                            updateRemoteLocation();
-                            // Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                            // const NotificationsScreen()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                            const NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -2200,34 +2199,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       final decodedResponse = json.decode(response.body);
       if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
-        await QuickAlert.show(
-          autoCloseDuration: const Duration(seconds: 2),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-          context: context,
-          title: AppLocalizations.of(context)!.success,
-          type: QuickAlertType.success,
-        );
       } else {
-        await QuickAlert.show(
-          autoCloseDuration: const Duration(seconds: 2),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-          context: context,
-          title: AppLocalizations.of(context)!.errorFetchData,
-          type: QuickAlertType.error,
-        );
       }
     } catch (error) {
       print('Failed to send data. Error: $error');
-      await QuickAlert.show(
-        autoCloseDuration: const Duration(seconds: 2),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-        context: context,
-        title: 'Failed to send data. Error: $error',
-        type: QuickAlertType.error,
-      );
     }
   }
 

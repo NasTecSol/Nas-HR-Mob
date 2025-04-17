@@ -391,7 +391,6 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        await singletonClass.getRequestData();
         Navigator.pop(context);
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??

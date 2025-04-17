@@ -905,5 +905,6 @@
   "selectComplaintType":"Select Complaint Type",
   "complaintAgainstColleague":"Complaint Against Colleague",
   "complaintAgainstSupervisor":"Complaint Against Supervisor",
-  "generalComplaint":"General Complaint"
+  "generalComplaint":"General Complaint",
+  "createLetter":"Create Letter"
 }
