@@ -20,12 +20,15 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
   @override
   Widget build(BuildContext context) {
     String lateMinutes = formatMinutes(widget.attendanceData!.lateMinutes);
+    String earlyMinutes = formatMinutes(widget.attendanceData!.earlyCheckOut);
     dynamic totalDurationMinutes = widget.attendanceData!.breaksTaken!.isEmpty
         ? 0.0
         : widget.attendanceData!.breaksTaken!
-        .map((breakTaken) => breakTaken.durationMinutes ?? 0.0)
+        .map((breakTaken) => breakTaken['durationMinutes'] ?? 0.0)
         .reduce((value, element) => value + element);
+
     String totalDurationString = formatMinutes(totalDurationMinutes.toString());
+
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
@@ -134,42 +137,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ],
                       ),
                       const SizedBox(width: 10),
-                      if (widget.attendanceData!.lateMinutes > 0)...[
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.error,
-                              size: 25,
-                              color: NasColors.pending,
-                            ),
-                            Text(AppLocalizations.of(context)!.late,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.normal,
-                                color: NasColors.darkBlue,
-                              ),),
-                          ],
-                        )
-                      ],
-                      if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.directions_run_outlined,
-                              size: 25,
-                              color: NasColors.onTime,
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.earlyCheckOut,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.normal,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
                       const SizedBox(width: 10),
                       Row(
                         children: [
@@ -198,30 +165,91 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                           fontWeight: FontWeight.normal,
                           color: NasColors.darkBlue,
                         ),),
-                      if (widget.attendanceData!.lateMinutes > 0)...[
-                        Text(lateMinutes,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: NasColors.darkBlue,
-                          ),),
-                      ],
-                      if (widget.attendanceData?.earlyCheckOut != null && widget.attendanceData!.earlyCheckOut! > 0) ...[
-                        Text(
-                          widget.attendanceData!.earlyCheckOut.toString(), // Ensure it's a String
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: NasColors.darkBlue,
-                          ),
-                        ),
-                      ],
                       Text(singletonClass.formatCheckInTime(widget.attendanceData!.clockOutTime),
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.normal,
                           color: NasColors.darkBlue,
                         ),),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Column(
+                    children: [
+                      Row(
+                        children: [
+                          if (widget.attendanceData!.lateMinutes! > 0) ...[
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.error,
+                                  size: 25,
+                                  color: NasColors.pending,
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.late,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.normal,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                if (widget.attendanceData!.lateMinutes! > 0) ...[
+                                  Text(
+                                    lateMinutes,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.normal,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          if (widget.attendanceData?.earlyCheckOut !=
+                              null &&
+                              widget.attendanceData!.earlyCheckOut! >
+                                  0) ...[
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.directions_run_outlined,
+                                  size: 25,
+                                  color: NasColors.onTime,
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!
+                                      .earlyCheckOut,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.normal,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                if (widget.attendanceData?.earlyCheckOut != null &&
+                                    widget.attendanceData!.earlyCheckOut! > 0) ...[
+                                  Text(
+                                    earlyMinutes,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.normal,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            )
+                          ]
+                        ],
+                      )
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -280,128 +308,132 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     height: 220,
                     child: ListView.builder(
                         padding: EdgeInsets.zero,
+
                         itemCount: widget.attendanceData!.breaksTaken!.length,
                         itemBuilder: (context , index){
                           final breakTaken = widget.attendanceData!.breaksTaken![index];
-                          DateTime? startTime = parseTime(breakTaken.startTime.toString())?.toLocal();
-                          DateTime? endTime = parseTime(breakTaken.endTime.toString())?.toLocal();
-                          String duration = formatMinutes(breakTaken.durationMinutes);
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                height: 50,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.zero,
-                                  color: NasColors.lightGrey,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.4),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: const Offset(0, 3),
+                          DateTime? startTime = parseTime(breakTaken['startTime'].toString())?.toLocal();
+                          DateTime? endTime = parseTime(breakTaken['endTime'].toString())?.toLocal();
+                          String duration = formatMinutes(breakTaken['durationMinutes']);
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  height: 50,
+                                  width: 60,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.zero,
+                                    color: NasColors.lightGrey,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withValues(alpha: 0.4),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child:  Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: Text(
+                                      "${index + 1}", // Dynamically setting the break number
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ],
-                                ),
-                                child:  Padding(
-                                  padding: const EdgeInsets.only(top: 15.0),
-                                  child: Text(
-                                    "${index + 1}", // Dynamically setting the break number
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                height: 50,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.zero,
-                                  color: NasColors.lightGrey,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.4),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: const Offset(0, 3),
+                                const SizedBox(width: 5),
+                                Container(
+                                  height: 50,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.zero,
+                                    color: NasColors.lightGrey,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withValues(alpha: 0.4),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: Text(formatDateTime(startTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 15.0),
-                                  child: Text(formatDateTime(startTime),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                height: 50,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.zero,
-                                  color: NasColors.lightGrey,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.4),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: const Offset(0, 3),
+                                const SizedBox(width: 5),
+                                Container(
+                                  height: 50,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.zero,
+                                    color: NasColors.lightGrey,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withValues(alpha: 0.4),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: Text(formatDateTime(endTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 15.0),
-                                  child: Text(formatDateTime(endTime),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                height: 50,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.zero,
-                                  color: NasColors.lightGrey,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.4),
-                                      spreadRadius: 1,
-                                      blurRadius: 1,
-                                      offset: const Offset(0, 3),
+                                const SizedBox(width: 5),
+                                Container(
+                                  height: 50,
+                                  width: 60,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.zero,
+                                    color: NasColors.lightGrey,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withValues(alpha: 0.4),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: Text(duration,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.normal,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 15.0),
-                                  child: Text(duration,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           );
                         }),
                   ) : Center(
@@ -463,11 +495,11 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                           ],
                         ),
                         child:  Padding(
-                          padding: const EdgeInsets.only(top: 15.0),
+                          padding: const EdgeInsets.only(top: 10.0),
                           child: Text(
                             totalDurationString, // Dynamically setting the break number
                             style: GoogleFonts.inter(
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.normal,
                               color: NasColors.darkBlue,
                             ),
@@ -579,8 +611,15 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
-      double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
-      return '${roundedMinutes.ceil()} mins';
+      int totalMinutes = (minutes is int) ? minutes : int.parse(minutes.toString());
+      int hours = totalMinutes ~/ 60;
+      int remainingMinutes = totalMinutes % 60;
+
+      if (hours > 0) {
+        return '$hours h $remainingMinutes min';
+      } else {
+        return '$remainingMinutes min';
+      }
     } catch (e) {
       print('Error formatting minutes: $e');
       return '--';

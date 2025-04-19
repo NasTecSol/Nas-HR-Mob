@@ -1,4 +1,3 @@
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +7,7 @@ import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
 import 'Controller/language_change_controller.dart';
 
@@ -17,24 +17,29 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await SingletonClass().init();
-  MapboxOptions.setAccessToken(const String.fromEnvironment("ACCESS_TOKEN"));
+  MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA");
 
   try {
     // Request notification permissions
-    final notificationSettings = await FirebaseMessaging.instance.requestPermission(provisional: true);
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: true,
+    );
 
-    // Get the FCM token and set it in NewSingleton
+    // Get the FCM token and set it in SingletonClass
     String? fcmToken = await FirebaseMessaging.instance.getToken();
     if (fcmToken != null) {
       SingletonClass().setFCMToken(fcmToken);
-      print('FCM TOKEN $fcmToken');
-      print('FCM TOKEN /// ${SingletonClass().fcmToken}');
+      print('FCM TOKEN: $fcmToken');
+      print('FCM TOKEN from Singleton: ${SingletonClass().fcmToken}');
     }
 
     // For Apple platforms, ensure the APNS token is available
     final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
     if (apnsToken != null) {
-      // You can use the APNS token for Apple devices
+      print('APNS Token: $apnsToken');
     }
 
     // Automatically initialize messaging on app startup
@@ -44,22 +49,19 @@ void main() async {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         print('Received notification: ${message.notification?.title} - ${message.notification?.body}');
-        // Handle the notification in your app (e.g., show a dialog or update UI)
       }
     });
-
   } catch (e) {
     print('Error setting up Firebase Messaging: $e');
   }
 
-  // SharedPreferences sp = await SharedPreferences.getInstance();
-
+  // Initialize language controller
   LanguageChangeController languageController = LanguageChangeController();
-  await languageController.loadLanguage(); // Load the selected language
+  await languageController.loadLanguage();
 
   runApp(
     MultiProvider(
-      providers:[
+      providers: [
         ChangeNotifierProvider(create: (_) => languageController),
       ],
       child: Consumer<LanguageChangeController>(
@@ -77,7 +79,7 @@ void main() async {
               Locale('ar'),
             ],
             debugShowCheckedModeBanner: false,
-            home:   const SplashScreen(),
+            home: const SplashScreen(),
           );
         },
       ),

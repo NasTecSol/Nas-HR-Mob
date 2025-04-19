@@ -53,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
+    singletonClass.getRemoteAttendanceData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -1022,11 +1023,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.clockingDataList.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.last.checkInTime?.isNotEmpty == true
-                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkInTime!)
-                                                      : 'NA',
+                                                      () {
+                                                    final today = DateTime.now();
+
+                                                    final dataList = singletonClass.clockingDataList.first.data!;
+                                                    if (dataList.isEmpty) return 'NA';
+
+                                                    final todayEntry = dataList.firstWhere(
+                                                          (entry) {
+                                                        if (entry.createdAt == null) return false;
+                                                        final createdAtDate = DateTime.tryParse(entry.createdAt!);
+                                                        if (createdAtDate == null) return false;
+                                                        return createdAtDate.year == today.year &&
+                                                            createdAtDate.month == today.month &&
+                                                            createdAtDate.day == today.day;
+                                                      },
+                                                    );
+
+                                                    return todayEntry.checkInTime?.isNotEmpty == true
+                                                        ? singletonClass.formatCheckInTime(todayEntry.checkInTime!)
+                                                        : 'NA';
+                                                  }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.normal,
@@ -1057,10 +1074,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.clockingDataList.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.last.checkOutTime?.isNotEmpty == true
-                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
+                                                  singletonClass.attendanceDataList.isNotEmpty &&
+                                                      singletonClass.attendanceDataList.first.data!.data!.isNotEmpty &&
+                                                      singletonClass.attendanceDataList.first.data!.data!.last.clockOutTime?.isNotEmpty == true
+                                                      ? singletonClass.formatCheckInTime(singletonClass.attendanceDataList.first.data!.data!.last.clockOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1209,7 +1226,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         Text(
                                           singletonClass.attendanceDataList.isNotEmpty &&
                                               singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.data!.last.breaksTaken)
+                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.data!.last.breakTime)
                                               : 'NA',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
@@ -2173,7 +2190,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
 
     // Fallbacks if any location is null
-    String finalLocation = '${_openLocation ?? "0.0,0.0"}|${_backgroundLocation ?? "0.0,0.0"}';
+    String finalLocation = _openLocation ?? "0.0,0.0";
 
     Map<String, dynamic> data = {
       "lastLocation": finalLocation
@@ -2197,6 +2214,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         isLoading = false;
       });
 
+      print("send remote loc:${response.body}");
       final decodedResponse = json.decode(response.body);
       if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
       } else {
@@ -2231,8 +2249,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    return '${position.latitude},${position.longitude}';
+    return '${position.latitude}|${position.longitude}';
   }
-
 }
 

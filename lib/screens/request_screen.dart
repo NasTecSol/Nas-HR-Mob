@@ -5079,7 +5079,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             onPressed: () async {
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
-                                type: FileType.image,
+                                type: FileType.any,
                               );
 
                               if (result != null &&

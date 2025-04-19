@@ -327,7 +327,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                         children: [
                                           const Icon(Icons.tag, size: 25),
                                           SizedBox(
-                                            width: 300,
+                                            width: 250,
                                             child: Text("${AppLocalizations.of(context)!.tag}: $toDoTags",
                                               maxLines: 5,
                                               textAlign: TextAlign.start,
