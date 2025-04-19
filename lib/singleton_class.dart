@@ -235,63 +235,6 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
-
-
-  Future<PenaltiesAndFineModel?> getPenalties() async {
-    String? employeeId =  getJWTModel()?.empId;
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/request/penalties_fines/$employeeId');
-    var response = await client.get(uri);
-    log("Penalties Data ${response.body}");
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var requestData = PenaltiesAndFineModel.fromJson(responseBody);
-      penaltiesDataList.addAll([requestData]);
-      return requestData;
-    }
-    return null ; // Print the response body
-  }
-
-
-  //Approver for penalties
-  Future<PenaltiesApproverModel?> getPenaltiesApprover() async {
-    String? employeeId = getJWTModel()?.employeeId;
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["penalties_fines"],
-    };
-    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("penalties Log approver: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = PenaltiesApproverModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        penaltiesApproverDataList.addAll([requestData]);
-        return requestData;
-      } else {
-        log("Error penalties Log approver: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error penalties Log approver: $e');
-      return null;
-    }
-  }
-
-
   Future<CompanyData?> getCompanyData() async {
     String? companyId =  getJWTModel()?.companyId;
     var client = http.Client();
@@ -361,8 +304,6 @@ class SingletonClass {
       return 'N/A';
     }
   }
-
-
   //ATTENDANCE API CALL
   Future<AttendanceData?> getEmployeeAttendanceData() async {
     String? employeeId = getJWTModel()?.employeeId;
@@ -389,8 +330,6 @@ class SingletonClass {
 
     return null;
   }
-
-
   void sendFCMToken() async {
 
     String? employeeId = getJWTModel()?.employeeId;

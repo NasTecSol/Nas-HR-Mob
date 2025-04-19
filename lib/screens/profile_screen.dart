@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
@@ -1876,37 +1877,41 @@ class _ProfileScreenState extends State<ProfileScreen>
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
     setState(() {
-      isLoading = true; // Corrected to set isLoading to true
+      isLoading = true;
     });
 
     try {
+      // Compress the image if it's larger than 1MB
+      if (fileBytes.length > 1000000) {
+        final compressed = await FlutterImageCompress.compressWithList(
+          fileBytes,
+          minWidth: 1080,
+          minHeight: 1080,
+          quality: 70,
+          format: CompressFormat.jpeg,
+        );
+        print("Compressed from ${fileBytes.length} to ${compressed.length} bytes");
+        fileBytes = compressed;
+      }
+
       var request = http.MultipartRequest('POST', uri);
 
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
-      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
+      final mimeType = lookupMimeType(selectedFile!.path ?? '', headerBytes: fileBytes) ??
           'application/octet-stream';
 
-      // Add the file to the request as bytes
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: selectedFile!.name,
+        contentType: MediaType.parse(mimeType),
       ));
 
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
+      request.fields['attachmentName'] = selectedFile!.name;
+      request.fields['attachmentType'] = selectedFile!.extension ?? '';
 
-      // Send the request
       var response = await request.send();
-
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
@@ -1914,15 +1919,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         ProfileResponse profileResponse = ProfileResponse.fromJson(decodedJson);
         singletonClass.profileResponseDataList = [profileResponse];
 
-        updateEmployeeData(); // Update local data
-        singletonClass.getEmployeeData(); // Fetch updated employee data
+        updateEmployeeData();
+        await singletonClass.getEmployeeData();
 
-        // Refresh UI with new data
-        setState(() {});
-        setState(() {
-          isLoading = false;
-          singletonClass.getEmployeeData();
-        });
+        setState(() => isLoading = false);
+
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1931,11 +1932,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           title: AppLocalizations.of(context)!.success,
           type: QuickAlertType.success,
         );
-        setState(() {
-          singletonClass.getEmployeeData();
-        });
       } else {
         print('Upload failed: ${response.statusCode}');
+        setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1946,7 +1945,16 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error during upload: $e');
+      setState(() => isLoading = false);
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: AppLocalizations.of(context)!.errorFetchData,
+        type: QuickAlertType.error,
+      );
     }
   }
 

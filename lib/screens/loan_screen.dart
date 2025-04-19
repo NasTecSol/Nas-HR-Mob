@@ -14,91 +14,79 @@ class LoanScreen extends StatefulWidget {
 
 class _LoanScreenState extends State<LoanScreen> {
   SingletonClass singletonClass = SingletonClass();
-  String totalLoan = (SingletonClass().employeeDataList.first.data!.loanInfo!.first.totalLoanAmount).toString();
-  String paidAmount = (SingletonClass().employeeDataList.first.data!.loanInfo!.first.paidAmount).toString();
-  String remainingAmount = "";
-  late List<Map<String, String>> loanInstallments;
+  List<Map<String, String>> loanInstallments = [];
+  String totalLoan = "0";
+  String paidAmount = "0";
+  String remainingAmount = "0";
 
   int _extractLoanDuration(String loanDuration) {
-    // Extract the numeric part from the loanDuration string
     final RegExp regex = RegExp(r'\d+');
     final match = regex.firstMatch(loanDuration);
-
-    if (match != null) {
-      return int.parse(match.group(0)!);
-    } else {
-      throw Exception('Invalid loanDuration format');
-    }
+    return match != null ? int.parse(match.group(0)!) : 0;
   }
 
   List<Map<String, String>> _generateLoanInstallments(
-      String issueDate, int totalInstallments, int paidInstallments, String installmentAmount) {
-    List<Map<String, String>> loanInstallments = [];
+      String issueDate,
+      int totalInstallments,
+      int paidInstallments,
+      String installmentAmount,
+      ) {
+    List<Map<String, String>> installments = [];
     DateTime startDate = DateTime.parse(issueDate);
 
     for (int i = 0; i < totalInstallments; i++) {
-      DateTime installmentDate = DateTime(startDate.year, startDate.month + i, startDate.day);
-
-      // Adjust the month and year correctly to prevent overflow
       int correctMonth = (startDate.month + i - 1) % 12 + 1;
       int yearAdjustment = (startDate.month + i - 1) ~/ 12;
-      installmentDate = DateTime(startDate.year + yearAdjustment, correctMonth, startDate.day);
+      DateTime installmentDate = DateTime(startDate.year + yearAdjustment, correctMonth, startDate.day);
 
       String monthYear = DateFormat.yMMMM().format(installmentDate);
       String status = i < paidInstallments ? "paid" : "remaining";
-      String paidAmount = i < paidInstallments ? installmentAmount : "0";
+      String paidAmt = i < paidInstallments ? installmentAmount : "0";
 
-      loanInstallments.add({
+      installments.add({
         "month": monthYear,
         "status": status,
-        "paidAmount": paidAmount,
+        "paidAmount": paidAmt,
         "remainingAmount": installmentAmount,
       });
     }
 
-    return loanInstallments;
+    return installments;
   }
 
   @override
   Widget build(BuildContext context) {
-    final loanInfo = singletonClass.employeeDataList.first.data?.loanInfo;
-    if (loanInfo == null || loanInfo.isEmpty) {
-      return const Center(child: Text('No loan information available'));
+    final employeeDataList = singletonClass.employeeDataList;
+
+    if (employeeDataList.isEmpty ||
+        employeeDataList.first.data == null ||
+        employeeDataList.first.data!.loanInfo == null ||
+        employeeDataList.first.data!.loanInfo!.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('No loan information available')),
+      );
     }
 
-// Validate `totalLoan` and `paidAmount` before parsing
-    if (totalLoan == null || totalLoan.isEmpty || double.tryParse(totalLoan) == null) {
-      return const Center(child: Text('Invalid total loan value'));
+    final loanInfo = employeeDataList.first.data!.loanInfo!.first;
+
+    // Null-safe extraction
+    totalLoan = loanInfo.totalLoanAmount?.toString() ?? "0";
+    paidAmount = loanInfo.paidAmount?.toString() ?? "0";
+
+    double totalLoanValue = double.tryParse(totalLoan) ?? 0;
+    double paidAmountValue = double.tryParse(paidAmount) ?? 0;
+    remainingAmount = (totalLoanValue - paidAmountValue).toStringAsFixed(2);
+
+    final rawLoanDuration = loanInfo.loanDuration?.toString() ?? "0";
+    int totalInstallments = _extractLoanDuration(rawLoanDuration);
+
+    final issueDate = loanInfo.loanIssueDate;
+    final paidInstallments = int.tryParse(loanInfo.paidInstallments?.toString() ?? "0") ?? 0;
+    final installmentAmount = loanInfo.installmentAmount?.toString() ?? "0";
+
+    if (issueDate != null) {
+      loanInstallments = _generateLoanInstallments(issueDate, totalInstallments, paidInstallments, installmentAmount);
     }
-
-    if (paidAmount == null || paidAmount.isEmpty || double.tryParse(paidAmount) == null) {
-      return const Center(child: Text('Invalid paid amount value'));
-    }
-
-// Calculate the remaining amount
-    double totalLoanValue = double.parse(totalLoan);
-    double paidAmountValue = double.parse(paidAmount);
-    double remainingAmountValue = totalLoanValue - paidAmountValue;
-    remainingAmount = remainingAmountValue.toString();
-
-// Validate and extract the loan duration
-    if (loanInfo.first.loanDuration == null ||
-        int.tryParse(loanInfo.first.loanDuration!) == null) {
-      return const Center(child: Text('Invalid loan duration'));
-    }
-    int totalInstallments = _extractLoanDuration(loanInfo.first.loanDuration!);
-
-// Generate loan installments
-    if (loanInfo.first.loanIssueDate == null || loanInfo.first.paidInstallments == null) {
-      return const Center(child: Text('Incomplete loan data'));
-    }
-    loanInstallments = _generateLoanInstallments(
-      loanInfo.first.loanIssueDate!,
-      totalInstallments,
-      int.parse(loanInfo.first.paidInstallments!),
-      loanInfo.first.installmentAmount!,
-    );
-
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -106,44 +94,19 @@ class _LoanScreenState extends State<LoanScreen> {
         padding: const EdgeInsets.only(top: 10.0, left: 20.0, right: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  AppLocalizations.of(context)!.totalAmount,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
-                Text(
-                  totalLoan,
-                  style: GoogleFonts.inter(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
+                Text(AppLocalizations.of(context)!.totalAmount,
+                    style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
+                Text(totalLoan,
+                    style: GoogleFonts.inter(fontSize: 25, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
                 const SizedBox(height: 10),
-                Text(
-                  AppLocalizations.of(context)!.remainingAmount,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
-                Text(
-                  remainingAmount,
-                  style: GoogleFonts.inter(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
+                Text(AppLocalizations.of(context)!.remainingAmount,
+                    style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
+                Text(remainingAmount,
+                    style: GoogleFonts.inter(fontSize: 25, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
               ],
             ),
             const SizedBox(height: 10),
@@ -152,25 +115,13 @@ class _LoanScreenState extends State<LoanScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)!.month,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.month,
+                        style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
                   ),
                   Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)!.status,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.status,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: NasColors.darkBlue)),
                   ),
                 ],
               ),
@@ -186,20 +137,14 @@ class _LoanScreenState extends State<LoanScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(left: 25),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
                             height: 50,
                             width: 100,
-                            child: Text(
-                              loan['month'] ?? '',
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                color: NasColors.darkBlue,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: Text(loan['month'] ?? '',
+                                style: GoogleFonts.inter(
+                                    fontSize: 15, color: NasColors.darkBlue, fontWeight: FontWeight.w600)),
                           ),
                           const SizedBox(width: 5),
                           Column(
@@ -227,13 +172,11 @@ class _LoanScreenState extends State<LoanScreen> {
                                   ),
                                 ],
                               ),
-                              // Only show the divider if not the last item
                               if (index < loanInstallments.length - 1)
                                 Container(
                                   width: 2,
                                   height: 50,
                                   color: Colors.grey,
-                                  margin: const EdgeInsets.only(top: 0, bottom: 0),
                                 ),
                             ],
                           ),
@@ -241,37 +184,27 @@ class _LoanScreenState extends State<LoanScreen> {
                           Expanded(
                             child: SizedBox(
                               height: 75,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      if (loan['status'] == "paid")
-                                        Icon(Icons.done, color: NasColors.onTime, size: 30),
-                                      if (loan['status'] == "remaining")
-                                        Icon(Icons.hourglass_bottom_outlined,
-                                            color: NasColors.pending, size: 30),
-                                      const SizedBox(width: 5),
-                                      if (loan['status'] == "paid")
-                                        Text(
-                                          "Paid ${loan['paidAmount']}",
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                            color: NasColors.darkBlue,
-                                          ),
-                                        ),
-                                      if (loan['status'] == "remaining")
-                                        Text(
-                                          "To be paid",
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                            color: NasColors.darkBlue,
-                                          ),
-                                        ),
-                                    ],
+                                  Icon(
+                                    loan['status'] == "paid"
+                                        ? Icons.done
+                                        : Icons.hourglass_bottom_outlined,
+                                    color: loan['status'] == "paid"
+                                        ? NasColors.onTime
+                                        : NasColors.pending,
+                                    size: 30,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    loan['status'] == "paid"
+                                        ? "Paid ${loan['paidAmount']}"
+                                        : "To be paid",
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                      color: NasColors.darkBlue,
+                                    ),
                                   ),
                                 ],
                               ),
