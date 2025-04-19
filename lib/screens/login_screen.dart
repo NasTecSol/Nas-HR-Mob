@@ -398,14 +398,15 @@ class _LoginScreenState extends State<LoginScreen> {
         if (loginResponse!.statusCode == 200) {
           LoginModel? data = singletonClass.getLoginModel();
           if (data != null && data.data != null) {
-            String jwtToken = data.data!.trim(); // Ensure the token is not null and trim any leading/trailing whitespace
+            String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
-            singletonClass.getEmployeeData();
-            singletonClass.getClockingData();
-            singletonClass.getBranchData();
-            singletonClass.getCompanyData();
-            singletonClass.getEmployeeAttendanceData();
-            singletonClass.getNotifications();
+             singletonClass.getEmployeeData();
+            await singletonClass.getClockingData();
+             singletonClass.getBranchData();
+             singletonClass.getCompanyData();
+             singletonClass.getRemoteAttendanceData();
+             singletonClass.getEmployeeAttendanceData();
+             singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(

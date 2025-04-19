@@ -28,7 +28,9 @@ class _ComplaintsState extends State<Complaints> {
   bool isLoading = false;
   final TextEditingController _comment = TextEditingController();
   int _currentPage = 0;
+  int _complaintCurrentPage = 0;
   int _totalPages = 1;
+  int _complaintTotalPages = 1;
 
   @override
   void initState() {
@@ -43,6 +45,16 @@ class _ComplaintsState extends State<Complaints> {
       setState(() {
         _currentPage = page;
         _totalPages = data.data?.totalPages ?? 1;
+      });
+    }
+  }
+
+  Future<void> _fetchRequestData(int page) async {
+    final data = await getComplaintsData(page: page);
+    if (data != null) {
+      setState(() {
+        _complaintCurrentPage = page;
+        _complaintTotalPages = data.data?.totalPages ?? 1;
       });
     }
   }
@@ -388,11 +400,139 @@ class _ComplaintsState extends State<Complaints> {
                             ),
                           );
                         }
-                      }))
+                      })),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _complaintCurrentPage > 0
+                                ? () => _fetchRequestData(_complaintCurrentPage - 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_back_ios_sharp),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // First Page
+                        GestureDetector(
+                          onTap: () => _fetchRequestData(0),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _complaintCurrentPage == 0
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '1',
+                              style: GoogleFonts.inter(
+                                color: _complaintCurrentPage == 0
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Ellipsis and Last Page
+                        if (_complaintTotalPages > 3) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text('...'),
+                          ),
+                          GestureDetector(
+                            onTap: () => _fetchRequestData(_complaintTotalPages - 1),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _complaintCurrentPage == _complaintTotalPages - 1
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '$_complaintTotalPages',
+                                style: GoogleFonts.inter(
+                                  color: _complaintCurrentPage == _complaintTotalPages - 1
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else
+                        // Show intermediate pages if total <= 3
+                          for (int i = 1; i < _complaintTotalPages; i++)
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: GestureDetector(
+                                onTap: () => _fetchRequestData(i),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _complaintCurrentPage == i
+                                        ? NasColors.darkBlue
+                                        : NasColors.onTime.withOpacity(0.31),
+                                  ),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: GoogleFonts.inter(
+                                      color: _complaintCurrentPage == i
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _currentPage < _totalPages - 1
+                                ? () => _fetchApproverData(_currentPage + 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_forward_ios_sharp),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1') ...[
-              if (_selectedOptionIndex == 0)
+              if (_selectedOptionIndex == 0)...[
                 Expanded(
                     child: FutureBuilder(
                         future: getComplaintsData(),
@@ -530,7 +670,136 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           }
                         })),
-              if (_selectedOptionIndex == 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _complaintCurrentPage > 0
+                                  ? () => _fetchRequestData(_complaintCurrentPage - 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_back_ios_sharp),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // First Page
+                          GestureDetector(
+                            onTap: () => _fetchRequestData(0),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _complaintCurrentPage == 0
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '1',
+                                style: GoogleFonts.inter(
+                                  color: _complaintCurrentPage == 0
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Ellipsis and Last Page
+                          if (_complaintTotalPages > 3) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text('...'),
+                            ),
+                            GestureDetector(
+                              onTap: () => _fetchRequestData(_complaintTotalPages - 1),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _complaintCurrentPage == _complaintTotalPages - 1
+                                      ? NasColors.darkBlue
+                                      : NasColors.onTime.withOpacity(0.31),
+                                ),
+                                child: Text(
+                                  '$_complaintTotalPages',
+                                  style: GoogleFonts.inter(
+                                    color: _complaintCurrentPage == _complaintTotalPages - 1
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else
+                          // Show intermediate pages if total <= 3
+                            for (int i = 1; i < _complaintTotalPages; i++)
+                              Padding(
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: GestureDetector(
+                                  onTap: () => _fetchRequestData(i),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _complaintCurrentPage == i
+                                          ? NasColors.darkBlue
+                                          : NasColors.onTime.withOpacity(0.31),
+                                    ),
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: GoogleFonts.inter(
+                                        color: _complaintCurrentPage == i
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: IconButton(
+                              onPressed: _currentPage < _totalPages - 1
+                                  ? () => _fetchApproverData(_currentPage + 1)
+                                  : null,
+                              icon: const Icon(Icons.arrow_forward_ios_sharp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+              ],
+              if (_selectedOptionIndex == 1)...[
                 Expanded(
                     child: FutureBuilder(
                         future: getComplaintsApproverData(),
@@ -967,7 +1236,134 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           }
                         })),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _currentPage > 0
+                                ? () => _fetchApproverData(_currentPage - 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_back_ios_sharp),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // First Page
+                        GestureDetector(
+                          onTap: () => _fetchApproverData(0),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentPage == 0
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '1',
+                              style: GoogleFonts.inter(
+                                color: _currentPage == 0
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
 
+                        // Ellipsis and Last Page
+                        if (_totalPages > 3) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text('...'),
+                          ),
+                          GestureDetector(
+                            onTap: () => _fetchApproverData(_totalPages - 1),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentPage == _totalPages - 1
+                                    ? NasColors.darkBlue
+                                    : NasColors.onTime.withOpacity(0.31),
+                              ),
+                              child: Text(
+                                '$_totalPages',
+                                style: GoogleFonts.inter(
+                                  color: _currentPage == _totalPages - 1
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else
+                        // Show intermediate pages if total <= 3
+                          for (int i = 1; i < _totalPages; i++)
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: GestureDetector(
+                                onTap: () => _fetchApproverData(i),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _currentPage == i
+                                        ? NasColors.darkBlue
+                                        : NasColors.onTime.withOpacity(0.31),
+                                  ),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: GoogleFonts.inter(
+                                      color: _currentPage == i
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: IconButton(
+                            onPressed: _currentPage < _totalPages - 1
+                                ? () => _fetchApproverData(_currentPage + 1)
+                                : null,
+                            icon: const Icon(Icons.arrow_forward_ios_sharp),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),]
             ],
           ],
         ),
