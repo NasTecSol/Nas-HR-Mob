@@ -180,7 +180,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
                   checkOut();
                 } else {
                   if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true) {
-                    checkIn("biometric");
+                    checkIn("location");
                   }
                 }
                 Navigator.pop(context);

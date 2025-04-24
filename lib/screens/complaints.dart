@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +10,6 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-
 import '../request_controller/complaints_approver_model.dart';
 import '../request_controller/complaints_model.dart';
 
@@ -31,33 +29,48 @@ class _ComplaintsState extends State<Complaints> {
   int _complaintCurrentPage = 0;
   int _totalPages = 1;
   int _complaintTotalPages = 1;
-
+  List<DataComplaintApprover>? _approver;
+  List<Data1>? _request;
   @override
   void initState() {
     super.initState();
+    _fetchRequestData(0);
     _fetchApproverData(0);
     getComplaintsData();
   }
 
   Future<void> _fetchApproverData(int page) async {
     final data = await getComplaintsApproverData(page: page);
-    if (data != null) {
+    if (data != null && data.data != null) {
       setState(() {
+        _approver = data.data!.data;
+        _totalPages = data.data!.totalPages ?? 1;
         _currentPage = page;
-        _totalPages = data.data?.totalPages ?? 1;
+      });
+    } else {
+      setState(() {
+        _approver = [];
       });
     }
   }
 
+
+
   Future<void> _fetchRequestData(int page) async {
     final data = await getComplaintsData(page: page);
-    if (data != null) {
+    if (data != null && data.data != null) {
       setState(() {
+        _request = data.data!.data;
+        _complaintTotalPages = data.data!.totalPages ?? 1;
         _complaintCurrentPage = page;
-        _complaintTotalPages = data.data?.totalPages ?? 1;
+      });
+    } else {
+      setState(() {
+        _request = [];
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -281,8 +294,7 @@ class _ComplaintsState extends State<Complaints> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          return singletonClass
-                              .complaintsDataList.first.data!.data!.isEmpty
+                          return _request!.isEmpty
                               ? Center(
                             child: Text(
                               AppLocalizations.of(context)!.noData,
@@ -296,12 +308,10 @@ class _ComplaintsState extends State<Complaints> {
                           )
                               : ListView.builder(
                             padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass
-                                .complaintsDataList.first.data!.data!.length,
+                            itemCount: _request!.length,
                             itemBuilder:
                                 (BuildContext context, int index) {
-                              final request = singletonClass
-                                  .complaintsDataList.first.data!.data![index];
+                              final request = _request![index];
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 10),
@@ -403,130 +413,35 @@ class _ComplaintsState extends State<Complaints> {
                       })),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: NasColors.onTime.withOpacity(0.31),
-                          ),
-                          child: IconButton(
-                            onPressed: _complaintCurrentPage > 0
-                                ? () => _fetchRequestData(_complaintCurrentPage - 1)
-                                : null,
-                            icon: const Icon(Icons.arrow_back_ios_sharp),
+                children: List.generate(_complaintTotalPages, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_complaintCurrentPage != index) {
+                          _fetchRequestData(index); // Send 0, 1, 2...
+                        }
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _complaintCurrentPage == index
+                              ? NasColors.darkBlue
+                              : NasColors.onTime.withOpacity(0.31),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: GoogleFonts.inter(
+                            color: _complaintCurrentPage == index ? Colors.white : Colors.black,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        // First Page
-                        GestureDetector(
-                          onTap: () => _fetchRequestData(0),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _complaintCurrentPage == 0
-                                  ? NasColors.darkBlue
-                                  : NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: Text(
-                              '1',
-                              style: GoogleFonts.inter(
-                                color: _complaintCurrentPage == 0
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Ellipsis and Last Page
-                        if (_complaintTotalPages > 3) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('...'),
-                          ),
-                          GestureDetector(
-                            onTap: () => _fetchRequestData(_complaintTotalPages - 1),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _complaintCurrentPage == _complaintTotalPages - 1
-                                    ? NasColors.darkBlue
-                                    : NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: Text(
-                                '$_complaintTotalPages',
-                                style: GoogleFonts.inter(
-                                  color: _complaintCurrentPage == _complaintTotalPages - 1
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ] else
-                        // Show intermediate pages if total <= 3
-                          for (int i = 1; i < _complaintTotalPages; i++)
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: GestureDetector(
-                                onTap: () => _fetchRequestData(i),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _complaintCurrentPage == i
-                                        ? NasColors.darkBlue
-                                        : NasColors.onTime.withOpacity(0.31),
-                                  ),
-                                  child: Text(
-                                    '${i + 1}',
-                                    style: GoogleFonts.inter(
-                                      color: _complaintCurrentPage == i
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: NasColors.onTime.withOpacity(0.31),
-                          ),
-                          child: IconButton(
-                            onPressed: _currentPage < _totalPages - 1
-                                ? () => _fetchApproverData(_currentPage + 1)
-                                : null,
-                            icon: const Icon(Icons.arrow_forward_ios_sharp),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                }),
               ),
               SizedBox(height: 20),
             ],
@@ -551,8 +466,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else if (snapshot.hasData) {
-                            return singletonClass
-                                .complaintsDataList.first.data!.data!.isEmpty
+                            return _request!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -566,12 +480,10 @@ class _ComplaintsState extends State<Complaints> {
                             )
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
-                              itemCount: singletonClass
-                                  .complaintsDataList.first.data!.data!.length,
+                              itemCount: _request!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = singletonClass
-                                    .complaintsDataList.first.data!.data![index];
+                                final request = _request![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(
                                           vertical: 10),
@@ -672,130 +584,35 @@ class _ComplaintsState extends State<Complaints> {
                         })),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: IconButton(
-                              onPressed: _complaintCurrentPage > 0
-                                  ? () => _fetchRequestData(_complaintCurrentPage - 1)
-                                  : null,
-                              icon: const Icon(Icons.arrow_back_ios_sharp),
+                  children: List.generate(_complaintTotalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_complaintCurrentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _complaintCurrentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _complaintCurrentPage == index ? Colors.white : Colors.black,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          // First Page
-                          GestureDetector(
-                            onTap: () => _fetchRequestData(0),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _complaintCurrentPage == 0
-                                    ? NasColors.darkBlue
-                                    : NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: Text(
-                                '1',
-                                style: GoogleFonts.inter(
-                                  color: _complaintCurrentPage == 0
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // Ellipsis and Last Page
-                          if (_complaintTotalPages > 3) ...[
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text('...'),
-                            ),
-                            GestureDetector(
-                              onTap: () => _fetchRequestData(_complaintTotalPages - 1),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _complaintCurrentPage == _complaintTotalPages - 1
-                                      ? NasColors.darkBlue
-                                      : NasColors.onTime.withOpacity(0.31),
-                                ),
-                                child: Text(
-                                  '$_complaintTotalPages',
-                                  style: GoogleFonts.inter(
-                                    color: _complaintCurrentPage == _complaintTotalPages - 1
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ] else
-                          // Show intermediate pages if total <= 3
-                            for (int i = 1; i < _complaintTotalPages; i++)
-                              Padding(
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: GestureDetector(
-                                  onTap: () => _fetchRequestData(i),
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _complaintCurrentPage == i
-                                          ? NasColors.darkBlue
-                                          : NasColors.onTime.withOpacity(0.31),
-                                    ),
-                                    child: Text(
-                                      '${i + 1}',
-                                      style: GoogleFonts.inter(
-                                        color: _complaintCurrentPage == i
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: IconButton(
-                              onPressed: _currentPage < _totalPages - 1
-                                  ? () => _fetchApproverData(_currentPage + 1)
-                                  : null,
-                              icon: const Icon(Icons.arrow_forward_ios_sharp),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  }),
                 ),
                 SizedBox(height: 20),
               ],
@@ -818,8 +635,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else {
-                            return singletonClass
-                                .complaintsApproverDataList.first.data!.data!.isEmpty
+                            return _approver!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -833,12 +649,10 @@ class _ComplaintsState extends State<Complaints> {
                             )
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
-                              itemCount: singletonClass
-                                  .complaintsApproverDataList.first.data!.data!.length,
+                              itemCount: _approver!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = singletonClass
-                                    .complaintsApproverDataList.first.data!.data![index];
+                                final request = _approver![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(vertical: 10),
                                       decoration: BoxDecoration(
@@ -1236,133 +1050,38 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           }
                         })),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_currentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
                           width: 40,
                           height: 40,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: NasColors.onTime.withOpacity(0.31),
+                            color: _currentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
                           ),
-                          child: IconButton(
-                            onPressed: _currentPage > 0
-                                ? () => _fetchApproverData(_currentPage - 1)
-                                : null,
-                            icon: const Icon(Icons.arrow_back_ios_sharp),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // First Page
-                        GestureDetector(
-                          onTap: () => _fetchApproverData(0),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentPage == 0
-                                  ? NasColors.darkBlue
-                                  : NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: Text(
-                              '1',
-                              style: GoogleFonts.inter(
-                                color: _currentPage == 0
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _currentPage == index ? Colors.white : Colors.black,
                             ),
                           ),
                         ),
-
-                        // Ellipsis and Last Page
-                        if (_totalPages > 3) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('...'),
-                          ),
-                          GestureDetector(
-                            onTap: () => _fetchApproverData(_totalPages - 1),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _currentPage == _totalPages - 1
-                                    ? NasColors.darkBlue
-                                    : NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: Text(
-                                '$_totalPages',
-                                style: GoogleFonts.inter(
-                                  color: _currentPage == _totalPages - 1
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ] else
-                        // Show intermediate pages if total <= 3
-                          for (int i = 1; i < _totalPages; i++)
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: GestureDetector(
-                                onTap: () => _fetchApproverData(i),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _currentPage == i
-                                        ? NasColors.darkBlue
-                                        : NasColors.onTime.withOpacity(0.31),
-                                  ),
-                                  child: Text(
-                                    '${i + 1}',
-                                    style: GoogleFonts.inter(
-                                      color: _currentPage == i
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: NasColors.onTime.withOpacity(0.31),
-                          ),
-                          child: IconButton(
-                            onPressed: _currentPage < _totalPages - 1
-                                ? () => _fetchApproverData(_currentPage + 1)
-                                : null,
-                            icon: const Icon(Icons.arrow_forward_ios_sharp),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                      ),
+                    );
+                  }),
+                ),
               SizedBox(height: 20),]
             ],
           ],

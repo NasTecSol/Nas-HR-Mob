@@ -26,7 +26,7 @@ class ApproverRequestData {
 }
 
 class Data {
-  List<Data1>? data;
+  List<DataApprover>? data;
   int? total;
   int? page;
   int? limit;
@@ -35,7 +35,7 @@ class Data {
   Data({this.data, this.total, this.page, this.limit, this.totalPages});
 
   Data.fromJson(Map<String, dynamic> json) {
-    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data1.fromJson(e)).toList();
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => DataApprover.fromJson(e)).toList();
     total = json["total"];
     page = json["page"];
     limit = json["limit"];
@@ -55,7 +55,7 @@ class Data {
   }
 }
 
-class Data1 {
+class DataApprover {
   String? id;
   String? employeeId;
   String? employeeName;
@@ -74,9 +74,9 @@ class Data1 {
   int? v;
   String? status;
 
-  Data1({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
+  DataApprover({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
 
-  Data1.fromJson(Map<String, dynamic> json) {
+  DataApprover.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     employeeId = json["employeeId"];
     employeeName = json["employeeName"];
