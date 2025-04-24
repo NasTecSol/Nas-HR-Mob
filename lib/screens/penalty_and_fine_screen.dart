@@ -33,17 +33,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
     'images/DP.png',
     'images/DP.png',
   ];
-
-  late Future _approverDataFuture;
   int _currentPage = 0;
   int _penalityCurrentPage = 0;
   int _totalPages = 1;
   int _penalityTotalPages = 1;
+  List<DataPenalitiesApprover>? _approver;
+  List<Data1>? _request;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _approverDataFuture = getPenaltiesApprover();
+    _fetchRequestData(0);
+    _fetchApproverData(0);
+    getPenalties();
+    getPenaltiesApprover();
+    setState(() {
+      getPenalties();
+      getPenaltiesApprover();
+    });
+    setState(() {});
   }
 
   void _toggleExpand(int index) {
@@ -58,21 +67,42 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
 
 
   Future<void> _fetchApproverData(int page) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final data = await getPenaltiesApprover(page: page);
-    if (data != null) {
+    if (data != null && data.data != null) {
       setState(() {
+        _approver = data.data!.data;
+        _totalPages = data.data!.totalPages ?? 1;
         _currentPage = page;
-        _totalPages = data.data?.totalPages ?? 1;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _approver = [];
+        _isLoading = false;
       });
     }
   }
 
   Future<void> _fetchRequestData(int page) async {
+    setState(() {
+      _isLoading = true;
+    });
     final data = await getPenalties(page: page);
-    if (data != null) {
+    if (data != null && data.data != null) {
       setState(() {
+        _request = data.data!.data;
+        _penalityTotalPages = data.data!.totalPages ?? 1;
         _penalityCurrentPage = page;
-        _penalityTotalPages = data.data?.totalPages ?? 1;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _request = [];
+        _isLoading = false;
       });
     }
   }
@@ -200,8 +230,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          return singletonClass
-                                  .penaltiesDataList.first.data!.data!.isEmpty
+                          return _request!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -215,12 +244,10 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
-                                  itemCount: singletonClass
-                                      .penaltiesDataList.first.data!.data!.length,
+                                  itemCount: _request!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = singletonClass
-                                        .penaltiesDataList.first.data!.data![index];
+                                    final request = _request![index];
                                     return AnimatedContainer(
                                       duration:
                                           const Duration(milliseconds: 300),
@@ -326,130 +353,35 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: IconButton(
-                              onPressed: _penalityCurrentPage > 0
-                                  ? () => _fetchRequestData(_penalityCurrentPage - 1)
-                                  : null,
-                              icon: const Icon(Icons.arrow_back_ios_sharp),
+                  children: List.generate(_penalityTotalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_penalityCurrentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _penalityCurrentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _penalityCurrentPage == index ? Colors.white : Colors.black,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          // First Page
-                          GestureDetector(
-                            onTap: () => _fetchRequestData(0),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _penalityCurrentPage == 0
-                                    ? NasColors.darkBlue
-                                    : NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: Text(
-                                '1',
-                                style: GoogleFonts.inter(
-                                  color: _penalityCurrentPage == 0
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // Ellipsis and Last Page
-                          if (_penalityTotalPages > 3) ...[
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text('...'),
-                            ),
-                            GestureDetector(
-                              onTap: () => _fetchRequestData(_penalityTotalPages - 1),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _penalityCurrentPage == _penalityTotalPages - 1
-                                      ? NasColors.darkBlue
-                                      : NasColors.onTime.withOpacity(0.31),
-                                ),
-                                child: Text(
-                                  '$_penalityTotalPages',
-                                  style: GoogleFonts.inter(
-                                    color: _penalityCurrentPage == _penalityTotalPages - 1
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ] else
-                          // Show intermediate pages if total <= 3
-                            for (int i = 1; i < _penalityTotalPages; i++)
-                              Padding(
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: GestureDetector(
-                                  onTap: () => _fetchRequestData(i),
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _penalityCurrentPage == i
-                                          ? NasColors.darkBlue
-                                          : NasColors.onTime.withOpacity(0.31),
-                                    ),
-                                    child: Text(
-                                      '${i + 1}',
-                                      style: GoogleFonts.inter(
-                                        color: _penalityCurrentPage == i
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: NasColors.onTime.withOpacity(0.31),
-                            ),
-                            child: IconButton(
-                              onPressed: _currentPage < _totalPages - 1
-                                  ? () => _fetchApproverData(_currentPage + 1)
-                                  : null,
-                              icon: const Icon(Icons.arrow_forward_ios_sharp),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  }),
                 ),
                 SizedBox(height: 20),
               ],
@@ -473,10 +405,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          if (singletonClass.penaltiesDataList.isEmpty ||
-                              singletonClass.penaltiesDataList.first.data == null ||
-                              singletonClass.penaltiesDataList.first.data!.data == null ||
-                              singletonClass.penaltiesDataList.first.data!.data!.isEmpty) {
+                          if (_request!.isEmpty) {
                             return Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -491,10 +420,9 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           }
                           return ListView.builder(
                             padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass.penaltiesDataList.first.data!.data!.length,
+                            itemCount: _request!.length,
                             itemBuilder: (BuildContext context, int index) {
-                              final request =
-                              singletonClass.penaltiesDataList.first.data!.data![index];
+                              final request = _request![index];
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
                                 margin: const EdgeInsets.symmetric(vertical: 5),
@@ -587,137 +515,42 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: IconButton(
-                                onPressed: _penalityCurrentPage > 0
-                                    ? () => _fetchRequestData(_penalityCurrentPage - 1)
-                                    : null,
-                                icon: const Icon(Icons.arrow_back_ios_sharp),
+                    children: List.generate(_penalityTotalPages, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_penalityCurrentPage != index) {
+                              _fetchRequestData(index); // Send 0, 1, 2...
+                            }
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _penalityCurrentPage == index
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: GoogleFonts.inter(
+                                color: _penalityCurrentPage == index ? Colors.white : Colors.black,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            // First Page
-                            GestureDetector(
-                              onTap: () => _fetchRequestData(0),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _penalityCurrentPage == 0
-                                      ? NasColors.darkBlue
-                                      : NasColors.onTime.withOpacity(0.31),
-                                ),
-                                child: Text(
-                                  '1',
-                                  style: GoogleFonts.inter(
-                                    color: _penalityCurrentPage == 0
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Ellipsis and Last Page
-                            if (_penalityTotalPages > 3) ...[
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Text('...'),
-                              ),
-                              GestureDetector(
-                                onTap: () => _fetchRequestData(_penalityTotalPages - 1),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _penalityCurrentPage == _penalityTotalPages - 1
-                                        ? NasColors.darkBlue
-                                        : NasColors.onTime.withOpacity(0.31),
-                                  ),
-                                  child: Text(
-                                    '$_penalityTotalPages',
-                                    style: GoogleFonts.inter(
-                                      color: _penalityCurrentPage == _penalityTotalPages - 1
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ] else
-                            // Show intermediate pages if total <= 3
-                              for (int i = 1; i < _penalityTotalPages; i++)
-                                Padding(
-                                  padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: GestureDetector(
-                                    onTap: () => _fetchRequestData(i),
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: _penalityCurrentPage == i
-                                            ? NasColors.darkBlue
-                                            : NasColors.onTime.withOpacity(0.31),
-                                      ),
-                                      child: Text(
-                                        '${i + 1}',
-                                        style: GoogleFonts.inter(
-                                          color: _penalityCurrentPage == i
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: IconButton(
-                                onPressed: _currentPage < _totalPages - 1
-                                    ? () => _fetchApproverData(_currentPage + 1)
-                                    : null,
-                                icon: const Icon(Icons.arrow_forward_ios_sharp),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    }),
                   ),
                   SizedBox(height: 20),
                 ],
                 if (_selectedOptionIndex == 1) ...[
                   Expanded(
                     child: FutureBuilder(
-                        future: _approverDataFuture,
+                        future: getPenaltiesApprover(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -733,8 +566,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else if (snapshot.hasData) {
-                            return  singletonClass.penaltiesApproverDataList.isEmpty ||
-                                singletonClass.penaltiesApproverDataList.first.data!.data!.isEmpty
+                            return  _approver!.isEmpty
                                 ? Center(
                                     child: Text(
                                       AppLocalizations.of(context)!.noData,
@@ -748,12 +580,10 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                   )
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
-                                    itemCount: singletonClass
-                                        .penaltiesApproverDataList.first.data!.data!.length,
+                                    itemCount: _approver!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      final request = singletonClass
-                                          .penaltiesApproverDataList.first.data!.data![index];
+                                      final request = _approver![index];
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(
@@ -1344,130 +1174,35 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: IconButton(
-                                onPressed: _currentPage > 0
-                                    ? () => _fetchApproverData(_currentPage - 1)
-                                    : null,
-                                icon: const Icon(Icons.arrow_back_ios_sharp),
+                    children: List.generate(_totalPages, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_currentPage != index) {
+                              _fetchApproverData(index); // Send 0, 1, 2...
+                            }
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentPage == index
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: GoogleFonts.inter(
+                                color: _currentPage == index ? Colors.white : Colors.black,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            // First Page
-                            GestureDetector(
-                              onTap: () => _fetchApproverData(0),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _currentPage == 0
-                                      ? NasColors.darkBlue
-                                      : NasColors.onTime.withOpacity(0.31),
-                                ),
-                                child: Text(
-                                  '1',
-                                  style: GoogleFonts.inter(
-                                    color: _currentPage == 0
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Ellipsis and Last Page
-                            if (_totalPages > 3) ...[
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Text('...'),
-                              ),
-                              GestureDetector(
-                                onTap: () => _fetchApproverData(_totalPages - 1),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _currentPage == _totalPages - 1
-                                        ? NasColors.darkBlue
-                                        : NasColors.onTime.withOpacity(0.31),
-                                  ),
-                                  child: Text(
-                                    '$_totalPages',
-                                    style: GoogleFonts.inter(
-                                      color: _currentPage == _totalPages - 1
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ] else
-                            // Show intermediate pages if total <= 3
-                              for (int i = 1; i < _totalPages; i++)
-                                Padding(
-                                  padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                                  child: GestureDetector(
-                                    onTap: () => _fetchApproverData(i),
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: _currentPage == i
-                                            ? NasColors.darkBlue
-                                            : NasColors.onTime.withOpacity(0.31),
-                                      ),
-                                      child: Text(
-                                        '${i + 1}',
-                                        style: GoogleFonts.inter(
-                                          color: _currentPage == i
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: NasColors.onTime.withOpacity(0.31),
-                              ),
-                              child: IconButton(
-                                onPressed: _currentPage < _totalPages - 1
-                                    ? () => _fetchApproverData(_currentPage + 1)
-                                    : null,
-                                icon: const Icon(Icons.arrow_forward_ios_sharp),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    }),
                   ),
                   SizedBox(height: 20),
                 ],

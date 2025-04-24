@@ -328,7 +328,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ],
                                 ),
                               const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -380,7 +381,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ],
                                 ),
                               const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -437,7 +439,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -488,7 +491,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                                 const SizedBox(height: 20),
                               ],
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -1024,25 +1028,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               Expanded(
                                                 child: Text(
                                                       () {
-                                                    final today = DateTime.now();
+                                                    try {
+                                                      final today = DateTime.now();
+                                                      final dataList = singletonClass.clockingDataList.first.data;
+                                                      if (dataList == null || dataList.isEmpty) return 'NA';
 
-                                                    final dataList = singletonClass.clockingDataList.first.data!;
-                                                    if (dataList.isEmpty) return 'NA';
+                                                      final entry = dataList.firstWhere((entry) {
+                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                                        return createdAt != null &&
+                                                            createdAt.year == today.year &&
+                                                            createdAt.month == today.month &&
+                                                            createdAt.day == today.day;
+                                                      });
 
-                                                    final todayEntry = dataList.firstWhere(
-                                                          (entry) {
-                                                        if (entry.createdAt == null) return false;
-                                                        final createdAtDate = DateTime.tryParse(entry.createdAt!);
-                                                        if (createdAtDate == null) return false;
-                                                        return createdAtDate.year == today.year &&
-                                                            createdAtDate.month == today.month &&
-                                                            createdAtDate.day == today.day;
-                                                      },
-                                                    );
-
-                                                    return todayEntry.checkInTime?.isNotEmpty == true
-                                                        ? singletonClass.formatCheckInTime(todayEntry.checkInTime!)
-                                                        : 'NA';
+                                                      return entry.checkInTime?.isNotEmpty == true
+                                                          ? singletonClass.formatCheckInTime(entry.checkInTime!)
+                                                          : 'NA';
+                                                    } catch (_) {
+                                                      return 'NA';
+                                                    }
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1074,10 +1078,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.attendanceDataList.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.data!.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.data!.last.clockOutTime?.isNotEmpty == true
-                                                      ? singletonClass.formatCheckInTime(singletonClass.attendanceDataList.first.data!.data!.last.clockOutTime!)
+                                                  singletonClass.clockingDataList.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
+                                                      singletonClass.clockingDataList.first.data!.last.checkOutTime?.isNotEmpty == true
+                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1541,7 +1545,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1592,7 +1597,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1641,7 +1647,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1690,7 +1697,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
