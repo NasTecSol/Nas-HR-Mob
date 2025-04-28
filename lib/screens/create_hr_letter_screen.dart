@@ -12,6 +12,8 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:xml/xml.dart';
+import 'package:xml/xml.dart' as xml;
 import '../request_controller/search_employee_model.dart';
 
 class CreateHrLetterScreen extends StatefulWidget {
@@ -31,8 +33,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   final List<SearchedResultForLetter?> _selectedEmployees = [];
   String? templateDocUrl;
   String parsedTemplateText = '';
-  bool _isLoading = false;
-  bool _isTemplateGenerated = false;
   Uint8List? _generatedDocxBytes;
 
   @override
@@ -428,6 +428,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                 await file.writeAsBytes(_generatedDocxBytes!);
 
                 print("File path to open: $filePath");
+                print(templateDocUrl);
 
                 // Ensure the file exists before trying to open
                 if (await file.exists()) {
@@ -536,6 +537,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     }
   }
 
+
   Future<void> parseDocxTemplate() async {
     try {
       if (templateDocUrl == null) return;
@@ -545,18 +547,23 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       if (response.statusCode != 200) return;
 
       final bytes = response.bodyBytes;
-      final archive = ZipDecoder().decodeBytes(bytes);
+      final originalArchive = ZipDecoder().decodeBytes(bytes);
 
-      final documentFile = archive.files.firstWhere(
+      // Find document.xml inside the archive
+      final documentFile = originalArchive.firstWhere(
             (file) => file.name == 'word/document.xml',
         orElse: () => throw Exception("DOCX content not found"),
       );
 
-      String xmlContent = utf8.decode(documentFile.content as List<int>);
+      // Parse the document.xml file
+      String xmlContent = utf8.decode(documentFile.content!);
+      final documentXml = xml.XmlDocument.parse(xmlContent);
 
-      // Build replacement map
+      // Fetch employee and sender data
       final emp = _selectedEmployees.first;
       final now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      final senderInfo = singletonClass.employeeDataList.first.data!.employeeInfo!.first;
 
       final replacements = {
         'currentDate': now,
@@ -564,59 +571,161 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
         'employeeDesignation': emp?.designation ?? 'N/A',
         'employeeDepartment': emp?.department ?? 'N/A',
         'letterSubject': _letterSubject.text,
-        'letterBody': _letterBody.text,
-        'senderName': singletonClass.employeeDataList.first.data!.firstName ?? 'HR Team',
-        'senderDesignation': singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation ?? 'Manager',
-        'senderDepartment': singletonClass.employeeDataList.first.data!.employeeInfo!.first.depName ?? 'HR Department',
-        'Signature': 'AN',
+        'senderName': singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
+        'senderDepartment': senderInfo.depName ?? 'HR Department',
       };
 
-      log('Replacements: $replacements');
+      // --- Replace placeholders across paragraphs ---
+      for (final node in documentXml.findAllElements('w:t')) {
+        for (var entry in replacements.entries) {
+          String text = node.innerText;
+          if (text.contains('{${entry.key}}')) {
+            text = text.replaceAll('{${entry.key}}', entry.value);
+            node.innerText = text;
+          }
+        }
+      }
+      for (final paragraph in documentXml.findAllElements('w:p')) {
+        final texts = paragraph.findAllElements('w:t');
+        if (texts.isEmpty) continue;
+        String fullText = texts.map((node) => node.innerText).join('');
+        if (fullText.contains('{senderDesignation}')) {
+          fullText = fullText.replaceAll('{senderDesignation}', senderInfo.designation);
+          for (final node in texts) {
+            node.innerText = '';
+          }
+          texts.first.innerText = fullText;
+        }
+      }
+      for (final paragraph in documentXml.findAllElements('w:p')) {
+        final texts = paragraph.findAllElements('w:t');
+        if (texts.isEmpty) continue;
+        String fullText = texts.map((node) => node.innerText).join();
+        if (fullText.contains('{letterBody}')) {
+          fullText = fullText.replaceAll('{letterBody}', _letterBody.text);
+          for (final node in texts) {
+            node.innerText = '';
+          }
+          texts.first.innerText = fullText;
+        }
+      }
 
-      // Safely replace placeholders within <w:t> tags only
-      xmlContent = xmlContent.replaceAllMapped(
-        RegExp(r'(<w:t[^>]*>)(.*?)(</w:t>)', dotAll: true),
-            (match) {
-          String text = match.group(2)!;
-          replacements.forEach((key, value) {
-            text = text.replaceAll('{$key}', value);
-          });
-          return '${match.group(1)}$text${match.group(3)}';
-        },
-      );
+      // --- Handle Signature Insertion ---
+      final signatureUrl = senderInfo.empSignature;
+      if (signatureUrl != null && signatureUrl.isNotEmpty) {
+        final imageResponse = await http.get(Uri.parse(signatureUrl));
 
-      // Build the new archive
+        if (imageResponse.statusCode == 200) {
+          final imageBytes = imageResponse.bodyBytes;
+
+          if (imageBytes.isNotEmpty) {
+            const imageFileName = 'signature.png';
+            const mediaPath = 'word/media/$imageFileName';
+            originalArchive.addFile(ArchiveFile(mediaPath, imageBytes.length, imageBytes));
+            final relationshipsEntry = originalArchive.files.firstWhere((file) => file.name == 'word/_rels/document.xml.rels',);
+            final relationshipsXml = xml.XmlDocument.parse(utf8.decode(relationshipsEntry.content));
+            const imageRelId = 'rId123';
+            relationshipsXml.rootElement.children.add(
+              xml.XmlElement(
+                xml.XmlName('Relationship'),
+                [
+                  xml.XmlAttribute(xml.XmlName('Id'), imageRelId),
+                  xml.XmlAttribute(xml.XmlName('Type'), 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image'),
+                  xml.XmlAttribute(xml.XmlName('Target'), 'media/$imageFileName'),
+                ],
+              ),
+            );
+            originalArchive.addFile(ArchiveFile('word/_rels/document.xml.rels', relationshipsXml.toXmlString(pretty: true).length, utf8.encode(relationshipsXml.toXmlString(pretty: true))));
+            for (final paragraph in documentXml.findAllElements('w:p')) {
+              final texts = paragraph.findAllElements('w:t');
+              if (texts.isEmpty) continue;
+              String fullText = texts.map((node) => node.innerText).join();
+              if (fullText.contains('{Signature}')) {
+                for (final node in texts) {
+                  node.innerText = '';
+                }
+                final imageXml = '''
+<w:r>
+  <w:drawing>
+    <wp:inline>
+      <wp:extent cx="1900000" cy="600000"/>
+      <wp:docPr id="1" name="Picture 1"/>
+      <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+          <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+            <pic:nvPicPr>
+              <pic:cNvPr id="0" name="Signature"/>
+              <pic:cNvPicPr/>
+            </pic:nvPicPr>
+            <pic:blipFill>
+              <a:blip r:embed="$imageRelId" cstate="none"/>
+              <a:stretch>
+                <a:fillRect/>
+              </a:stretch>
+            </pic:blipFill>
+            <pic:spPr>
+              <a:xfrm>
+                <a:off x="0" y="0"/>
+                <a:ext cx="1900000" cy="600000"/>
+              </a:xfrm>
+              <a:prstGeom prst="rect">
+                <a:avLst/>
+              </a:prstGeom>
+            </pic:spPr>
+          </pic:pic>
+        </a:graphicData>
+      </a:graphic>
+    </wp:inline>
+  </w:drawing>
+</w:r>
+''';
+
+                final newDrawingNode = xml.XmlDocument.parse(imageXml).rootElement;
+                paragraph.children.add(newDrawingNode.copy());
+                print('Signature image URL: $signatureUrl');
+              }
+            }
+            if (mounted) {
+              setState(() {
+                
+              });
+            }
+          }
+        } else {
+          print("❌ Failed to fetch signature image from: $signatureUrl");
+        }
+      }
+
+      // --- Save updated document ---
+      final updatedXml = utf8.encode(documentXml.toXmlString());
       final updatedArchive = Archive();
-      for (final file in archive) {
+      for (final file in originalArchive) {
         if (file.name == 'word/document.xml') {
-          updatedArchive.addFile(
-            ArchiveFile.noCompress(file.name, xmlContent.length, utf8.encode(xmlContent)),
-          );
+          updatedArchive.addFile(ArchiveFile.noCompress('word/document.xml', updatedXml.length, updatedXml));
         } else {
           updatedArchive.addFile(file);
         }
       }
 
+      // Rebuild the final DOCX file bytes
       final newDocxBytes = ZipEncoder().encode(updatedArchive);
       _generatedDocxBytes = Uint8List.fromList(newDocxBytes!);
 
       print("✅ Template parsed and document generated successfully.");
     } catch (e, stack) {
-      print("❌ DocxTemplate parsing error: $e");
+      print("❌ Error parsing DOCX: $e");
       print(stack);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error parsing template: ${e.toString()}")),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error parsing template: ${e.toString()}")),
+        );
+      }
     }
   }
 
 
 
-
-
 }
-
-
 //DUMMY MODEL
 class SearchedResultForLetter {
   dynamic empId;
