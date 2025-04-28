@@ -1032,93 +1032,57 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               height: 5),
                                                           Text(
                                                             "Req",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.black,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                               fontSize: 12,
                                                             ),
                                                           ),
                                                         ],
                                                       ),
                                                       Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                bottom: 20.0),
+                                                        padding: const EdgeInsets.only(bottom: 20.0),
                                                         child: Container(
-                                                          width: 50,
+                                                          width: 20,
                                                           height: 2,
                                                           color: Colors.grey,
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 0,
-                                                                  bottom: 0),
+                                                          margin: const EdgeInsets.only(top: 0, bottom: 0),
                                                         ),
                                                       ),
                                                       Flexible(
                                                         child: Wrap(
-                                                          alignment:
-                                                              WrapAlignment
-                                                                  .start,
+                                                          alignment: WrapAlignment.start,
                                                           runSpacing: 0,
-                                                          // Space between rows of approver if it wraps
-                                                          children: request
-                                                                          .approvers !=
-                                                                      null &&
-                                                                  request
-                                                                      .approvers!
-                                                                      .isNotEmpty
-                                                              ? request
-                                                                  .approvers!
-                                                                  .map(
-                                                                      (approver) {
+                                                          children: request.approvers != null && request.approvers!.isNotEmpty ? request.approvers!.map((approver) {
                                                                   return Column(
                                                                     children: [
                                                                       Stack(
-                                                                        alignment:
-                                                                            Alignment.center,
+                                                                        alignment: Alignment.center,
                                                                         children: [
                                                                           Container(
-                                                                            height:
-                                                                                25,
-                                                                            width:
-                                                                                25,
-                                                                            decoration:
-                                                                                BoxDecoration(
+                                                                            height: 25,
+                                                                            width: 25,
+                                                                            decoration: BoxDecoration(
                                                                               shape: BoxShape.circle,
                                                                               color: _getColorForApproverStatus(approver.status),
                                                                             ),
                                                                           ),
                                                                           Container(
-                                                                            height:
-                                                                                10,
-                                                                            width:
-                                                                                10,
-                                                                            decoration:
-                                                                                const BoxDecoration(
+                                                                            height: 10,
+                                                                            width: 10,
+                                                                            decoration: const BoxDecoration(
                                                                               shape: BoxShape.circle,
                                                                               color: Colors.white,
                                                                             ),
                                                                           ),
                                                                         ],
                                                                       ),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              5),
+                                                                      const SizedBox(height: 5),
                                                                       Text(
-                                                                        approver.approverName ??
-                                                                            'N/A',
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
+                                                                        approver.approverName ?? 'N/A',
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 12,
+                                                                          fontWeight: FontWeight.w500,
                                                                         ),
                                                                       ),
                                                                     ],
@@ -1127,65 +1091,43 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               : [
                                                                   Text(
                                                                     'N/A',
-                                                                    style: GoogleFonts
-                                                                        .inter(
-                                                                      fontSize:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize: 15,
+                                                                      color: Colors.grey,
+                                                                      fontWeight: FontWeight.w500,
                                                                     ),
                                                                   ),
                                                                 ],
                                                         ),
                                                       ),
-                                                      // Line between ListView and "CEO"
                                                       Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                bottom: 20.0),
+                                                        padding: const EdgeInsets.only(bottom: 20.0),
                                                         child: Container(
-                                                          width: 50,
+                                                          width: 20,
                                                           height: 2,
                                                           color: Colors.grey,
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 0,
-                                                                  bottom: 0),
+                                                          margin: const EdgeInsets.only(top: 0, bottom: 0),
                                                         ),
                                                       ),
-
-                                                      // Last static column ("CEO")
                                                       Column(
                                                         children: [
                                                           Stack(
-                                                            alignment: Alignment
-                                                                .center,
+                                                            alignment: Alignment.center,
                                                             children: [
                                                               Container(
                                                                 height: 25,
                                                                 width: 25,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: NasColors
-                                                                      .pending,
+                                                                decoration: BoxDecoration(
+                                                                  shape: BoxShape.circle,
+                                                                  color: NasColors.pending,
                                                                 ),
                                                               ),
                                                               Container(
                                                                 height: 10,
                                                                 width: 10,
-                                                                decoration:
-                                                                    const BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: Colors
-                                                                      .white,
+                                                                decoration: const BoxDecoration(
+                                                                  shape: BoxShape.circle,
+                                                                  color: Colors.white,
                                                                 ),
                                                               ),
                                                             ],
@@ -1194,13 +1136,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               height: 5),
                                                           Text(
                                                             "CEO",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.black,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                               fontSize: 12,
                                                             ),
                                                           ),

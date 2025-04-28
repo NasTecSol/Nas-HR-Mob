@@ -686,8 +686,9 @@ class EmployeeInfo {
   dynamic hiringDate;
   dynamic noticePeriod;
   dynamic empId;
+  dynamic empSignature;
 
-  EmployeeInfo({this.depId, this.depName, this.jobTitle, this.jobDescription, this.reportingManager, this.jobRank, this.designation, this.grade, this.workDomain, this.location, this.employeeStatus, this.employeeType, this.employeeShift, this.joiningDate, this.leavingDate, this.hiringDate, this.noticePeriod, this.empId});
+  EmployeeInfo({this.depId, this.depName, this.jobTitle, this.jobDescription, this.reportingManager, this.jobRank, this.designation, this.grade, this.workDomain, this.location, this.employeeStatus, this.employeeType, this.employeeShift, this.joiningDate, this.leavingDate, this.hiringDate, this.noticePeriod, this.empId , this.empSignature});
 
   EmployeeInfo.fromJson(Map<String, dynamic> json) {
     depId = json["depId"];
@@ -708,6 +709,7 @@ class EmployeeInfo {
     hiringDate = json["hiringDate"];
     noticePeriod = json["noticePeriod"];
     empId = json["empId"];
+    empSignature = json["empSignature"];
   }
 
   Map<String, dynamic> toJson() {
@@ -730,6 +732,7 @@ class EmployeeInfo {
     _data["hiringDate"] = hiringDate;
     _data["noticePeriod"] = noticePeriod;
     _data["empId"] = empId;
+    _data["empSignature"] = empSignature;
     return _data;
   }
 }

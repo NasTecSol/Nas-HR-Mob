@@ -1230,7 +1230,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         Text(
                                           singletonClass.attendanceDataList.isNotEmpty &&
                                               singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.data!.last.breakTime)
+                                              ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                               : 'NA',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
@@ -1983,7 +1983,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString(); // Round up to the nearest integer
     } catch (e) {
-      print('Error formatting minutes: $e');
       return '--';
     }
   }
