@@ -906,5 +906,11 @@
   "complaintAgainstColleague":"Complaint Against Colleague",
   "complaintAgainstSupervisor":"Complaint Against Supervisor",
   "generalComplaint":"General Complaint",
-  "createLetter":"Create Letter"
+  "createLetter":"Create Letter",
+  "enterLetterSubjectHere":"Enter letter subject here...!",
+  "enterLetterBodyHere":"Enter letter body here...!",
+  "previewLetter":"Preview Letter",
+  "pleaseEnterLetterBody":"Please enter letter body",
+  "pleaseEnterLetterSubject":"Please enter letter subject",
+  "letterBody":"Letter body"
 }

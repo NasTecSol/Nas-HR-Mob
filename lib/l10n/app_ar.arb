@@ -568,6 +568,11 @@
     "complaintAgainstColleague": "شكوى ضد الزميل",
     "complaintAgainstSupervisor": "شكوى ضد المشرف",
     "generalComplaint": "شكوى عامة",
-    "createLetter": "إنشاء خطاب"
-
+    "createLetter": "إنشاء خطاب",
+    "enterLetterSubjectHere": "أدخل موضوع الخطاب هنا...!",
+    "enterLetterBodyHere": "أدخل محتوى الخطاب هنا...!",
+    "previewLetter": "معاينة الخطاب",
+    "pleaseEnterLetterBody": "يرجى إدخال محتوى الخطاب",
+    "pleaseEnterLetterSubject": "يرجى إدخال موضوع الخطاب",
+    "letterBody": "محتوى الخطاب"
 }
