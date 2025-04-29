@@ -212,7 +212,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ),
                       ],
-
+                      if(_selectedOptionIndex2 == 6)...[
+                        Text(
+                          AppLocalizations.of(context)!.signature,
+                          style: GoogleFonts.inter(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ],
                       const Spacer(),
 
                       // Display the Settings button for "Profile" tab (index 0)
@@ -1656,10 +1665,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                               )
                                   : Column(
                                 children: [
-                                  singletonClass.signatureModelList.isNotEmpty &&
-                                      singletonClass.signatureModelList.first.data!.url != null
+                                  singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
+                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
                                       ? Image.network(
-                                    singletonClass.signatureModelList.first.data!.url!,
+                                    singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
                                     height: 250,
                                   )
                                       : Container(
@@ -1667,7 +1676,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     alignment: Alignment.center,
                                     color: Colors.grey[200],
                                     child: Text('No signature available'),
-                                  )
+                                  ),
                                 ],
                               ),
                             ],
@@ -1996,15 +2005,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         setState(() {
           isLoading = false;
         });
-
-        await QuickAlert.show(
-          autoCloseDuration: const Duration(seconds: 2),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-          context: context,
-          title: AppLocalizations.of(context)!.success,
-          type: QuickAlertType.success,
-        );
       } else {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
