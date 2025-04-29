@@ -83,6 +83,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           ),
                         ),
                         const Spacer(),
+                        if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                         IconButton(
                           onPressed: () {
                            Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateHrLetterScreen()));

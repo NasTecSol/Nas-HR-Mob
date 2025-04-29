@@ -254,7 +254,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        toDoTasks.tag?.isNotEmpty == true ? toDoTasks.tag! : "NA",
+                                        "${toDoTasks.tag?.isNotEmpty == true ? toDoTasks.tag! : "NA"}",
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 15,
@@ -516,7 +516,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        inProgressTasks.tag?.isNotEmpty == true ? inProgressTasks.tag! : "NA",
+                                        "${inProgressTasks.tag?.isNotEmpty == true ? inProgressTasks.tag! : "NA"}",
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 15,
@@ -778,7 +778,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        completed.tag?.isNotEmpty == true ? completed.tag! : "NA",
+                                        "${completed.tag?.isNotEmpty == true ? completed.tag! : "NA"}",
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 15,
@@ -909,7 +909,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       String? status,
       String? estimatedDuration,
       String? type,
-      String? tag,
+  List<String>? tag,
       List<String>? assignTo,
       String? reportedTo,
       String? date,
