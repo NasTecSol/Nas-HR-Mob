@@ -20,12 +20,13 @@ class _MainScreenState extends State<MainScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _currentIndex = 0;
   bool _isLoading = true;
-  final iconList = <IconData>[
-    Icons.home,
-    Icons.task,
-    Icons.mail_outline,
-    Icons.calendar_today, // Remove the last icon data
+  final imageIconList = <String>[
+    'images/homeScreen.png',
+    'images/projectScreen.png',
+    'images/requestScreen.png',
+    'images/calendarScreen.png',
   ];
+
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -88,11 +89,11 @@ class _MainScreenState extends State<MainScreen> {
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(20)),
               child: AnimatedBottomNavigationBar.builder(
-                itemCount: iconList.length + 1, // Increment the item count by 1
+                itemCount: imageIconList.length + 1, // Increment the item count by 1
                 tabBuilder: (int index, bool isActive) {
                   final color = isActive ? Colors.white : Colors.grey;
 
-                  if (index == iconList.length) {
+                  if (index == imageIconList.length) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
@@ -160,10 +161,14 @@ class _MainScreenState extends State<MainScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(5.0),
-                            child: Icon(
-                              iconList[index],
-                              size: 30,
-                              color: color,
+                            child: Image.asset(
+                              imageIconList[index],
+                              height: 35,
+                              width: 35,
+                              fit: BoxFit.contain,
+                              color: _currentIndex == index
+                                  ? Colors.white
+                                  : (index == 0 || index == 2 ? Colors.black : null),
                             ),
                           ),
                           if (index == 2) // Add badge only for the RequestScreen icon (index 2)

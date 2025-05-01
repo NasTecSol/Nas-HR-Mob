@@ -5,6 +5,7 @@ import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
+import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -49,11 +50,11 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? awsURL = "https://dev.nashrms.com/api";
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<BaseUrlModel> baseURLDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
   List<SignatureModel> signatureModelList = [];

@@ -818,18 +818,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  // Adjust opacity for the glow effect
+                                  color: Colors.white.withOpacity(0.6),
                                   spreadRadius: 5,
-                                  // Spread the shadow to create a glow effect
-                                  blurRadius:
-                                      10, // Blur radius to make the glow smooth
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.notifications_none_outlined,
-                              color: Colors.black,
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0), // optional padding
+                              child: Image.asset(
+                                'images/notification.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
@@ -858,9 +858,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.access_time_rounded,
-                              color: Colors.black,
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0), // optional padding
+                              child: Image.asset(
+                                'images/clocking.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
