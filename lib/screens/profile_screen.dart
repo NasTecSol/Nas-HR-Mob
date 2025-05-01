@@ -1634,7 +1634,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 children: [
                                   Signature(
                                     controller: _controller,
-                                    height: 400,
+                                    height: MediaQuery.of(context).size.height * 0.5,
                                     backgroundColor: Colors.grey[200]!,
                                   ),
                                   SizedBox(height: 10),
@@ -2033,15 +2033,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       "firstName": singletonClass.employeeDataList.first.data!.firstName,
       "middleName": singletonClass.employeeDataList.first.data!.middleName,
       "lastName": singletonClass.employeeDataList.first.data!.lastName,
-      "martialStatus":
-          singletonClass.employeeDataList.first.data!.martialStatus,
+      "martialStatus": singletonClass.employeeDataList.first.data!.martialStatus,
       "religion": singletonClass.employeeDataList.first.data!.religion,
       "address": singletonClass.employeeDataList.first.data!.address,
       "NIC": singletonClass.employeeDataList.first.data!.nic,
       "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
       "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus":
-          singletonClass.employeeDataList.first.data!.imigrationSatus,
+      "imigrationSatus": singletonClass.employeeDataList.first.data!.imigrationSatus,
       "DOB": singletonClass.employeeDataList.first.data!.dob,
       "age": singletonClass.employeeDataList.first.data!.age,
       "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,
