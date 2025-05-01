@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
@@ -12,9 +14,10 @@ import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:signature/signature.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
+import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -32,7 +35,51 @@ class _ProfileScreenState extends State<ProfileScreen>
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
   int _selectedOptionIndex2 = 0;
-  bool _expanded = false; // Initialize the expanded state
+  bool _expanded = false;
+  final SignatureController _controller = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
+  bool _isEditing = false;
+  File? _signatureImageFile;
+  @override
+  void initState() {
+    super.initState();
+    _loadSignature();
+  }
+
+  Future<void> _loadSignature() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/signature.png');
+    if (file.existsSync()) {
+      setState(() {
+        _signatureImageFile = file;
+      });
+    }
+  }
+
+  Future<void> _saveSignature() async {
+    if (_controller.isNotEmpty) {
+      final Uint8List? data = await _controller.toPngBytes();
+      if (data != null) {
+        await _uploadSignatureToApi(data);
+        setState(() {
+          _isEditing = false;
+        });
+      }
+    }
+  }
+
+
+
+  void _resetSignature() {
+    _controller.clear();
+  }
+
+  void _startEditing() {
+    _controller.clear();
+    setState(() {
+      _isEditing = true;
+    });
+  }
+
 
   final List<Document> documentInfoDummy = [
     // Example data, replace with your actual document data
@@ -61,12 +108,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    setState(() {});
-  }
 
   Future<void> fetchLatestProfileData() async {
     setState(() {
@@ -171,7 +212,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ),
                       ],
-
+                      if(_selectedOptionIndex2 == 6)...[
+                        Text(
+                          AppLocalizations.of(context)!.signature,
+                          style: GoogleFonts.inter(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ],
                       const Spacer(),
 
                       // Display the Settings button for "Profile" tab (index 0)
@@ -305,6 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         buildOptionsCard2(3, AppLocalizations.of(context)!.loans),
                         buildOptionsCard2(4, AppLocalizations.of(context)!.familyInfo),
                         buildOptionsCard2(5, AppLocalizations.of(context)!.shiftInfo),
+                        buildOptionsCard2(6, AppLocalizations.of(context)!.signature),
                       ],
                     ),
                   ),
@@ -1566,6 +1617,88 @@ class _ProfileScreenState extends State<ProfileScreen>
                   )),
             ),
           ],
+          if (_selectedOptionIndex2 == 6)...[
+            Expanded(
+              child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      Stack(
+                        children: [
+                          // Signature Display or Placeholder
+                          Column(
+                            children: [
+                              _isEditing
+                                  ? Column(
+                                children: [
+                                  Signature(
+                                    controller: _controller,
+                                    height: MediaQuery.of(context).size.height * 0.5,
+                                    backgroundColor: Colors.grey[200]!,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _resetSignature,
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        child: Text(AppLocalizations.of(context)!.cancel,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: _saveSignature,
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                        child: Text(AppLocalizations.of(context)!.save,
+                                          style: GoogleFonts.inter(
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                                  : Column(
+                                children: [
+                                  singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
+                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
+                                      ? Image.network(
+                                    singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
+                                    height: 250,
+                                  )
+                                      : Container(
+                                    height: 250,
+                                    alignment: Alignment.center,
+                                    color: Colors.grey[200],
+                                    child: Text('No signature available'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              onPressed: _startEditing,
+                              icon: Icon(
+                                _signatureImageFile != null ? Icons.edit : Icons.add,
+                                color: Colors.black,
+                              ),
+                              tooltip: _signatureImageFile != null ? 'Edit Signature' : 'Add Signature',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )),
+            ),
+          ],
         ],
       ),
     );
@@ -1753,37 +1886,41 @@ class _ProfileScreenState extends State<ProfileScreen>
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
     setState(() {
-      isLoading = true; // Corrected to set isLoading to true
+      isLoading = true;
     });
 
     try {
+      // Compress the image if it's larger than 1MB
+      if (fileBytes.length > 1000000) {
+        final compressed = await FlutterImageCompress.compressWithList(
+          fileBytes,
+          minWidth: 1080,
+          minHeight: 1080,
+          quality: 70,
+          format: CompressFormat.jpeg,
+        );
+        print("Compressed from ${fileBytes.length} to ${compressed.length} bytes");
+        fileBytes = compressed;
+      }
+
       var request = http.MultipartRequest('POST', uri);
 
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
-      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
+      final mimeType = lookupMimeType(selectedFile!.path ?? '', headerBytes: fileBytes) ??
           'application/octet-stream';
 
-      // Add the file to the request as bytes
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: selectedFile!.name,
+        contentType: MediaType.parse(mimeType),
       ));
 
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
+      request.fields['attachmentName'] = selectedFile!.name;
+      request.fields['attachmentType'] = selectedFile!.extension ?? '';
 
-      // Send the request
       var response = await request.send();
-
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
@@ -1791,15 +1928,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         ProfileResponse profileResponse = ProfileResponse.fromJson(decodedJson);
         singletonClass.profileResponseDataList = [profileResponse];
 
-        updateEmployeeData(); // Update local data
-        singletonClass.getEmployeeData(); // Fetch updated employee data
+        updateEmployeeData();
+        await singletonClass.getEmployeeData();
 
-        // Refresh UI with new data
-        setState(() {});
-        setState(() {
-          isLoading = false;
-          singletonClass.getEmployeeData();
-        });
+        setState(() => isLoading = false);
+
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1808,11 +1941,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           title: AppLocalizations.of(context)!.success,
           type: QuickAlertType.success,
         );
-        setState(() {
-          singletonClass.getEmployeeData();
-        });
       } else {
         print('Upload failed: ${response.statusCode}');
+        setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1823,7 +1954,69 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error during upload: $e');
+      setState(() => isLoading = false);
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: AppLocalizations.of(context)!.errorFetchData,
+        type: QuickAlertType.error,
+      );
+    }
+  }
+
+
+  //Signature CALL
+  Future<void> _uploadSignatureToApi(Uint8List data) async {
+    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final mimeType = 'image/png';
+
+      var request = http.MultipartRequest('POST', uri);
+      request.files.add(http.MultipartFile(
+        'file',
+        http.ByteStream.fromBytes(data),
+        data.length,
+        filename: 'signature.png',
+        contentType: MediaType.parse(mimeType),
+      ));
+
+      request.fields['attachmentName'] = 'signature.png';
+      request.fields['attachmentType'] = 'png';
+
+      var response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(responseBody);
+        SignatureModel profileResponse = SignatureModel.fromJson(decodedJson);
+        singletonClass.signatureModelList = [profileResponse];
+
+        updateSignature();
+        singletonClass.getEmployeeData();
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (e) {
+      print('Upload error: $e');
     }
   }
 
@@ -1840,15 +2033,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       "firstName": singletonClass.employeeDataList.first.data!.firstName,
       "middleName": singletonClass.employeeDataList.first.data!.middleName,
       "lastName": singletonClass.employeeDataList.first.data!.lastName,
-      "martialStatus":
-          singletonClass.employeeDataList.first.data!.martialStatus,
+      "martialStatus": singletonClass.employeeDataList.first.data!.martialStatus,
       "religion": singletonClass.employeeDataList.first.data!.religion,
       "address": singletonClass.employeeDataList.first.data!.address,
       "NIC": singletonClass.employeeDataList.first.data!.nic,
       "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
       "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus":
-          singletonClass.employeeDataList.first.data!.imigrationSatus,
+      "imigrationSatus": singletonClass.employeeDataList.first.data!.imigrationSatus,
       "DOB": singletonClass.employeeDataList.first.data!.dob,
       "age": singletonClass.employeeDataList.first.data!.age,
       "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,
@@ -1893,6 +2084,89 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } catch (e) {
       print('Error: $e');
+    }
+  }
+
+  void updateSignature() async {
+    String? employeeID = singletonClass.getJWTModel()?.employeeId;
+    String url = '${singletonClass.baseURL}/employee/updateEMPSignature/$employeeID';
+
+    // Define the JSON data to send
+    Map<String, dynamic> data = {
+      "empSignature": "${singletonClass.signatureModelList.first.data!.url}",
+    };
+
+    // Convert data to JSON string
+    String jsonData = jsonEncode(data);
+    log("Signature Json$jsonData");
+
+    // Make the PATCH request
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonData,
+      );
+      setState(() {
+        isLoading = false;
+      });
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['statusCode'] == 200) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.success,
+            type: QuickAlertType.success,
+          );
+        } else if (decodedResponse['statusCode'] == 400) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.internalServerError,
+            type: QuickAlertType.error,
+          );
+        }
+      } else if (response.statusCode == 400 || response.statusCode == 500) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('Error: ${response.statusCode}');
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: 'Error: ${response.statusCode}',
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: 'Failed to send data. Error: $error',
+        type: QuickAlertType.error,
+      );
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
+import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -25,8 +26,10 @@ import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
+import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
+import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
@@ -47,13 +50,15 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? awsURL = "https://dev.nashrms.com/api";
   String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<BaseUrlModel> baseURLDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
+  List<SignatureModel> signatureModelList = [];
+  List<RemoteAttendanceModel> remoteAttendanceModelList = [];
   List<ProjectsData> projectsDataList = [];
   List<TaskAttachmentModel> taskAttachmentDataList = [];
   List<TaskModel> taskModelList = [];
@@ -199,6 +204,22 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
+  //Remote Attendance Data
+  Future<RemoteAttendanceModel?> getRemoteAttendanceData() async {
+    String? employeeId =  getJWTModel()?.employeeId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/employee/getEMPRemoteLocation/$employeeId');
+    var response = await client.get(uri);
+    log("Remote Attendance Data : ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var remoteData = RemoteAttendanceModel.fromJson(responseBody);
+      remoteAttendanceModelList.addAll([remoteData]);
+      return remoteData;
+    }
+    return null ; // Print the response body
+  }
+
   //NOTIFICATION API CALL
   Future<NotificationModel?> getNotifications() async {
     String? employeeId =  getJWTModel()?.employeeId;
@@ -214,228 +235,6 @@ class SingletonClass {
     }
     return null ; // Print the response body
   }
-
-  Future<RequestDataModel?> getRequestData() async {
-    String? employeeId = getJWTModel()?.employeeId;
-
-    // Request body with the required parameter
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["leaveRequest","loanRequest"],
-    };
-
-    var uri = Uri.parse('$baseURL/request/employee/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("Request Log: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = RequestDataModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        setRequestData([requestData]);
-
-        // Print the parsed data for debugging
-        print(
-            "Singleton Data: ${requestDataList.first.data!.data!.first.employeeName}");
-
-        return requestData;
-      } else {
-        log("Error request Data: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error request data: $e');
-      return null;
-    }
-  }
-
-
-  Future<ComplaintsModel?> getComplaintsData() async {
-    String? employeeId = getJWTModel()?.employeeId;
-
-    // Request body with the required parameter
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["complaintRequest"],
-    };
-
-    var uri = Uri.parse('$baseURL/request/employee/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("Complaints Log: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = ComplaintsModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        complaintsDataList.addAll([requestData]);
-        return requestData;
-      } else {
-        log("Error Complaints Data: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error Complaints Data: $e');
-      return null;
-    }
-  }
-
-  Future<PenaltiesAndFineModel?> getPenalties() async {
-    String? employeeId =  getJWTModel()?.empId;
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/request/penalties_fines/$employeeId');
-    var response = await client.get(uri);
-    log("Penalties Data ${response.body}");
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var requestData = PenaltiesAndFineModel.fromJson(responseBody);
-      penaltiesDataList.addAll([requestData]);
-      return requestData;
-    }
-    return null ; // Print the response body
-  }
-  //ApproverDataReq API call
-
-  Future<ApproverRequestData?> getApproverData() async {
-    String? employeeId = getJWTModel()?.employeeId;
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["leaveRequest","loanRequest"],
-    };
-    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("Request Log approver: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = ApproverRequestData.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        setApproverDataList([requestData]);
-
-        // Print the parsed data for debugging
-        print(
-            "Singleton Data approver: ${approverDataList.first.data!.first.employeeName}");
-
-        return requestData;
-      } else {
-        log("Error : Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error Approver Data: $e');
-      return null;
-    }
-  }
-
-  //Approver for complaints
-  Future<ComplaintsApproverModel?> getComplaintsApproverData() async {
-    String? employeeId = getJWTModel()?.employeeId;
-    print("vghjk$employeeId");
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["complaintRequest"],
-    };
-    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("complaints Log approver: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = ComplaintsApproverModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        complaintsApproverDataList.addAll([requestData]);
-        return requestData;
-      } else {
-        log("Error complaints Log approver: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error complaints Log approver: $e');
-      return null;
-    }
-  }
-
-  //Approver for penalties
-  Future<PenaltiesApproverModel?> getPenaltiesApprover() async {
-    String? employeeId = getJWTModel()?.employeeId;
-    Map<String, dynamic> requestBody = {
-      "requestTypes": ["penalties_fines"],
-    };
-    var uri = Uri.parse('$baseURL/request/approver/$employeeId');
-
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
-      );
-
-      log("penalties Log approver: ${response.body}");
-
-      if (response.statusCode == 201) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = PenaltiesApproverModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        penaltiesApproverDataList.addAll([requestData]);
-        return requestData;
-      } else {
-        log("Error penalties Log approver: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error penalties Log approver: $e');
-      return null;
-    }
-  }
-
 
   Future<CompanyData?> getCompanyData() async {
     String? companyId =  getJWTModel()?.companyId;
@@ -506,8 +305,6 @@ class SingletonClass {
       return 'N/A';
     }
   }
-
-
   //ATTENDANCE API CALL
   Future<AttendanceData?> getEmployeeAttendanceData() async {
     String? employeeId = getJWTModel()?.employeeId;
@@ -534,8 +331,6 @@ class SingletonClass {
 
     return null;
   }
-
-
   void sendFCMToken() async {
 
     String? employeeId = getJWTModel()?.employeeId;

@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
@@ -33,7 +35,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   SingletonClass singletonClass = SingletonClass();
   double blurAmount = 10.0;
@@ -43,22 +45,50 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = false;
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
+  String? _openLocation;
+  String? _backgroundLocation;
 
   @override
   void initState() {
     super.initState();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
+    singletonClass.getRemoteAttendanceData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
         showHeaderContent = isExpanded;
         blurAmount = isExpanded ? 10.0 : 0.0;
       });
+      WidgetsBinding.instance.addObserver(this);
+      trackOpenLocation();
     });
     setState(() {
 
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      trackBackgroundLocation();
+    }
+  }
+
+  Future<void> trackOpenLocation() async {
+    _openLocation = await getCurrentLatLong();
+    updateRemoteLocation();
+  }
+
+  Future<void> trackBackgroundLocation() async {
+    _backgroundLocation = await getCurrentLatLong();
+    updateRemoteLocation();
   }
 
 
@@ -298,7 +328,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -350,7 +381,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -407,7 +439,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -458,7 +491,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: 20),
                               ],
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
+                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
                                 Column(
                                   children: [
                                     GestureDetector(
@@ -784,18 +818,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  // Adjust opacity for the glow effect
+                                  color: Colors.white.withOpacity(0.6),
                                   spreadRadius: 5,
-                                  // Spread the shadow to create a glow effect
-                                  blurRadius:
-                                      10, // Blur radius to make the glow smooth
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.notifications_none_outlined,
-                              color: Colors.black,
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0), // optional padding
+                              child: Image.asset(
+                                'images/notification.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
@@ -824,9 +858,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.access_time_rounded,
-                              color: Colors.black,
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0), // optional padding
+                              child: Image.asset(
+                                'images/clocking.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
@@ -993,11 +1030,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 2.5),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.clockingDataList.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.last.checkInTime?.isNotEmpty == true
-                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkInTime!)
-                                                      : 'NA',
+                                                      () {
+                                                    try {
+                                                      final today = DateTime.now();
+                                                      final dataList = singletonClass.clockingDataList.first.data;
+                                                      if (dataList == null || dataList.isEmpty) return 'NA';
+
+                                                      final entry = dataList.firstWhere((entry) {
+                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                                        return createdAt != null &&
+                                                            createdAt.year == today.year &&
+                                                            createdAt.month == today.month &&
+                                                            createdAt.day == today.day;
+                                                      });
+
+                                                      return entry.checkInTime?.isNotEmpty == true
+                                                          ? singletonClass.formatCheckInTime(entry.checkInTime!)
+                                                          : 'NA';
+                                                    } catch (_) {
+                                                      return 'NA';
+                                                    }
+                                                  }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.normal,
@@ -1118,15 +1171,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass.clockingDataList.isNotEmpty &&
-                                                        singletonClass.clockingDataList.first.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} ${singletonClass.formatMinutes(int.tryParse(singletonClass.clockingDataList.first.data!.first.totalTime ?? '0') ?? 0)}'
+                                                    singletonClass.attendanceDataList.isNotEmpty &&
+                                                        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                        ? '${AppLocalizations.of(context)!.worked} '
+                                                        '${singletonClass.formatMinutes(
+                                                        double.tryParse(
+                                                            singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0'
+                                                        )?.round() ?? 0
+                                                    )}'
                                                         : '${AppLocalizations.of(context)!.worked} NA',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight: FontWeight.normal,
                                                     ),
                                                   ),
+
                                                 ),
                                               ),
                                             ],
@@ -1174,7 +1233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           singletonClass.attendanceDataList.isNotEmpty &&
                                               singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                              ? formatMinutes(singletonClass.attendanceDataList.first.data!.data!.last.breaksTaken)
+                                              ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                               : 'NA',
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
@@ -1489,7 +1548,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1540,7 +1600,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1589,7 +1650,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1638,7 +1700,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
+                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1923,7 +1986,6 @@ class _HomeScreenState extends State<HomeScreen> {
       double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString(); // Round up to the nearest integer
     } catch (e) {
-      print('Error formatting minutes: $e');
       return '--';
     }
   }
@@ -2130,6 +2192,74 @@ class _HomeScreenState extends State<HomeScreen> {
         showConfirmBtn: false,
       );
     }
+  }
+
+  //Update CALL
+  void updateRemoteLocation() async {
+    String? employeeID = singletonClass.getJWTModel()?.employeeId;
+    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+
+    // Fallbacks if any location is null
+    String finalLocation = _openLocation ?? "0.0,0.0";
+
+    Map<String, dynamic> data = {
+      "lastLocation": finalLocation
+    };
+
+    String jsonData = jsonEncode(data);
+    log("remote Location Json$jsonData");
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonData,
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+
+      print("send remote loc:${response.body}");
+      final decodedResponse = json.decode(response.body);
+      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
+      } else {
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+    }
+  }
+
+  // Current Location
+  Future<String> getCurrentLatLong() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return '0.0,0.0'; // Or handle it differently
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return '0.0,0.0';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return '0.0,0.0';
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    return '${position.latitude}|${position.longitude}';
   }
 }
 

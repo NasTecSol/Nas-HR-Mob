@@ -1,52 +1,29 @@
 #!/bin/sh
 
-# Fail this script if any subcommand fails.
 set -e
 
-# The default execution directory of this script is the ci_scripts directory.
-cd $CI_PRIMARY_REPOSITORY_PATH # change working directory to the root of your cloned repo.
+# Change working directory to the root of your cloned repo.
+cd "$CI_PRIMARY_REPOSITORY_PATH"
 
-# Install Flutter using git.
+# Clone Flutter SDK (custom repo or standard one).
 git clone https://github.com/flutter/flutter.git --depth 1 -b 3.27.4 $HOME/flutter
 
+# Add Flutter to PATH.
 export PATH="$PATH:$HOME/flutter/bin"
 
-# Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.
+# Pre-cache Flutter artifacts for iOS.
 flutter precache --ios
 
-# Install Flutter dependencies.
+# Install Flutter package dependencies.
 flutter pub get
 
-# Install CocoaPods using Homebrew.
-HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
+# Install CocoaPods via Homebrew without auto-updating Homebrew.
+HOMEBREW_NO_AUTO_UPDATE=1
 brew install cocoapods
 
-# Install CocoaPods dependencies.
-cd ios && pod install # run `pod install` in the `ios` directory.
+# Navigate to the iOS directory and install pod dependencies.
+cd ios
+pod install
 
-exit 0#!/bin/sh
-
-# Fail this script if any subcommand fails.
-set -e
-
-# The default execution directory of this script is the ci_scripts directory.
-cd $CI_PRIMARY_REPOSITORY_PATH # change working directory to the root of your cloned repo.
-
-# Install Flutter using git.
-git clone https://github.com/NasTecSol/Nas-HR-Mob.git --depth 1 -b stable $HOME/flutter
-export PATH="$PATH:$HOME/flutter/bin"
-
-# Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.
-flutter precache --ios
-
-# Install Flutter dependencies.
-flutter pub get
-
-# Install CocoaPods using Homebrew.
-HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
-brew install cocoapods
-
-# Install CocoaPods dependencies.
-cd ios && pod install # run `pod install` in the `ios` directory.
-
+# Exit script successfully.
 exit 0

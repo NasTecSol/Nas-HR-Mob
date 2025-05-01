@@ -51,7 +51,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+        padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -123,7 +123,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              AppLocalizations.of(context)!.subType,
+              AppLocalizations.of(context)!.complaints,
               style: GoogleFonts.inter(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -135,7 +135,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
               child: DropdownButton<SubTypes>(
                 value: _selectedSubType,
                 hint: Text(
-                  AppLocalizations.of(context)!.selectSubType,
+                  AppLocalizations.of(context)!.selectComplaintType,
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
                   return DropdownMenuItem<SubTypes>(
                     value: subType,
                     child: Text(
-                      subType.requestName ?? '',
+                      _translateRequestSubtype(subType.requestName , context),
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.normal,
@@ -255,6 +255,52 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       ),
     );
   }
+
+  String _translateRequestSubtype(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Complaint Against Colleague':
+        return localizations.complaintAgainstColleague;
+      case 'Complaint Against Supervisor':
+        return localizations.complaintAgainstSupervisor;
+      case 'General Complaint':
+        return localizations.generalComplaint;
+      case 'Advance Salary Request':
+        return localizations.advanceSalaryRequest;
+      case 'LongTerm Loan Request':
+        return localizations.longTermLoanRequest;
+      case "Housing Allowance":
+        return localizations.housingAllowance;
+      case "Traveling Allowance":
+        return localizations.travellingAllowance;
+      case 'Salary Incremental Allowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salary Slip":
+        return localizations.salarySlip;
+      case "Promotional Letter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advance Expense":
+        return localizations.advanceExpense;
+      case "Business Expense":
+        return localizations.businessExpense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Bad Behaviour":
+        return localizations.badBehaviour;
+      default:
+        return status!;
+    }
+  }
   Future<void> postRequest() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     String? companyId = singletonClass.getJWTModel()?.companyId;
@@ -345,7 +391,6 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        await singletonClass.getRequestData();
         Navigator.pop(context);
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??

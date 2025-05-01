@@ -12,8 +12,10 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../request_controller/approver_request_data_model.dart';
 import '../request_controller/attachment_response_model.dart';
 import '../request_controller/company_model.dart';
+import '../request_controller/request_data_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
@@ -27,8 +29,6 @@ class RequestScreen extends StatefulWidget {
 }
 
 class _RequestScreenState extends State<RequestScreen> {
-  late Future _approverDataFuture;
-  late Future _requestDataFuture;
   int _selectedOptionIndex = 0;
   int _selectedOptionIndexBottom = 0;
   PlatformFile? selectedFile;
@@ -53,7 +53,15 @@ class _RequestScreenState extends State<RequestScreen> {
   List<String> subTypeList = [];
   int? totalDays;
   final bool _isTeamSelected = false;
-  String? installmentAmount;
+  int? installmentAmount;
+  String? totalMonths;
+  int _currentPage = 0;
+  int _totalPages = 1;
+  int _requestCurrentPage = 0;
+  int _requestTotalPages = 1;
+  List<DataApprover>? _approver;
+  List<Data1>? _request;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -67,14 +75,14 @@ class _RequestScreenState extends State<RequestScreen> {
           .cast<String>()
           .toList();
     }
-    singletonClass.getRequestData();
-    singletonClass.getApproverData();
+    _fetchRequestData(0);
+    _fetchApproverData(0);
+    getRequestData();
+    getApproverData();
     setState(() {
-      singletonClass.getRequestData();
-      singletonClass.getApproverData();
+      getRequestData();
+      getApproverData();
     });
-    _approverDataFuture = singletonClass.getApproverData();
-    _requestDataFuture = singletonClass.getRequestData();
     setState(() {});
   }
 
@@ -92,6 +100,49 @@ class _RequestScreenState extends State<RequestScreen> {
         _expandedIndex = index;
       }
     });
+  }
+
+  Future<void> _fetchApproverData(int page) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final data = await getApproverData(page: page);
+    if (data != null && data.data != null) {
+      setState(() {
+        _approver = data.data!.data;
+        _totalPages = data.data!.totalPages ?? 1;
+        _currentPage = page;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _approver = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+
+
+  Future<void> _fetchRequestData(int page) async {
+    setState(() {
+      _isLoading = true;
+    });
+    final data = await getRequestData(page: page);
+    if (data != null && data.data != null) {
+      setState(() {
+        _request = data.data!.data;
+        _requestTotalPages = data.data!.totalPages ?? 1;
+        _requestCurrentPage = page;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _request = [];
+        _isLoading = false;
+      });
+    }
   }
 
 //Overlay
@@ -134,7 +185,11 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass
                               .companyDataList.first.data!.request![index];
-                          if (request.requestName == 'Penalty and Fine Requests' && !(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
+                          if (request.requestName ==
+                                  'Penalty and Fine Requests' &&
+                              !(singletonClass.getJWTModel()?.grade == 'L0' ||
+                                  singletonClass.getJWTModel()?.grade ==
+                                      'L1')) {
                             return const SizedBox.shrink();
                           }
                           if (request.requestType == 'complaintRequest') {
@@ -144,7 +199,12 @@ class _RequestScreenState extends State<RequestScreen> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  if (request.requestType == 'allowance_Increment' && (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')) {
+                                  if (request.requestType ==
+                                          'allowance_Increment' &&
+                                      (singletonClass.getJWTModel()?.grade ==
+                                              'L0' ||
+                                          singletonClass.getJWTModel()?.grade ==
+                                              'L1')) {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -182,7 +242,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      AppLocalizations.of(context)!.yourSelf,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .yourSelf,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -220,7 +282,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      AppLocalizations.of(context)!.teams,
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .teams,
                                                       style: GoogleFonts.inter(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -323,7 +387,8 @@ class _RequestScreenState extends State<RequestScreen> {
                   ),
                 ],
                 if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                    singletonClass.getJWTModel()?.grade == 'L3') ...[
+                    singletonClass.getJWTModel()?.grade == 'L3'||
+                    singletonClass.getJWTModel()?.grade == 'L4') ...[
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                     child: Text(
@@ -381,7 +446,7 @@ class _RequestScreenState extends State<RequestScreen> {
             ),
             const SizedBox(height: 10),
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1') ...[
+                singletonClass.getJWTModel()?.grade == 'L1' ) ...[
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -449,11 +514,12 @@ class _RequestScreenState extends State<RequestScreen> {
             ),
             const SizedBox(height: 30),
             if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                singletonClass.getJWTModel()?.grade == 'L3') ...[
+                singletonClass.getJWTModel()?.grade == 'L3'||
+                singletonClass.getJWTModel()?.grade == 'L4') ...[
               Expanded(
                 // Wrap ListView with Expanded
                 child: FutureBuilder(
-                    future: _requestDataFuture,
+                    future: getRequestData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
@@ -468,8 +534,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           child: Text('Error: ${snapshot.error}'),
                         );
                       } else if (snapshot.hasData) {
-                        return singletonClass
-                                .requestDataList.first.data!.data!.isEmpty
+                        return _request!.isEmpty
                             ? Center(
                                 child: Text(
                                   AppLocalizations.of(context)!.noData,
@@ -483,11 +548,9 @@ class _RequestScreenState extends State<RequestScreen> {
                               )
                             : ListView.builder(
                                 padding: const EdgeInsets.all(5),
-                                itemCount: singletonClass
-                                    .requestDataList.first.data!.data!.length,
+                                itemCount: _request!.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final request = singletonClass
-                                      .requestDataList.first.data!.data![index];
+                                  final request = _request![index];
                                   return GestureDetector(
                                     onTap: () => _toggleExpand(index),
                                     child: AnimatedContainer(
@@ -501,7 +564,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withValues(alpha: 0.5),
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.5),
                                             spreadRadius: 2,
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
@@ -968,93 +1032,57 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               height: 5),
                                                           Text(
                                                             "Req",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.black,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                               fontSize: 12,
                                                             ),
                                                           ),
                                                         ],
                                                       ),
                                                       Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                bottom: 20.0),
+                                                        padding: const EdgeInsets.only(bottom: 20.0),
                                                         child: Container(
-                                                          width: 50,
+                                                          width: 20,
                                                           height: 2,
                                                           color: Colors.grey,
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 0,
-                                                                  bottom: 0),
+                                                          margin: const EdgeInsets.only(top: 0, bottom: 0),
                                                         ),
                                                       ),
                                                       Flexible(
                                                         child: Wrap(
-                                                          alignment:
-                                                              WrapAlignment
-                                                                  .start,
+                                                          alignment: WrapAlignment.start,
                                                           runSpacing: 0,
-                                                          // Space between rows of approver if it wraps
-                                                          children: request
-                                                                          .approvers !=
-                                                                      null &&
-                                                                  request
-                                                                      .approvers!
-                                                                      .isNotEmpty
-                                                              ? request
-                                                                  .approvers!
-                                                                  .map(
-                                                                      (approver) {
+                                                          children: request.approvers != null && request.approvers!.isNotEmpty ? request.approvers!.map((approver) {
                                                                   return Column(
                                                                     children: [
                                                                       Stack(
-                                                                        alignment:
-                                                                            Alignment.center,
+                                                                        alignment: Alignment.center,
                                                                         children: [
                                                                           Container(
-                                                                            height:
-                                                                                25,
-                                                                            width:
-                                                                                25,
-                                                                            decoration:
-                                                                                BoxDecoration(
+                                                                            height: 25,
+                                                                            width: 25,
+                                                                            decoration: BoxDecoration(
                                                                               shape: BoxShape.circle,
                                                                               color: _getColorForApproverStatus(approver.status),
                                                                             ),
                                                                           ),
                                                                           Container(
-                                                                            height:
-                                                                                10,
-                                                                            width:
-                                                                                10,
-                                                                            decoration:
-                                                                                const BoxDecoration(
+                                                                            height: 10,
+                                                                            width: 10,
+                                                                            decoration: const BoxDecoration(
                                                                               shape: BoxShape.circle,
                                                                               color: Colors.white,
                                                                             ),
                                                                           ),
                                                                         ],
                                                                       ),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              5),
+                                                                      const SizedBox(height: 5),
                                                                       Text(
-                                                                        approver.approverName ??
-                                                                            'N/A',
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
+                                                                        approver.approverName ?? 'N/A',
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 12,
+                                                                          fontWeight: FontWeight.w500,
                                                                         ),
                                                                       ),
                                                                     ],
@@ -1063,65 +1091,43 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               : [
                                                                   Text(
                                                                     'N/A',
-                                                                    style: GoogleFonts
-                                                                        .inter(
-                                                                      fontSize:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize: 15,
+                                                                      color: Colors.grey,
+                                                                      fontWeight: FontWeight.w500,
                                                                     ),
                                                                   ),
                                                                 ],
                                                         ),
                                                       ),
-                                                      // Line between ListView and "CEO"
                                                       Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                bottom: 20.0),
+                                                        padding: const EdgeInsets.only(bottom: 20.0),
                                                         child: Container(
-                                                          width: 50,
+                                                          width: 20,
                                                           height: 2,
                                                           color: Colors.grey,
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 0,
-                                                                  bottom: 0),
+                                                          margin: const EdgeInsets.only(top: 0, bottom: 0),
                                                         ),
                                                       ),
-
-                                                      // Last static column ("CEO")
                                                       Column(
                                                         children: [
                                                           Stack(
-                                                            alignment: Alignment
-                                                                .center,
+                                                            alignment: Alignment.center,
                                                             children: [
                                                               Container(
                                                                 height: 25,
                                                                 width: 25,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: NasColors
-                                                                      .pending,
+                                                                decoration: BoxDecoration(
+                                                                  shape: BoxShape.circle,
+                                                                  color: NasColors.pending,
                                                                 ),
                                                               ),
                                                               Container(
                                                                 height: 10,
                                                                 width: 10,
-                                                                decoration:
-                                                                    const BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: Colors
-                                                                      .white,
+                                                                decoration: const BoxDecoration(
+                                                                  shape: BoxShape.circle,
+                                                                  color: Colors.white,
                                                                 ),
                                                               ),
                                                             ],
@@ -1130,13 +1136,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               height: 5),
                                                           Text(
                                                             "CEO",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  Colors.black,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                               fontSize: 12,
                                                             ),
                                                           ),
@@ -1168,7 +1170,40 @@ class _RequestScreenState extends State<RequestScreen> {
                         );
                       }
                     }),
-              )
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_requestTotalPages, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_requestCurrentPage != index) {
+                          _fetchRequestData(index); // Send 0, 1, 2...
+                        }
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _requestCurrentPage == index
+                              ? NasColors.darkBlue
+                              : NasColors.onTime.withOpacity(0.31),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: GoogleFonts.inter(
+                            color: _requestCurrentPage == index ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1') ...[
@@ -1176,7 +1211,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 Expanded(
                   // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: _requestDataFuture,
+                      future: getRequestData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1192,8 +1227,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          return singletonClass
-                                  .requestDataList.first.data!.data!.isEmpty
+                          return _request!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -1207,12 +1241,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                 )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
-                                  itemCount: singletonClass
-                                      .requestDataList.first.data!.data!.length,
+                                  itemCount: _request!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = singletonClass
-                                        .requestDataList.first.data!.data![index];
+                                    final request = _request![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1226,8 +1258,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.5),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -1911,13 +1943,44 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         }
                       }),
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_requestTotalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_requestCurrentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _requestCurrentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _requestCurrentPage == index ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
               ],
               if (_selectedOptionIndex == 1) ...[
                 Expanded(
-                  // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: _approverDataFuture,
+                      future: getApproverData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -1934,7 +1997,7 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return singletonClass
-                                  .approverDataList.first.data!.isEmpty
+                                  .approverDataList.first.data!.data!.isEmpty
                               ? Center(
                                   child: Text(
                                     AppLocalizations.of(context)!.noData,
@@ -1948,12 +2011,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                 )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
-                                  itemCount: singletonClass
-                                      .approverDataList.first.data!.length,
+                                  itemCount: _approver!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = singletonClass
-                                        .approverDataList.first.data![index];
+                                    final request = _approver![index];
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1967,8 +2028,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.5),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
                                               spreadRadius: 2,
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -2413,45 +2474,48 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ],
                                                     const SizedBox(height: 10),
                                                     if (request.status ==
-                                                        'pending')...[
+                                                        'pending') ...[
                                                       Padding(
                                                         padding:
-                                                        const EdgeInsets
-                                                            .all(10.0),
+                                                            const EdgeInsets
+                                                                .all(10.0),
                                                         child: Row(
                                                           mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
+                                                              MainAxisAlignment
+                                                                  .center,
                                                           children: [
                                                             GestureDetector(
                                                               onTap: () {
                                                                 showDialog(
                                                                     context:
-                                                                    context,
+                                                                        context,
                                                                     builder:
                                                                         (BuildContext
-                                                                    context) {
+                                                                            context) {
                                                                       return AlertDialog(
+                                                                        backgroundColor:
+                                                                            Colors.white,
                                                                         title:
-                                                                        Text(
+                                                                            Text(
                                                                           AppLocalizations.of(context)!
                                                                               .comment,
                                                                           style:
-                                                                          GoogleFonts.poppins(
+                                                                              GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                            FontWeight.w500,
+                                                                                FontWeight.w500,
                                                                             color:
-                                                                            NasColors.darkBlue,
+                                                                                NasColors.darkBlue,
                                                                             fontSize:
-                                                                            23,
+                                                                                23,
                                                                           ),
                                                                         ),
                                                                         content:
-                                                                        Expanded(
+                                                                            SingleChildScrollView(
+                                                                          // 🔧 Fixes overflow
                                                                           child:
-                                                                          Container(
+                                                                              Container(
                                                                             decoration:
-                                                                            BoxDecoration(
+                                                                                BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2462,29 +2526,23 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 BoxShadow(
                                                                                   color: Colors.white,
                                                                                   blurRadius: 15,
-                                                                                  offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
+                                                                                  offset: Offset(0.10, 10.0),
                                                                                 ),
                                                                               ],
                                                                             ),
                                                                             child:
-                                                                            TextField(
+                                                                                TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
-                                                                              // Minimum number of lines the text field will have
                                                                               maxLines: null,
-                                                                              // No limit to the number of lines, it will expand
                                                                               decoration: InputDecoration(
                                                                                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                                                                                 focusedBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set focused border color
+                                                                                  borderSide: BorderSide(color: NasColors.darkBlue),
                                                                                 ),
                                                                                 enabledBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set border color when not focused
+                                                                                  borderSide: BorderSide(color: NasColors.darkBlue),
                                                                                 ),
                                                                               ),
                                                                               style: const TextStyle(
@@ -2498,16 +2556,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                               onTapOutside: (event) {
                                                                                 FocusManager.instance.primaryFocus?.unfocus();
                                                                               },
-                                                                              onChanged: (value) {
-                                                                                // Handle any changes here
-                                                                              },
                                                                             ),
                                                                           ),
                                                                         ),
                                                                         actions: [
                                                                           Row(
                                                                             mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
+                                                                                MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
@@ -2540,13 +2595,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 width: 120,
                                                                 height: 40,
                                                                 decoration:
-                                                                const BoxDecoration(
+                                                                    const BoxDecoration(
                                                                   borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          10)),
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              10)),
                                                                   gradient:
-                                                                  LinearGradient(
+                                                                      LinearGradient(
                                                                     colors: [
                                                                       Color(
                                                                           0xFF4D4D4D),
@@ -2567,16 +2622,16 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 child: Align(
                                                                   alignment:
-                                                                  Alignment
-                                                                      .center,
+                                                                      Alignment
+                                                                          .center,
                                                                   child: Text(
                                                                     AppLocalizations.of(
-                                                                        context)!
+                                                                            context)!
                                                                         .cancel,
                                                                     style: GoogleFonts
                                                                         .inter(
                                                                       fontSize:
-                                                                      15,
+                                                                          15,
                                                                       color: Colors
                                                                           .white,
                                                                     ),
@@ -2589,159 +2644,119 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             GestureDetector(
                                                               onTap: () {
                                                                 showDialog(
-                                                                    context:
-                                                                    context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                    context) {
-                                                                      return AlertDialog(
-                                                                        title:
-                                                                        Text(
-                                                                          AppLocalizations.of(context)!
-                                                                              .comment,
-                                                                          style:
-                                                                          GoogleFonts.poppins(
-                                                                            fontWeight:
-                                                                            FontWeight.w500,
-                                                                            color:
-                                                                            NasColors.darkBlue,
-                                                                            fontSize:
-                                                                            23,
-                                                                          ),
+                                                                  context: context,
+                                                                  builder: (BuildContext context) {
+                                                                    return AlertDialog(
+                                                                      backgroundColor: Colors.white,
+                                                                      title: Text(
+                                                                        AppLocalizations.of(context)!.comment,
+                                                                        style: GoogleFonts.poppins(
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.darkBlue,
+                                                                          fontSize: 23,
                                                                         ),
-                                                                        content:
-                                                                        Expanded(
-                                                                          child:
-                                                                          Container(
-                                                                            decoration:
-                                                                            BoxDecoration(
-                                                                              color: Colors.white,
-                                                                              borderRadius: BorderRadius.circular(10.0),
-                                                                              border: Border.all(
-                                                                                color: NasColors.darkBlue,
-                                                                                width: 1.0,
-                                                                              ),
-                                                                              boxShadow: const [
-                                                                                BoxShadow(
-                                                                                  color: Colors.white,
-                                                                                  blurRadius: 15,
-                                                                                  offset: Offset(0.10, 10.0), // Slight horizontal and vertical shift
-                                                                                ),
-                                                                              ],
+                                                                      ),
+                                                                      content: SingleChildScrollView(
+                                                                        child: Container(
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                            border: Border.all(
+                                                                              color: NasColors.darkBlue,
+                                                                              width: 1.0,
                                                                             ),
-                                                                            child:
-                                                                            TextField(
-                                                                              textAlign: TextAlign.center,
-                                                                              controller: _comment,
-                                                                              minLines: 1,
-                                                                              // Minimum number of lines the text field will have
-                                                                              maxLines: null,
-                                                                              // No limit to the number of lines, it will expand
-                                                                              decoration: InputDecoration(
-                                                                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                                                                focusedBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set focused border color
-                                                                                ),
-                                                                                enabledBorder: OutlineInputBorder(
-                                                                                  borderSide: BorderSide(
-                                                                                    color: NasColors.darkBlue,
-                                                                                  ), // Set border color when not focused
-                                                                                ),
-                                                                              ),
-                                                                              style: const TextStyle(
-                                                                                color: Colors.black,
-                                                                                fontWeight: FontWeight.w500,
-                                                                                fontSize: 12,
-                                                                              ),
-                                                                              autofocus: false,
-                                                                              textInputAction: TextInputAction.done,
-                                                                              cursorColor: Colors.black,
-                                                                              onTapOutside: (event) {
-                                                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                                              },
-                                                                              onChanged: (value) {
-                                                                                // Handle any changes here
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        actions: [
-                                                                          Row(
-                                                                            mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                            children: [
-                                                                              Container(
-                                                                                decoration: BoxDecoration(
-                                                                                  color: NasColors.completed,
-                                                                                  borderRadius: BorderRadius.circular(10),
-                                                                                ),
-                                                                                child: TextButton(
-                                                                                  onPressed: () {
-                                                                                    Navigator.pop(context);
-                                                                                    patchRequestData(request.id, 'approved', request.toJson());
-                                                                                    _comment.clear();
-                                                                                  },
-                                                                                  child: Text(
-                                                                                    AppLocalizations.of(context)!.accept,
-                                                                                    style: GoogleFonts.poppins(
-                                                                                      fontWeight: FontWeight.w500,
-                                                                                      color: Colors.white,
-                                                                                      fontSize: 12,
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(
+                                                                                color: Colors.white,
+                                                                                blurRadius: 15,
+                                                                                offset: Offset(0.10, 10.0),
                                                                               ),
                                                                             ],
                                                                           ),
-                                                                        ],
-                                                                      );
-                                                                    });
+                                                                          child: TextField(
+                                                                            textAlign: TextAlign.center,
+                                                                            controller: _comment,
+                                                                            minLines: 1,
+                                                                            maxLines: null,
+                                                                            decoration: InputDecoration(
+                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                              focusedBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                              enabledBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                            ),
+                                                                            style: const TextStyle(
+                                                                              color: Colors.black,
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 12,
+                                                                            ),
+                                                                            autofocus: false,
+                                                                            textInputAction: TextInputAction.done,
+                                                                            cursorColor: Colors.black,
+                                                                            onTapOutside: (event) {
+                                                                              FocusManager.instance.primaryFocus?.unfocus();
+                                                                            },
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      actions: [
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: NasColors.completed,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: TextButton(
+                                                                                onPressed: () {
+                                                                                  Navigator.pop(context);
+                                                                                  patchRequestData(request.id, 'approved', request.toJson());
+                                                                                  _comment.clear();
+                                                                                },
+                                                                                child: Text(
+                                                                                  AppLocalizations.of(context)!.accept,
+                                                                                  style: GoogleFonts.poppins(
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 12,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  },
+                                                                );
                                                               },
                                                               child: Container(
                                                                 width: 120,
                                                                 height: 40,
-                                                                decoration:
-                                                                const BoxDecoration(
-                                                                  borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          10)),
-                                                                  gradient:
-                                                                  LinearGradient(
+                                                                decoration: const BoxDecoration(
+                                                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                                  gradient: LinearGradient(
                                                                     colors: [
-                                                                      Color(
-                                                                          0xFF47734D),
-                                                                      Color(
-                                                                          0xFF5B9362),
-                                                                      Color(
-                                                                          0xFF66A56E),
-                                                                      Color(
-                                                                          0xFF76BE7F),
-                                                                      Color(
-                                                                          0xFF86D991),
+                                                                      Color(0xFF47734D),
+                                                                      Color(0xFF5B9362),
+                                                                      Color(0xFF66A56E),
+                                                                      Color(0xFF76BE7F),
+                                                                      Color(0xFF86D991),
                                                                     ],
-                                                                    begin: Alignment
-                                                                        .topRight,
-                                                                    end: Alignment
-                                                                        .bottomLeft,
+                                                                    begin: Alignment.topRight,
+                                                                    end: Alignment.bottomLeft,
                                                                   ),
                                                                 ),
                                                                 child: Align(
-                                                                  alignment:
-                                                                  Alignment
-                                                                      .center,
+                                                                  alignment: Alignment.center,
                                                                   child: Text(
-                                                                    AppLocalizations.of(
-                                                                        context)!
-                                                                        .acceptRequest,
-                                                                    style: GoogleFonts
-                                                                        .inter(
-                                                                      fontSize:
-                                                                      15,
-                                                                      color: Colors
-                                                                          .white,
+                                                                    AppLocalizations.of(context)!.acceptRequest,
+                                                                    style: GoogleFonts.inter(
+                                                                      fontSize: 15,
+                                                                      color: Colors.white,
                                                                     ),
                                                                   ),
                                                                 ),
@@ -2751,7 +2766,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                     ]
-
                                                   ],
                                                 ],
                                               ),
@@ -2776,7 +2790,40 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         }
                       }),
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_currentPage != index) {
+                            _fetchApproverData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _currentPage == index ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
               ],
             ],
           ],
@@ -2869,7 +2916,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null ? singletonClass.approverDataList.first.data!.where((request) => request.status == 'pending').length : 0}', // Approver List Notification count
+                    '${singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null ? singletonClass.approverDataList.first.data!.data!.where((request) => request.status == 'pending').length : 0}', // Approver List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -2910,11 +2957,11 @@ class _RequestScreenState extends State<RequestScreen> {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
       case 'leave Request':
-        return localizations.leaveRequests; // Use the localized string
+        return localizations.leaveRequests;
       case 'Loan Request':
-        return localizations.loanRequest; // Use the localized string
+        return localizations.loanRequest;
       case 'Penalty and Fine Requests':
-        return localizations.penaltiesAndFine; // Use the localized string
+        return localizations.penaltiesAndFine;
       case 'OverTime':
         return localizations.overTime;
       case 'Training':
@@ -2922,16 +2969,41 @@ class _RequestScreenState extends State<RequestScreen> {
       case "Complaint Request":
         return localizations.complaints;
       case "Allowance Increment":
-        return localizations.salaryAndAllowances;
+        return localizations.allowanceIncrement;
       case 'Document Request':
-        return localizations.document;
+        return localizations.documentRequest;
       case "Expense Request":
-        return localizations.expiration;
+        return localizations.expenseRequest;
       default:
-        return status!; // Fallback to the original status if not found
+        return status!;
     }
   }
 
+  String _translateBottomText(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'leave Request':
+        return localizations.leaveRequestBottom;
+      case 'Loan Request':
+        return localizations.loanRequestBottom;
+      case 'Penalty and Fine Requests':
+        return localizations.penaltiesAndFineBottom;
+      case 'OverTime':
+        return localizations.overTime;
+      case 'Training':
+        return localizations.training;
+      case "Complaint Request":
+        return localizations.complaints;
+      case "Allowance Increment":
+        return localizations.allowanceIncrementBottom;
+      case 'Document Request':
+        return localizations.documentRequestBottom;
+      case "Expense Request":
+        return localizations.expenseRequestBottom;
+      default:
+        return status!;
+    }
+  }
 
   String _translateRequestSubtype(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -2960,10 +3032,10 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.contract;
       case "ID Card":
         return localizations.idCard;
-      case "Advance":
-        return localizations.advance;
-      case "Expense":
-        return localizations.expense;
+      case "Advance Expense":
+        return localizations.advanceExpense;
+      case "Business Expense":
+        return localizations.businessExpense;
       case "Reimbursement":
         return localizations.reimbursement;
       case "Disbursement":
@@ -2978,14 +3050,17 @@ class _RequestScreenState extends State<RequestScreen> {
         return status!;
     }
   }
+
   //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
         approverStatus.isEmpty ||
         approverStatus == 'pending') {
-      return NasColors.pending; // Use pending color if status is empty or pending
+      return NasColors
+          .pending; // Use pending color if status is empty or pending
     } else {
-      return NasColors.completed; // Use completed color if status is other than pending
+      return NasColors
+          .completed; // Use completed color if status is other than pending
     }
   }
 
@@ -3092,6 +3167,7 @@ class _RequestScreenState extends State<RequestScreen> {
       _employeeSearchResults.clear();
       _selectedEmployees.clear();
       _showSearchResult = false;
+      selectedFile = null;
     });
   }
 
@@ -3168,7 +3244,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _translateRequest(selectedRequest.requestName, context),
+                          "${_translateBottomText(selectedRequest.requestName, context)}",
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3186,7 +3262,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              "${AppLocalizations.of(context)!.select} ${_translateRequest(selectedRequest.requestName, context)} ${AppLocalizations.of(context)!.type}",
+                              "${_translateRequest(selectedRequest.requestName, context)}",
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -3205,7 +3281,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 value: subType,
                                 child: Text(
                                   _translateRequestSubtype(
-                                  subType.requestName! , context),
+                                      subType.requestName!, context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -3225,7 +3301,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       remainingBalance <= 0) {
                                     // Show warning if the selected leave balance is insufficient
                                     _showWarningDialog(context,
-                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName , context)}');
+                                        '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
                                   } else {
                                     setState(() {
                                       _selectedSubType = newValue;
@@ -3261,8 +3337,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: NasColors.lightBlue,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.3),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -4164,128 +4240,300 @@ class _RequestScreenState extends State<RequestScreen> {
                             color: Colors.grey,
                           ),
                         ),
-                        Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate: fromDate ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2101),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return Theme(
-                                          data: ThemeData.light().copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              surface: NasColors.lightBlue,
-                                              primary: Colors.white,
-                                              onPrimary: Colors.black,
-                                              onSurface: Colors.white,
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors.white,
+                        if (_selectedRequestType != 'loanRequest') ...[
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: fromDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (date != null) {
-                                      setState(() {
-                                        fromDate = date;
-                                      });
-                                    }
-                                  },
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (date != null) {
+                                        setState(() {
+                                          fromDate = date;
+
+                                          // Recalculate totalDays and totalMonths if toDate is also selected
+                                          if (toDate != null) {
+                                            final daysDiff = toDate!
+                                                    .difference(fromDate!)
+                                                    .inDays +
+                                                1;
+                                            totalDays = daysDiff;
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      fromDate == null
+                                          ? AppLocalizations.of(context)!
+                                              .fromDate
+                                          : DateFormat('yyyy-MM-dd')
+                                              .format(fromDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: toDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (date != null) {
+                                        setState(() {
+                                          toDate = date;
+
+                                          if (fromDate != null) {
+                                            final daysDiff = toDate!
+                                                    .difference(fromDate!)
+                                                    .inDays +
+                                                1;
+                                            totalDays = daysDiff;
+                                          } else {
+                                            totalDays = null;
+                                            totalMonths = null;
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      toDate == null
+                                          ? AppLocalizations.of(context)!.toDate
+                                          : DateFormat('yyyy-MM-dd')
+                                              .format(toDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 10),
+                        if (_selectedRequestType == 'loanRequest') ...[
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: fromDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+
+                                      if (date != null) {
+                                        setState(() {
+                                          fromDate =
+                                              DateTime(date.year, date.month);
+
+                                          if (toDate != null) {
+                                            int totalMonthCount =
+                                                ((toDate!.year -
+                                                            fromDate!.year) *
+                                                        12 +
+                                                    (toDate!.month -
+                                                        fromDate!.month) +
+                                                    1);
+                                            totalMonths =
+                                                totalMonthCount.toString();
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      fromDate == null
+                                          ? AppLocalizations.of(context)!
+                                              .fromDate
+                                          : DateFormat('yyyy-MM')
+                                              .format(fromDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: toDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2101),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return Theme(
+                                            data: ThemeData.light().copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                surface: NasColors.lightBlue,
+                                                primary: Colors.white,
+                                                onPrimary: Colors.black,
+                                                onSurface: Colors.white,
+                                              ),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+
+                                      if (date != null) {
+                                        setState(() {
+                                          toDate = DateTime(date.year,
+                                              date.month); // ignore day
+
+                                          if (fromDate != null) {
+                                            int totalMonthCount =
+                                                ((toDate!.year -
+                                                            fromDate!.year) *
+                                                        12 +
+                                                    (toDate!.month -
+                                                        fromDate!.month) +
+                                                    1);
+                                            totalMonths =
+                                                totalMonthCount.toString();
+                                          }
+                                        });
+                                      }
+                                    },
+                                    child: Text(
+                                      toDate == null
+                                          ? AppLocalizations.of(context)!.toDate
+                                          : DateFormat('yyyy-MM')
+                                              .format(toDate!),
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 30,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1,
+                                color: Colors.grey,
+                              ),
+                              if (totalMonths != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
-                                    fromDate == null
-                                        ? AppLocalizations.of(context)!.fromDate
-                                        : DateFormat('yyyy-MM-dd')
-                                            .format(fromDate!),
+                                    'Total Months: $totalMonths',
                                     style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
-                                Icon(
-                                  Icons.calendar_month_outlined,
-                                  size: 30,
-                                  color: NasColors.darkBlue,
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate: toDate ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2101),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return Theme(
-                                          data: ThemeData.light().copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              surface: NasColors.lightBlue,
-                                              primary: Colors.white,
-                                              onPrimary: Colors.black,
-                                              onSurface: Colors.white,
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (date != null) {
-                                      setState(() {
-                                        toDate = date;
-                                        if (fromDate != null) {
-                                          totalDays = toDate!
-                                                  .difference(fromDate!)
-                                                  .inDays +
-                                              1; // Calculate totalDays
-                                        } else {
-                                          totalDays =
-                                              null; // Handle case where fromDate is null
-                                        }
-                                      });
-                                    }
-                                  },
-                                  child: Text(
-                                    toDate == null
-                                        ? AppLocalizations.of(context)!.toDate
-                                        : DateFormat('yyyy-MM-dd')
-                                            .format(toDate!),
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.calendar_month_outlined,
-                                  size: 30,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ],
-                            ),
-                            Container(
-                              height: 1,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+                        ],
                         const SizedBox(height: 10),
                         if (_selectedRequestType == "leaveRequest") ...[
                           Text(
@@ -4350,11 +4598,20 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             ),
                             onChanged: (value) {
-                               setState((){
-                                 double parsedValue = double.tryParse(value) ?? 0.0;
-                                 int safeTotalDays = totalDays ?? 1; // Prevent null and zero division
-                                 installmentAmount = (parsedValue / safeTotalDays).toStringAsFixed(2);
-                               });
+                              setState(() {
+                                double parsedValue =
+                                    double.tryParse(value) ?? 0.0;
+                                double safeTotalMonths =
+                                    double.tryParse(totalMonths ?? "0") ?? 0.0;
+
+                                if (safeTotalMonths > 0) {
+                                  installmentAmount = (parsedValue /
+                                          safeTotalMonths)
+                                      .round(); // or .toInt() if you want to truncate
+                                } else {
+                                  installmentAmount = 0;
+                                }
+                              });
                             },
                           ),
                           const SizedBox(height: 10),
@@ -4367,7 +4624,9 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                           ),
                           Text(
-                            (installmentAmount == null || installmentAmount!.isEmpty) ? "N/A" : "$installmentAmount",
+                            (installmentAmount == null)
+                                ? "N/A"
+                                : "$installmentAmount",
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -4473,26 +4732,46 @@ class _RequestScreenState extends State<RequestScreen> {
                             onPressed: () async {
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .any, // Ensures only image files are allowed
+                                type: FileType.any,
                               );
 
                               if (result != null &&
                                   result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
 
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
+                                // Show the image immediately
+                                setState(() => selectedFile = file);
 
-                                print('Selected file: ${file.name}');
+                                // Start upload in the background
+                                final results = await uploadProfile(file);
+                                final success = results["success"] as bool;
+                                final message = results["message"] as String;
 
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
+                                if (!success && context.mounted) {
+                                  setState(() => selectedFile = null);
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(AppLocalizations.of(context)!
+                                          .uploadFailed),
+                                      content: Text(message),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text(
+                                            AppLocalizations.of(context)!.ok,
+                                            style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
                               } else {
-                                // User canceled the file picker
                                 print('File selection canceled.');
                               }
                             },
@@ -4514,6 +4793,47 @@ class _RequestScreenState extends State<RequestScreen> {
                                     fontSize: 15,
                                   ),
                                 ),
+                                SizedBox(width: 10),
+                                Column(
+                                  children: [
+                                    if (selectedFile != null)
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          ClipOval(
+                                            child: Image.file(
+                                              File(selectedFile!.path!),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: -5,
+                                            right: -5,
+                                            child: GestureDetector(
+                                              onTap: () => setState(
+                                                  () => selectedFile = null),
+                                              child: Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                  ],
+                                )
                               ],
                             ),
                           ),
@@ -4681,7 +5001,8 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _translateRequest(selectedRequest.requestName, context),
+                          _translateBottomText(
+                              selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -4717,7 +5038,8 @@ class _RequestScreenState extends State<RequestScreen> {
                               return DropdownMenuItem<SubTypes>(
                                 value: subType,
                                 child: Text(
-                                _translateRequestSubtype( subType.requestName, context),
+                                  _translateRequestSubtype(
+                                      subType.requestName, context),
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -4773,8 +5095,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                           color: NasColors.lightBlue,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withValues(alpha: 0.3),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.3),
                                               spreadRadius: 1,
                                               blurRadius: 5,
                                               offset: const Offset(0, 0),
@@ -5358,26 +5680,41 @@ class _RequestScreenState extends State<RequestScreen> {
                             onPressed: () async {
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .any, // Ensures only image files are allowed
+                                type: FileType.any,
                               );
-
                               if (result != null &&
                                   result.files.single.path != null) {
                                 PlatformFile file = result.files.single;
-
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
-
-                                print('Selected file: ${file.name}');
-
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
+                                // Show the image immediately
+                                setState(() => selectedFile = file);
+                                // Start upload in the background
+                                final results = await uploadProfile(file);
+                                final success = results["success"] as bool;
+                                final message = results["message"] as String;
+                                if (!success && context.mounted) {
+                                  setState(() => selectedFile = null);
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      backgroundColor: Colors.white,
+                                      title: Text("Upload Failed"),
+                                      content: Text(message),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text(
+                                            "OK",
+                                            style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
                               } else {
-                                // User canceled the file picker
                                 print('File selection canceled.');
                               }
                             },
@@ -5399,6 +5736,47 @@ class _RequestScreenState extends State<RequestScreen> {
                                     fontSize: 15,
                                   ),
                                 ),
+                                SizedBox(width: 10),
+                                Column(
+                                  children: [
+                                    if (selectedFile != null)
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          ClipOval(
+                                            child: Image.file(
+                                              File(selectedFile!.path!),
+                                              width: 80,
+                                              height: 80,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: -5,
+                                            right: -5,
+                                            child: GestureDetector(
+                                              onTap: () => setState(
+                                                  () => selectedFile = null),
+                                              child: Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                  ],
+                                )
                               ],
                             ),
                           ),
@@ -5540,119 +5918,35 @@ class _RequestScreenState extends State<RequestScreen> {
     );
   }
 
-  //DIALOUGE
-
-  void _showConfirmationDialog(PlatformFile file) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            AppLocalizations.of(context)!.confirmUpload,
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          content: Text(
-            '${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?',
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Close the dialog and do nothing
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                AppLocalizations.of(context)!.cancel,
-                style: GoogleFonts.inter(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                // Close the dialog
-                Navigator.of(context).pop();
-
-                // Trigger the API call to upload the file
-                await uploadProfile();
-              },
-              child: Text(
-                AppLocalizations.of(context)!.yes,
-                style: GoogleFonts.inter(color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   //S3 CALL
-  Future<void> uploadProfile() async {
-    if (selectedFile == null) {
-      print("No file selected.");
-      return; // Exit the function if no file is selected
-    }
-
-    // Check if bytes are available
-    if (selectedFile!.bytes == null) {
-      // Load the bytes of the selected file manually
-      print("Loading bytes for the selected file...");
-      try {
-        final file = File(selectedFile!.path!); // Convert PlatformFile to File
-        final fileBytes = await file.readAsBytes();
-
-        // If bytes are still null, return early
-        if (fileBytes.isEmpty) {
-          print("No bytes available for the selected file.");
-          return; // Exit the function if no valid bytes are available
-        }
-
-        // Proceed with uploading the file after loading bytes
-        _uploadFileWithBytes(fileBytes);
-      } catch (e) {
-        print('Error reading file: $e');
-      }
-    } else {
-      // If bytes are already available, upload directly
-      _uploadFileWithBytes(selectedFile!.bytes!);
-    }
-  }
-
-  void _uploadFileWithBytes(Uint8List fileBytes) async {
-    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
-
-    setState(() {
-      isLoading = true; // Corrected to set isLoading to true
-    });
-
+  Future<Map<String, dynamic>> uploadProfile(PlatformFile file) async {
     try {
+      Uint8List fileBytes;
+      if (file.bytes != null) {
+        fileBytes = file.bytes!;
+      } else {
+        fileBytes = await File(file.path!).readAsBytes();
+      }
+
+      var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
       var request = http.MultipartRequest('POST', uri);
 
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
-      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
-          'application/octet-stream';
+      final mimeType =
+          lookupMimeType(file.path ?? '') ?? 'application/octet-stream';
 
-      // Add the file to the request as bytes
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: file.name,
+        contentType: MediaType.parse(mimeType),
       ));
 
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
+      request.fields['attachmentName'] = file.name;
+      request.fields['attachmentType'] = file.extension ?? '';
 
-      // Send the request
       var response = await request.send();
-
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
@@ -5660,11 +5954,15 @@ class _RequestScreenState extends State<RequestScreen> {
         AttachmentResponse attachmentResponse =
             AttachmentResponse.fromJson(decodedJson);
         singletonClass.attachmentResponseDataList = [attachmentResponse];
+        return {"success": true, "message": ""};
       } else {
-        print('Upload failed: ${response.statusCode}');
+        return {
+          "success": false,
+          "message": "Upload failed: ${response.statusCode}\n\n$responseBody"
+        };
       }
     } catch (e) {
-      print('Error: $e');
+      return {"success": false, "message": "Error: $e"};
     }
   }
 
@@ -5676,6 +5974,8 @@ class _RequestScreenState extends State<RequestScreen> {
     String? firstName = singletonClass.employeeDataList.first.data!.firstName;
     String? middleName = singletonClass.employeeDataList.first.data!.middleName;
     String? lastName = singletonClass.employeeDataList.first.data!.lastName;
+    String? policyId =
+        singletonClass.companyDataList.first.data!.policies!.first.policyId;
     String? employeeName = [firstName, middleName, lastName]
         .where((name) => name != null && name.isNotEmpty)
         .join(' ');
@@ -5688,11 +5988,8 @@ class _RequestScreenState extends State<RequestScreen> {
     String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
     int totalDays = toDate!.difference(fromDate!).inDays + 1;
     String totalDaysString = totalDays.toString();
-    int totalMonths =
-        (toDate!.year - fromDate!.year) * 12 + toDate!.month - fromDate!.month;
-    String totalDuration = selectedRequestType == "loanRequest"
-        ? totalMonths.toString()
-        : totalDays.toString();
+    int? loanAmount = int.tryParse(_totalLoanAmount.text);
+    int? totalMonth = int.tryParse(totalMonths!);
 
     // Check if requestType and subType are selected
     if (selectedRequestType == null || selectedSubType == null) {
@@ -5724,10 +6021,10 @@ class _RequestScreenState extends State<RequestScreen> {
 
     if (selectedRequestType == 'loanRequest') {
       requestData.add({
-        "loanAmount": _totalLoanAmount.text,
+        "loanAmount": loanAmount,
         "loanCycle": "monthly",
         "loanInstallment": installmentAmount,
-        "loanDuration": totalDuration,
+        "loanDuration": totalMonth,
         "loanType": selectedSubType,
       });
     } else if (selectedRequestType == 'penalties_fines') {
@@ -5778,7 +6075,7 @@ class _RequestScreenState extends State<RequestScreen> {
       "empId": singletonClass.getJWTModel()?.empId,
       "employeeName": employeeName,
       "branchId": branchId,
-      "policyId": "123",
+      "policyId": policyId,
       "requestType": selectedRequestType,
       "subType": selectedSubType,
       "requestData": requestData,
@@ -5788,7 +6085,7 @@ class _RequestScreenState extends State<RequestScreen> {
     };
 
     String body = json.encode(data);
-    print(body);
+    print("Request JSON POST ${body}");
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
 
     setState(() {
@@ -5810,7 +6107,7 @@ class _RequestScreenState extends State<RequestScreen> {
       });
 
       final decodedResponse = json.decode(response.body);
-      print(decodedResponse);
+      print("REQUEST RESPONSE ${decodedResponse}");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
@@ -5825,7 +6122,7 @@ class _RequestScreenState extends State<RequestScreen> {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        await singletonClass.getRequestData();
+        await getRequestData();
         Navigator.pop(context);
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??
@@ -5860,10 +6157,24 @@ class _RequestScreenState extends State<RequestScreen> {
   //PATCH API CALL
   void patchRequestData(String? requestID, String status,
       Map<String, dynamic> requestData) async {
-    // Define the URL where you want to send the data
     String url = '${singletonClass.baseURL}/request/$requestID';
 
-    // Define the JSON data to send
+    String? currentApproverId = singletonClass.getJWTModel()?.employeeId;
+
+    List<dynamic> updatedApprovers = requestData['approvers'].map((approver) {
+      if (approver['approverId'] == currentApproverId) {
+        return {
+          "approverId": approver['approverId'],
+          "approverName": approver['approverName'],
+          "status": status,
+          "timeStamps": DateTime.now().toIso8601String(),
+          "comments": _comment.text,
+        };
+      } else {
+        return approver;
+      }
+    }).toList();
+
     Map<String, dynamic> data = {
       "employeeId": requestData['employeeId'],
       "employeeName": requestData['employeeName'],
@@ -5874,28 +6185,19 @@ class _RequestScreenState extends State<RequestScreen> {
       "requestType": requestData['requestType'],
       "subType": requestData['subType'],
       "requestData": requestData['requestData'],
-      "approvers": [
-        {
-          "approverId": requestData['approvers'][0]['approverId'],
-          "approverName": requestData['approvers'][0]['approverName'],
-          "status": status,
-          "timeStamps": DateTime.now().toIso8601String(),
-          "comments": _comment.text,
-        }
-      ],
+      "approvers": updatedApprovers,
       "reason": requestData['reason'],
       "attachments": requestData['attachments'],
       "status": status
     };
 
-    // Convert data to JSON string
     String jsonData = jsonEncode(data);
-    log("///$jsonData");
+    log("PATCH DATA JSON $jsonData");
 
-    // Make the PATCH request
     setState(() {
       isLoading = true;
     });
+
     try {
       final response = await http.patch(
         Uri.parse(url),
@@ -5904,52 +6206,36 @@ class _RequestScreenState extends State<RequestScreen> {
         },
         body: jsonData,
       );
+
       setState(() {
         isLoading = false;
       });
-      if (response.statusCode == 200) {
-        final decodedResponse = json.decode(response.body);
 
-        if (decodedResponse['statusCode'] == 200) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.success,
-            type: QuickAlertType.success,
-          );
-        } else if (decodedResponse['statusCode'] == 400) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.internalServerError,
-            type: QuickAlertType.error,
-          );
-        }
-      } else if (response.statusCode == 400 || response.statusCode == 500) {
+      final decodedResponse = json.decode(response.body);
+
+      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
           showConfirmBtn: false,
           context: context,
-          title: AppLocalizations.of(context)!.errorFetchData,
-          type: QuickAlertType.error,
+          title: AppLocalizations.of(context)!.success,
+          type: QuickAlertType.success,
         );
       } else {
-        print('Error: ${response.statusCode}');
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
           showConfirmBtn: false,
           context: context,
-          title: 'Error: ${response.statusCode}',
+          title: AppLocalizations.of(context)!.internalServerError,
           type: QuickAlertType.error,
         );
       }
     } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
       print('Failed to send data. Error: $error');
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
@@ -5961,6 +6247,7 @@ class _RequestScreenState extends State<RequestScreen> {
       );
     }
   }
+
 
   //Search CALL
   Future<void> getSearchEmployeeData() async {
@@ -5978,8 +6265,8 @@ class _RequestScreenState extends State<RequestScreen> {
 
       // Create a SearchedResult instance
       SearchedResult result = SearchedResult(
-        empId: employeeData.data?.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.firstName,
+        empId: employeeData.data?.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.first.firstName,
       );
 
       print(">>>>$result");
@@ -6000,6 +6287,117 @@ class _RequestScreenState extends State<RequestScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
       );
+    }
+  }
+
+  Future<ApproverRequestData?> getApproverData(
+      {int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+
+    // Request body (stays the same)
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+      ],
+    };
+
+    // Updated URI with query parameters
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/approver/$employeeId?limit=$limit&page=$page',
+    );
+
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+
+        // Optionally: merge or update list if pagination is used for loading more
+        if (page == 0) {
+          singletonClass.setApproverDataList([requestData]);
+        } else {
+          final existing = singletonClass.approverDataList;
+          singletonClass.setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
+  //Request
+  Future<RequestDataModel?> getRequestData(
+      {int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+
+    // Request body with the required parameter
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+      ],
+    };
+
+    // Updated URI with query parameters
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/employee/$employeeId?limit=$limit&page=$page',
+    );
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Request Log: ${response.body}");
+
+      if (response.statusCode == 201) {
+        // Parse the response body
+        var responseBody = json.decode(response.body);
+        var requestData = RequestDataModel.fromJson(responseBody);
+
+        // Set the data into the application state (singleton or other storage)
+        if (page == 0) {
+          singletonClass.setRequestData([requestData]);
+        } else {
+          final existing = singletonClass.requestDataList;
+          singletonClass.setRequestData([...existing, requestData]);
+        }
+        return requestData;
+      } else {
+        log("Error request Data: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error request data: $e');
+      return null;
     }
   }
 }

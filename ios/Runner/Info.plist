@@ -24,44 +24,87 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
+
+	<!-- Firebase and basic app config -->
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- Location Permissions -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>For remote login</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>CFBundleURLTypes</key>
-<array>
-    <dict>
-       <key>CFBundleTypeRole</key>
-       <string>Editor</string>
-       <key>CFBundleURLSchemes</key>
-       <array>
-          <string>app-1-849512939836-ios-9f5317da6b16ae6083de39</string>
-       </array>
-    </dict>
-</array>
+	<string>We need your location for remote login and services.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location in the background for tracking.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app uses your location even when the app is in the background.</string>
+
+	<!-- Camera & Photos -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take pictures</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select images</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need photo library access to save images</string>
+
+	<!-- Background Modes -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 		<string>fetch</string>
+		<string>location</string>
 	</array>
+
+	<!-- Notification Style -->
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+
+	<!-- Launch screen -->
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
+	<!-- iPhone orientation -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-    <string>We need camera access to take pictures</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need photo library access to select images</string>
 
+	<!-- iPad orientation -->
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- App URL Scheme for Firebase or deep linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app-1-849512939836-ios-9f5317da6b16ae6083de39</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Permissions for Opening Files -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>http</string>
+		<string>https</string>
+		<string>sms</string>
+		<string>file</string>
+	</array>
+
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

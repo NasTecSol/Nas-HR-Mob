@@ -39,29 +39,11 @@ class _ProjectScreenState extends State<ProjectScreen> {
   late String reportingManagerId;
   PlatformFile? selectedFile;
   bool _showSearchResult = false;
-  List<SearchedResults> _employeeSearchResults =[]; // Stores search results of employees
-  List<SearchedResults?> _selectedEmployees = [];
+  final List<SearchedResults> _employeeSearchResults =[];
+  final List<SearchedResults?> _selectedEmployees = [];
   bool isLoading = false;
   late List<Teams> filteredTeams;
-  final List<TaskModel> tasks = [
-    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00",
-        "Nas-Hr Project"),
-    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00",
-        "Nas-Hr Project"),
-    TaskModel(
-        "N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
-  ];
-  int? _expandedIndex; // Keeps track of the index of the expanded container
 
-  void _toggleExpand(int index) {
-    setState(() {
-      if (_expandedIndex == index) {
-        _expandedIndex = null; // Collapse if the same item is clicked again
-      } else {
-        _expandedIndex = index; // Expand the clicked item
-      }
-    });
-  }
 
   @override
   void initState() {
@@ -183,68 +165,68 @@ class _ProjectScreenState extends State<ProjectScreen> {
                       itemCount: singletonClass.projectsDataList.first.data!.length,
                       itemBuilder: (BuildContext context, int index) {
                         final project = singletonClass.projectsDataList.first.data![index];
-                        return GestureDetector(
-                          onTap: () async {
-                            await singletonClass.getTasks();
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> TaskScreen(projectData: project,)));
-                          },
-                          child: Padding(
+                        return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    height: 60,
-                                    width: 60,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  await singletonClass.getTasks();
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> TaskScreen(projectData: project,)));
+                                },
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 60,
+                                      width: 60,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
                                       ),
+                                        child: Image.network(
+                                          project.logo ?? '',
+                                          fit: BoxFit.cover,
+                                          width: 50,
+                                          height: 50,
+                                          errorBuilder: (BuildContext context, Object exception,
+                                              StackTrace? stackTrace) {
+                                            // Display a default image if loading fails
+                                            return Image.asset(
+                                              'images/DP.png',
+                                              fit: BoxFit.cover,
+                                              width: 50,
+                                              height: 50,
+                                            );
+                                          },
+                                        ),
                                     ),
-                                      child: Image.network(
-                                        project.logo ?? '',
-                                        fit: BoxFit.cover,
-                                        width: 50,
-                                        height: 50,
-                                        errorBuilder: (BuildContext context, Object exception,
-                                            StackTrace? stackTrace) {
-                                          // Display a default image if loading fails
-                                          return Image.asset(
-                                            'images/DP.png',
-                                            fit: BoxFit.cover,
-                                            width: 50,
-                                            height: 50,
-                                          );
-                                        },
-                                      ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        project.name ?? '',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                          fontSize: 15,
+                                    const SizedBox(width: 10),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          project.name ?? '',
+                                          style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        project.projectKey ?? '',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.w400,
-                                          color: Colors.grey,
-                                          fontSize: 13,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          project.projectKey ?? '',
+                                          style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.grey,
+                                            fontSize: 13,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                          ),
                         );
                       },
                     );
@@ -1181,10 +1163,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
 
       // Create a SearchedResult instance
       SearchedResults result = SearchedResults(
-        empId: employeeData.data?.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.firstName,
-        employeeId: employeeData.data?.id,
-        designation: employeeData.data?.employeeInfo?.first.designation,
+        empId: employeeData.data?.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.first.firstName,
+        employeeId: employeeData.data?.first.id,
+        designation: employeeData.data?.first.employeeInfo?.first.designation,
       );
 
       print(">>>>$result");

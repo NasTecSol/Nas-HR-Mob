@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/screens/company_selection_screen.dart';
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
@@ -140,6 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        IconButton(onPressed: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
+                        }, icon: Icon(Icons.apartment_outlined,
+                          size: 28,
+                        )),
                         Consumer<LanguageChangeController>(
                             builder: (context, provider, child) {
                               return PopupMenuButton(
@@ -398,16 +404,15 @@ class _LoginScreenState extends State<LoginScreen> {
         if (loginResponse!.statusCode == 200) {
           LoginModel? data = singletonClass.getLoginModel();
           if (data != null && data.data != null) {
-            String jwtToken = data.data!.trim(); // Ensure the token is not null and trim any leading/trailing whitespace
+            String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
-            singletonClass.getEmployeeData();
-            singletonClass.getClockingData();
-            singletonClass.getBranchData();
-            singletonClass.getCompanyData();
-            singletonClass.getRequestData();
-            singletonClass.getApproverData();
-            singletonClass.getEmployeeAttendanceData();
-            singletonClass.getNotifications();
+             singletonClass.getEmployeeData();
+            await singletonClass.getClockingData();
+             singletonClass.getBranchData();
+             singletonClass.getCompanyData();
+             singletonClass.getRemoteAttendanceData();
+             singletonClass.getEmployeeAttendanceData();
+             singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(
