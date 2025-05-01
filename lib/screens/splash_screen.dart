@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:nashr/screens/login_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'company_selection_screen.dart';
+import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,13 +32,16 @@ class _SplashscreenState extends State<SplashScreen>
       final String? url =preferences.getString('baseURL');
       if (url != null && url.isNotEmpty){
         singletonClass.baseURL = url ;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
       } else {
-        singletonClass.baseURL = singletonClass.awsURL;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const CompanySelectionScreen()),
+        );
       }
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
     });
   }
 
