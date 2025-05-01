@@ -1,10 +1,17 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/file_complaints_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../request_controller/complaints_approver_model.dart';
+import '../request_controller/complaints_model.dart';
 
 class Complaints extends StatefulWidget {
   const Complaints({super.key});
@@ -16,14 +23,52 @@ class Complaints extends StatefulWidget {
 class _ComplaintsState extends State<Complaints> {
   int _selectedOptionIndex = 0;
   SingletonClass singletonClass = SingletonClass();
-
-  late Future _approverDataFuture; // Declare Future variable
-
+  bool isLoading = false;
+  final TextEditingController _comment = TextEditingController();
+  int _currentPage = 0;
+  int _complaintCurrentPage = 0;
+  int _totalPages = 1;
+  int _complaintTotalPages = 1;
+  List<DataComplaintApprover>? _approver;
+  List<Data1>? _request;
   @override
   void initState() {
     super.initState();
-    _approverDataFuture =
-        singletonClass.getComplaintsApproverData(); // Initialize Future in initState
+    _fetchRequestData(0);
+    _fetchApproverData(0);
+    getComplaintsData();
+  }
+
+  Future<void> _fetchApproverData(int page) async {
+    final data = await getComplaintsApproverData(page: page);
+    if (data != null && data.data != null) {
+      setState(() {
+        _approver = data.data!.data;
+        _totalPages = data.data!.totalPages ?? 1;
+        _currentPage = page;
+      });
+    } else {
+      setState(() {
+        _approver = [];
+      });
+    }
+  }
+
+
+
+  Future<void> _fetchRequestData(int page) async {
+    final data = await getComplaintsData(page: page);
+    if (data != null && data.data != null) {
+      setState(() {
+        _request = data.data!.data;
+        _complaintTotalPages = data.data!.totalPages ?? 1;
+        _complaintCurrentPage = page;
+      });
+    } else {
+      setState(() {
+        _request = [];
+      });
+    }
   }
 
   @override
@@ -233,7 +278,7 @@ class _ComplaintsState extends State<Complaints> {
               Expanded(
                 // Wrap ListView with Expanded
                   child: FutureBuilder(
-                      future: singletonClass.getComplaintsData(),
+                      future: getComplaintsData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -249,8 +294,7 @@ class _ComplaintsState extends State<Complaints> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          return singletonClass
-                              .complaintsDataList.first.data!.data!.isEmpty
+                          return _request!.isEmpty
                               ? Center(
                             child: Text(
                               AppLocalizations.of(context)!.noData,
@@ -264,12 +308,10 @@ class _ComplaintsState extends State<Complaints> {
                           )
                               : ListView.builder(
                             padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass
-                                .complaintsDataList.first.data!.data!.length,
+                            itemCount: _request!.length,
                             itemBuilder:
                                 (BuildContext context, int index) {
-                              final request = singletonClass
-                                  .complaintsDataList.first.data!.data![index];
+                              final request = _request![index];
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 10),
@@ -368,14 +410,47 @@ class _ComplaintsState extends State<Complaints> {
                             ),
                           );
                         }
-                      }))
+                      })),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_complaintTotalPages, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_complaintCurrentPage != index) {
+                          _fetchRequestData(index); // Send 0, 1, 2...
+                        }
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _complaintCurrentPage == index
+                              ? NasColors.darkBlue
+                              : NasColors.onTime.withOpacity(0.31),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: GoogleFonts.inter(
+                            color: _complaintCurrentPage == index ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              SizedBox(height: 20),
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1') ...[
-              if (_selectedOptionIndex == 0)
+              if (_selectedOptionIndex == 0)...[
                 Expanded(
                     child: FutureBuilder(
-                        future: singletonClass.getComplaintsData(),
+                        future: getComplaintsData(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -391,8 +466,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else if (snapshot.hasData) {
-                            return singletonClass
-                                .complaintsDataList.first.data!.data!.isEmpty
+                            return _request!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -406,12 +480,10 @@ class _ComplaintsState extends State<Complaints> {
                             )
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
-                              itemCount: singletonClass
-                                  .complaintsDataList.first.data!.data!.length,
+                              itemCount: _request!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = singletonClass
-                                    .complaintsDataList.first.data!.data![index];
+                                final request = _request![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(
                                           vertical: 10),
@@ -510,11 +582,44 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           }
                         })),
-              if (_selectedOptionIndex == 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_complaintTotalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_complaintCurrentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _complaintCurrentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _complaintCurrentPage == index ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: 20),
+              ],
+              if (_selectedOptionIndex == 1)...[
                 Expanded(
-                  // Wrap ListView with Expanded
                     child: FutureBuilder(
-                        future: _approverDataFuture,
+                        future: getComplaintsApproverData(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -530,8 +635,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else {
-                            return singletonClass
-                                .complaintsApproverDataList.first.data!.data!.isEmpty
+                            return _approver!.isEmpty
                                 ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.noData,
@@ -545,12 +649,10 @@ class _ComplaintsState extends State<Complaints> {
                             )
                                 : ListView.builder(
                               padding: const EdgeInsets.all(5),
-                              itemCount: singletonClass
-                                  .complaintsApproverDataList.first.data!.data!.length,
+                              itemCount: _approver!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = singletonClass
-                                    .complaintsApproverDataList.first.data!.data![index];
+                                final request = _approver![index];
                                 return Container(
                                       margin: const EdgeInsets.symmetric(vertical: 10),
                                       decoration: BoxDecoration(
@@ -647,6 +749,299 @@ class _ComplaintsState extends State<Complaints> {
                                                 ),
                                               ],
                                             ),
+                                            if (request.status ==
+                                                'pending') ...[
+                                              Padding(
+                                                padding:
+                                                const EdgeInsets
+                                                    .all(10.0),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        showDialog(
+                                                            context:
+                                                            context,
+                                                            builder:
+                                                                (BuildContext
+                                                            context) {
+                                                              return AlertDialog(
+                                                                backgroundColor:
+                                                                Colors.white,
+                                                                title:
+                                                                Text(
+                                                                  AppLocalizations.of(context)!
+                                                                      .comment,
+                                                                  style:
+                                                                  GoogleFonts.poppins(
+                                                                    fontWeight:
+                                                                    FontWeight.w500,
+                                                                    color:
+                                                                    NasColors.darkBlue,
+                                                                    fontSize:
+                                                                    23,
+                                                                  ),
+                                                                ),
+                                                                content:
+                                                                SingleChildScrollView(
+                                                                  // 🔧 Fixes overflow
+                                                                  child:
+                                                                  Container(
+                                                                    decoration:
+                                                                    BoxDecoration(
+                                                                      color: Colors.white,
+                                                                      borderRadius: BorderRadius.circular(10.0),
+                                                                      border: Border.all(
+                                                                        color: NasColors.darkBlue,
+                                                                        width: 1.0,
+                                                                      ),
+                                                                      boxShadow: const [
+                                                                        BoxShadow(
+                                                                          color: Colors.white,
+                                                                          blurRadius: 15,
+                                                                          offset: Offset(0.10, 10.0),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    child:
+                                                                    TextField(
+                                                                      textAlign: TextAlign.center,
+                                                                      controller: _comment,
+                                                                      minLines: 1,
+                                                                      maxLines: null,
+                                                                      decoration: InputDecoration(
+                                                                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                        focusedBorder: OutlineInputBorder(
+                                                                          borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                        ),
+                                                                        enabledBorder: OutlineInputBorder(
+                                                                          borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                        ),
+                                                                      ),
+                                                                      style: const TextStyle(
+                                                                        color: Colors.black,
+                                                                        fontWeight: FontWeight.w500,
+                                                                        fontSize: 12,
+                                                                      ),
+                                                                      autofocus: false,
+                                                                      textInputAction: TextInputAction.done,
+                                                                      cursorColor: Colors.black,
+                                                                      onTapOutside: (event) {
+                                                                        FocusManager.instance.primaryFocus?.unfocus();
+                                                                      },
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                actions: [
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                    MainAxisAlignment.center,
+                                                                    children: [
+                                                                      Container(
+                                                                        decoration: BoxDecoration(
+                                                                          color: Colors.red,
+                                                                          borderRadius: BorderRadius.circular(10),
+                                                                        ),
+                                                                        child: TextButton(
+                                                                          onPressed: () {
+                                                                            Navigator.pop(context);
+                                                                            patchRequestData(request.id, 'rejected', request.toJson());
+                                                                            _comment.clear();
+                                                                          },
+                                                                          child: Text(
+                                                                            AppLocalizations.of(context)!.rejected,
+                                                                            style: GoogleFonts.poppins(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              color: Colors.white,
+                                                                              fontSize: 12,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            });
+                                                      },
+                                                      child: Container(
+                                                        width: 120,
+                                                        height: 40,
+                                                        decoration:
+                                                        const BoxDecoration(
+                                                          borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  10)),
+                                                          gradient:
+                                                          LinearGradient(
+                                                            colors: [
+                                                              Color(
+                                                                  0xFF4D4D4D),
+                                                              Color(
+                                                                  0xFFE64545),
+                                                              Color(
+                                                                  0xFFCF3E3E),
+                                                              Color(
+                                                                  0xFFC13A3A),
+                                                              Color(
+                                                                  0xFF992E2E),
+                                                            ],
+                                                            begin: Alignment
+                                                                .topRight,
+                                                            end: Alignment
+                                                                .bottomLeft,
+                                                          ),
+                                                        ),
+                                                        child: Align(
+                                                          alignment:
+                                                          Alignment
+                                                              .center,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                context)!
+                                                                .cancel,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize:
+                                                              15,
+                                                              color: Colors
+                                                                  .white,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                        width: 5),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext context) {
+                                                            return AlertDialog(
+                                                              backgroundColor: Colors.white,
+                                                              title: Text(
+                                                                AppLocalizations.of(context)!.comment,
+                                                                style: GoogleFonts.poppins(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: NasColors.darkBlue,
+                                                                  fontSize: 23,
+                                                                ),
+                                                              ),
+                                                              content: SingleChildScrollView(
+                                                                child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                    color: Colors.white,
+                                                                    borderRadius: BorderRadius.circular(10.0),
+                                                                    border: Border.all(
+                                                                      color: NasColors.darkBlue,
+                                                                      width: 1.0,
+                                                                    ),
+                                                                    boxShadow: const [
+                                                                      BoxShadow(
+                                                                        color: Colors.white,
+                                                                        blurRadius: 15,
+                                                                        offset: Offset(0.10, 10.0),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  child: TextField(
+                                                                    textAlign: TextAlign.center,
+                                                                    controller: _comment,
+                                                                    minLines: 1,
+                                                                    maxLines: null,
+                                                                    decoration: InputDecoration(
+                                                                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                      focusedBorder: OutlineInputBorder(
+                                                                        borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                      ),
+                                                                      enabledBorder: OutlineInputBorder(
+                                                                        borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                      ),
+                                                                    ),
+                                                                    style: const TextStyle(
+                                                                      color: Colors.black,
+                                                                      fontWeight: FontWeight.w500,
+                                                                      fontSize: 12,
+                                                                    ),
+                                                                    autofocus: false,
+                                                                    textInputAction: TextInputAction.done,
+                                                                    cursorColor: Colors.black,
+                                                                    onTapOutside: (event) {
+                                                                      FocusManager.instance.primaryFocus?.unfocus();
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              actions: [
+                                                                Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                  children: [
+                                                                    Container(
+                                                                      decoration: BoxDecoration(
+                                                                        color: NasColors.completed,
+                                                                        borderRadius: BorderRadius.circular(10),
+                                                                      ),
+                                                                      child: TextButton(
+                                                                        onPressed: () {
+                                                                          Navigator.pop(context);
+                                                                          patchRequestData(request.id, 'approved', request.toJson());
+                                                                          _comment.clear();
+                                                                        },
+                                                                        child: Text(
+                                                                          AppLocalizations.of(context)!.accept,
+                                                                          style: GoogleFonts.poppins(
+                                                                            fontWeight: FontWeight.w500,
+                                                                            color: Colors.white,
+                                                                            fontSize: 12,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                                      child: Container(
+                                                        width: 120,
+                                                        height: 40,
+                                                        decoration: const BoxDecoration(
+                                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                          gradient: LinearGradient(
+                                                            colors: [
+                                                              Color(0xFF47734D),
+                                                              Color(0xFF5B9362),
+                                                              Color(0xFF66A56E),
+                                                              Color(0xFF76BE7F),
+                                                              Color(0xFF86D991),
+                                                            ],
+                                                            begin: Alignment.topRight,
+                                                            end: Alignment.bottomLeft,
+                                                          ),
+                                                        ),
+                                                        child: Align(
+                                                          alignment: Alignment.center,
+                                                          child: Text(
+                                                            AppLocalizations.of(context)!.acceptRequest,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 15,
+                                                              color: Colors.white,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ]
                                           ],
                                         ),
                                       ),
@@ -655,7 +1050,39 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           }
                         })),
-
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalPages, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_currentPage != index) {
+                            _fetchRequestData(index); // Send 0, 1, 2...
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentPage == index
+                                ? NasColors.darkBlue
+                                : NasColors.onTime.withOpacity(0.31),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              color: _currentPage == index ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              SizedBox(height: 20),]
             ],
           ],
         ),
@@ -720,6 +1147,201 @@ class _ComplaintsState extends State<Complaints> {
         return Colors.red;
       default:
         return Colors.grey; // or any other default color
+    }
+  }
+
+  // GET CALL
+
+  Future<ComplaintsModel?> getComplaintsData({int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+
+    // Request body with the required parameter
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["complaintRequest"],
+    };
+
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/employee/$employeeId?limit=$limit&page=$page',
+    );
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("Complaints Log: ${response.body}");
+
+      if (response.statusCode == 201) {
+        var responseBody = json.decode(response.body);
+        var requestData = ComplaintsModel.fromJson(responseBody);
+        if (page == 0) {
+          singletonClass.complaintsDataList.addAll([requestData]);
+        } else {
+          final existing = singletonClass.complaintsDataList;
+          singletonClass.complaintsDataList.addAll([...existing, requestData]);
+        }
+        return requestData;
+      } else {
+        log("Error Complaints Data: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error Complaints Data: $e');
+      return null;
+    }
+  }
+
+
+//POST CALL
+  Future<ComplaintsApproverModel?> getComplaintsApproverData({int page = 0, int limit = 10}) async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+    print("vghjk$employeeId");
+    Map<String, dynamic> requestBody = {
+      "requestTypes": ["complaintRequest"],
+    };
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/request/approver/$employeeId?limit=$limit&page=$page',
+    );
+
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      log("complaints Log approver %%: ${response.body}");
+
+      if (response.statusCode == 201) {
+        var responseBody = json.decode(response.body);
+        var requestData = ComplaintsApproverModel.fromJson(responseBody);
+
+        if (page == 0) {
+          singletonClass.complaintsApproverDataList.addAll([requestData]);
+        } else {
+          final existing = singletonClass.complaintsApproverDataList;
+          singletonClass.complaintsApproverDataList.addAll([...existing, requestData]);
+        }
+        return requestData;
+      } else {
+        log("Error complaints Log approver: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error complaints Log approver: $e');
+      return null;
+    }
+  }
+
+  void patchRequestData(String? requestID, String status,
+      Map<String, dynamic> requestData) async {
+    String url = '${singletonClass.baseURL}/request/$requestID';
+
+    // Define the JSON data to send
+    Map<String, dynamic> data = {
+      "employeeId": requestData['employeeId'],
+      "employeeName": requestData['employeeName'],
+      "empId": requestData['empId'],
+      "companyId": requestData['companyId'],
+      "branchId": requestData['branchId'],
+      "policyId": requestData['policyId'],
+      "requestType": requestData['requestType'],
+      "subType": requestData['subType'],
+      "requestData": requestData['requestData'],
+      "approvers": [
+        {
+          "approverId": requestData['approvers'][0]['approverId'],
+          "approverName": requestData['approvers'][0]['approverName'],
+          "status": status,
+          "timeStamps": DateTime.now().toIso8601String(),
+          "comments": _comment.text,
+        }
+      ],
+      "reason": requestData['reason'],
+      "attachments": requestData['attachments'],
+      "status": status
+    };
+
+    // Convert data to JSON string
+    String jsonData = jsonEncode(data);
+    log("complaint json $jsonData");
+
+    // Make the PATCH request
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonData,
+      );
+      setState(() {
+        isLoading = false;
+      });
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['statusCode'] == 200) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.success,
+            type: QuickAlertType.success,
+          );
+          await getComplaintsApproverData();
+        } else if (decodedResponse['statusCode'] == 400) {
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 2),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.internalServerError,
+            type: QuickAlertType.error,
+          );
+        }
+      } else if (response.statusCode == 400 || response.statusCode == 500) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('Error: ${response.statusCode}');
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: 'Error: ${response.statusCode}',
+          type: QuickAlertType.error,
+        );
+      }
+    } catch (error) {
+      print('Failed to send data. Error: $error');
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: 'Failed to send data. Error: $error',
+        type: QuickAlertType.error,
+      );
     }
   }
 }

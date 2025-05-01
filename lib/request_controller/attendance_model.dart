@@ -65,7 +65,7 @@ class Data1 {
   String? date;
   String? clockInTime;
   String? clockOutTime;
-  int? totalHoursWorked;
+  dynamic totalHoursWorked;
   String? location;
   String? status;
   List<Break>? breaksTaken;

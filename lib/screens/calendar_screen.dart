@@ -559,7 +559,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withValues(alpha: 0.3),
+                                      color: Colors.grey.withAlpha(80),
                                       spreadRadius: 2,
                                       blurRadius: 8,
                                       offset: const Offset(0, 0),
@@ -569,7 +569,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 child: Row(
                                   children: [
                                     Container(
-                                      height: 165,
+                                      height: 175,
                                       width: 80,
                                       decoration: BoxDecoration(
                                         borderRadius: const BorderRadius.only(
@@ -583,61 +583,60 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0, top: 2),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 20),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              event.eventName ?? "Unnamed Event",
-                                              maxLines: 2,
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 8.0, top: 2, right: 8.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 20),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                event.eventName ?? "Unnamed Event",
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 15),
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: NasColors.darkBlue,
+                                                  size: 30,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  singletonClass.formatDate2(event.date ?? ""),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: NasColors.darkBlue,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 20),
+                                            Text(
+                                              event.eventDescription ?? "No Description",
+                                              maxLines: 5,
+                                              overflow: TextOverflow.ellipsis,
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                                color: Colors.grey,
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 15),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.calendar_month_outlined,
-                                                color: NasColors.darkBlue,
-                                                size: 30,
-                                              ),
-                                              Text(
-                                                singletonClass.formatDate2(event.date ?? ""),
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: NasColors.darkBlue,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 20),
-                                          SizedBox(
-                                            width: 250,
-                                            child: Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                event.eventDescription ?? "No Description",
-                                                maxLines: 5,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 20),
-                                        ],
+                                            const SizedBox(height: 20),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -693,8 +692,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
 
     // Format dates as 'yyyy-MM-dd'
-    String startDateString = "${startDate.toIso8601String().split('T')[0]}";
-    String endDateString = "${endDate.toIso8601String().split('T')[0]}";
+    String startDateString = startDate.toIso8601String().split('T')[0];
+    String endDateString = endDate.toIso8601String().split('T')[0];
 
     print(startDateString);
     print(endDateString);

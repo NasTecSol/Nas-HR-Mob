@@ -3,7 +3,7 @@ class SearchEmployeeData {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  Data? data;
+  List<Data>? data;
 
   SearchEmployeeData({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
@@ -11,7 +11,7 @@ class SearchEmployeeData {
     statusCode = json["statusCode"];
     statusMessage = json["statusMessage"];
     errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : Data.fromJson(json["data"]);
+    data = json["data"] == null ? null : (json["data"] as List).map((e) => Data.fromJson(e)).toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -20,7 +20,7 @@ class SearchEmployeeData {
     _data["statusMessage"] = statusMessage;
     _data["errorMessage"] = errorMessage;
     if(data != null) {
-      _data["data"] = data?.toJson();
+      _data["data"] = data?.map((e) => e.toJson()).toList();
     }
     return _data;
   }

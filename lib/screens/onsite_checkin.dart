@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:math' as math;
@@ -30,18 +28,37 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   final Location _location = Location();
 
   // Company location (example coordinates)
-  final double _companyLatitude = 33.57227317548423;
-  final double _companyLongitude = 73.14761580269642;
   final double _radiusInMeters = 100.0;
+  double? _companyLatitude;
+  double? _companyLongitude;
 
   @override
   void initState() {
     super.initState();
+    _parseCompanyLocation();
     _getCurrentLocation();
     _loadMapState();
   }
 
+  // Parse the company location from the model and set the company lat and long
+  void _parseCompanyLocation() {
+    final String? locString = singletonClass.remoteAttendanceModelList.isNotEmpty &&
+        singletonClass.remoteAttendanceModelList.first.data!.isNotEmpty &&
+        singletonClass.remoteAttendanceModelList.first.data!.first.remoteAttendanceLoc!.isNotEmpty
+        ? singletonClass.remoteAttendanceModelList.first.data!.first.remoteAttendanceLoc
+        : null;
 
+    if (locString != null && locString.contains('|')) {
+      final parts = locString.split('|');
+      if (parts.length == 2) {
+        _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
+        _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
+      }
+    }
+  }
+
+
+  // Load the check-in state from shared preferences
   Future<void> _loadMapState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -49,31 +66,30 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
+  // Save the check-in state to shared preferences
   Future<void> _saveCheckInState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isCheckInCompleted', isCheckedIn);
   }
 
-
+  // Get current location and update the map with current location and check proximity
   Future<void> _getCurrentLocation() async {
-    // Check and request permissions
     PermissionStatus permissionGranted = await _location.requestPermission();
     if (permissionGranted == PermissionStatus.granted) {
       _currentLocation = await _location.getLocation();
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
       _addCurrentLocationMarker(_currentLocation!);
-      _addCompanyLocationMarker(); // Add company location marker with boundary
-      _checkProximityToCompanyLocation(); // Check distance from company location
+      _addCompanyLocationMarker(); // Add company location marker
+      _checkProximityToCompanyLocation(); // Check if the user is in range
     }
   }
 
+  // Move the map view to the given coordinates
   void _moveToLocation(double latitude, double longitude) {
     _mapboxMap.easeTo(
       CameraOptions(
-        center: Point(
-          coordinates: Position(longitude, latitude),
-        ),
-        zoom: 18.0, // Zoom level for street view
+        center: Point(coordinates: Position(longitude, latitude)),
+        zoom: 18.0,
       ),
       MapAnimationOptions(
         duration: 1000,
@@ -81,6 +97,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     );
   }
 
+  // Add a marker at the current location
   void _addCurrentLocationMarker(LocationData locationData) async {
     final ByteData bytes = await rootBundle.load('images/placeholder.png');
     final Uint8List list = bytes.buffer.asUint8List();
@@ -96,23 +113,25 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
+  // Check if the user is within the proximity of the company location
   void _checkProximityToCompanyLocation() {
     if (_currentLocation != null) {
       final double distance = _calculateDistance(
         _currentLocation!.latitude!,
         _currentLocation!.longitude!,
-        _companyLatitude,
-        _companyLongitude,
+        _companyLatitude!,
+        _companyLongitude!,
       );
 
       if (distance > _radiusInMeters) {
         _showOutOfLocationMessage();
       } else {
-        _showAlertDialog(); // Show the dialog if within the location radius
+        _showCheckInConfirmationDialog(); // Show check-in confirmation if within radius
       }
     }
   }
 
+  // Calculate the distance between two coordinates (in meters)
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const R = 6371000; // Radius of the Earth in meters
     final dLat = _degreesToRadians(lat2 - lat1);
@@ -124,17 +143,20 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     return R * c; // Distance in meters
   }
 
+  // Convert degrees to radians
   double _degreesToRadians(double degrees) {
     return degrees * math.pi / 180;
   }
 
+  // Show an alert if the user is out of the company location's radius
   void _showOutOfLocationMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
+      SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
     );
   }
 
-  void _showAlertDialog() {
+  // Show a dialog asking if the user is sure about checking in
+  void _showCheckInConfirmationDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -157,7 +179,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
                 if (isCheckedIn) {
                   checkOut();
                 } else {
-                  checkIn("biometric");
+                  if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true) {
+                    checkIn("location");
+                  }
                 }
                 Navigator.pop(context);
               },
@@ -169,17 +193,17 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     );
   }
 
-
+  // Add a company location marker and draw the radius boundary
   void _addCompanyLocationMarker() async {
-    final ByteData bytes = await rootBundle.load('images/site.png'); // Use your company icon
+    final ByteData bytes = await rootBundle.load('images/site.png');
     final Uint8List list = bytes.buffer.asUint8List();
 
     // Create a point annotation for the company location
     await _mapboxMap.annotations.createPointAnnotationManager().then((pointAnnotationManager) {
       final pointAnnotationOptions = PointAnnotationOptions(
-        geometry: Point(coordinates: Position(_companyLongitude, _companyLatitude)),
+        geometry: Point(coordinates: Position(_companyLongitude!, _companyLatitude!)),
         image: list,
-        iconSize: 0.5, // Adjust the icon size as needed
+        iconSize: 0.5,
       );
       pointAnnotationManager.create(pointAnnotationOptions);
     });
@@ -187,7 +211,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     // Draw a circle to represent the company's location radius
     await _mapboxMap.annotations.createCircleAnnotationManager().then((circleAnnotationManager) {
       final circleAnnotationOptions = CircleAnnotationOptions(
-        geometry: Point(coordinates: Position(_companyLongitude, _companyLatitude)),
+        geometry: Point(coordinates: Position(_companyLongitude!, _companyLatitude!)),
         circleRadius: _radiusInMeters / 100,
         circleColor: 0x0000FF,
         circleOpacity: 0.3,
@@ -198,16 +222,18 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
+  // Move the map view to the company's location
   Future<void> _moveToCompanyLocation() async {
-    _moveToLocation(_companyLatitude, _companyLongitude);
+    _moveToLocation(_companyLatitude!, _companyLongitude!);
   }
 
+  // Move the map view to the current location
   void _moveToCurrentLocation() {
     if (_currentLocation != null) {
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(AppLocalizations.of(context)!.currentLocationNotAvailable)),
+        SnackBar(content: Text(AppLocalizations.of(context)!.currentLocationNotAvailable)),
       );
     }
   }
@@ -217,14 +243,16 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     return Scaffold(
       body: Stack(
         children: [
-          MapWidget(
-            androidHostingMode: AndroidPlatformViewHostingMode.HC,
-            styleUri: MapboxStyles.STANDARD,
-            onMapCreated: (controller) {
-              setState(() {
-                _mapboxMap = controller;
-              });
-            },
+          SizedBox.expand(
+            child: MapWidget(
+              androidHostingMode: AndroidPlatformViewHostingMode.HC,
+              styleUri: MapboxStyles.STANDARD,
+              onMapCreated: (controller) {
+                setState(() {
+                  _mapboxMap = controller;
+                });
+              },
+            ),
           ),
           Positioned(
             bottom: 16.0,
@@ -235,42 +263,35 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
                   heroTag: 'unique_tag_for_fab_1',
                   backgroundColor: Colors.white,
                   onPressed: _moveToCurrentLocation,
-                  tooltip: 'Move to Current Location',
-                  child: const Icon(Icons.my_location),
+                  tooltip: 'Move to current location',
+                  child: const Icon(Icons.location_on, color: Colors.blue),
                 ),
-                const SizedBox(height: 8.0),
+                const SizedBox(height: 16.0),
                 FloatingActionButton(
                   heroTag: 'unique_tag_for_fab_2',
                   backgroundColor: Colors.white,
                   onPressed: _moveToCompanyLocation,
-                  tooltip: 'Move to Company Location',
-                  child: const Icon(Icons.location_city),
+                  tooltip: 'Move to company location',
+                  child: const Icon(Icons.business, color: Colors.blue),
                 ),
               ],
             ),
           ),
-          if(isLoading)
-            Center(
-              child: SizedBox(
-                height: 200,
-                width: 200,
-                child: Lottie.asset('images/loader.json'),
-              ),
-            )
         ],
       ),
     );
   }
 
-  Future<void> checkIn(String type) async {
-    String checkInTime = DateTime.now().toIso8601String();
+Future<void> checkIn(String type) async {
+  String currentTime = DateTime.now().toUtc().toIso8601String();
+  String checkInTime = '${currentTime.split('.')[0]}.000Z';
+  print(checkInTime);
+
     Map<String, dynamic> data = {
       "employeeId": singletonClass.getJWTModel()?.employeeId,
       "employeeName": singletonClass.getJWTModel()?.userName,
       "checkInTime": checkInTime,
       "type": type,
-      "totalTime" : checkInTime,
-      // Adjust this if needed for total time calculation
     };
     print(data);
 

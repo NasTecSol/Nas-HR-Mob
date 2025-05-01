@@ -816,10 +816,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
       // Create a SearchedResult instance
       EventSearchedResults result = EventSearchedResults(
-        empId: employeeData.data?.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.firstName,
-        employeeId: employeeData.data?.id,
-        designation: employeeData.data?.employeeInfo?.first.designation,
+        empId: employeeData.data?.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.first.firstName,
+        employeeId: employeeData.data?.first.id,
+        designation: employeeData.data?.first.employeeInfo?.first.designation,
       );
 
       print(">>>>$result");
