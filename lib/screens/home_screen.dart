@@ -54,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getRemoteAttendanceData();
+    singletonClass.getPolicyData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;

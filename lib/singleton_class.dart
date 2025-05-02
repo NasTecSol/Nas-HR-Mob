@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
+import 'package:nashr/request_controller/policy_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
@@ -84,6 +85,7 @@ class SingletonClass {
   List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
   List<EventModel> eventDataList = [];
+  List<PolicyModel> policyModelDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
   String? fcmToken;
@@ -188,6 +190,21 @@ class SingletonClass {
 
 
 //API Calls
+
+  Future<PolicyModel?> getPolicyData() async {
+    String? policyId =  companyDataList.first.data!.policies!.first.policyId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/policies/$policyId');
+    var response = await client.get(uri);
+    log("POLICY DATA ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var policyData = PolicyModel.fromJson(responseBody);
+      policyModelDataList.addAll([policyData]);
+      return policyData;
+    }
+    return null ; // Print the response body
+  }
 
   Future<EmployeeData?> getEmployeeData() async {
     String? employeeId =  getJWTModel()?.employeeId;

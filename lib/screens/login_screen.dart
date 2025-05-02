@@ -409,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
              singletonClass.getEmployeeData();
             await singletonClass.getClockingData();
              singletonClass.getBranchData();
-             singletonClass.getCompanyData();
+             await singletonClass.getCompanyData();
              singletonClass.getRemoteAttendanceData();
              singletonClass.getEmployeeAttendanceData();
              singletonClass.getNotifications();
