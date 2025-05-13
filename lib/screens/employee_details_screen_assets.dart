@@ -142,11 +142,8 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                                   ),
 
                                   const SizedBox(height: 10),
-
-                                  // Image display logic
                                   GestureDetector(
                                     onTap: () {
-                                      // Open a dialog or a new screen to display the large image
                                       showDialog(
                                         context: context,
                                         builder: (BuildContext context) {

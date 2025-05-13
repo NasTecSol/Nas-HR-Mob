@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/attendance_screen.dart';
+import 'package:nashr/screens/chat_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getRemoteAttendanceData();
+    singletonClass.getPolicyData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -1196,54 +1198,98 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Container(
-                                  width: 130,
-                                  height: 130,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.coffee,
-                                          size: 25,
-                                          color: Colors.brown,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          AppLocalizations.of(context)!.breaks,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          singletonClass.attendanceDataList.isNotEmpty &&
-                                              singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                              ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
-                                              : 'NA',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.normal,
-                                          ),
+                                GestureDetector(
+                                  onTap: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ChatScreen()));
+                                  },
+                                  child: Container(
+                                    width: 130,
+                                    height: 130,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withValues(alpha: 0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
                                         ),
                                       ],
                                     ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                           SizedBox(
+                                             height:50,
+                                             width:50,
+                                             child: Image.asset(
+                                              "images/chatIcon.png",
+                                             ),
+                                           ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "Tap to chat!",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                // Container(
+                                //   width: 130,
+                                //   height: 130,
+                                //   decoration: BoxDecoration(
+                                //     shape: BoxShape.circle,
+                                //     color: Colors.white,
+                                //     boxShadow: [
+                                //       BoxShadow(
+                                //         color: Colors.grey.withValues(alpha: 0.5),
+                                //         spreadRadius: 2,
+                                //         blurRadius: 8,
+                                //         offset: const Offset(0, 3),
+                                //       ),
+                                //     ],
+                                //   ),
+                                //   child: Center(
+                                //     child: Column(
+                                //       mainAxisAlignment: MainAxisAlignment.center,
+                                //       crossAxisAlignment: CrossAxisAlignment.center,
+                                //       children: [
+                                //         const Icon(
+                                //           Icons.coffee,
+                                //           size: 25,
+                                //           color: Colors.brown,
+                                //         ),
+                                //         const SizedBox(height: 8),
+                                //         Text(
+                                //           AppLocalizations.of(context)!.breaks,
+                                //           style: GoogleFonts.inter(
+                                //             fontSize: 15,
+                                //             fontWeight: FontWeight.bold,
+                                //           ),
+                                //         ),
+                                //         const SizedBox(height: 4),
+                                //         Text(
+                                //           singletonClass.attendanceDataList.isNotEmpty &&
+                                //               singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                //               ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
+                                //               : 'NA',
+                                //           style: GoogleFonts.inter(
+                                //             fontSize: 15,
+                                //             fontWeight: FontWeight.normal,
+                                //           ),
+                                //         ),
+                                //       ],
+                                //     ),
+                                //   ),
+                                // ),
                               ],
                             ),
                           ),
@@ -1821,9 +1867,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       children: [
                                         Text(
                                           AppLocalizations.of(context)!
-                                              .activity,
+                                              .empLeaveBalance,
                                           style: GoogleFonts.inter(
-                                            fontSize: 20,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -1832,113 +1878,162 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     const SizedBox(height: 5),
                                     SizedBox(
                                       height: 105,
-                                      child: singletonClass.notificationModelList.isNotEmpty &&
-                                          singletonClass.notificationModelList.first.data != null &&
-                                          singletonClass.notificationModelList.first.data!.isNotEmpty
-                                          ? ListView.builder(
-                                        padding: const EdgeInsets.all(5),
+                                      child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
-                                        itemCount: singletonClass.notificationModelList.first.data!.length,
-                                        itemBuilder: (BuildContext context, int index) {
-                                          final activities =
-                                          singletonClass.notificationModelList.first.data![index];
-
-                                          return SizedBox(
-                                            width: 200,
-                                            child: Container(
-                                              margin: const EdgeInsets.only(right: 10),
-                                              height: 100,
-                                              decoration: BoxDecoration(
-                                                borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withValues(alpha: 0.3),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 5,
-                                                    offset: const Offset(0, 0),
-                                                  ),
-                                                ],
+                                        child: Row(
+                                        children: [
+                                          Container(
+                                            height: 90,
+                                            width:180,
+                                            decoration:BoxDecoration(
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 4.0, // Set the border width
+                                                ),
+                                                right: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 2.0, // Set the border width
+                                                ),
                                               ),
+                                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(5.0),
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      '${activities.notificationType}',
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                          width:110,
+                                                          child: Text("Leave this month")),
+                                                      SizedBox(
+                                                        height: 50,
+                                                        width: 50,
+                                                        child: Image.asset("images/thisMonthIcon.png"),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text("1/6",
                                                       style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                    child: Text(
-                                                      singletonClass.formatTime("${activities.createdAt}"),
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.w500,
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Spacer(),
-                                                  Container(
-                                                    width: double.infinity,
-                                                    padding: const EdgeInsets.symmetric(
-                                                        horizontal: 10, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: _getColorForActivity(activities.status!),
-                                                      borderRadius: const BorderRadius.only(
-                                                        bottomLeft: Radius.circular(15),
-                                                        bottomRight: Radius.circular(15),
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        Text(
-                                                            "${activities.status}",
-                                                            maxLines: 2,
-                                                            overflow: TextOverflow.ellipsis, // Clips or fades the text
-                                                            softWrap: true,
-                                                            style: GoogleFonts.inter(
-                                                              color: Colors.white,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-
-                                                        const Spacer(),
-                                                        Text(
-                                                          singletonClass.formatDate2("${activities.createdAt}"),
-                                                          style: GoogleFonts.inter(
-                                                            fontWeight: FontWeight.w500,
-                                                            fontSize: 13,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.bold
+                                                      ),)
+                                                    ],
+                                                  )
                                                 ],
                                               ),
                                             ),
-                                          );
-                                        },
-                                      )
-                                          : Center(
-                                        child: Text(
-                                          "No notifications available",
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: Colors.grey,
                                           ),
+                                          Container(
+                                            height: 90,
+                                            width:180,
+                                            decoration:BoxDecoration(
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 2.0, // Set the border width
+                                                ),
+                                                right: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 2.0, // Set the border width
+                                                ),
+                                              ),
+                                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:110,
+                                                          child: Text("Remote Days this month",
+                                                            style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.w500,
+                                                                fontSize: 13
+                                                            ),
+                                                          )),
+                                                      SizedBox(
+                                                        height: 50,
+                                                        width: 50,
+                                                        child: Image.asset("images/remoteIcon.png"),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text("2/6",
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.bold
+                                                        ),)
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 90,
+                                            width:180,
+                                            decoration:BoxDecoration(
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 2.0, // Set the border width
+                                                ),
+                                                right: BorderSide(
+                                                  color: NasColors.lightBlue,
+                                                  width: 4.0, // Set the border width
+                                                ),
+                                              ),
+                                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                          width:110,
+                                                          child: Text("Sick Days this month",
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.w500,
+                                                              fontSize: 13
+                                                            ),
+                                                          )),
+                                                      SizedBox(
+                                                        height: 50,
+                                                        width: 50,
+                                                        child: Image.asset("images/thisMonth.png"),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text("0/6",
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.bold
+                                                        ),)
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                         ),
+                                      )
                                       ),
-                                    )
 
                                   ],
                                 ),

@@ -401,7 +401,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  Future<AttendanceData?> getAttendanceData() async {
+  Future<AttendanceData?> getAttendanceData({
+    int limit = 31,
+    int page = 0,
+  }) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     print(employeeId);
     var client = http.Client();
@@ -419,7 +422,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$toDateString/$fromDateString');
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$toDateString/$fromDateString?limit=$limit&page=$page');
 
     print(toDateString);
     print(fromDateString);
