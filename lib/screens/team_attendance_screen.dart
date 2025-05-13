@@ -94,6 +94,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   Future<TeamAttendanceModel?> getTeamAttendanceData({
     DateTime? startDate,
     DateTime? endDate,
+    int limit = 10000,
+    int page = 0,
   }) async {
     Set<String> employeeIds = {};
     for (var team in filteredUnderTeams) {
@@ -116,7 +118,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     }
 
     var uri = Uri.parse(
-      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr',
+      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page',
     );
 
     var response = await http.get(uri);
@@ -368,26 +370,19 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         final attendance = filteredAttendanceDataList[i];
 
                         String formatDate(String updatedAt) {
-                          DateTime updatedAtDateTime =
-                              DateTime.parse(updatedAt);
-                          return DateFormat('dd-MM-yyyy')
-                              .format(updatedAtDateTime);
+                          DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                          return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                         }
-
                         String date = formatDate(attendance.updatedAt!);
-                        String lateMinutes =
-                            formatMinutes(attendance.lateMinutes);
-                        String earlyCheckOut =
-                            formatMinutes(attendance.earlyCheckOut);
+                        String lateMinutes = formatMinutes(attendance.lateMinutes);
+                        String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
                         String breakTime = formatMinutes(attendance.breakTime);
 
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => TeamAttendanceDetailScreen(
-                                    attendanceData: attendance),
+                              MaterialPageRoute(builder: (_) => TeamAttendanceDetailScreen(attendanceData: attendance),
                               ),
                             );
                           },

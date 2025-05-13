@@ -1453,7 +1453,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     String firstDateString = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-check-in-out/$employeeId/$firstDateString/$currentDateString');
+        '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
 
     var response = await client.get(uri);
 

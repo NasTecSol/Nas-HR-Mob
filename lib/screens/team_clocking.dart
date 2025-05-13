@@ -251,20 +251,32 @@ class _TeamClockingState extends State<TeamClocking> {
                         final shift = singletonClass.branchDataList.first.data
                             ?.departmentDetails?.first.shifts;
                         // Parse shift times and clock times for the current index
-                        DateTime? checkInTime =
-                            parseTime(team.checkInTime ?? '');
-                        DateTime? checkOutTime =
-                            parseTime(team.checkOutTime ?? '');
-                        DateTime? shiftFromTime =
-                            parseTime(shift!.first.timeFrom ?? '');
-                        DateTime? shiftToTime =
-                            parseTime(shift.first.timeTo ?? '');
+                        DateTime? checkInTime = parseTime(team.checkInTime ?? '');
+                        DateTime? checkOutTime = parseTime(team.checkOutTime ?? '');
+                        DateTime? shiftFromTime = parseTime(shift!.first.timeFrom ?? '');
+                        DateTime? shiftToTime = parseTime(shift.first.timeTo ?? '');
                         // Calculate late and early durations
-                        var lateDuration = checkInTime != null &&
-                                shiftFromTime != null &&
-                                checkInTime.isAfter(shiftFromTime)
-                            ? checkInTime.difference(shiftFromTime)
-                            : Duration.zero;
+                        Duration lateDuration = Duration.zero;
+
+                        if (checkInTime != null && shiftFromTime != null) {
+                          // Null checks for policy data
+                          var policyData = singletonClass.policyModelDataList.isNotEmpty
+                              ? singletonClass.policyModelDataList.first.data
+                              : null;
+
+                          var attendancePolicy = policyData?.attendancePolicy;
+                          var lateComingsPolicy = attendancePolicy?.lateComingsPolicy;
+                          int? graceMinutes = lateComingsPolicy?.gracePeriodMinutes;
+
+                          if (graceMinutes != null) {
+                            Duration gracePeriod = Duration(minutes: graceMinutes);
+                            DateTime graceEndTime = shiftFromTime.add(gracePeriod);
+
+                            if (checkInTime.isAfter(graceEndTime)) {
+                              lateDuration = checkInTime.difference(graceEndTime);
+                            }
+                          }
+                        }
                         var earlyDuration = checkOutTime != null &&
                                 shiftToTime != null &&
                                 checkOutTime.isBefore(shiftToTime)
