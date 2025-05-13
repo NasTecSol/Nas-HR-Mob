@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -768,7 +769,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
                                 type: FileType
-                                    .any, // Ensures only image files are allowed
+                                    .image, // Ensures only image files are allowed
                               );
 
                               if (result != null &&
@@ -909,16 +910,27 @@ class _ProjectScreenState extends State<ProjectScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Upload'),
+          backgroundColor: Colors.white,
+          title:  Text(AppLocalizations.of(context)!.confirmUpload,
+            style: GoogleFonts.inter(
+                color: Colors.black
+            ),),
           content:
-          Text('Are you sure you want to upload this file: ${file.name}?'),
+          Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile} ${file.name}?',
+            style: GoogleFonts.inter(
+                color: Colors.black
+            ),),
           actions: [
             TextButton(
               onPressed: () {
                 // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child:  Text(AppLocalizations.of(context)!.cancel,
+                style: GoogleFonts.inter(
+                    color: Colors.red
+                ),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -928,13 +940,17 @@ class _ProjectScreenState extends State<ProjectScreen> {
                 // Trigger the API call to upload the file
                 await uploadProfile();
               },
-              child: const Text('Yes'),
+              child:  Text(AppLocalizations.of(context)!.yes,
+                style: GoogleFonts.inter(
+                    color: Colors.black
+                ),),
             ),
           ],
         );
       },
     );
   }
+
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
       print("No file selected.");
@@ -965,61 +981,81 @@ class _ProjectScreenState extends State<ProjectScreen> {
       _uploadFileWithBytes(selectedFile!.bytes!);
     }
   }
+
   void _uploadFileWithBytes(Uint8List fileBytes) async {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
     setState(() {
-      isLoading = true; // Corrected to set isLoading to true
+      isLoading = true;
     });
 
     try {
+      // Compress the image if it's larger than 1MB
+      if (fileBytes.length > 1000000) {
+        final compressed = await FlutterImageCompress.compressWithList(
+          fileBytes,
+          minWidth: 1080,
+          minHeight: 1080,
+          quality: 70,
+          format: CompressFormat.jpeg,
+        );
+        print("Compressed from ${fileBytes.length} to ${compressed.length} bytes");
+        fileBytes = compressed;
+      }
+
       var request = http.MultipartRequest('POST', uri);
 
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
-      final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
+      final mimeType = lookupMimeType(selectedFile!.path ?? '', headerBytes: fileBytes) ??
           'application/octet-stream';
 
-      // Add the file to the request as bytes
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: selectedFile!.name,
+        contentType: MediaType.parse(mimeType),
       ));
 
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
+      request.fields['attachmentName'] = selectedFile!.name;
+      request.fields['attachmentType'] = selectedFile!.extension ?? '';
 
-      // Send the request
       var response = await request.send();
-
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
-      setState(() {
-        isLoading = false; // Corrected to set isLoading to true
-      });
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        ProjectLogoModel attachmentResponse =
-        ProjectLogoModel.fromJson(decodedJson);
-        singletonClass.projectsLogoModelList = [attachmentResponse];
-        setState(() {
+        ProjectLogoModel profileResponse = ProjectLogoModel.fromJson(decodedJson);
+        singletonClass.projectsLogoModelList = [profileResponse];
+        setState(() => isLoading = false);
+        print("${singletonClass.projectsLogoModelList.first.data!.url}");
 
-        });
       } else {
         print('Upload failed: ${response.statusCode}');
+        setState(() => isLoading = false);
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.errorFetchData,
+          type: QuickAlertType.error,
+        );
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error during upload: $e');
+      setState(() => isLoading = false);
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 2),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: AppLocalizations.of(context)!.errorFetchData,
+        type: QuickAlertType.error,
+      );
     }
   }
+
   //API CALL
   Future<ProjectsData?> getProjectsData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;

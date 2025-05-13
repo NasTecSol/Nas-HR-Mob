@@ -299,13 +299,17 @@ class Data {
 
 class LeaveBalance {
   AnnualLeave? annualLeave;
+  CasualLeave? casualLeave;
   SickLeave? sickLeave;
+  ShortLeavesMonthlyBal? shortLeavesMonthlyBal;
 
-  LeaveBalance({this.annualLeave, this.sickLeave});
+  LeaveBalance({this.annualLeave, this.casualLeave, this.sickLeave, this.shortLeavesMonthlyBal});
 
   LeaveBalance.fromJson(Map<String, dynamic> json) {
     annualLeave = json["annualLeave"] == null ? null : AnnualLeave.fromJson(json["annualLeave"]);
+    casualLeave = json["casualLeave"] == null ? null : CasualLeave.fromJson(json["casualLeave"]);
     sickLeave = json["sickLeave"] == null ? null : SickLeave.fromJson(json["sickLeave"]);
+    shortLeavesMonthlyBal = json["shortLeavesMonthlyBal"] == null ? null : ShortLeavesMonthlyBal.fromJson(json["shortLeavesMonthlyBal"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -313,9 +317,31 @@ class LeaveBalance {
     if(annualLeave != null) {
       _data["annualLeave"] = annualLeave?.toJson();
     }
+    if(casualLeave != null) {
+      _data["casualLeave"] = casualLeave?.toJson();
+    }
     if(sickLeave != null) {
       _data["sickLeave"] = sickLeave?.toJson();
     }
+    if(shortLeavesMonthlyBal != null) {
+      _data["shortLeavesMonthlyBal"] = shortLeavesMonthlyBal?.toJson();
+    }
+    return _data;
+  }
+}
+
+class ShortLeavesMonthlyBal {
+  int? shortLeavesMinutes;
+
+  ShortLeavesMonthlyBal({this.shortLeavesMinutes});
+
+  ShortLeavesMonthlyBal.fromJson(Map<String, dynamic> json) {
+    shortLeavesMinutes = json["shortLeavesMinutes"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["shortLeavesMinutes"] = shortLeavesMinutes;
     return _data;
   }
 }
@@ -332,6 +358,30 @@ class SickLeave {
     remaining = json["remaining"];
     used = json["used"];
   }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["entitlement"] = entitlement;
+    _data["remaining"] = remaining;
+    _data["used"] = used;
+    return _data;
+  }
+}
+
+
+class CasualLeave {
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
+
+  CasualLeave({this.entitlement, this.remaining, this.used});
+
+  CasualLeave.fromJson(Map<String, dynamic> json) {
+    entitlement = json["entitlement"];
+    remaining = json["remaining"];
+    used = json["used"];
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["entitlement"] = entitlement;

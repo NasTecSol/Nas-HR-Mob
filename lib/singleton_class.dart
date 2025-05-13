@@ -35,6 +35,7 @@ import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
+import 'package:nashr/request_controller/ui_settings_model.dart';
 
 class SingletonClass {
   factory SingletonClass() {
@@ -86,6 +87,7 @@ class SingletonClass {
   List<BranchData> branchDataList = [];
   List<EventModel> eventDataList = [];
   List<PolicyModel> policyModelDataList = [];
+  List<UiSettingsModel> uiSettingsModelDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
   String? fcmToken;
@@ -190,6 +192,21 @@ class SingletonClass {
 
 
 //API Calls
+  Future<UiSettingsModel?> getUISettingsData() async {
+    String? employeeId =  getJWTModel()?.employeeId;
+    String? grade =  getJWTModel()?.grade;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/organization/getUiSettings/$employeeId/$grade');
+    var response = await client.get(uri);
+    log("UI SETTINGS DATA ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var uiSettingsData = UiSettingsModel.fromJson(responseBody);
+      uiSettingsModelDataList.addAll([uiSettingsData]);
+      return uiSettingsData;
+    }
+    return null ; // Print the response body
+  }
 
   Future<PolicyModel?> getPolicyData() async {
     String? policyId =  companyDataList.first.data!.policies!.first.policyId;

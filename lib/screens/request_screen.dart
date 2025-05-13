@@ -16,6 +16,7 @@ import '../request_controller/approver_request_data_model.dart';
 import '../request_controller/attachment_response_model.dart';
 import '../request_controller/company_model.dart';
 import '../request_controller/request_data_model.dart';
+import '../request_controller/ui_settings_model.dart';
 import '../widgets/colors.dart';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
@@ -183,16 +184,25 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemCount: singletonClass
                             .companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final request = singletonClass
-                              .companyDataList.first.data!.request![index];
-                          if (request.requestName ==
-                                  'Penalty and Fine Requests' &&
-                              !(singletonClass.getJWTModel()?.grade == 'L0' ||
-                                  singletonClass.getJWTModel()?.grade ==
-                                      'L1')) {
-                            return const SizedBox.shrink();
+                          final request = singletonClass.companyDataList.first.data!.request![index];
+
+                          // Get all allowed request names from uiModules -> subMenu -> name
+                          final allowedRequestNames = <String>{};
+
+                          final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.uiModules ?? [];
+
+                          for (var module in uiSettings) {
+                            if (module.title == 'Approval') { // Check if the module title is 'Approval'
+                              for (var sub in module.subMenu ?? []) { // Ensure subMenu is not null
+                                if (sub is Map && sub["mobileModule"] != null) {
+                                  allowedRequestNames.add(sub["mobileModule"]);
+                                } else if (sub is UiModules && sub.title != null) {
+                                  allowedRequestNames.add(sub.title!);
+                                }
+                              }
+                            }
                           }
-                          if (request.requestType == 'complaintRequest') {
+                          if (!allowedRequestNames.contains(request.requestName)) {
                             return const SizedBox.shrink();
                           }
                           return Column(
@@ -369,7 +379,9 @@ class _RequestScreenState extends State<RequestScreen> {
             Row(
               children: [
                 if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1') ...[
+                    singletonClass.getJWTModel()?.grade == 'L1'||
+                    singletonClass.getJWTModel()?.grade == 'L2'||
+                    singletonClass.getJWTModel()?.grade == 'L3') ...[
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                     child: SizedBox(
@@ -386,9 +398,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     ),
                   ),
                 ],
-                if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                    singletonClass.getJWTModel()?.grade == 'L3'||
-                    singletonClass.getJWTModel()?.grade == 'L4') ...[
+                if (singletonClass.getJWTModel()?.grade == 'L4') ...[
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                     child: Text(
@@ -446,7 +456,9 @@ class _RequestScreenState extends State<RequestScreen> {
             ),
             const SizedBox(height: 10),
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1' ) ...[
+                singletonClass.getJWTModel()?.grade == 'L1'||
+                singletonClass.getJWTModel()?.grade == 'L2'||
+                singletonClass.getJWTModel()?.grade == 'L3' ) ...[
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -513,9 +525,7 @@ class _RequestScreenState extends State<RequestScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                singletonClass.getJWTModel()?.grade == 'L3'||
-                singletonClass.getJWTModel()?.grade == 'L4') ...[
+            if (singletonClass.getJWTModel()?.grade == 'L4') ...[
               Expanded(
                 // Wrap ListView with Expanded
                 child: FutureBuilder(
@@ -1206,7 +1216,9 @@ class _RequestScreenState extends State<RequestScreen> {
 
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1') ...[
+                singletonClass.getJWTModel()?.grade == 'L1'||
+                singletonClass.getJWTModel()?.grade == 'L2'||
+                singletonClass.getJWTModel()?.grade == 'L3') ...[
               if (_selectedOptionIndex == 0) ...[
                 Expanded(
                   // Wrap ListView with Expanded
