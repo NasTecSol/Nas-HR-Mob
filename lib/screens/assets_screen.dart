@@ -171,7 +171,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                 color: NasColors.darkBlue,
                                 image: DecorationImage(
                                   image: AssetImage(
-                                    _getImageForEventType(assets.assetType!), // Use a method to get the appropriate image
+                                    _getImageForEventType(assets.assetType), // Use a method to get the appropriate image
                                   ),
                                   fit: BoxFit.contain,
                                 ),
@@ -283,7 +283,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
     );
   }
 
-  String _getImageForEventType(String eventType) {
+  String _getImageForEventType(String? eventType) {
     switch (eventType) {
       case 'laptop':
         return 'images/Laptop.png';
