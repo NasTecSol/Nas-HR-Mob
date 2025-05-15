@@ -32,7 +32,26 @@ class _LoanScreenState extends State<LoanScreen> {
       String installmentAmount,
       ) {
     List<Map<String, String>> installments = [];
-    DateTime startDate = DateTime.parse(issueDate);
+
+    print(issueDate);
+    if (issueDate.trim().isEmpty) {
+      print("Invalid issueDate: empty or null");
+      return installments; // Return empty list if invalid date
+    }
+
+    DateTime startDate;
+    try {
+      // Try parsing with standard ISO format
+      startDate = DateTime.parse(issueDate);
+    } catch (_) {
+      try {
+        // Fallback to dd-MM-yyyy if not ISO
+        startDate = DateFormat('dd-MM-yyyy').parse(issueDate);
+      } catch (e) {
+        print("Date parsing failed: $e");
+        return installments; // Or show error if needed
+      }
+    }
 
     for (int i = 0; i < totalInstallments; i++) {
       int correctMonth = (startDate.month + i - 1) % 12 + 1;
@@ -53,6 +72,7 @@ class _LoanScreenState extends State<LoanScreen> {
 
     return installments;
   }
+
 
   @override
   Widget build(BuildContext context) {
