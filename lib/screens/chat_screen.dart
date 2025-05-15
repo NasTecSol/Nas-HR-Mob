@@ -30,6 +30,14 @@ class _ChatScreenState extends State<ChatScreen> {
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
+  final List<String> _suggestedMessages = [
+    "Tell me about documents",
+    "Show my info",
+    "Leave balance",
+    "My department",
+    "Who is the developer?",
+  ];
+
 
   @override
   void initState() {
@@ -116,6 +124,11 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
   }
 
+  void _handleSuggestedMessage(String message) {
+    _messageController.text = message;
+    _handleSendMessage();
+  }
+
   void _handleSendMessage() {
     String text = _messageController.text.trim();
     if (text.isEmpty) return;
@@ -131,6 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         isBotTyping = false;
       });
+
       final textLower = text.toLowerCase().trim();
       final info = singletonClass.employeeDataList.first.data?.employeeInfo?.first;
       final info2 = singletonClass.employeeDataList.first.data;
@@ -161,8 +175,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   "• Designation: ${info.designation ?? "N/A"}\n"
                   "• Grade: ${info.grade ?? "N/A"}\n"
                   "• Department: ${info.depName ?? "N/A"}\n"
-                  "• Employee ID: ${info.empId ?? "N/A"}"
-          );
+                  "• Employee ID: ${info.empId ?? "N/A"}");
         } else {
           _addBotMessage("Sorry, your information is not available.");
         }
@@ -209,36 +222,10 @@ class _ChatScreenState extends State<ChatScreen> {
         final annual = info2?.leaveBalance?.annualLeave;
         final casual = info2?.leaveBalance?.casualLeave;
 
-        _addBotMessage(
-            "Your leave balances are:\n"
-                "• Sick Leave - Total: ${sick?.entitlement ?? "N/A"}, Used: ${sick?.used ?? "N/A"}, Remaining: ${sick?.remaining ?? "N/A"}\n"
-                "• Annual Leave - Total: ${annual?.entitlement ?? "N/A"}, Used: ${annual?.used ?? "N/A"}, Remaining: ${annual?.remaining ?? "N/A"}\n"
-                "• Casual Leave - Total: ${casual?.entitlement ?? "N/A"}, Used: ${casual?.used ?? "N/A"}, Remaining: ${casual?.remaining ?? "N/A"}"
-        );
-      } else if (matches(r'sick leave|sick')) {
-        final sick = info2?.leaveBalance?.sickLeave;
-        _addBotMessage(
-            "Sick Leave:\n"
-                "• Total: ${sick?.entitlement ?? "N/A"}\n"
-                "• Used: ${sick?.used ?? "N/A"}\n"
-                "• Remaining: ${sick?.remaining ?? "N/A"}"
-        );
-      } else if (matches(r'casual leave|casual')) {
-        final casual = info2?.leaveBalance?.casualLeave;
-        _addBotMessage(
-            "Casual Leave:\n"
-                "• Total: ${casual?.entitlement ?? "N/A"}\n"
-                "• Used: ${casual?.used ?? "N/A"}\n"
-                "• Remaining: ${casual?.remaining ?? "N/A"}"
-        );
-      } else if (matches(r'annual leave|annual')) {
-        final annual = info2?.leaveBalance?.annualLeave;
-        _addBotMessage(
-            "Annual Leave:\n"
-                "• Total: ${annual?.entitlement ?? "N/A"}\n"
-                "• Used: ${annual?.used ?? "N/A"}\n"
-                "• Remaining: ${annual?.remaining ?? "N/A"}"
-        );
+        _addBotMessage("Your leave balances are:\n"
+            "• Sick Leave - Total: ${sick?.entitlement ?? "N/A"}, Used: ${sick?.used ?? "N/A"}, Remaining: ${sick?.remaining ?? "N/A"}\n"
+            "• Annual Leave - Total: ${annual?.entitlement ?? "N/A"}, Used: ${annual?.used ?? "N/A"}, Remaining: ${annual?.remaining ?? "N/A"}\n"
+            "• Casual Leave - Total: ${casual?.entitlement ?? "N/A"}, Used: ${casual?.used ?? "N/A"}, Remaining: ${casual?.remaining ?? "N/A"}");
       } else {
         _addBotMessage("Sorry, I didn't understand that. Can you try again?");
       }
@@ -338,8 +325,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             children: [
                               if (!isUser)
                                 const CircleAvatar(
-                                  backgroundImage: AssetImage('images/bot.png'),
+                                  backgroundImage: AssetImage('images/bot.png',),
                                   radius: 18,
+
                                 ),
                               if (!isUser) const SizedBox(width: 8),
                               Flexible(
@@ -372,6 +360,22 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         );
                       },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _suggestedMessages.map((suggestion) {
+                        return ActionChip(
+                          label: Text(suggestion),
+                          backgroundColor: Colors.grey.shade200,
+                          onPressed: () {
+                            _handleSuggestedMessage(suggestion);
+                          },
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
