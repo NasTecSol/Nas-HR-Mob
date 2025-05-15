@@ -104,9 +104,6 @@
   "insuranceInfoDetail": "Insurance Info",
   "salaryIncrementDetail": "Salary Increment",
   "complainForLaptop": "Complain for Laptop",
-  "leaveThisMonth": "Leave this month",
-  "remoteDaysThisMonth": "Remote Days this month",
-  "sickDaysThisMonth": "Sick Days this month",
   "availableDocuments": "Available Documents",
   "totalOwnedAssets": "Total owned assets",
   "attendance": "Attendance",
@@ -912,5 +909,12 @@
   "previewLetter":"Preview Letter",
   "pleaseEnterLetterBody":"Please enter letter body",
   "pleaseEnterLetterSubject":"Please enter letter subject",
-  "letterBody":"Letter body"
+  "letterBody":"Letter body",
+  "onTime":"On Time",
+  "nassMudeer":"Nass Mudeer",
+  "leaveThisMonth": "Leave this month",
+  "remoteDaysThisMonth": "Remote Days this month",
+  "sickDaysThisMonth": "Sick Days this month",
+  "hey":"Hey",
+  "whatsOnYourMindToday":"What's on your mind today?"
 }
