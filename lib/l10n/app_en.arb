@@ -916,5 +916,10 @@
   "remoteDaysThisMonth": "Remote Days this month",
   "sickDaysThisMonth": "Sick Days this month",
   "hey":"Hey",
-  "whatsOnYourMindToday":"What's on your mind today?"
+  "whatsOnYourMindToday":"What's on your mind today?",
+  "tellMeAboutDocuments":"Tell me about documents",
+  "showMyInfo":"Show my info",
+  "leaveBalance":"Leave balance",
+  "myDepartment":"My department",
+  "whoIsDeveloper":"who is the developer"
 }

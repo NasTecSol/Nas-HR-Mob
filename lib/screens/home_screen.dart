@@ -211,6 +211,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   OverlayEntry? _overlayEntry2;
 
   OverlayEntry _createViewAllOverlay() {
+    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.uiModules ?? [];
+    final titles = uiSettings.map((e) => e.title?.toString() ?? '').toList();
+    final hasDocuments = titles.any((title) => title == "Document" || title == "Documents");
+    final hasTeams = titles.any((title) => title == "Team" || title == "Teams");
+    final hasManageTime = titles.any((title) => title == "ManageTime" || title == "Manage Time");
+    final hasAssets = titles.any((title) => title == "Asset" || title == "Assets");
     return OverlayEntry(
         builder: (context) => Positioned(
             top: 0,
@@ -260,6 +266,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         children: [
                           Column(
                             children: [
+                              if (hasDocuments)...[
                               GestureDetector(
                                 onTap: () {
                                   _removeOverlay();
@@ -303,10 +310,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black,
                                 ),
-                              ),
+                              ),]
                             ],
                           ),
                           SizedBox(width: 40),
+                          if (hasAssets)...[
                           Padding(
                                 padding: const EdgeInsets.only(bottom: 50.0),
                                 child: Column(
@@ -357,8 +365,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ],
                                 ),
-                              ),
+                              ),],
                           SizedBox(width: 40),
+            if (hasTeams)...[
                           Column(
                             children: [
                               GestureDetector(
@@ -407,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ),
                             ],
                           ),
-                        ],
+                        ],]
                       ),
                       SizedBox(height: 10),
                       Row(
@@ -562,6 +571,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       SizedBox(height: 40),
+                      if (hasManageTime)...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -663,7 +673,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ],
                           ),
                         ],
-                      )
+                      )]
                     ],
                   )),
                 ),
