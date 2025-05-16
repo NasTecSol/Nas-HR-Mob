@@ -1,14 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../Controller/language_change_controller.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -30,13 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
-  final List<String> _suggestedMessages = [
-    "Tell me about documents",
-    "Show my info",
-    "Leave balance",
-    "My department",
-    "Who is the developer?",
-  ];
+  List<String> _suggestedMessages = [];
 
 
   @override
@@ -45,11 +44,26 @@ class _ChatScreenState extends State<ChatScreen> {
     _recorder = FlutterSoundRecorder();
     _player = FlutterSoundPlayer();
     _initializeAudio();
-    _addBotMessage("Hi, welcome to Nas HR. How can I help you?");
     _scrollToBottom();
     Future.delayed(Duration(milliseconds: 300), () {
       FocusScope.of(context).requestFocus(_focusNode);
     });
+    Future.delayed(Duration.zero, () async {
+      await postMessages("");
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _suggestedMessages = [
+      AppLocalizations.of(context)!.tellMeAboutDocuments,
+      AppLocalizations.of(context)!.showMyInfo,
+      AppLocalizations.of(context)!.leaveBalance,
+      AppLocalizations.of(context)!.myDepartment,
+      AppLocalizations.of(context)!.whoIsDeveloper,
+    ];
   }
 
   @override
@@ -124,113 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
   }
 
-  void _handleSuggestedMessage(String message) {
-    _messageController.text = message;
-    _handleSendMessage();
-  }
 
-  void _handleSendMessage() {
-    String text = _messageController.text.trim();
-    if (text.isEmpty) return;
-
-    _addUserMessage(text);
-    _messageController.clear();
-
-    setState(() {
-      isBotTyping = true;
-    });
-    FocusScope.of(context).requestFocus(_focusNode);
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      setState(() {
-        isBotTyping = false;
-      });
-
-      final textLower = text.toLowerCase().trim();
-      final info = singletonClass.employeeDataList.first.data?.employeeInfo?.first;
-      final info2 = singletonClass.employeeDataList.first.data;
-
-      bool matches(String pattern) => RegExp(r'\b(' + pattern + r')\b').hasMatch(textLower);
-
-      if (matches(r'hello|hi')) {
-        _addBotMessage("Greetings! How can I assist you today?");
-      } else if (matches(r'attendance')) {
-        _addBotMessage("You can view your attendance and clocking data from the dashboard.");
-      } else if (matches(r'document|documents')) {
-        _addBotMessage("You can find documents under the 'Documents' section.");
-      } else if (matches(r'assets?')) {
-        _addBotMessage("You can manage or view assets under the 'Assets' tab.");
-      } else if (matches(r'team')) {
-        _addBotMessage("Team attendance and details are available in the 'Team Attendance' tab.");
-      } else if (matches(r'request|requests')) {
-        _addBotMessage("You can submit new requests from the 'Requests' section.");
-      } else if (matches(r'owner')) {
-        _addBotMessage("The owner of this system is Mr. Nassar Ibarahim.");
-      } else if (matches(r'developer')) {
-        _addBotMessage("This system was developed by Suleman Azeem Khan.");
-      } else if (matches(r'my info|who am i|show my details|details')) {
-        if (info != null) {
-          _addBotMessage(
-              "Here is your information:\n"
-                  "• Name: ${info2?.firstName ?? "N/A"} ${info2?.middleName ?? "N/A"} ${info2?.lastName ?? "N/A"}\n"
-                  "• Designation: ${info.designation ?? "N/A"}\n"
-                  "• Grade: ${info.grade ?? "N/A"}\n"
-                  "• Department: ${info.depName ?? "N/A"}\n"
-                  "• Employee ID: ${info.empId ?? "N/A"}");
-        } else {
-          _addBotMessage("Sorry, your information is not available.");
-        }
-      } else if (matches(r'name|my name')) {
-        _addBotMessage("Your name is: ${info2?.firstName ?? "N/A"} ${info2?.middleName ?? ""} ${info2?.lastName ?? ""}");
-      } else if (matches(r'username|user name')) {
-        _addBotMessage("Your username is: ${info2?.userName ?? "N/A"}");
-      } else if (matches(r'marital status|status')) {
-        _addBotMessage("Your marital status is: ${info2?.martialStatus ?? "N/A"}");
-      } else if (matches(r'religion')) {
-        _addBotMessage("Your religion is: ${info2?.religion ?? "N/A"}");
-      } else if (matches(r'address')) {
-        _addBotMessage("Your address is: ${info2?.address?.country ?? "N/A"} ${info2?.address?.city ?? "N/A"} ${info2?.address?.streetAddress ?? "N/A"}");
-      } else if (matches(r'nic|cnic')) {
-        _addBotMessage("Your NIC number is: ${info2?.nic ?? "N/A"}");
-      } else if (matches(r'iqama')) {
-        _addBotMessage("Your Iqama number is: ${info2?.iqamaNumber?.id ?? "N/A"}");
-      } else if (matches(r'passport')) {
-        _addBotMessage("Your passport number is: ${info2?.passport?.id ?? "N/A"}");
-      } else if (matches(r'immigration|immigration status')) {
-        _addBotMessage("Your immigration status is: ${info2?.imigrationSatus ?? "N/A"}");
-      } else if (matches(r'dob|birth|date of birth')) {
-        _addBotMessage("Your date of birth is: ${info2?.dob ?? "N/A"}");
-      } else if (matches(r'what is my age|my age|^age$')) {
-        _addBotMessage("Your age is: ${info2?.age ?? "N/A"}");
-      } else if (matches(r'gender')) {
-        _addBotMessage("Your gender is: ${info2?.gender ?? "N/A"}");
-      } else if (matches(r'role')) {
-        _addBotMessage("Your role is: ${info2?.role ?? "N/A"}");
-      } else if (matches(r'profession')) {
-        _addBotMessage("Your profession is: ${info2?.profession ?? "N/A"}");
-      } else if (matches(r'nationality')) {
-        _addBotMessage("Your nationality is: ${info2?.nationality ?? "N/A"}");
-      } else if (matches(r'created by')) {
-        _addBotMessage("Your record was created by: ${info2?.createdBy ?? "N/A"}");
-      } else if (matches(r'branch')) {
-        _addBotMessage("Your branch ID is: ${info2?.branchId ?? "N/A"}");
-      } else if (matches(r'department|my department')) {
-        _addBotMessage("Your department name is: ${info?.depName ?? "N/A"}");
-      } else if (matches(r'organization')) {
-        _addBotMessage("Your organization ID is: ${info2?.organizationId ?? "N/A"}");
-      } else if (matches(r'leave balance|leave summary|leave status|leave')) {
-        final sick = info2?.leaveBalance?.sickLeave;
-        final annual = info2?.leaveBalance?.annualLeave;
-        final casual = info2?.leaveBalance?.casualLeave;
-
-        _addBotMessage("Your leave balances are:\n"
-            "• Sick Leave - Total: ${sick?.entitlement ?? "N/A"}, Used: ${sick?.used ?? "N/A"}, Remaining: ${sick?.remaining ?? "N/A"}\n"
-            "• Annual Leave - Total: ${annual?.entitlement ?? "N/A"}, Used: ${annual?.used ?? "N/A"}, Remaining: ${annual?.remaining ?? "N/A"}\n"
-            "• Casual Leave - Total: ${casual?.entitlement ?? "N/A"}, Used: ${casual?.used ?? "N/A"}, Remaining: ${casual?.remaining ?? "N/A"}");
-      } else {
-        _addBotMessage("Sorry, I didn't understand that. Can you try again?");
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +176,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Text(
-                  "Nass Mudeer",
+                  AppLocalizations.of(context)!.nassMudeer,
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -338,13 +246,16 @@ class _ChatScreenState extends State<ChatScreen> {
                                     color: isUser ? NasColors.onTime : Colors.grey.shade300,
                                     borderRadius: BorderRadius.circular(18),
                                   ),
-                                  child: Text(
-                                    message['text']!,
-                                    style: TextStyle(
-                                      color: isUser ? Colors.white : Colors.black,
-                                      fontSize: 15,
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: isUser ? Colors.white : Colors.black,
+                                      ),
+                                      children: _parseMarkdown(message['text'] ?? ""),
                                     ),
                                   ),
+
                                 ),
                               ),
                               if (isUser) const SizedBox(width: 8),
@@ -362,20 +273,27 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _suggestedMessages.map((suggestion) {
-                        return ActionChip(
-                          label: Text(suggestion),
-                          backgroundColor: Colors.grey.shade200,
-                          onPressed: () {
-                            _handleSuggestedMessage(suggestion);
-                          },
-                        );
-                      }).toList(),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                          child: Wrap(
+                            spacing: 5,
+                            runSpacing: 5,
+                            children: _suggestedMessages.map((suggestion) {
+                              return ActionChip(
+                                label: Text(suggestion),
+                                backgroundColor: Colors.grey.shade200,
+                                onPressed: () {
+                                  postMessages(suggestion);
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -402,7 +320,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               hintText: "Type a message...",
                               border: InputBorder.none,
                             ),
-                            onSubmitted: (_) => _handleSendMessage(),
+                            onSubmitted: (_) => postMessages(_messageController.text),
                           ),
                         ),
                         if (_recordedFilePath != null && !_isRecording)
@@ -448,7 +366,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             width: 24,
                             color: NasColors.onTime,
                           ),
-                          onPressed: _handleSendMessage,
+                          onPressed: (){
+                            postMessages(_messageController.text);
+                          },
                         ),
                       ],
                     ),
@@ -508,4 +428,123 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint("Recording started...");
     }
   }
+  //CHAT API CALL
+  Future<void> postMessages(String text) async {
+    String userMessage = text.trim();
+  if (userMessage.isNotEmpty) {
+    _addUserMessage(userMessage); // Only add if not empty
+    _messageController.clear();
+  }
+
+  String? employeeID = singletonClass.getJWTModel()?.empId;
+  final currentLang = Provider.of<LanguageChangeController>(context, listen: false).appLocale?.languageCode ?? 'en';
+
+
+  Map<String, dynamic> data = {
+      "request": {
+        "employee_id": employeeID,
+        "message": userMessage,
+        "language": currentLang,
+      },
+    };
+
+    String body = json.encode(data);
+    debugPrint("Request JSON POST: $body");
+
+    var uri = Uri.parse('https://madir.nashrms.com/chat');
+
+    try {
+      setState(() {
+        isBotTyping = true;
+      });
+
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+      );
+
+      final decodedResponse = json.decode(utf8.decode(response.bodyBytes));
+      debugPrint("MESSAGE RESPONSE: $decodedResponse");
+
+      int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
+
+      if (responseCode == 200) {
+        String? botReply = decodedResponse['response'];
+        if (botReply != null && botReply.isNotEmpty) {
+          _addBotMessage(botReply);
+        } else {
+          _addBotMessage("Sorry, I couldn't understand that.");
+        }
+      } else {
+        _addBotMessage("Something went wrong. Please try again later.");
+      }
+    } catch (e) {
+      debugPrint("POST MESSAGE ERROR: $e");
+      _addBotMessage("Network error. Please try again.");
+    } finally {
+      setState(() {
+        isBotTyping = false;
+      });
+    }
+  }
+
+  //RICH TEXT METHOD
+  List<TextSpan> _parseMarkdown(String text) {
+    final List<TextSpan> spans = [];
+    final boldRegex = RegExp(r'\*\*(.*?)\*\*');
+
+    final lines = text.split('\n');
+
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+
+      // Handle headings starting with ###
+      if (line.startsWith('###')) {
+        final headingText = line.replaceFirst('###', '').trim();
+        spans.add(TextSpan(
+          text: '$headingText\n',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ));
+        continue;
+      }
+
+      final matches = boldRegex.allMatches(line);
+
+      if (matches.isEmpty) {
+        spans.add(TextSpan(text: '$line\n'));
+      } else {
+        int lastIndex = 0;
+
+        for (final match in matches) {
+          if (match.start > lastIndex) {
+            spans.add(TextSpan(text: line.substring(lastIndex, match.start)));
+          }
+
+          spans.add(TextSpan(
+            text: match.group(1),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ));
+
+          lastIndex = match.end;
+        }
+
+        if (lastIndex < line.length) {
+          spans.add(TextSpan(text: line.substring(lastIndex)));
+        }
+
+        spans.add(const TextSpan(text: '\n')); // Ensure line break after bold line
+      }
+    }
+
+    return spans;
+  }
+
+
 }

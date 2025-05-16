@@ -581,5 +581,10 @@
     "remoteDaysThisMonth": "أيام العمل عن بُعد هذا الشهر",
     "sickDaysThisMonth": "أيام المرض هذا الشهر",
     "hey": "مرحبًا",
-    "whatsOnYourMindToday": "ما الذي يشغل بالك اليوم؟"
+    "whatsOnYourMindToday": "ما الذي يشغل بالك اليوم؟",
+    "tellMeAboutDocuments": "أخبرني عن المستندات",
+    "showMyInfo": "اعرض معلوماتي",
+    "leaveBalance": "رصيد الإجازات",
+    "myDepartment": "قسم عملي",
+    "whoIsDeveloper": "من هو المطور"
 }
