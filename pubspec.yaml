@@ -74,6 +74,8 @@ dependencies:
   path: ^1.8.0
   flutter_sound: ^9.2.13
   audioplayers: ^6.4.0
+  speech_to_text: ^6.3.0
+
 
 
 dev_dependencies:
