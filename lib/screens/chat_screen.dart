@@ -1,12 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:flutter_sound/public/flutter_sound_player.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
@@ -30,13 +29,13 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   late FlutterSoundRecorder _recorder;
-  bool _isRecorderInitialized = false;
   bool _isRecording = false;
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
   List<String> _suggestedMessages = [];
-
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
 
   @override
   void initState() {
@@ -51,6 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
     Future.delayed(Duration.zero, () async {
       await postMessages("");
     });
+    _speech = stt.SpeechToText();
   }
 
   @override
@@ -80,9 +80,6 @@ class _ChatScreenState extends State<ChatScreen> {
     await _player.openPlayer();
     await _recorder.setSubscriptionDuration(const Duration(milliseconds: 500));
     await _player.setVolume(1.0);
-    setState(() {
-      _isRecorderInitialized = true;
-    });
   }
 
   Future<void> _togglePlayback() async {
@@ -355,21 +352,33 @@ class _ChatScreenState extends State<ChatScreen> {
                             'images/microphone.png',
                             height: 24,
                             width: 24,
-                            color: _isRecording ? Colors.red : NasColors.onTime,
+                            color: _isListening ? Colors.red : NasColors.onTime,
                           ),
                           onPressed: _handleMicPress,
                         ),
-                        IconButton(
+                        isBotTyping
+                            ? IconButton(
+                          icon: Image.asset(
+                            'images/send.png',
+                            height: 24,
+                            width: 24,
+                            color: Colors.grey,
+                          ),
+                          onPressed: null, // disables the button
+                        )
+                            : IconButton(
                           icon: Image.asset(
                             'images/send.png',
                             height: 24,
                             width: 24,
                             color: NasColors.onTime,
                           ),
-                          onPressed: (){
-                            postMessages(_messageController.text);
+                          onPressed: () async {
+                            await postMessages(_messageController.text);
+                            _messageController.clear();
                           },
                         ),
+
                       ],
                     ),
                   ),
@@ -383,51 +392,49 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<void> _handleMicPress() async {
-    if (!_isRecorderInitialized) return;
-
-    if (_isRecording) {
-      String? path = await _recorder.stopRecorder();
-      setState(() {
-        _isRecording = false;
-        _recordedFilePath = path;
-      });
-
-      if (path != null) {
-        final file = File(path);
-        final fileBytes = await file.readAsBytes();
-
-        // Logging file size
-        debugPrint("Sending audio file of size: ${fileBytes.length} bytes");
-
-        try {
-          debugPrint("Audio file sent successfully via WebSocket.");
-        } catch (e) {
-          debugPrint("Failed to send audio file: $e");
-        }
-      }
+  void _handleMicPress() async {
+    var systemLocale = await _speech.systemLocale();
+    var currentLocaleId = systemLocale?.localeId ?? '';
+    print(currentLocaleId);
+    if (_isListening) {
+      setState(() => _isListening = false);
+      await _speech.stop();
     } else {
-      final tempDir = await getTemporaryDirectory();
-      String filePath = '${tempDir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.aac';
-
-      await Permission.microphone.request();
-      await Permission.storage.request();
-
-      await _recorder.startRecorder(
-        toFile: filePath,
-        codec: Codec.aacMP4,
-        bitRate: 256000,
-        sampleRate: 44100,
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          print('Speech status: $val');
+          if ((val == 'done' || val == 'notListening') && _isListening) {
+            _speech.listen(
+              localeId: currentLocaleId,
+              onResult: (val) {
+                setState(() {
+                  _messageController.text = val.recognizedWords;
+                });
+              },
+            );
+          }
+        },
+        onError: (val) => print('Speech error: $val'),
       );
-
-      setState(() {
-        _isRecording = true;
-        _recordedFilePath = filePath;
-      });
-
-      debugPrint("Recording started...");
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          localeId: 'en_US',
+          onResult: (val) {
+            setState(() {
+              _messageController.text = val.recognizedWords;
+            });
+          },
+        );
+      }
     }
   }
+
+
+
+
+
+
   //CHAT API CALL
   Future<void> postMessages(String text) async {
     String userMessage = text.trim();

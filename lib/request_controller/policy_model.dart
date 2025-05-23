@@ -26,10 +26,10 @@ class PolicyModel {
 }
 
 class Data {
-  String? id;
-  String? organizationId;
-  String? policyName;
-  String? policyType;
+  dynamic id;
+  dynamic organizationId;
+  dynamic policyName;
+  dynamic policyType;
   AnnualLeave? annualLeave;
   CasualLeave? casualLeave;
   List<SpecialLeave>? specialLeave;
@@ -37,11 +37,11 @@ class Data {
   SickLeave? sickLeave;
   HolidayPolicy? holidayPolicy;
   AttendancePolicy? attendancePolicy;
-  String? createdBy;
-  String? closingYearDate;
-  String? createdAt;
-  String? updatedAt;
-  int? v;
+  dynamic createdBy;
+  dynamic closingYearDate;
+  dynamic createdAt;
+  dynamic updatedAt;
+  dynamic v;
   CoreHours? coreHours;
   WorkingDays? workingDays;
   List<PenaltiesFines>? penaltiesFines;
@@ -121,10 +121,10 @@ class Data {
 }
 
 class Loan {
-  int? maximumAmount;
-  String? maxPercentageSalary;
-  int? parallelLoans;
-  int? experienceLimit;
+  dynamic maximumAmount;
+  dynamic maxPercentageSalary;
+  dynamic parallelLoans;
+  dynamic experienceLimit;
 
   Loan({this.maximumAmount, this.maxPercentageSalary, this.parallelLoans, this.experienceLimit});
 
@@ -146,10 +146,10 @@ class Loan {
 }
 
 class PenaltiesFines {
-  String? penalityName;
-  String? penalityCode;
-  String? description;
-  int? fineAmount;
+  dynamic penalityName;
+  dynamic penalityCode;
+  dynamic description;
+  dynamic fineAmount;
 
   PenaltiesFines({this.penalityName, this.penalityCode, this.description, this.fineAmount});
 
@@ -205,8 +205,8 @@ class WorkingDays {
 }
 
 class CoreHours {
-  String? startTime;
-  String? endTime;
+  dynamic startTime;
+  dynamic endTime;
 
   CoreHours({this.startTime, this.endTime});
 
@@ -287,9 +287,9 @@ class AttendancePolicy {
 }
 
 class EmpBalancePolicy {
-  String? deductionType;
-  String? deductionPercentage;
-  int? deductionAmount;
+  dynamic deductionType;
+  dynamic deductionPercentage;
+  dynamic deductionAmount;
 
   EmpBalancePolicy({this.deductionType, this.deductionPercentage, this.deductionAmount});
 
@@ -325,9 +325,9 @@ class ShortLeavesMonthlyBalance {
 }
 
 class AbsentPolicy {
-  String? absentDeductionType;
-  String? deductionPercentage;
-  int? deductionAmount;
+  dynamic absentDeductionType;
+  dynamic deductionPercentage;
+  dynamic deductionAmount;
 
   AbsentPolicy({this.absentDeductionType, this.deductionPercentage, this.deductionAmount});
 
@@ -347,9 +347,9 @@ class AbsentPolicy {
 }
 
 class ShortLeaves {
-  int? duration;
+  dynamic duration;
   bool? isApprovalRequired;
-  String? shortLeave;
+  dynamic shortLeave;
 
   ShortLeaves({this.duration, this.isApprovalRequired, this.shortLeave});
 
@@ -370,10 +370,10 @@ class ShortLeaves {
 
 class FlexibleWorkHours {
   bool? enabled;
-  int? minDailyHours;
-  int? weeklyHours;
+  dynamic minDailyHours;
+  dynamic weeklyHours;
   bool? carryOverHours;
-  int? carryOverLimit;
+  dynamic carryOverLimit;
 
   FlexibleWorkHours({this.enabled, this.minDailyHours, this.weeklyHours, this.carryOverHours, this.carryOverLimit});
 
@@ -397,7 +397,7 @@ class FlexibleWorkHours {
 }
 
 class LateComingsPolicy {
-  int? gracePeriodMinutes;
+  dynamic gracePeriodMinutes;
   List<Penalties>? penalties;
 
   LateComingsPolicy({this.gracePeriodMinutes, this.penalties});
@@ -418,9 +418,9 @@ class LateComingsPolicy {
 }
 
 class Penalties {
-  String? delayRange;
+  dynamic delayRange;
   List<Penalty>? penalty;
-  int? uniqueId;
+  dynamic uniqueId;
 
   Penalties({this.delayRange, this.penalty, this.uniqueId});
 
@@ -442,9 +442,9 @@ class Penalties {
 }
 
 class Penalty {
-  int? occurence;
-  String? action;
-  int? percentage;
+  dynamic occurence;
+  dynamic action;
+  dynamic percentage;
 
   Penalty({this.occurence, this.action, this.percentage});
 
@@ -464,12 +464,12 @@ class Penalty {
 }
 
 class BreakTime {
-  int? totalBreakTime;
+  dynamic totalBreakTime;
   bool? breakFlexibility;
-  int? durationMinutes;
+  dynamic durationMinutes;
   bool? breaksAllowed;
-  int? maxBreaks;
-  int? minBreakDurationMinutes;
+  dynamic maxBreaks;
+  dynamic minBreakDurationMinutes;
 
   BreakTime({this.totalBreakTime, this.breakFlexibility, this.durationMinutes, this.breaksAllowed, this.maxBreaks, this.minBreakDurationMinutes});
 
@@ -498,8 +498,8 @@ class OvertimePolicy {
   bool? isAllowed;
   bool? isAuto;
   bool? preApproval;
-  String? paidAs;
-  String? amount;
+  dynamic paidAs;
+  dynamic amount;
 
   OvertimePolicy({this.isAllowed, this.isAuto, this.preApproval, this.paidAs, this.amount});
 
@@ -545,12 +545,12 @@ class FlexibleShifts {
 }
 
 class ShiftTimings {
-  String? shiftName;
-  String? timeFrom;
-  String? timeTo;
-  String? startingFrom;
-  String? totalHours;
-  String? allowedBreak;
+  dynamic shiftName;
+  dynamic timeFrom;
+  dynamic timeTo;
+  dynamic startingFrom;
+  dynamic totalHours;
+  dynamic allowedBreak;
 
   ShiftTimings({this.shiftName, this.timeFrom, this.timeTo, this.startingFrom, this.totalHours, this.allowedBreak});
 
@@ -618,9 +618,9 @@ class CompensatoryPolicy {
 }
 
 class Holidays {
-  String? holidayName;
-  String? startDate;
-  String? endDate;
+  dynamic holidayName;
+  dynamic startDate;
+  dynamic endDate;
   dynamic isNationalHoliday;
   dynamic isAdjustedForWeekend;
   List<CompensatoryDays>? compensatoryDays;
@@ -651,7 +651,7 @@ class Holidays {
 }
 
 class CompensatoryDays {
-  String? date;
+  dynamic date;
   dynamic compensationFor;
 
   CompensatoryDays({this.date, this.compensationFor});
@@ -718,9 +718,9 @@ class MaternityLeave {
 }
 
 class Female {
-  String? leavesAllowedMuslims;
-  String? unpaid;
-  String? leavesAllowedOthers;
+  dynamic leavesAllowedMuslims;
+  dynamic unpaid;
+  dynamic leavesAllowedOthers;
 
   Female({this.leavesAllowedMuslims, this.unpaid, this.leavesAllowedOthers});
 
@@ -740,9 +740,9 @@ class Female {
 }
 
 class Male {
-  String? leavesAllowedMuslims;
-  String? unpaid;
-  String? leavesAllowedOthers;
+  dynamic leavesAllowedMuslims;
+  dynamic unpaid;
+  dynamic leavesAllowedOthers;
 
   Male({this.leavesAllowedMuslims, this.unpaid, this.leavesAllowedOthers});
 
@@ -762,8 +762,8 @@ class Male {
 }
 
 class SpecialLeave {
-  String? leaveType;
-  int? duration;
+  dynamic leaveType;
+  dynamic duration;
   bool? requiresDocumentation;
   List<String>? applicableTo;
 
@@ -789,7 +789,7 @@ class SpecialLeave {
 }
 
 class CasualLeave {
-  int? totalCasualLeaves;
+  dynamic totalCasualLeaves;
   bool? isYearly;
   bool? carryForward;
 
@@ -811,12 +811,12 @@ class CasualLeave {
 }
 
 class AnnualLeave {
-  int? entitlement;
-  int? entitlementAfterYears;
-  int? increasedEntitlement;
+  dynamic entitlement;
+  dynamic entitlementAfterYears;
+  dynamic increasedEntitlement;
   bool? carryForward;
   bool? distributionOverMonthAllowed;
-  int? perMonthDistribution;
+  dynamic perMonthDistribution;
 
   AnnualLeave({this.entitlement, this.entitlementAfterYears, this.increasedEntitlement, this.carryForward, this.distributionOverMonthAllowed, this.perMonthDistribution});
 
