@@ -2,28 +2,29 @@ class AssetDetailsModel {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  Data? data;
+  List<Data>? data;
 
   AssetDetailsModel({this.statusCode, this.statusMessage, this.errorMessage, this.data});
 
-  AssetDetailsModel.fromJson(Map<String, dynamic> json) {
-    statusCode = json["statusCode"];
-    statusMessage = json["statusMessage"];
-    errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : Data.fromJson(json["data"]);
+  factory AssetDetailsModel.fromJson(Map<String, dynamic> json) {
+    return AssetDetailsModel(
+      statusCode: json["statusCode"],
+      statusMessage: json["statusMessage"],
+      errorMessage: json["errorMessage"],
+      data: json["data"] == null
+          ? null
+          : List<Data>.from(json["data"].map((x) => Data.fromJson(x))),
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["statusCode"] = statusCode;
-    _data["statusMessage"] = statusMessage;
-    _data["errorMessage"] = errorMessage;
-    if (data != null) {
-      _data["data"] = data?.toJson();
-    }
-    return _data;
-  }
+  Map<String, dynamic> toJson() => {
+    "statusCode": statusCode,
+    "statusMessage": statusMessage,
+    "errorMessage": errorMessage,
+    "data": data == null ? null : List<dynamic>.from(data!.map((x) => x.toJson())),
+  };
 }
+
 
 class Data {
   String? id;
@@ -34,34 +35,30 @@ class Data {
 
   Data({this.id, this.templateType, this.objectDetails, this.randomId, this.v});
 
-  Data.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
-    templateType = json["templateType"];
-    objectDetails = json["objectDetails"] == null ? null : ObjectDetails.fromJson(json["objectDetails"]);
-    randomId = json["randomId"];
-    v = json["__v"];
-  }
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+    id: json["_id"],
+    templateType: json["templateType"],
+    objectDetails: json["objectDetails"] == null ? null : ObjectDetails.fromJson(json["objectDetails"]),
+    randomId: json["randomId"],
+    v: json["__v"],
+  );
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["_id"] = id;
-    _data["templateType"] = templateType;
-    if (objectDetails != null) {
-      _data["objectDetails"] = objectDetails?.toJson();
-    }
-    _data["randomId"] = randomId;
-    _data["__v"] = v;
-    return _data;
-  }
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "templateType": templateType,
+    "objectDetails": objectDetails?.toJson(),
+    "randomId": randomId,
+    "__v": v,
+  };
 }
 
 class ObjectDetails {
   String? objectName;
   String? objectIcon;
-  String? img; // Holds the base64 image string
-  List<ChildObject>? childObjs; // List of child objects
-  Map<String, dynamic>? parameters; // To hold parameters
-  Map<String, dynamic>? additionalInfo; // Holds random keys and values
+  String? img; // base64 string or URL string
+  List<ChildObject>? childObjs;
+  Map<String, dynamic>? parameters;
+  Map<String, dynamic>? additionalInfo;
 
   ObjectDetails({
     this.objectName,
@@ -72,78 +69,68 @@ class ObjectDetails {
     this.additionalInfo,
   });
 
-  ObjectDetails.fromJson(Map<String, dynamic> json) {
-    objectName = json["objectName"];
-    objectIcon = json["objectIcon"];
-    img = json["img"] != null ? json["img"].values.first : null; // Get the Base64 string
+  factory ObjectDetails.fromJson(Map<String, dynamic> json) {
+    // Fix img: check if it's a map (for base64) or a string (url)
+    String? imageString;
+    if (json["img"] != null) {
+      if (json["img"] is Map) {
+        // For example: {"base64": "data..."} or any key holding base64 string
+        imageString = (json["img"] as Map).values.first.toString();
+      } else if (json["img"] is String) {
+        imageString = json["img"];
+      }
+    }
 
-    // Correctly map child objects to ChildObject instances
-    childObjs = json["child_Objs"] != null
-        ? (json["child_Objs"] as List)
-        .map((childJson) => ChildObject.fromJson(childJson)) // Proper instantiation
-        .toList()
-        : [];
-
-    parameters = json["parameters"] != null ? Map<String, dynamic>.from(json["parameters"]) : null;
-
-    // Extract random keys and store them in additionalInfo
-    additionalInfo = Map<String, dynamic>.from(json)
-      ..removeWhere((key, value) =>
-          ["objectName", "objectIcon", "child_Objs", "img", "parameters"].contains(key));
+    return ObjectDetails(
+      objectName: json["objectName"],
+      objectIcon: json["objectIcon"],
+      img: imageString,
+      childObjs: json["child_Objs"] != null
+          ? List<ChildObject>.from(json["child_Objs"].map((x) => ChildObject.fromJson(x)))
+          : [],
+      parameters: json["parameters"] != null ? Map<String, dynamic>.from(json["parameters"]) : null,
+      additionalInfo: Map<String, dynamic>.from(json)
+        ..removeWhere((key, value) => ["objectName", "objectIcon", "child_Objs", "img", "parameters"].contains(key)),
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["objectName"] = objectName;
-    _data["objectIcon"] = objectIcon;
-    _data["img"] = img;
-    if (childObjs != null) {
-      _data["child_Objs"] = childObjs!.map((child) => child.toJson()).toList();
-    }
-    if (parameters != null) {
-      _data["parameters"] = parameters!;
-    }
-
-    // Add additionalInfo back to the main data
+    final map = <String, dynamic>{};
+    map["objectName"] = objectName;
+    map["objectIcon"] = objectIcon;
+    map["img"] = img;
+    map["child_Objs"] = childObjs?.map((x) => x.toJson()).toList();
+    map["parameters"] = parameters;
     if (additionalInfo != null) {
-      _data.addAll(additionalInfo!);
+      map.addAll(additionalInfo!);
     }
-
-    return _data;
+    return map;
   }
 }
 
 class ChildObject {
   String? objectName;
-  Map<String, dynamic>? parameters; // Holds the parameters dynamically
-  Map<String, dynamic>? additionalInfo; // Holds additional information dynamically
+  Map<String, dynamic>? parameters;
+  Map<String, dynamic>? additionalInfo;
 
   ChildObject({this.objectName, this.parameters, this.additionalInfo});
 
-  ChildObject.fromJson(Map<String, dynamic> json) {
-    objectName = json["objectName"];
-    parameters = json["parameters"] != null
-        ? Map<String, dynamic>.from(json["parameters"])
-        : null;
-
-    // Extract random keys and store them in additionalInfo
-    additionalInfo = Map<String, dynamic>.from(json)
-      ..removeWhere((key, value) =>
-          ["objectName", "parameters"].contains(key));
+  factory ChildObject.fromJson(Map<String, dynamic> json) {
+    return ChildObject(
+      objectName: json["objectName"],
+      parameters: json["parameters"] != null ? Map<String, dynamic>.from(json["parameters"]) : null,
+      additionalInfo: Map<String, dynamic>.from(json)
+        ..removeWhere((key, value) => ["objectName", "parameters"].contains(key)),
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["objectName"] = objectName;
-    if (parameters != null) {
-      _data["parameters"] = parameters!;
-    }
-
-    // Add additionalInfo back to the main data
+    final map = <String, dynamic>{};
+    map["objectName"] = objectName;
+    map["parameters"] = parameters;
     if (additionalInfo != null) {
-      _data.addAll(additionalInfo!);
+      map.addAll(additionalInfo!);
     }
-
-    return _data;
+    return map;
   }
 }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -89,7 +91,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (snapshot.hasData && snapshot.data != null) {
                       var assetDetails = snapshot.data!;
-                      var objectDetails = assetDetails.data?.objectDetails;
+                      var objectDetails = assetDetails.data?.first.objectDetails;
 
                       return objectDetails == null
                           ? Center(
@@ -134,7 +136,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                 const SizedBox(height: 10),
                                 Wrap(
                                   spacing: 4.0,
-                                  children: (assetDetails.data?.templateType ?? 'N/A')
+                                  children: (assetDetails.data?.first.templateType ?? 'N/A')
                                       .split('_')
                                       .where((word) => word.toLowerCase() != 'asset')
                                       .map((tag) => Chip(
@@ -289,8 +291,9 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
   Future<AssetDetailsModel?> getAssetsDetailsData() async {
     int? assetId = widget.assetsInfo?.assetId;
     var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetById/$assetId');
+    var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
     var response = await client.get(uri);
+    log("ASSETS DETAILS RESPONSE: ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var assetData = AssetDetailsModel.fromJson(responseBody);

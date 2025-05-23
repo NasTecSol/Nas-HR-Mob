@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/attendance_screen.dart';
+import 'package:nashr/screens/chat_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
@@ -22,7 +23,6 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
-import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
@@ -48,12 +48,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? _openLocation;
   String? _backgroundLocation;
 
+
   @override
   void initState() {
     super.initState();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getRemoteAttendanceData();
+    singletonClass.getPolicyData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -63,9 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       trackOpenLocation();
     });
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
@@ -91,13 +91,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     updateRemoteLocation();
   }
 
-
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
 
   //Slider
   OverlayEntry? _overlayEntry;
-
 
   OverlayEntry _createOverlayEntry() {
     return OverlayEntry(
@@ -127,8 +125,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const OnsiteCheckin()));
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const OnsiteCheckin()));
                       _removeOverlay();
                     },
                     child: Container(
@@ -164,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               content: Text(
                                   'Please set up biometrics in your device settings')),
                         );
-                        return; // Skip further actions if biometrics aren't set up
+                        return;
                       }
 
                       bool isAuthenticated = await _authService
@@ -172,7 +173,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       if (isAuthenticated) {
                         _removeOverlay();
                         await checkIn('biometric');
-
                       } else {
                         _removeOverlay();
                       }
@@ -212,8 +212,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //2ND OverLay
   OverlayEntry? _overlayEntry2;
 
-  OverlayEntry _createViewAllOverlay(){
-    return OverlayEntry (
+  OverlayEntry _createViewAllOverlay() {
+    final uiSettings =
+        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final titles = uiSettings.map((e) => e.title?.toString() ?? '').toList();
+    final hasDocuments =
+        titles.any((title) => title == "Document" || title == "Documents");
+    final hasTeams = titles.any((title) => title == "teams" || title == "Teams");
+    final hasTeamClocking =
+        titles.any((title) => title == "teamClockings" || title == "teamClockings");
+    final hasAssets =
+        titles.any((title) => title == "assets" || title == "Assets");
+    final hasTeamAttendance =
+    titles.any((title) => title == "teamAttendance" || title == "teamAttendance");
+    final hasAttendance =
+    titles.any((title) => title == "attendance" || title == "attendance");
+    final hasComplaints =
+    titles.any((title) => title == "complaints" || title == "complaints");
+    final hasPenaltiesAndFines =
+    titles.any((title) => title == "penaltiesAndFines" || title == "penaltiesAndFines");
+    return OverlayEntry(
         builder: (context) => Positioned(
             top: 0,
             bottom: 0,
@@ -224,23 +242,53 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 _removeOverlay();
               },
               child: Material(
-                color: Colors.grey.withValues(alpha:0.8),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 100.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Column(
-                                children: [
+                color: NasColors.darkBlue.withValues(alpha: 0.8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF444658),
+                        Color(0xFF83869B),
+                        Color(0xFFBCC0E7),
+                        Color(0xFF727694),
+                        Color(0xFF444658),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.quickActions,
+                            style: GoogleFonts.inter(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: NasColors.darkBlue),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 40),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                if (hasDocuments) ...[
                                   GestureDetector(
                                     onTap: () {
                                       _removeOverlay();
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const AttendanceScreen()));
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const DocumentScreen()));
                                     },
                                     child: Container(
                                       height: 65,
@@ -250,16 +298,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withValues(alpha: 0.5),
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.5),
                                             spreadRadius: 1,
                                             blurRadius: 0.5,
-                                            offset: const Offset(0, 0), // changes position of shadow
+                                            offset: const Offset(0,
+                                                0), // changes position of shadow
                                           ),
                                         ],
                                       ),
                                       child: Center(
-                                        child:  Image.asset(
-                                          'images/attendance.png',
+                                        child: Image.asset(
+                                          'images/files.png',
                                           fit: BoxFit.contain,
                                           width: 30,
                                           height: 30,
@@ -268,69 +318,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  // Add spacing between image and text
                                   Text(
-                                    AppLocalizations.of(context)!
-                                        .attendance,
+                                    AppLocalizations.of(context)!.documents,
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black,
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamClocking()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child:  Image.asset(
-                                            'images/teamClocking.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .teamClocking,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
-                                Column(
+                                ]
+                              ],
+                            ),
+                            SizedBox(width: 40),
+                            if (hasAssets) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 50.0),
+                                child: Column(
                                   children: [
                                     GestureDetector(
                                       onTap: () {
@@ -339,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                const DocumentScreen()));
+                                                    const AssetsScreen()));
                                       },
                                       child: Container(
                                         height: 65,
@@ -349,68 +352,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           color: Colors.white,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
                                               spreadRadius: 1,
                                               blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
+                                              offset: const Offset(0,
+                                                  0), // changes position of shadow
                                             ),
                                           ],
                                         ),
                                         child: Center(
                                           child: Image.asset(
-                                            'images/files.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .documents,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                const AssetsScreen()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child:  Image.asset(
                                             'images/assets.png',
                                             fit: BoxFit.contain,
                                             width: 30,
@@ -420,7 +372,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ),
                                     const SizedBox(height: 5),
-                                    // Add spacing between image and text
                                     Text(
                                       AppLocalizations.of(context)!.assets,
                                       style: GoogleFonts.inter(
@@ -431,121 +382,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ],
                                 ),
+                              ),
                             ],
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                const TeamScreen()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child:  Image.asset(
-                                            'images/Team.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      AppLocalizations.of(context)!.teams,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                              if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                  singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')...[
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const Complaints()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child:  Image.asset(
-                                            'images/Complain.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .complaints,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                              const SizedBox(height: 20),
+                            SizedBox(width: 40),
+                            if (hasTeams) ...[
                               Column(
                                 children: [
                                   GestureDetector(
                                     onTap: () {
                                       _removeOverlay();
-                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const TeamScreen()));
                                     },
                                     child: Container(
                                       height: 65,
@@ -555,16 +405,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withValues(alpha: 0.5),
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.5),
                                             spreadRadius: 1,
                                             blurRadius: 0.5,
-                                            offset: const Offset(0, 0), // changes position of shadow
+                                            offset: const Offset(0,
+                                                0), // changes position of shadow
                                           ),
                                         ],
                                       ),
                                       child: Center(
-                                        child:  Image.asset(
-                                          'images/Penalties.png',
+                                        child: Image.asset(
+                                          'images/Team.png',
                                           fit: BoxFit.contain,
                                           width: 30,
                                           height: 30,
@@ -573,9 +425,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  // Add spacing between image and text
                                   Text(
-                                    ' ${AppLocalizations.of(context)!.penalties}',
+                                    AppLocalizations.of(context)!.teams,
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -584,64 +435,278 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 20),
-                              if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamAttendanceScreen()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0, 0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child:  Image.asset(
-                                            'images/teamClocking.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
+                            ],
+                          ]),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              if(hasComplaints)...[
+                              GestureDetector(
+                                onTap: () {
+                                  _removeOverlay();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const Complaints()));
+                                },
+                                child: Container(
+                                  height: 65,
+                                  width: 65,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 0.5,
+                                        offset: const Offset(
+                                            0, 0), // changes position of shadow
                                       ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      'images/Complain.png',
+                                      fit: BoxFit.contain,
+                                      width: 30,
+                                      height: 30,
                                     ),
-                                    const SizedBox(height: 5),
-                                    // Add spacing between image and text
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .teamAttendance,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                AppLocalizations.of(context)!.complaints,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),]
                             ],
                           ),
-                        ),
-
-                      ],
-                    ),
-                  ),
+                          SizedBox(width: 40),
+                          if(hasPenaltiesAndFines)...[
+                          Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  _removeOverlay();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const PenaltyAndFineScreen()));
+                                },
+                                child: Container(
+                                  height: 65,
+                                  width: 65,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 0.5,
+                                        offset: const Offset(
+                                            0, 0), // changes position of shadow
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      'images/Penalties.png',
+                                      fit: BoxFit.contain,
+                                      width: 30,
+                                      height: 30,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                AppLocalizations.of(context)!.penalties,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),],
+                          SizedBox(width: 40),
+                          if(hasAttendance)...[
+                          Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  _removeOverlay();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AttendanceScreen()));
+                                },
+                                child: Container(
+                                  height: 65,
+                                  width: 65,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 0.5,
+                                        offset: const Offset(
+                                            0, 0), // changes position of shadow
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      'images/attendance.png',
+                                      fit: BoxFit.contain,
+                                      width: 30,
+                                      height: 30,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                AppLocalizations.of(context)!.attendance,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),],
+                        ],
+                      ),
+                      SizedBox(height: 40),
+                      if (hasTeamAttendance && hasTeamClocking) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const TeamClocking()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/clock.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.teamClocking,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 40),
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const TeamAttendanceScreen()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/teamClocking.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.teamAttendance,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      ]
+                    ],
+                  )),
                 ),
               ),
-            ))
-    );
+            )));
   }
 
   void _removeOverlay() {
@@ -673,6 +738,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
+    final uiSettings =
+        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+
+    final hasDocuments = uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+    final hasTeams = uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+    final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
+    final hasAssets = uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasComplaints = uiSettings.any((e) => e.title == "complaints");
+    final hasPenaltiesAndFines = uiSettings.any((e) => e.title == "penaltiesAndFines");
+    final hasChatBot = uiSettings.any((e) =>
+    e.title == "chatBot" && e.hidden == true);
+    final hasNotChatBot = uiSettings.any((e) =>
+    e.title == "chatBot" && e.hidden == false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -682,34 +760,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                dashBoardData?.profilePic != null && dashBoardData!.profilePic!.isNotEmpty
+                dashBoardData?.profilePic != null &&
+                        dashBoardData!.profilePic!.isNotEmpty
                     ? Image.network(
-                  dashBoardData.profilePic!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'images/DP.png',
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
+                        dashBoardData.profilePic!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'images/DP.png',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
                     : Image.asset(
-                  'images/DP.png',
-                  fit: BoxFit.cover,
-                ),
+                        'images/DP.png',
+                        fit: BoxFit.cover,
+                      ),
                 BackdropFilter(
                   filter: ImageFilter.blur(
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
                   ),
                   child: Container(
-                      color: Colors.black.withValues(alpha: (opacityAmount * 0.1 * 2))
-                  ),
+                      color: Colors.black
+                          .withValues(alpha: (opacityAmount * 0.1 * 2))),
                 ),
               ],
             ),
           ),
-
           if (isExpanded)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -730,11 +808,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             radius: 40,
                             child: ClipOval(
                               child: Image.network(
-                                dashBoardData?.profilePic ?? '', // URL for the network image, empty string if null
+                                dashBoardData?.profilePic ?? '',
+                                // URL for the network image, empty string if null
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
-                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                errorBuilder: (BuildContext context,
+                                    Object exception, StackTrace? stackTrace) {
                                   // Display the default asset image if the network image fails to load
                                   return Image.asset(
                                     'images/DP.png',
@@ -785,7 +865,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           SizedBox(
                             width: 170,
                             child: Text(
-                              'Contract ID #${dashBoardData?.contractInfo?.first.contractId}',
+                              'Contract ID #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -807,8 +887,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       children: [
                         IconButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                            const NotificationsScreen()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -825,7 +908,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(9.0), // optional padding
+                              padding: const EdgeInsets.all(9.0),
+                              // optional padding
                               child: Image.asset(
                                 'images/notification.png',
                                 fit: BoxFit.contain,
@@ -859,7 +943,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(9.0), // optional padding
+                              padding: const EdgeInsets.all(9.0),
+                              // optional padding
                               child: Image.asset(
                                 'images/clocking.png',
                                 fit: BoxFit.contain,
@@ -942,9 +1027,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               expand: true,
               builder:
                   (BuildContext context, ScrollController scrollController) {
-
                 return Container(
-                  decoration:  BoxDecoration(
+                  decoration: BoxDecoration(
                     color: NasColors.backGround,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -956,7 +1040,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         blurRadius: 10.0,
                         spreadRadius: 0.5,
                         offset: Offset(
-                          0.0, -10.0,
+                          0.0,
+                          -10.0,
                         ),
                       )
                     ],
@@ -990,62 +1075,180 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 Expanded(
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(15)),
                                       color: Colors.white,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.grey.withValues(alpha: 0.5),
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
                                           spreadRadius: 2,
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
                                         ),
                                       ],
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: [
-                                              Transform(
-                                                transform: Matrix4.rotationY(math.pi),
-                                                alignment: Alignment.center,
-                                                child: const Icon(
-                                                  Icons.exit_to_app_outlined,
-                                                  size: 25,
-                                                  color: Colors.black,
-                                                ),
+                                    child: Column(
+                                      children: [
+                                        if (singletonClass
+                                            .attendanceDataList
+                                            .first
+                                            .data!
+                                            .data!
+                                            .first
+                                            .clockInTime!
+                                            .isNotEmpty)
+                                          Container(
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                topLeft: Radius.circular(15),
+                                                topRight: Radius.circular(15),
                                               ),
-                                              const SizedBox(width: 2.5),
-                                              Expanded(
-                                                child: Text(
-                                                  AppLocalizations.of(context)!.checkIn,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
+                                              color: _getContainerColor(),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                if (singletonClass
+                                                        .attendanceDataList
+                                                        .isNotEmpty &&
+                                                    singletonClass
+                                                        .attendanceDataList
+                                                        .first
+                                                        .data!
+                                                        .data!
+                                                        .isNotEmpty)
+                                                  Builder(builder: (context) {
+                                                    final data = singletonClass
+                                                        .attendanceDataList
+                                                        .first
+                                                        .data!
+                                                        .data!
+                                                        .first;
+                                                    if ((data.lateMinutes ??
+                                                            0) >
+                                                        0) {
+                                                      return Text(
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .lateComings,
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: NasColors
+                                                                .lateComingText),
+                                                      );
+                                                    } else if ((data
+                                                                .earlyCheckOut ??
+                                                            0) >
+                                                        0) {
+                                                      return Text(
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .earlyCheckOut,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color:
+                                                              NasColors.onTime,
+                                                        ),
+                                                      );
+                                                    } else if (data.clockInTime!
+                                                        .isNotEmpty) {
+                                                      return Text(
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .onTime,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color:
+                                                              NasColors.onTime,
+                                                        ),
+                                                      ); // No text
+                                                    } else {
+                                                      return SizedBox();
+                                                    }
+                                                  })
+                                                else
+                                                  Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .noData,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                    ),
                                                   ),
+                                              ],
+                                            ),
+                                          ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8.0,
+                                              left: 15,
+                                              right: 8,
+                                              bottom: 8),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                height: 25,
+                                                width: 25,
+                                                child: Image.asset(
+                                                  "images/checkIn.png",
                                                 ),
                                               ),
-                                              const SizedBox(width: 2.5),
+                                              const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                      () {
+                                                  () {
                                                     try {
-                                                      final today = DateTime.now();
-                                                      final dataList = singletonClass.clockingDataList.first.data;
-                                                      if (dataList == null || dataList.isEmpty) return 'NA';
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .clockingDataList
+                                                              .first
+                                                              .data;
+                                                      if (dataList == null ||
+                                                          dataList.isEmpty) {
+                                                        return 'NA';
+                                                      }
 
-                                                      final entry = dataList.firstWhere((entry) {
-                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                                        return createdAt != null &&
-                                                            createdAt.year == today.year &&
-                                                            createdAt.month == today.month &&
-                                                            createdAt.day == today.day;
+                                                      final entry = dataList
+                                                          .firstWhere((entry) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                entry.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
                                                       });
 
-                                                      return entry.checkInTime?.isNotEmpty == true
-                                                          ? singletonClass.formatCheckInTime(entry.checkInTime!)
+                                                      return entry.checkInTime
+                                                                  ?.isNotEmpty ==
+                                                              true
+                                                          ? singletonClass
+                                                              .formatCheckInTime(
+                                                                  entry
+                                                                      .checkInTime!)
                                                           : 'NA';
                                                     } catch (_) {
                                                       return 'NA';
@@ -1053,197 +1256,272 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 5.0, left: 15, right: 8),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
-                                              const Icon(
-                                                Icons.exit_to_app_outlined,
-                                                size: 25,
-                                                color: Colors.black,
-                                              ),
-                                              const SizedBox(width: 2.5),
-                                              Expanded(
-                                                child: Text(
-                                                  AppLocalizations.of(context)!.checkOut,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                              SizedBox(
+                                                height: 25,
+                                                width: 25,
+                                                child: Image.asset(
+                                                  "images/checkOut.png",
                                                 ),
                                               ),
-                                              const SizedBox(width: 2.5),
+                                              const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                  singletonClass.clockingDataList.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                                      singletonClass.clockingDataList.first.data!.last.checkOutTime?.isNotEmpty == true
-                                                      ? singletonClass.formatCheckInTime(singletonClass.clockingDataList.first.data!.last.checkOutTime!)
+                                                  singletonClass
+                                                              .clockingDataList
+                                                              .isNotEmpty &&
+                                                          singletonClass
+                                                              .clockingDataList
+                                                              .first
+                                                              .data!
+                                                              .isNotEmpty &&
+                                                          singletonClass
+                                                                  .clockingDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .last
+                                                                  .checkOutTime
+                                                                  ?.isNotEmpty ==
+                                                              true
+                                                      ? singletonClass
+                                                          .formatCheckInTime(
+                                                              singletonClass
+                                                                  .clockingDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .last
+                                                                  .checkOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8.0,
+                                              left: 15,
+                                              right: 8,
+                                              bottom: 5),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
-                                              if (singletonClass.attendanceDataList.isNotEmpty &&
-                                                  singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
-                                                if ((singletonClass.attendanceDataList.first.data!.data!.first.lateMinutes ?? 0) > 0)
-                                                  Container(
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                    ),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(5.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Text(
-                                                            AppLocalizations.of(context)!.lateComings,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.lateMinutes),
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                else if ((singletonClass.attendanceDataList.first.data!.data!.first.earlyCheckOut ?? 0) > 0)
-                                                  Container(
-                                                    decoration:  BoxDecoration(
-                                                      color: NasColors.onTime,
-                                                      borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                                    ),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(5.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Text(
-                                                            AppLocalizations.of(context)!.earlyCheckOut,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.earlyCheckOut),
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                else Text(AppLocalizations.of(context)!.noData,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
-                                                    ),
-                                                  ),
-                                              const SizedBox(width: 5),
-                                              Expanded(
-                                                child: Align(
-                                                  alignment: Alignment.center,
-                                                  child: Text(
-                                                    singletonClass.attendanceDataList.isNotEmpty &&
-                                                        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} '
-                                                        '${singletonClass.formatMinutes(
-                                                        double.tryParse(
-                                                            singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0'
-                                                        )?.round() ?? 0
-                                                    )}'
-                                                        : '${AppLocalizations.of(context)!.worked} NA',
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
-                                                    ),
-                                                  ),
-
+                                              SizedBox(
+                                                height: 25,
+                                                width: 25,
+                                                child: Image.asset(
+                                                  "images/break.png",
+                                                ),
+                                              ),
+                                              const SizedBox(width: 40),
+                                              Text(
+                                                singletonClass
+                                                            .attendanceDataList
+                                                            .isNotEmpty &&
+                                                        singletonClass
+                                                            .attendanceDataList
+                                                            .first
+                                                            .data!
+                                                            .data!
+                                                            .isNotEmpty
+                                                    ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
+                                                    : 'NA',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.normal,
                                                 ),
                                               ),
                                             ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Container(
-                                  width: 130,
-                                  height: 130,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.coffee,
-                                          size: 25,
-                                          color: Colors.brown,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          AppLocalizations.of(context)!.breaks,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          singletonClass.attendanceDataList.isNotEmpty &&
-                                              singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                              ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
-                                              : 'NA',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.normal,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
                                 ),
+                                const SizedBox(width: 12),
+                                if (hasChatBot)
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ChatScreen()));
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(15)),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.5),
+                                            spreadRadius: 2,
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                topLeft: Radius.circular(15),
+                                                topRight: Radius.circular(15),
+                                              ),
+                                              color: NasColors.darkBlue,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  AppLocalizations.of(context)!
+                                                      .nassMudeer,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                  height: 100,
+                                                  width: 80,
+                                                  child: Align(
+                                                    alignment: Alignment.center,
+                                                    child: Text(
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        "${AppLocalizations.of(context)!.hey} ${singletonClass.employeeDataList.first.data!.firstName} !"),
+                                                  )),
+                                              SizedBox(
+                                                height: 95,
+                                                width: 95,
+                                                child: Lottie.asset(
+                                                    'images/AIMudder.json'),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 10,)
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if(hasNotChatBot)
+                                  Expanded(
+                                      child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(15)),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                        child:  Column(
+                                          children: [
+                                            Container(
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                const BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  topRight: Radius.circular(15),
+                                                ),
+                                                color: NasColors.darkBlue,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)!
+                                                        .totalHours,
+                                                    style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                    height: 100,
+                                                    width: 100,
+                                                    child: Align(
+                                                      alignment: Alignment.center,
+                                                      child: Text(
+                                                        singletonClass.attendanceDataList.isNotEmpty &&
+                                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                            ? '${AppLocalizations.of(context)!.worked} '
+                                                            '${singletonClass.formatMinutes(
+                                                            double.tryParse(
+                                                                singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0'
+                                                            )?.round() ?? 0
+                                                        )}'
+                                                            : '${AppLocalizations.of(context)!.worked} NA',
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight: FontWeight.normal,
+                                                        ),
+                                                      ),
+                                                    )),
+                                                SizedBox(
+                                                  height: 55,
+                                                  width: 55,
+                                                  child: Lottie.asset(
+                                                      'images/totalWork.json'),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 10,)
+                                          ],
+                                        ),
+                                  ))
                               ],
                             ),
                           ),
@@ -1254,23 +1532,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
-                                        singletonClass.clockingDataList.first.data != null &&
-                                        singletonClass.clockingDataList.first.data!.isNotEmpty
-                                        ? singletonClass.clockingDataList.first.data!.last
+                                    final lastData = singletonClass
+                                                .attendanceDataList
+                                                .isNotEmpty &&
+                                            singletonClass.attendanceDataList
+                                                    .first.data !=
+                                                null &&
+                                            singletonClass.attendanceDataList
+                                                .first.data!.data!.isNotEmpty
+                                        ? singletonClass.attendanceDataList
+                                            .first.data!.data!.first
                                         : null;
 
-                                    final checkInTime = lastData?.checkInTime;
-                                    final checkOutTime = lastData?.checkOutTime;
+                                    final checkInTime = lastData?.clockInTime;
+                                    final checkOutTime = lastData?.clockOutTime;
 
-                                    if (checkInTime == null || checkOutTime != null) {
+                                    if ((checkInTime == null ||
+                                            !singletonClass
+                                                .isToday(checkInTime)) ||
+                                        (checkOutTime != null &&
+                                            singletonClass
+                                                .isToday(checkOutTime))) {
                                       _dragPosition += details.primaryDelta!;
-                                      if (_dragPosition > MediaQuery.of(context).size.width * 0.7) {
+                                      if (_dragPosition >
+                                          MediaQuery.of(context).size.width *
+                                              0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (checkInTime.isNotEmpty && checkOutTime == null) {
+                                    } else if (singletonClass.isToday(checkInTime) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       _dragPosition += details.primaryDelta!;
-                                      if (_dragPosition < -MediaQuery.of(context).size.width * 0.7) {
+                                      if (_dragPosition <
+                                          -MediaQuery.of(context).size.width *
+                                              0.7) {
                                         _isSliderCompleted = true;
                                       }
                                     }
@@ -1278,48 +1573,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 },
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
-                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
-                                        singletonClass.clockingDataList.first.data != null &&
-                                        singletonClass.clockingDataList.first.data!.isNotEmpty
-                                        ? singletonClass.clockingDataList.first.data!.last
+                                    final lastData = singletonClass
+                                                .attendanceDataList
+                                                .isNotEmpty &&
+                                            singletonClass.attendanceDataList
+                                                    .first.data !=
+                                                null &&
+                                            singletonClass.attendanceDataList
+                                                .first.data!.data!.isNotEmpty
+                                        ? singletonClass.attendanceDataList
+                                            .first.data!.data!.first
                                         : null;
 
-                                    final checkInTime = lastData?.checkInTime;
-                                    final checkOutTime = lastData?.checkOutTime;
+                                    final checkInTime = lastData?.clockInTime;
+                                    final checkOutTime = lastData?.clockOutTime;
 
-                                    if (checkInTime == null || checkOutTime != null) {
+                                    if ((checkInTime == null ||
+                                            !singletonClass
+                                                .isToday(checkInTime)) ||
+                                        (checkOutTime != null &&
+                                            singletonClass
+                                                .isToday(checkOutTime))) {
                                       if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx > 0) {
+                                          details.velocity.pixelsPerSecond.dx >
+                                              0) {
                                         _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context).insert(_overlayEntry!);
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
-                                      } else {
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
+                                        Overlay.of(context)
+                                            .insert(_overlayEntry!);
                                       }
-                                    } else if (checkInTime.isNotEmpty && checkOutTime == null) {
+                                    } else if (singletonClass.isToday(checkInTime) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx < 0) {
+                                          details.velocity.pixelsPerSecond.dx <
+                                              0) {
                                         _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context).insert(_overlayEntry!);
-                                      } else {
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
+                                        Overlay.of(context)
+                                            .insert(_overlayEntry!);
                                       }
                                     }
+
+                                    _dragPosition = 0;
+                                    _isSliderCompleted = false;
                                   });
                                 },
                                 child: Container(
                                   alignment: Alignment.topLeft,
                                   decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(15)),
                                     gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF444658),
@@ -1334,34 +1636,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                   height: 60,
                                   child: (() {
-                                    final lastData = singletonClass.clockingDataList.isNotEmpty &&
-                                        singletonClass.clockingDataList.first.data != null &&
-                                        singletonClass.clockingDataList.first.data!.isNotEmpty
-                                        ? singletonClass.clockingDataList.first.data!.last
+                                    final lastData = singletonClass
+                                                .attendanceDataList
+                                                .isNotEmpty &&
+                                            singletonClass.attendanceDataList
+                                                    .first.data !=
+                                                null &&
+                                            singletonClass.attendanceDataList
+                                                .first.data!.data!.isNotEmpty
+                                        ? singletonClass.attendanceDataList
+                                            .first.data!.data!.first
                                         : null;
 
-                                    final checkInTime = lastData?.checkInTime;
-                                    final checkOutTime = lastData?.checkOutTime;
+                                    final checkInTime = lastData?.clockInTime;
+                                    final checkOutTime = lastData?.clockOutTime;
 
-                                    if (checkInTime != null && checkOutTime == null) {
+                                    if (checkInTime != null &&
+                                        singletonClass.isToday(checkInTime) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       return Padding(
-                                        padding: const EdgeInsets.only(top: 5.0, left: 30),
+                                        padding: const EdgeInsets.only(
+                                            top: 5.0, left: 30),
                                         child: Row(
                                           children: [
                                             IconButton(
                                               onPressed: () async {
                                                 showDialog(
                                                   context: context,
-                                                  builder: (BuildContext context) => AlertDialog(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          AlertDialog(
                                                     title: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
                                                       children: [
-                                                        const Icon(Icons.warning, color: Colors.yellow),
+                                                        const Icon(
+                                                            Icons.warning,
+                                                            color:
+                                                                Colors.yellow),
                                                         Text(
-                                                          AppLocalizations.of(context)!.areYouSure,
-                                                          style: GoogleFonts.inter(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .areYouSure,
+                                                          style:
+                                                              GoogleFonts.inter(
                                                             fontSize: 15,
-                                                            fontWeight: FontWeight.w600,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color: Colors.black,
                                                           ),
                                                         ),
@@ -1369,43 +1692,80 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                     actions: [
                                                       Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
                                                         children: [
                                                           InkWell(
-                                                            onTap: () => Navigator.of(context).pop(),
+                                                            onTap: () =>
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(),
                                                             child: Row(
-                                                              mainAxisSize: MainAxisSize.min,
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               children: [
-                                                                const Icon(Icons.cancel, color: Colors.red),
-                                                                const SizedBox(width: 5),
+                                                                const Icon(
+                                                                    Icons
+                                                                        .cancel,
+                                                                    color: Colors
+                                                                        .red),
+                                                                const SizedBox(
+                                                                    width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(context)!.cancel,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.red,
+                                                                  AppLocalizations.of(
+                                                                          context)!
+                                                                      .cancel,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .red,
                                                                   ),
                                                                 ),
                                                               ],
                                                             ),
                                                           ),
-                                                          const SizedBox(width: 8),
+                                                          const SizedBox(
+                                                              width: 8),
                                                           InkWell(
                                                             onTap: () async {
-                                                              Navigator.pop(context);
+                                                              Navigator.pop(
+                                                                  context);
                                                               await checkOut();
                                                             },
                                                             child: Row(
-                                                              mainAxisSize: MainAxisSize.min,
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               children: [
-                                                                const Icon(Icons.logout, color: Colors.black),
-                                                                const SizedBox(width: 5),
+                                                                const Icon(
+                                                                    Icons
+                                                                        .logout,
+                                                                    color: Colors
+                                                                        .black),
+                                                                const SizedBox(
+                                                                    width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(context)!.yes,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.black,
+                                                                  AppLocalizations.of(
+                                                                          context)!
+                                                                      .yes,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .black,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1420,14 +1780,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               icon: SizedBox(
                                                 width: 35,
                                                 height: 35,
-                                                child: Image.asset('images/exit.png'),
+                                                child: Image.asset(
+                                                    'images/exit.png'),
                                               ),
                                             ),
                                             const SizedBox(width: 20),
                                             Align(
                                               alignment: Alignment.center,
                                               child: Text(
-                                                AppLocalizations.of(context)!.pressButtonToCheckOut,
+                                                AppLocalizations.of(context)!
+                                                    .pressButtonToCheckOut,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -1449,16 +1811,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 width: 60,
                                                 height: 50,
                                                 decoration: const BoxDecoration(
-                                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(15)),
                                                   color: Colors.white,
                                                 ),
-                                                child: Lottie.asset('images/swiper.json'),
+                                                child: Lottie.asset(
+                                                    'images/swiper.json'),
                                               ),
                                               const SizedBox(width: 50),
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.swipeToCheckIn,
+                                                  AppLocalizations.of(context)!
+                                                      .swipeToCheckIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w600,
@@ -1479,19 +1845,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              TextButton(onPressed: (){
-                                _overlayEntry2 = _createViewAllOverlay();
-                                Overlay.of(context)
-                                    .insert(_overlayEntry2!);
-                              }, child: Text(AppLocalizations.of(context)!.viewAll,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight:
-                                  FontWeight.w600,
-                                  color: Colors.black,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ))
+                              TextButton(
+                                  onPressed: () {
+                                    _overlayEntry2 = _createViewAllOverlay();
+                                    Overlay.of(context).insert(_overlayEntry2!);
+                                  },
+                                  child: Text(
+                                    AppLocalizations.of(context)!.viewAll,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ))
                             ],
                           ),
                           Padding(
@@ -1502,54 +1869,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
-                                    Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (context)=> const TeamClocking()));
-                                          },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withValues(alpha: 0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0), // changes position of shadow
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child:  Image.asset(
-                                                  'images/teamClocking.png',
-                                                  fit: BoxFit.contain,
-                                                  width: 30,
-                                                  height: 30,
-                                                ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        // Add spacing between image and text
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .teamClocking,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (hasTeamClocking)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1557,8 +1877,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const DocumentScreen()));
+                                                    builder: (context) => const TeamClocking()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1568,29 +1887,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withValues(alpha: 0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
-                                                  offset: const Offset(0, 0), // changes position of shadow
+                                                  offset: const Offset(0, 0),
                                                 ),
                                               ],
                                             ),
                                             child: Center(
                                               child: Image.asset(
-                                                  'images/files.png',
-                                                  fit: BoxFit.contain,
-                                                  width: 30,
-                                                  height: 30,
-                                                ),
-
+                                                'images/teamClocking.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                         const SizedBox(height: 5),
-                                        // Add spacing between image and text
                                         Text(
-                                          AppLocalizations.of(context)!
-                                              .documents,
+                                          AppLocalizations.of(context)!.teamClocking,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -1600,8 +1916,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (hasDocuments)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1609,8 +1924,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const AssetsScreen()));
+                                                    builder: (context) => const DocumentScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1620,25 +1934,71 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withValues(alpha: 0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
-                                                  offset: const Offset(0, 0), // changes position of shadow
+                                                  offset: const Offset(0, 0),
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child:  Image.asset(
-                                                  'images/assets.png',
-                                                  fit: BoxFit.contain,
-                                                  width: 30,
-                                                  height: 30,
-                                                ),
+                                              child: Image.asset(
+                                                'images/files.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                         const SizedBox(height: 5),
-                                        // Add spacing between image and text
+                                        Text(
+                                          AppLocalizations.of(context)!.documents,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(width: 20),
+                                  if (hasAssets)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const AssetsScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/assets.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
                                         Text(
                                           AppLocalizations.of(context)!.assets,
                                           style: GoogleFonts.inter(
@@ -1650,8 +2010,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (hasTeams)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1659,8 +2018,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const TeamScreen()));
+                                                    builder: (context) => const TeamScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1670,25 +2028,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withValues(alpha: 0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
-                                                  offset: const Offset(0, 0), // changes position of shadow
+                                                  offset: const Offset(0, 0),
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child:  Image.asset(
-                                                  'images/Team.png',
-                                                  fit: BoxFit.contain,
-                                                  width: 30,
-                                                  height: 30,
-                                                ),
+                                              child: Image.asset(
+                                                'images/Team.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                         const SizedBox(height: 5),
-                                        // Add spacing between image and text
                                         Text(
                                           AppLocalizations.of(context)!.teams,
                                           style: GoogleFonts.inter(
@@ -1700,13 +2057,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == 'L2' ||singletonClass.getJWTModel()?.grade == 'L3' ||
-                                      singletonClass.getJWTModel()?.grade == 'L4' || singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                                  if (hasComplaints)
                                     Column(
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (context)=> const Complaints()));
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const Complaints()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1716,28 +2075,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withValues(alpha: 0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
-                                                  offset: const Offset(0, 0), // changes position of shadow
+                                                  offset: const Offset(0, 0),
                                                 ),
                                               ],
                                             ),
                                             child: Center(
-                                              child:  Image.asset(
-                                                  'images/Complain.png',
-                                                  fit: BoxFit.contain,
-                                                  width: 30,
-                                                  height: 30,
-                                                ),
+                                              child: Image.asset(
+                                                'images/Complain.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
                                         const SizedBox(height: 5),
-                                        // Add spacing between image and text
                                         Text(
-                                          AppLocalizations.of(context)!
-                                              .complaints,
+                                          AppLocalizations.of(context)!.complaints,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -1747,49 +2104,53 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> const PenaltyAndFineScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey.withValues(alpha: 0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0), // changes position of shadow
+                                  if (hasPenaltiesAndFines)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                    const PenaltyAndFineScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/Penalties.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child:  Image.asset(
-                                              'images/Penalties.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      // Add spacing between image and text
-                                      Text(
-                                       AppLocalizations.of(context)!.penalties,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!.penalties,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -1821,9 +2182,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       children: [
                                         Text(
                                           AppLocalizations.of(context)!
-                                              .activity,
+                                              .empLeaveBalance,
                                           style: GoogleFonts.inter(
-                                            fontSize: 20,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -1831,115 +2192,221 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(height: 5),
                                     SizedBox(
-                                      height: 105,
-                                      child: singletonClass.notificationModelList.isNotEmpty &&
-                                          singletonClass.notificationModelList.first.data != null &&
-                                          singletonClass.notificationModelList.first.data!.isNotEmpty
-                                          ? ListView.builder(
-                                        padding: const EdgeInsets.all(5),
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: singletonClass.notificationModelList.first.data!.length,
-                                        itemBuilder: (BuildContext context, int index) {
-                                          final activities =
-                                          singletonClass.notificationModelList.first.data![index];
-
-                                          return SizedBox(
-                                            width: 200,
-                                            child: Container(
-                                              margin: const EdgeInsets.only(right: 10),
-                                              height: 100,
-                                              decoration: BoxDecoration(
-                                                borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey.withValues(alpha: 0.3),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 5,
-                                                    offset: const Offset(0, 0),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      '${activities.notificationType}',
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
-                                                      ),
+                                        height: 105,
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                height: 90,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          4.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                    child: Text(
-                                                      singletonClass.formatTime("${activities.createdAt}"),
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.w500,
-                                                        fontSize: 13,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .leaveThisMonth,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/thisMonthIcon.png"),
+                                                          )
+                                                        ],
                                                       ),
-                                                    ),
-                                                  ),
-                                                  const Spacer(),
-                                                  Container(
-                                                    width: double.infinity,
-                                                    padding: const EdgeInsets.symmetric(
-                                                        horizontal: 10, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: _getColorForActivity(activities.status!),
-                                                      borderRadius: const BorderRadius.only(
-                                                        bottomLeft: Radius.circular(15),
-                                                        bottomRight: Radius.circular(15),
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        Text(
-                                                            "${activities.status}",
-                                                            maxLines: 2,
-                                                            overflow: TextOverflow.ellipsis, // Clips or fades the text
-                                                            softWrap: true,
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "1/6",
                                                             style: GoogleFonts.inter(
-                                                              color: Colors.white,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-
-                                                        const Spacer(),
-                                                        Text(
-                                                          singletonClass.formatDate2("${activities.createdAt}"),
-                                                          style: GoogleFonts.inter(
-                                                            fontWeight: FontWeight.w500,
-                                                            fontSize: 13,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 90,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
                                                     ),
                                                   ),
-                                                ],
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .remoteDaysThisMonth,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/remoteIcon.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "2/6",
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        },
-                                      )
-                                          : Center(
-                                        child: Text(
-                                          "No notifications available",
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: Colors.grey,
+                                              Container(
+                                                height: 90,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          4.0, // Set the border width
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .sickDaysThisMonth,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/thisMonth.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "0/6",
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
                                           ),
-                                        ),
-                                      ),
-                                    )
-
+                                        )),
                                   ],
                                 ),
                               ),
@@ -1953,43 +2420,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
             ),
           ),
-          if(isLoading)
-            Center(child:  SizedBox(
-              height: 200,
-              width: 200,
-              child: Lottie.asset(
-                  'images/loader.json'
+          if (isLoading)
+            Center(
+              child: SizedBox(
+                height: 200,
+                width: 200,
+                child: Lottie.asset('images/loader.json'),
               ),
-            ),)
+            )
         ],
       ),
     );
   }
 
-  Color _getColorForActivity(String status) {
-    switch (status) {
-      case 'late':
-        return Colors.red;
-      case 'approved':
-        return Colors.green;
-      case 'pending':
-        return NasColors.pending;
-      default:
-        return Colors.grey; // or any other default color
+  Color _getContainerColor() {
+    if (singletonClass.attendanceDataList.isNotEmpty &&
+        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty) {
+      final data = singletonClass.attendanceDataList.first.data!.data!.first;
+      if ((data.lateMinutes ?? 0) > 0) {
+        return NasColors.pending.withOpacity(0.25);
+      } else if ((data.earlyCheckOut ?? 0) > 0) {
+        return NasColors.onTime;
+      } else if (data.clockInTime!.isNotEmpty) {
+        return NasColors.onTime.withOpacity(0.25);
+      }
     }
+    return Colors.white;
   }
 
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
       // Ensure the value is treated as a double and then round it
-      double roundedMinutes = (minutes is int) ? minutes.toDouble() : double.parse(minutes.toString());
-      return roundedMinutes.ceil().toString(); // Round up to the nearest integer
+      double roundedMinutes = (minutes is int)
+          ? minutes.toDouble()
+          : double.parse(minutes.toString());
+      return roundedMinutes
+          .ceil()
+          .toString(); // Round up to the nearest integer
     } catch (e) {
       return '--';
     }
   }
-
 
   Future<void> checkIn(String type) async {
     String currentTime = DateTime.now().toUtc().toIso8601String();
@@ -2033,18 +2505,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         await singletonClass.getClockingData();
         // Show success alert
-         await QuickAlert.show(
+        await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
-          title:  AppLocalizations.of(context)!.success,
+          title: AppLocalizations.of(context)!.success,
           text: AppLocalizations.of(context)!.checkInComplete,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-         setState(() {
-
-         });
+        setState(() {});
       } else if (response.statusCode == 400) {
         // Show error alert for status code 400
         QuickAlert.show(
@@ -2092,11 +2562,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> checkOut() async {
     String currentTime = DateTime.now().toUtc().toIso8601String();
     String checkOutTime = '${currentTime.split('.')[0]}.000Z';
-    String? checkInTime = singletonClass.clockingDataList.first.data?.last.checkInTime;
+    String? checkInTime =
+        singletonClass.clockingDataList.first.data?.last.checkInTime;
     DateTime checkInDateTime = DateTime.parse(checkInTime!);
     DateTime checkOutDateTime = DateTime.parse(checkOutTime);
     Duration difference = checkOutDateTime.difference(checkInDateTime);
-    String totalHours = "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
+    String totalHours =
+        "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
     print(totalHours);
     String? id = singletonClass.clockingDataList.first.data?.last.id;
     Map<String, dynamic> data = {
@@ -2148,9 +2620,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        setState(() {
-
-        });
+        setState(() {});
       } else if (response.statusCode == 400) {
         // Show error alert for status code 400
         QuickAlert.show(
@@ -2197,14 +2667,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
-    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+    String url =
+        '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
 
     // Fallbacks if any location is null
     String finalLocation = _openLocation ?? "0.0,0.0";
 
-    Map<String, dynamic> data = {
-      "lastLocation": finalLocation
-    };
+    Map<String, dynamic> data = {"lastLocation": finalLocation};
 
     String jsonData = jsonEncode(data);
     log("remote Location Json$jsonData");
@@ -2227,8 +2696,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       print("send remote loc:${response.body}");
       final decodedResponse = json.decode(response.body);
       if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
-      } else {
-      }
+      } else {}
     } catch (error) {
       print('Failed to send data. Error: $error');
     }
@@ -2262,4 +2730,3 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return '${position.latitude}|${position.longitude}';
   }
 }
-

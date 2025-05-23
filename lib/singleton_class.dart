@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
+import 'package:nashr/request_controller/policy_model.dart';
 import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
@@ -34,6 +35,7 @@ import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
+import 'package:nashr/request_controller/ui_settings_model.dart';
 
 class SingletonClass {
   factory SingletonClass() {
@@ -84,6 +86,8 @@ class SingletonClass {
   List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
   List<EventModel> eventDataList = [];
+  List<PolicyModel> policyModelDataList = [];
+  List<UiSettingsModel> uiSettingsModelDataList = [];
   String? checkInStatus ;
   String? checkOutStatus ;
   String? fcmToken;
@@ -188,6 +192,36 @@ class SingletonClass {
 
 
 //API Calls
+  Future<UiSettingsModel?> getUISettingsData() async {
+    String? employeeId =  getJWTModel()?.employeeId;
+    String? grade =  getJWTModel()?.grade;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/organization/getUiSettings/$employeeId/$grade');
+    var response = await client.get(uri);
+    log("UI SETTINGS DATA ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var uiSettingsData = UiSettingsModel.fromJson(responseBody);
+      uiSettingsModelDataList.addAll([uiSettingsData]);
+      return uiSettingsData;
+    }
+    return null ; // Print the response body
+  }
+
+  Future<PolicyModel?> getPolicyData() async {
+    String? policyId =  companyDataList.first.data!.policies!.first.policyId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/policies/$policyId');
+    var response = await client.get(uri);
+    log("POLICY DATA ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var policyData = PolicyModel.fromJson(responseBody);
+      policyModelDataList.addAll([policyData]);
+      return policyData;
+    }
+    return null ; // Print the response body
+  }
 
   Future<EmployeeData?> getEmployeeData() async {
     String? employeeId =  getJWTModel()?.employeeId;
@@ -306,7 +340,10 @@ class SingletonClass {
     }
   }
   //ATTENDANCE API CALL
-  Future<AttendanceData?> getEmployeeAttendanceData() async {
+  Future<AttendanceData?> getEmployeeAttendanceData({
+    int limit = 31,
+    int page = 0,
+  }) async {
     String? employeeId = getJWTModel()?.employeeId;
     var client = http.Client();
     DateTime now = DateTime.now();
@@ -315,7 +352,7 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
+        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri);
     log("attendance of user${response.body}");
@@ -398,6 +435,12 @@ class SingletonClass {
     int hours = totalMinutes ~/ 60;  // Get hours
     int minutes = totalMinutes % 60; // Get remaining minutes
     return "$hours h $minutes min";  // Return formatted string
+  }
+
+  bool isToday(String? datetimeString) {
+    if (datetimeString == null || datetimeString.isEmpty) return false;
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return datetimeString.startsWith(today);
   }
 
 }
