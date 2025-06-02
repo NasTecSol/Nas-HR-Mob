@@ -61,7 +61,7 @@ class MobileModules {
   String? icon;
   bool? isTab;
   bool? hidden;
-  List<SubMenu>? subMenu;
+  List<dynamic>? subMenu;
 
   MobileModules({this.title, this.navigationUrl, this.name, this.icon, this.isTab, this.hidden, this.subMenu});
 
@@ -72,7 +72,7 @@ class MobileModules {
     icon = json["icon"];
     isTab = json["isTab"];
     hidden = json["hidden"];
-    subMenu = json["subMenu"] == null ? null : (json["subMenu"] as List).map((e) => SubMenu.fromJson(e)).toList();
+    subMenu = json["subMenu"] ?? [];
   }
 
   Map<String, dynamic> toJson() {
@@ -84,7 +84,7 @@ class MobileModules {
     _data["isTab"] = isTab;
     _data["hidden"] = hidden;
     if(subMenu != null) {
-      _data["subMenu"] = subMenu?.map((e) => e.toJson()).toList();
+      _data["subMenu"] = subMenu;
     }
     return _data;
   }

@@ -58,7 +58,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
   Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> ownTeams = [];
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
             for (var team in department.teams ?? []) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;

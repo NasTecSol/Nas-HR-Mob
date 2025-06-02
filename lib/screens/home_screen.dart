@@ -48,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? _openLocation;
   String? _backgroundLocation;
 
-
   @override
   void initState() {
     super.initState();
@@ -218,19 +217,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final titles = uiSettings.map((e) => e.title?.toString() ?? '').toList();
     final hasDocuments =
         titles.any((title) => title == "Document" || title == "Documents");
-    final hasTeams = titles.any((title) => title == "teams" || title == "Teams");
-    final hasTeamClocking =
-        titles.any((title) => title == "teamClockings" || title == "teamClockings");
+    final hasTeams =
+        titles.any((title) => title == "teams" || title == "Teams");
+    final hasTeamClocking = titles
+        .any((title) => title == "teamClockings" || title == "teamClockings");
     final hasAssets =
         titles.any((title) => title == "assets" || title == "Assets");
-    final hasTeamAttendance =
-    titles.any((title) => title == "teamAttendance" || title == "teamAttendance");
+    final hasTeamAttendance = titles
+        .any((title) => title == "teamAttendance" || title == "teamAttendance");
     final hasAttendance =
-    titles.any((title) => title == "attendance" || title == "attendance");
+        titles.any((title) => title == "attendance" || title == "attendance");
     final hasComplaints =
-    titles.any((title) => title == "complaints" || title == "complaints");
-    final hasPenaltiesAndFines =
-    titles.any((title) => title == "penaltiesAndFines" || title == "penaltiesAndFines");
+        titles.any((title) => title == "complaints" || title == "complaints");
+    final hasPenaltiesAndFines = titles.any((title) =>
+        title == "penaltiesAndFines" || title == "penaltiesAndFines");
     return OverlayEntry(
         builder: (context) => Positioned(
             top: 0,
@@ -443,156 +443,159 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         children: [
                           Column(
                             children: [
-                              if(hasComplaints)...[
-                              GestureDetector(
-                                onTap: () {
-                                  _removeOverlay();
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const Complaints()));
-                                },
-                                child: Container(
-                                  height: 65,
-                                  width: 65,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 0.5,
-                                        offset: const Offset(
-                                            0, 0), // changes position of shadow
+                              if (hasComplaints) ...[
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const Complaints()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/Complain.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'images/Complain.png',
-                                      fit: BoxFit.contain,
-                                      width: 30,
-                                      height: 30,
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                AppLocalizations.of(context)!.complaints,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.complaints,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),]
+                              ]
                             ],
                           ),
                           SizedBox(width: 40),
-                          if(hasPenaltiesAndFines)...[
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  _removeOverlay();
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const PenaltyAndFineScreen()));
-                                },
-                                child: Container(
-                                  height: 65,
-                                  width: 65,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 0.5,
-                                        offset: const Offset(
-                                            0, 0), // changes position of shadow
+                          if (hasPenaltiesAndFines) ...[
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const PenaltyAndFineScreen()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/Penalties.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'images/Penalties.png',
-                                      fit: BoxFit.contain,
-                                      width: 30,
-                                      height: 30,
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                AppLocalizations.of(context)!.penalties,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.penalties,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),],
+                              ],
+                            ),
+                          ],
                           SizedBox(width: 40),
-                          if(hasAttendance)...[
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  _removeOverlay();
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const AttendanceScreen()));
-                                },
-                                child: Container(
-                                  height: 65,
-                                  width: 65,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 0.5,
-                                        offset: const Offset(
-                                            0, 0), // changes position of shadow
+                          if (hasAttendance) ...[
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const AttendanceScreen()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/attendance.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      'images/attendance.png',
-                                      fit: BoxFit.contain,
-                                      width: 30,
-                                      height: 30,
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                AppLocalizations.of(context)!.attendance,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.attendance,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),],
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                       SizedBox(height: 40),
@@ -741,16 +744,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final uiSettings =
         singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
 
-    final hasDocuments = uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
-    final hasTeams = uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+    final hasDocuments =
+        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+    final hasTeams =
+        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
     final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
-    final hasAssets = uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasAssets =
+        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
     final hasComplaints = uiSettings.any((e) => e.title == "complaints");
-    final hasPenaltiesAndFines = uiSettings.any((e) => e.title == "penaltiesAndFines");
-    final hasChatBot = uiSettings.any((e) =>
-    e.title == "chatBot" && e.hidden == true);
-    final hasNotChatBot = uiSettings.any((e) =>
-    e.title == "chatBot" && e.hidden == false);
+    final hasPenaltiesAndFines =
+        uiSettings.any((e) => e.title == "penaltiesAndFines");
+    final hasChatBot =
+        uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
+    final hasNotChatBot =
+        uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -1090,15 +1097,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Column(
                                       children: [
-                                        if (singletonClass
-                                            .attendanceDataList
-                                            .first
-                                            .data!
-                                            .data!
-                                            .first
-                                            .clockInTime!
-                                            .isNotEmpty)
-                                          Container(
+                                        if (singletonClass.attendanceDataList.isNotEmpty &&
+                                            singletonClass.attendanceDataList.first.data != null &&
+                                            singletonClass.attendanceDataList.first.data!.data != null &&
+                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty &&
+                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime != null &&
+                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime!.isNotEmpty)
+                                        Container(
                                             height: 30,
                                             decoration: BoxDecoration(
                                               borderRadius:
@@ -1360,87 +1365,91 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                                 const SizedBox(width: 12),
                                 if (hasChatBot)
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ChatScreen()));
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(15)),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey
-                                                .withValues(alpha: 0.5),
-                                            spreadRadius: 2,
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Container(
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.only(
-                                                topLeft: Radius.circular(15),
-                                                topRight: Radius.circular(15),
-                                              ),
-                                              color: NasColors.darkBlue,
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ChatScreen()));
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
                                             ),
-                                            child: Row(
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  topRight: Radius.circular(15),
+                                                ),
+                                                color: NasColors.darkBlue,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .nassMudeer,
+                                                    style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                Text(
-                                                  AppLocalizations.of(context)!
-                                                      .nassMudeer,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.white),
+                                                SizedBox(
+                                                    height: 100,
+                                                    width: 80,
+                                                    child: Align(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Text(
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          "${AppLocalizations.of(context)!.hey} ${singletonClass.employeeDataList.first.data!.firstName} !"),
+                                                    )),
+                                                SizedBox(
+                                                  height: 95,
+                                                  width: 95,
+                                                  child: Lottie.asset(
+                                                      'images/AIMudder.json'),
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                  height: 100,
-                                                  width: 80,
-                                                  child: Align(
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        "${AppLocalizations.of(context)!.hey} ${singletonClass.employeeDataList.first.data!.firstName} !"),
-                                                  )),
-                                              SizedBox(
-                                                height: 95,
-                                                width: 95,
-                                                child: Lottie.asset(
-                                                    'images/AIMudder.json'),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 10,)
-                                        ],
+                                            SizedBox(
+                                              height: 10,
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                if(hasNotChatBot)
+                                if (hasNotChatBot)
                                   Expanded(
                                       child: Container(
                                     decoration: BoxDecoration(
@@ -1457,70 +1466,68 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                        child:  Column(
-                                          children: [
-                                            Container(
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
                                                 const BorderRadius.only(
-                                                  topLeft: Radius.circular(15),
-                                                  topRight: Radius.circular(15),
-                                                ),
-                                                color: NasColors.darkBlue,
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
+                                              topLeft: Radius.circular(15),
+                                              topRight: Radius.circular(15),
+                                            ),
+                                            color: NasColors.darkBlue,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
                                                 MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!
-                                                        .totalHours,
-                                                    style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                        color: Colors.white),
-                                                  ),
-                                                ],
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!
+                                                    .totalHours,
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white),
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
+                                            ],
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
                                               MainAxisAlignment.center,
-                                              children: [
-                                                SizedBox(
-                                                    height: 100,
-                                                    width: 100,
-                                                    child: Align(
-                                                      alignment: Alignment.center,
-                                                      child: Text(
-                                                        singletonClass.attendanceDataList.isNotEmpty &&
+                                          children: [
+                                            SizedBox(
+                                                height: 100,
+                                                width: 100,
+                                                child: Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    singletonClass.attendanceDataList.isNotEmpty &&
                                                             singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
-                                                            ? '${AppLocalizations.of(context)!.worked} '
-                                                            '${singletonClass.formatMinutes(
-                                                            double.tryParse(
-                                                                singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0'
-                                                            )?.round() ?? 0
-                                                        )}'
-                                                            : '${AppLocalizations.of(context)!.worked} NA',
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 15,
-                                                          fontWeight: FontWeight.normal,
-                                                        ),
-                                                      ),
-                                                    )),
-                                                SizedBox(
-                                                  height: 55,
-                                                  width: 55,
-                                                  child: Lottie.asset(
-                                                      'images/totalWork.json'),
-                                                ),
-                                              ],
+                                                        ? '${AppLocalizations.of(context)!.worked} '
+                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0)}'
+                                                        : '${AppLocalizations.of(context)!.worked} NA',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                )),
+                                            SizedBox(
+                                              height: 55,
+                                              width: 55,
+                                              child: Lottie.asset(
+                                                  'images/totalWork.json'),
                                             ),
-                                            SizedBox(height: 10,)
                                           ],
                                         ),
+                                        SizedBox(
+                                          height: 10,
+                                        )
+                                      ],
+                                    ),
                                   ))
                               ],
                             ),
@@ -1533,35 +1540,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
                                     final lastData = singletonClass
-                                                .attendanceDataList
-                                                .isNotEmpty &&
+                                                .attendanceDataList.isNotEmpty &&
                                             singletonClass.attendanceDataList
                                                     .first.data !=
                                                 null &&
                                             singletonClass.attendanceDataList
                                                 .first.data!.data!.isNotEmpty
-                                        ? singletonClass.attendanceDataList
-                                            .first.data!.data!.first
+                                        ? singletonClass
+                                            .attendanceDataList.first.data!.data!.first
                                         : null;
 
                                     final checkInTime = lastData?.clockInTime;
                                     final checkOutTime = lastData?.clockOutTime;
 
-                                    if ((checkInTime == null ||
-                                            !singletonClass
-                                                .isToday(checkInTime)) ||
-                                        (checkOutTime != null &&
-                                            singletonClass
-                                                .isToday(checkOutTime))) {
+                                    if (checkInTime == null ||
+                                        checkOutTime != null) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition >
                                           MediaQuery.of(context).size.width *
                                               0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (singletonClass.isToday(checkInTime) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
+                                    } else if (checkInTime.isNotEmpty &&
+                                        checkOutTime == null) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition <
                                           -MediaQuery.of(context).size.width *
@@ -1574,47 +1575,52 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
                                     final lastData = singletonClass
-                                                .attendanceDataList
-                                                .isNotEmpty &&
+                                                .attendanceDataList.isNotEmpty &&
                                             singletonClass.attendanceDataList
                                                     .first.data !=
                                                 null &&
                                             singletonClass.attendanceDataList
                                                 .first.data!.data!.isNotEmpty
-                                        ? singletonClass.attendanceDataList
-                                            .first.data!.data!.first
+                                        ? singletonClass
+                                            .attendanceDataList.first.data!.data!.last
                                         : null;
 
                                     final checkInTime = lastData?.clockInTime;
                                     final checkOutTime = lastData?.clockOutTime;
 
-                                    if ((checkInTime == null ||
-                                            !singletonClass
-                                                .isToday(checkInTime)) ||
-                                        (checkOutTime != null &&
-                                            singletonClass
-                                                .isToday(checkOutTime))) {
+                                    if (checkInTime == null ||
+                                        checkOutTime != null) {
                                       if (_isSliderCompleted &&
                                           details.velocity.pixelsPerSecond.dx >
                                               0) {
                                         _overlayEntry = _createOverlayEntry();
                                         Overlay.of(context)
                                             .insert(_overlayEntry!);
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
                                       }
-                                    } else if (singletonClass.isToday(checkInTime) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
+                                    } else if (checkInTime.isNotEmpty &&
+                                        checkOutTime == null) {
                                       if (_isSliderCompleted &&
                                           details.velocity.pixelsPerSecond.dx <
                                               0) {
                                         _overlayEntry = _createOverlayEntry();
                                         Overlay.of(context)
                                             .insert(_overlayEntry!);
+                                      } else {
+                                        setState(() {
+                                          _dragPosition = 0;
+                                          _isSliderCompleted = false;
+                                        });
                                       }
                                     }
-
-                                    _dragPosition = 0;
-                                    _isSliderCompleted = false;
                                   });
                                 },
                                 child: Container(
@@ -1637,24 +1643,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   height: 60,
                                   child: (() {
                                     final lastData = singletonClass
-                                                .attendanceDataList
-                                                .isNotEmpty &&
+                                                .attendanceDataList.isNotEmpty &&
                                             singletonClass.attendanceDataList
                                                     .first.data !=
                                                 null &&
                                             singletonClass.attendanceDataList
                                                 .first.data!.data!.isNotEmpty
-                                        ? singletonClass.attendanceDataList
-                                            .first.data!.data!.first
+                                        ? singletonClass
+                                            .attendanceDataList.first.data!.data!.first
                                         : null;
 
                                     final checkInTime = lastData?.clockInTime;
                                     final checkOutTime = lastData?.clockOutTime;
 
-                                    if (checkInTime != null &&
-                                        singletonClass.isToday(checkInTime) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
+                                    if ((checkInTime != null && checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null || checkOutTime.isEmpty)) {
                                       return Padding(
                                         padding: const EdgeInsets.only(
                                             top: 5.0, left: 30),
@@ -1877,7 +1880,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const TeamClocking()));
+                                                    builder: (context) =>
+                                                        const TeamClocking()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1887,7 +1891,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -1906,7 +1911,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
-                                          AppLocalizations.of(context)!.teamClocking,
+                                          AppLocalizations.of(context)!
+                                              .teamClocking,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -1924,7 +1930,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const DocumentScreen()));
+                                                    builder: (context) =>
+                                                        const DocumentScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1934,7 +1941,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -1953,7 +1961,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
-                                          AppLocalizations.of(context)!.documents,
+                                          AppLocalizations.of(context)!
+                                              .documents,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -1971,7 +1980,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const AssetsScreen()));
+                                                    builder: (context) =>
+                                                        const AssetsScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1981,7 +1991,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2018,7 +2029,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const TeamScreen()));
+                                                    builder: (context) =>
+                                                        const TeamScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -2028,7 +2040,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2065,7 +2078,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const Complaints()));
+                                                    builder: (context) =>
+                                                        const Complaints()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -2075,7 +2089,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2094,7 +2109,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
-                                          AppLocalizations.of(context)!.complaints,
+                                          AppLocalizations.of(context)!
+                                              .complaints,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -2113,7 +2129,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 context,
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                    const PenaltyAndFineScreen()));
+                                                        const PenaltyAndFineScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -2123,7 +2139,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2142,7 +2159,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
-                                          AppLocalizations.of(context)!.penalties,
+                                          AppLocalizations.of(context)!
+                                              .penalties,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
