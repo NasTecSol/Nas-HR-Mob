@@ -51,7 +51,7 @@ class _TeamClockingState extends State<TeamClocking> {
     print('Branch Data List length: ${branchDataList.length}');
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data!.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
           // Check if the user is a supervisor in the department
           bool isSupervisor = department.supervisors?.any(
@@ -248,30 +248,22 @@ class _TeamClockingState extends State<TeamClocking> {
                       itemCount: filteredClockingDataList.length,
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredClockingDataList.reversed.toList()[index];
-                        final shift = singletonClass.branchDataList.first.data
-                            ?.departmentDetails?.first.shifts;
-                        // Parse shift times and clock times for the current index
+                        final shift = singletonClass.branchDataList.first.data?.branch!.departmentDetails?.first.shifts;
                         DateTime? checkInTime = parseTime(team.checkInTime ?? '');
                         DateTime? checkOutTime = parseTime(team.checkOutTime ?? '');
                         DateTime? shiftFromTime = parseTime(shift!.first.timeFrom ?? '');
                         DateTime? shiftToTime = parseTime(shift.first.timeTo ?? '');
-                        // Calculate late and early durations
                         Duration lateDuration = Duration.zero;
-
                         if (checkInTime != null && shiftFromTime != null) {
-                          // Null checks for policy data
                           var policyData = singletonClass.policyModelDataList.isNotEmpty
                               ? singletonClass.policyModelDataList.first.data
                               : null;
-
                           var attendancePolicy = policyData?.attendancePolicy;
                           var lateComingsPolicy = attendancePolicy?.lateComingsPolicy;
                           int? graceMinutes = lateComingsPolicy?.gracePeriodMinutes;
-
                           if (graceMinutes != null) {
                             Duration gracePeriod = Duration(minutes: graceMinutes);
                             DateTime graceEndTime = shiftFromTime.add(gracePeriod);
-
                             if (checkInTime.isAfter(graceEndTime)) {
                               lateDuration = checkInTime.difference(graceEndTime);
                             }

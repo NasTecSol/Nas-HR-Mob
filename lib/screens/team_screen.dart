@@ -93,7 +93,7 @@ class _TeamScreenState extends State<TeamScreen> {
     print('Branch Data List length: ${branchDataList.length}');
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
           // Check if the user is a supervisor in the department
           bool isSupervisor = department.supervisors?.any((supervisor) => supervisor.empId == reportingManagerId) ?? false;
