@@ -1707,16 +1707,120 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      "images/companyCard.png",
-                                      height: 250,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment.topCenter,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: NasColors.lightGrey,
+                                      borderRadius: BorderRadius.circular(10)
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.asset(
+                                            "images/employeeContractHeader.png",
+                                            height: 80,
+                                            width: double.infinity,
+                                            fit: BoxFit.fitWidth,
+                                            alignment: Alignment.topCenter,
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 8.0),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: Image.network(
+                                                  "${singletonClass.employeeDataList.first.data!.profilePic}",
+                                                  height: 100,
+                                                  width: 80,
+                                                  fit: BoxFit.cover,
+                                                  alignment: Alignment.topCenter,
+                                                ),
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            SizedBox(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "Contract ID: ${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Name: ${singletonClass.employeeDataList.first.data!.firstName} ${singletonClass.employeeDataList.first.data!.middleName} ${singletonClass.employeeDataList.first.data!.lastName}",
+                                                    maxLines: 4,
+                                                    softWrap: true,
+                                                    textAlign: TextAlign.left,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Employee Number: ${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Expiry Date: ${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Contract Status: ${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Spacer()
+                                          ],
+                                        ),
+                                        SizedBox(height: 10),
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10) , bottomRight:  Radius.circular(10)),
+                                          child: Image.asset(
+                                            "images/employeeContractFooter.png",
+
+                                            fit: BoxFit.fitWidth,
+                                            alignment: Alignment.topCenter,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
+
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
