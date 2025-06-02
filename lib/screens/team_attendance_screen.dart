@@ -22,6 +22,7 @@ class TeamAttendanceScreen extends StatefulWidget {
 
 class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   final SingletonClass singletonClass = SingletonClass();
+
   late String reportingManagerId;
   late List<Teams> filteredUnderTeams;
   List<TeamAttendanceData> filteredAttendanceDataList = [];
@@ -36,60 +37,80 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   void initState() {
     super.initState();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+
     List<BranchData> branchDataList = singletonClass.branchDataList;
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
+    log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
+
     loadData();
   }
+
 
   void _setDefaultDates() {
     final now = DateTime.now();
     _startDate = DateTime(now.year, now.month, 1);
     _endDate = now;
+    log("📆 Default Date Range: $_startDate to $_endDate");
   }
+
 
   void _initDates({required DateTime start, required DateTime end}) {
     _dates.clear();
     final now = DateTime.now();
-    for (var date = start;
-    !date.isAfter(end) && !date.isAfter(now);
-    date = date.add(const Duration(days: 1))) {
+
+    for (var date = start; !date.isAfter(end) && !date.isAfter(now); date = date.add(Duration(days: 1))) {
       _dates.add(date);
     }
+
     _selectedDateIndex = null;
-    _selectedDate =  null ;
+    _selectedDate = null;
+
+    log("📅 Generated ${_dates.length} dates from $start to $end");
   }
 
-  Map<String, List<Teams>> getFilteredTeams(
-      List<BranchData> branchDataList, String reportingManagerId) {
+
+  Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
+    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+    log("🔍 User grade: $userGrade");
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
-          if (userGrade == "L0" || userGrade == "L1") {
-            for (var team in department.teams ?? []) {
-              for (var supervisor in department.supervisors ?? []) {
-                if (supervisor.empId == reportingManagerId &&
-                    supervisor.teamId == team.teamId) {
-                  underTeams.add(team);
-                }
+          log("🏢 Department: ${department.departmentName}");
+          for (var supervisor in department.supervisors ?? []) {
+            log("👨‍💼 Supervisor: ${supervisor.empId}, Team ID: ${supervisor.teamId}");
+          }
+          for (var team in department.teams ?? []) {
+            log("🧑‍🤝‍🧑 Team: ${team.teamId}");
+            for (var supervisor in department.supervisors ?? []) {
+              if (supervisor.empId == reportingManagerId && supervisor.teamId == team.teamId) {
+                log("✅ Match found — Supervisor: ${supervisor.empId}, Team: ${team.teamId}");
+                underTeams.add(team);
               }
             }
           }
         }
       }
     }
+    log("🔍 Filtered ${underTeams.length} underTeams");
     return {'underTeams': underTeams};
   }
 
+
+
   Future<void> loadData() async {
+    log("📥 Starting data load...");
     await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
     filterAttendanceData();
   }
+
 
   Future<TeamAttendanceModel?> getTeamAttendanceData({
     DateTime? startDate,
@@ -97,43 +118,64 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     int limit = 10000,
     int page = 0,
   }) async {
+    log("📡 Fetching attendance data...");
     Set<String> employeeIds = {};
+
     for (var team in filteredUnderTeams) {
-      for (var member in team.teamData ?? []) {
-        employeeIds.add(member.employeeId!);
+      log("👥 Checking team: ${team.teamId}");
+      if (team.teamData != null) {
+        for (var member in team.teamData!) {
+          if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+            employeeIds.add(member.employeeId!);
+            log(" - Found Employee ID: ${member.employeeId}");
+          } else {
+            log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+          }
+        }
+      } else {
+        log(" - ⚠️ teamData is null for team: ${team.teamId}");
       }
     }
-    String ids = employeeIds.join(',');
-    String? startDateStr;
-    String? endDateStr;
 
-    if(startDate != null && endDate != null){
-     startDateStr = '${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}-${startDate.year}';
-     endDateStr = '${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}-${endDate.year}'; }
-    else {
-      DateTime now = DateTime.now();
-      DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
-       startDateStr = '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
-       endDateStr = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+    if (employeeIds.isEmpty) {
+      log("❌ No employee IDs found. Skipping API call.");
+      return null;
     }
 
-    var uri = Uri.parse(
-      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page',
-    );
+    final ids = employeeIds.join(',');
+    final now = DateTime.now();
 
-    var response = await http.get(uri);
-    log("TEAM DATA LOG : ${response.body}");
-    log("TEAM ID's : $ids");
+    String startDateStr = startDate != null
+        ? '${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}-${startDate.year}'
+        : '${now.month.toString().padLeft(2, '0')}-01-${now.year}';
+
+    String endDateStr = endDate != null
+        ? '${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}-${endDate.year}'
+        : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+
+    final uri = Uri.parse(
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page');
+    log("🌐 Final Employee ID list: $ids");
+    log("🌐 API URL: $uri");
+
+    final response = await http.get(uri);
+    log("📨 TEAM DATA RESPONSE: ${response.statusCode}");
+    log("📨 TEAM DATA BODY: ${response.body}");
 
     if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var attendance = TeamAttendanceModel.fromJson(responseBody);
+      final responseBody = json.decode(response.body);
+      final attendance = TeamAttendanceModel.fromJson(responseBody);
       singletonClass.teamAttendanceDataList.clear();
       singletonClass.teamAttendanceDataList.add(attendance);
+      log("✅ Attendance data successfully fetched and saved");
       return attendance;
+    } else {
+      log("❌ Failed to fetch attendance data");
     }
+
     return null;
   }
+
 
   void filterAttendanceData() {
     List<TeamAttendanceData> allAttendanceData =

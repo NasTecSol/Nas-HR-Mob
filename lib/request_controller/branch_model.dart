@@ -1,6 +1,6 @@
 class BranchData {
-  int? statusCode;
-  String? statusMessage;
+  dynamic statusCode;
+  dynamic statusMessage;
   dynamic errorMessage;
   Data? data;
 
@@ -26,18 +26,60 @@ class BranchData {
 }
 
 class Data {
-  String? id;
-  String? parentCompanyId;
-  String? branchCompanyId;
-  List<DepartmentDetails>? departmentDetails;
-  String? createdAt;
-  String? updatedAt;
-  int? v;
-  String? branchName;
+  Branch? branch;
+  List<EmployeeShifts>? employeeShifts;
 
-  Data({this.id, this.parentCompanyId, this.branchCompanyId, this.departmentDetails, this.createdAt, this.updatedAt, this.v, this.branchName});
+  Data({this.branch, this.employeeShifts});
 
   Data.fromJson(Map<String, dynamic> json) {
+    branch = json["branch"] == null ? null : Branch.fromJson(json["branch"]);
+    employeeShifts = json["employeeShifts"] == null ? null : (json["employeeShifts"] as List).map((e) => EmployeeShifts.fromJson(e)).toList();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(branch != null) {
+      _data["branch"] = branch?.toJson();
+    }
+    if(employeeShifts != null) {
+      _data["employeeShifts"] = employeeShifts?.map((e) => e.toJson()).toList();
+    }
+    return _data;
+  }
+}
+
+class EmployeeShifts {
+  dynamic employeeId;
+  dynamic employeeShift;
+
+  EmployeeShifts({this.employeeId, this.employeeShift});
+
+  EmployeeShifts.fromJson(Map<String, dynamic> json) {
+    employeeId = json["employeeId"];
+    employeeShift = json["employeeShift"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["employeeId"] = employeeId;
+    _data["employeeShift"] = employeeShift;
+    return _data;
+  }
+}
+
+class Branch {
+  dynamic id;
+  dynamic parentCompanyId;
+  dynamic branchCompanyId;
+  List<DepartmentDetails>? departmentDetails;
+  dynamic createdAt;
+  dynamic updatedAt;
+  dynamic v;
+  dynamic branchName;
+
+  Branch({this.id, this.parentCompanyId, this.branchCompanyId, this.departmentDetails, this.createdAt, this.updatedAt, this.v, this.branchName});
+
+  Branch.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     parentCompanyId = json["parentCompanyId"];
     branchCompanyId = json["branchCompanyId"];
@@ -88,16 +130,18 @@ class DepartmentDetails {
 }
 
 class Shifts {
-  String? shiftName;
-  String? timeFrom;
-  String? timeTo;
-  String? startingFrom;
-  String? totalHours;
-  String? allowedBreak;
+  dynamic shiftType;
+  dynamic shiftName;
+  dynamic timeFrom;
+  dynamic timeTo;
+  dynamic startingFrom;
+  dynamic totalHours;
+  dynamic allowedBreak;
 
-  Shifts({this.shiftName, this.timeFrom, this.timeTo, this.startingFrom, this.totalHours, this.allowedBreak});
+  Shifts({this.shiftType, this.shiftName, this.timeFrom, this.timeTo, this.startingFrom, this.totalHours, this.allowedBreak});
 
   Shifts.fromJson(Map<String, dynamic> json) {
+    shiftType = json["shiftType"];
     shiftName = json["shiftName"];
     timeFrom = json["timeFrom"];
     timeTo = json["timeTo"];
@@ -108,6 +152,7 @@ class Shifts {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["shiftType"] = shiftType;
     _data["shiftName"] = shiftName;
     _data["timeFrom"] = timeFrom;
     _data["timeTo"] = timeTo;
@@ -119,8 +164,8 @@ class Shifts {
 }
 
 class Departments {
-  String? departmentId;
-  String? departmentName;
+  dynamic departmentId;
+  dynamic departmentName;
   List<Supervisors>? supervisors;
   List<Teams>? teams;
 
@@ -148,7 +193,7 @@ class Departments {
 }
 
 class Teams {
-  String? teamId;
+  dynamic teamId;
   List<TeamData>? teamData;
 
   Teams({this.teamId, this.teamData});
@@ -169,11 +214,11 @@ class Teams {
 }
 
 class TeamData {
-  String? empId;
-  String? employeeId;
-  String? userName;
-  String? designation;
-  String? grade;
+  dynamic empId;
+  dynamic employeeId;
+  dynamic userName;
+  dynamic designation;
+  dynamic grade;
 
   TeamData({this.empId, this.employeeId, this.userName, this.designation, this.grade});
 
@@ -197,12 +242,12 @@ class TeamData {
 }
 
 class Supervisors {
-  String? empId;
-  String? employeeId;
-  String? userName;
-  String? designation;
-  String? grade;
-  String? teamId;
+  dynamic empId;
+  dynamic employeeId;
+  dynamic userName;
+  dynamic designation;
+  dynamic grade;
+  dynamic teamId;
 
   Supervisors({this.empId, this.employeeId, this.userName, this.designation, this.grade, this.teamId});
 
