@@ -8,7 +8,7 @@ import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 class AssetsDetailsScreen extends StatefulWidget {
