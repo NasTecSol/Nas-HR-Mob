@@ -340,7 +340,10 @@ class SingletonClass {
     }
   }
   //ATTENDANCE API CALL
-  Future<AttendanceData?> getEmployeeAttendanceData() async {
+  Future<AttendanceData?> getEmployeeAttendanceData({
+    int limit = 31,
+    int page = 0,
+  }) async {
     String? employeeId = getJWTModel()?.employeeId;
     var client = http.Client();
     DateTime now = DateTime.now();
@@ -349,7 +352,7 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
+        '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri);
     log("attendance of user${response.body}");
@@ -432,6 +435,12 @@ class SingletonClass {
     int hours = totalMinutes ~/ 60;  // Get hours
     int minutes = totalMinutes % 60; // Get remaining minutes
     return "$hours h $minutes min";  // Return formatted string
+  }
+
+  bool isToday(String? datetimeString) {
+    if (datetimeString == null || datetimeString.isEmpty) return false;
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return datetimeString.startsWith(today);
   }
 
 }
