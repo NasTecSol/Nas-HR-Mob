@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
@@ -179,30 +179,40 @@ class _RequestScreenState extends State<RequestScreen> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
+                      child:ListView.builder(
                         shrinkWrap: true,
-                        itemCount: singletonClass
-                            .companyDataList.first.data!.request!.length,
+                        itemCount: singletonClass.companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass.companyDataList.first.data!.request![index];
 
-                          // Get all allowed request names from uiModules -> subMenu -> name
+                          // Collect all allowed titles from "Approval" submenu
                           final allowedRequestNames = <String>{};
-
-                          final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.uiModules ?? [];
+                          final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
 
                           for (var module in uiSettings) {
-                            if (module.title == 'Approval') { // Check if the module title is 'Approval'
-                              for (var sub in module.subMenu ?? []) { // Ensure subMenu is not null
-                                if (sub is Map && sub["mobileModule"] != null) {
-                                  allowedRequestNames.add(sub["mobileModule"]);
-                                } else if (sub is UiModules && sub.title != null) {
+                            if (module.title == 'Approval') {
+                              for (var sub in module.subMenu ?? []) {
+                                if (sub is Map && sub["title"] != null) {
+                                  allowedRequestNames.add(sub["title"]);
+                                } else if (sub is MobileModules && sub.title != null) {
                                   allowedRequestNames.add(sub.title!);
                                 }
                               }
                             }
                           }
-                          if (!allowedRequestNames.contains(request.requestName)) {
+
+                          final requestName = request.requestName?.toLowerCase() ?? '';
+                          final requestType = request.requestType?.toLowerCase() ?? '';
+
+                          final isAllowed = allowedRequestNames.any((allowed) {
+                            final allowedLower = allowed.toLowerCase();
+                            return requestName.contains(allowedLower) ||
+                                allowedLower.contains(requestName) ||
+                                requestType.contains(allowedLower) ||
+                                allowedLower.contains(requestType);
+                          });
+
+                          if (!isAllowed) {
                             return const SizedBox.shrink();
                           }
                           return Column(
@@ -3135,39 +3145,32 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/creditCard.png';
       case 'documentRequest':
         return 'images/files.png';
+        case 'expenseRequest':
+        return 'images/loan.png';
+        case 'complaintRequest':
+        return 'images/Complain.png';
       default:
-        return 'images/OverTime.png'; // Default image for company or other types
+        return 'images/OverTime.png';
     }
   }
 
   double? _getRemainingLeaveBalance(String? requestName) {
     if (requestName == null) return null;
-
-    // Get the leave balance object
     var leaveBalance = singletonClass.employeeDataList.first.data!.leaveBalance;
-
-    // Loop through leaveBalance to find the matching request name
     for (var entry in leaveBalance!.toJson().entries) {
-      // Log each entry to check keys
       print('Checking entry: ${entry.key}');
-
-      // Use case-insensitive comparison for the key
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
-        // Log the found entry
         print('Found entry: ${entry.key}: ${entry.value}');
-
-        // Accessing the remaining property correctly
         var remaining = entry.value['remaining'];
-        print(
-            'Remaining for ${entry.key}: $remaining'); // Log the remaining value
+        print('Remaining for ${entry.key}: $remaining');
 
         return remaining is num
             ? remaining.toDouble()
-            : null; // Ensure it's a double
+            : null;
       }
     }
 
-    return null; // Return null if no matching leave balance found
+    return null;
   }
 
   void _resetBottomSheetData() {
@@ -3256,7 +3259,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "${_translateBottomText(selectedRequest.requestName, context)}",
+                          _translateBottomText(selectedRequest.requestName, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -3274,7 +3277,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               color: Colors.grey,
                             ),
                             hint: Text(
-                              "${_translateRequest(selectedRequest.requestName, context)}",
+                              _translateRequest(selectedRequest.requestName, context),
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,

@@ -16,7 +16,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/projects_data_model.dart';
 import '../request_controller/task_attachment_model.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 
 class CreateTaskScreen extends StatefulWidget {
   final Data? projectData;

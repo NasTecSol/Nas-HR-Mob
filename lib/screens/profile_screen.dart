@@ -19,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
 import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'loan_screen.dart';
 

@@ -11,7 +11,7 @@ import 'package:nashr/screens/employee_details_screen_assets.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 

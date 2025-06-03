@@ -574,5 +574,18 @@
     "previewLetter": "معاينة الخطاب",
     "pleaseEnterLetterBody": "يرجى إدخال محتوى الخطاب",
     "pleaseEnterLetterSubject": "يرجى إدخال موضوع الخطاب",
-    "letterBody": "محتوى الخطاب"
+    "letterBody": "محتوى الخطاب",
+    "onTime": "في الوقت المحدد",
+    "nassMudeer": "ناس مدير",
+    "leaveThisMonth": "الإجازات هذا الشهر",
+    "remoteDaysThisMonth": "أيام العمل عن بُعد هذا الشهر",
+    "sickDaysThisMonth": "أيام المرض هذا الشهر",
+    "hey": "مرحبًا",
+    "whatsOnYourMindToday": "ما الذي يشغل بالك اليوم؟",
+    "tellMeAboutDocuments": "أخبرني عن المستندات",
+    "showMyInfo": "اعرض معلوماتي",
+    "leaveBalance": "رصيد الإجازات",
+    "myDepartment": "قسم عملي",
+    "whoIsDeveloper": "من هو المطور",
+    "card": "بطاقات"
 }

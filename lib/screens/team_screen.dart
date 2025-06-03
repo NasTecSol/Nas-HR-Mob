@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 
 import '../request_controller/branch_model.dart';
 
@@ -93,7 +93,7 @@ class _TeamScreenState extends State<TeamScreen> {
     print('Branch Data List length: ${branchDataList.length}');
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
           // Check if the user is a supervisor in the department
           bool isSupervisor = department.supervisors?.any((supervisor) => supervisor.empId == reportingManagerId) ?? false;

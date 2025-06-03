@@ -37,7 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   provider: ^6.1.1
   intl:
-  flutter_localization: ^0.3.2
+  flutter_localizations:
+    sdk: flutter
   shared_preferences: ^2.2.3
   lottie: ^3.1.2
   google_fonts: ^6.2.1
@@ -74,6 +75,8 @@ dependencies:
   path: ^1.8.0
   flutter_sound: ^9.2.13
   audioplayers: ^6.4.0
+  speech_to_text: ^7.0.0
+
 
 
 dev_dependencies:

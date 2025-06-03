@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/file_complaints_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/complaints_approver_model.dart';

@@ -15,7 +15,7 @@ import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/screens/task_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/branch_model.dart';
@@ -58,7 +58,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
   Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> ownTeams = [];
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
             for (var team in department.teams ?? []) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;

@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
 import '../request_controller/employee_details_assets_model.dart';
 import '../request_controller/employee_details_model.dart';
@@ -82,8 +83,7 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (snapshot.hasData && snapshot.data != null) {
                       var assetDetails = snapshot.data!;
-                      var objectDetails = assetDetails.data?.objectDetails;
-
+                      var objectDetails = assetDetails.data?.first.objectDetails;
                       return objectDetails == null
                           ? Center(
                         child: Text(
@@ -126,7 +126,7 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                                   const SizedBox(height: 10),
                                   Wrap(
                                     spacing: 4.0, // Space between tags
-                                    children: (assetDetails.data?.templateType ?? 'N/A')
+                                    children: (assetDetails.data?.first.templateType ?? 'N/A')
                                         .split('_')
                                         .where((word) => word.toLowerCase() != 'asset')
                                         .map((tag) => Chip(
@@ -142,51 +142,77 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                                   ),
 
                                   const SizedBox(height: 10),
-                                  GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Dialog(
-                                            backgroundColor: Colors.transparent, // Transparent background
-                                            child: Container(
-                                              // Adjust the width and height to suit your design
-                                              width: MediaQuery.of(context).size.width * 0.8,
-                                              height: MediaQuery.of(context).size.height * 0.3,
-                                              decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius: BorderRadius.circular(12.0), // Optional: Rounded corners
-                                              ),
-                                              child: objectDetails.img != null && objectDetails.img!.isNotEmpty
-                                                  ? Image.memory(
-                                                base64Decode(objectDetails.img!),
-                                                fit: BoxFit.contain,
-                                              )
-                                                  : Image.network(
-                                                'https://via.placeholder.com/150',
-                                                fit: BoxFit.fill,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: objectDetails.img != null && objectDetails.img!.isNotEmpty
-                                        ? Image.memory(
-                                      base64Decode(objectDetails.img!), // Assuming img now holds the Base64 string directly
-                                      height: 150,
-                                      width: 150,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                                    )
-                                        : Image.network(
-                                      'https://via.placeholder.com/150',
-                                      height: 150,
-                                      width: 150,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                                    ),
-                                  ),
+                                GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        final img = objectDetails.img ?? '';
+                                        final bool isUrl = img.startsWith('http') || img.startsWith('https');
 
-                                  const SizedBox(height: 10),
+                                        final imageWidget = isUrl
+                                            ? Image.network(
+                                          img,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.white),
+                                        )
+                                            : Image.memory(
+                                          base64Decode(img),
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.error, color: Colors.white),
+                                        );
+
+                                        return Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          child: Container(
+                                            width: MediaQuery.of(context).size.width * 0.8,
+                                            height: MediaQuery.of(context).size.height * 0.3,
+                                            decoration: BoxDecoration(
+                                              color: Colors.black,
+                                              borderRadius: BorderRadius.circular(12.0),
+                                            ),
+                                            child: imageWidget,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Builder(
+                                    builder: (_) {
+                                      final img = objectDetails.img ?? '';
+                                      final bool isUrl = img.startsWith('http') || img.startsWith('https');
+
+                                      if (img.isEmpty) {
+                                        return Image.network(
+                                          'https://via.placeholder.com/150',
+                                          height: 150,
+                                          width: 150,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                                        );
+                                      }
+
+                                      if (isUrl) {
+                                        return Image.network(
+                                          img,
+                                          height: 150,
+                                          width: 150,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                                        );
+                                      } else {
+                                        return Image.memory(
+                                          base64Decode(img),
+                                          height: 150,
+                                          width: 150,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
 
                                   // Displaying Parameters
                                   if (objectDetails.parameters != null)
@@ -212,14 +238,14 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                                           if (child.parameters != null)
                                             ...child.parameters!.entries.map((entry) {
                                               return Text('${entry.key}: ${entry.value}');
-                                            }).toList(),
+                                            }),
                                           if (child.additionalInfo != null)
                                             ...child.additionalInfo!.entries.map((entry) {
                                               return Text('${entry.key}: ${entry.value}');
-                                            }).toList(),
+                                            }),
                                         ],
                                       );
-                                    }).toList(),
+                                    }),
                                 ],
                               ),
                             ),
@@ -247,16 +273,28 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
     );
   }
   Future<EmployeeDetailsAssetsModel?> getEmployeeAssetsDetailsData() async {
-    int? assetId = widget.assetsInfo?.assetId;
-    var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetById/$assetId');
-    var response = await client.get(uri);
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var assetData = EmployeeDetailsAssetsModel.fromJson(responseBody);
-      singletonClass.employeeDetailsAssetsModel.add(assetData);
-      return assetData;
+    try {
+      int? assetId = widget.assetsInfo?.assetId;
+      var client = http.Client();
+      var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
+      var response = await client.get(uri);
+
+      log("EMPLOYEE ASSETS DETAILS RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        var responseBody = json.decode(response.body);
+        var assetData = EmployeeDetailsAssetsModel.fromJson(responseBody);
+        singletonClass.employeeDetailsAssetsModel.add(assetData);
+        return assetData;
+      } else {
+        log("ERROR: Failed to fetch asset details. Status Code: ${response.statusCode}");
+        log("Response Body: ${response.body}");
+      }
+    } catch (e, stackTrace) {
+      log("Exception occurred while fetching employee asset details: $e");
+      log("StackTrace: $stackTrace");
     }
     return null;
   }
+
 }
