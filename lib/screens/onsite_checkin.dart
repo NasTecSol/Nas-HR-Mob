@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../request_controller/check_in_model.dart';
 

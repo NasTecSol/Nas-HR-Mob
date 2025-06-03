@@ -26,9 +26,9 @@ class RemoteAttendanceModel {
 }
 
 class Data {
-  dynamic? employeeId;
+  dynamic employeeId;
   bool? isRemoteAttendance;
-  dynamic? remoteAttendanceLoc;
+  dynamic remoteAttendanceLoc;
 
   Data({this.employeeId, this.isRemoteAttendance, this.remoteAttendanceLoc});
 
