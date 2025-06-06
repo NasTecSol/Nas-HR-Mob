@@ -4,7 +4,7 @@ import 'package:nashr/screens/language_screen.dart';
 import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import '../UTILS/auth_services.dart';
 
 

@@ -11,7 +11,7 @@ import 'package:nashr/screens/employee_details_screen_assets.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -268,7 +268,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 children: [
                                   buildOptionsCard(
                                       0, AppLocalizations.of(context)!.profile),
-                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
+                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2' || singletonClass.getJWTModel()?.grade == 'L3' )...[
                                     buildOptionsCard(
                                         1, AppLocalizations.of(context)!.onLeaves),
                                     buildOptionsCard(
@@ -284,7 +284,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2'|| singletonClass.getJWTModel()?.grade == 'L3')...[
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
@@ -543,13 +543,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.grey.withValues(alpha: 0.4),
-                                        // Shadow color with opacity
                                         spreadRadius: 5,
-                                        // Spread radius
                                         blurRadius: 10,
-                                        // Blur radius
                                         offset: const Offset(
-                                            0, 3), // Offset in the x and y directions
+                                            0, 3),
                                       ),
                                     ],
                                   ),

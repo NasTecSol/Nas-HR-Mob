@@ -23,7 +23,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 import 'onsite_checkin.dart';
@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    singletonClass.getCompanyData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getRemoteAttendanceData();
@@ -758,6 +759,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
     final hasNotChatBot =
         uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
+    final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -1222,10 +1224,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       final today =
                                                           DateTime.now();
                                                       final dataList =
-                                                          singletonClass
-                                                              .clockingDataList
-                                                              .first
-                                                              .data;
+                                                          singletonClass.attendanceDataList.first.data!.data;
                                                       if (dataList == null ||
                                                           dataList.isEmpty) {
                                                         return 'NA';
@@ -1247,13 +1246,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 today.day;
                                                       });
 
-                                                      return entry.checkInTime
+                                                      return entry.clockInTime
                                                                   ?.isNotEmpty ==
                                                               true
                                                           ? singletonClass
                                                               .formatCheckInTime(
                                                                   entry
-                                                                      .checkInTime!)
+                                                                      .clockInTime!)
                                                           : 'NA';
                                                     } catch (_) {
                                                       return 'NA';
@@ -1287,29 +1286,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               Expanded(
                                                 child: Text(
                                                   singletonClass
-                                                              .clockingDataList
+                                                              .attendanceDataList
                                                               .isNotEmpty &&
                                                           singletonClass
-                                                              .clockingDataList
+                                                              .attendanceDataList
                                                               .first
-                                                              .data!
+                                                              .data!.data!
                                                               .isNotEmpty &&
                                                           singletonClass
-                                                                  .clockingDataList
+                                                                  .attendanceDataList
                                                                   .first
-                                                                  .data!
+                                                                  .data!.data!
                                                                   .last
-                                                                  .checkOutTime
+                                                                  .clockOutTime
                                                                   ?.isNotEmpty ==
                                                               true
                                                       ? singletonClass
                                                           .formatCheckInTime(
                                                               singletonClass
-                                                                  .clockingDataList
+                                                                  .attendanceDataList
                                                                   .first
-                                                                  .data!
+                                                                  .data!.data!
                                                                   .last
-                                                                  .checkOutTime!)
+                                                                  .clockOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1340,15 +1339,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                               const SizedBox(width: 40),
                                               Text(
-                                                singletonClass
-                                                            .attendanceDataList
-                                                            .isNotEmpty &&
-                                                        singletonClass
-                                                            .attendanceDataList
-                                                            .first
-                                                            .data!
-                                                            .data!
-                                                            .isNotEmpty
+                                                singletonClass.attendanceDataList.isNotEmpty &&
+                                                    singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                                     : 'NA',
                                                 style: GoogleFonts.inter(
@@ -1449,7 +1441,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ),
                                   ),
-                                if (hasNotChatBot)
+                                if (hasNotChatBot || chatBotNotAvailable)
                                   Expanded(
                                       child: Container(
                                     decoration: BoxDecoration(
@@ -1553,8 +1545,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     final checkInTime = lastData?.clockInTime;
                                     final checkOutTime = lastData?.clockOutTime;
 
-                                    if (checkInTime == null ||
-                                        checkOutTime != null) {
+                                    if ((checkInTime == null && checkInTime!.isEmpty)  ||
+                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition >
                                           MediaQuery.of(context).size.width *
@@ -1656,7 +1648,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     final checkInTime = lastData?.clockInTime;
                                     final checkOutTime = lastData?.clockOutTime;
 
-                                    if ((checkInTime != null && checkInTime.isNotEmpty) &&
+                                    if ((checkInTime != null || checkInTime!.isNotEmpty) &&
                                         (checkOutTime == null || checkOutTime.isEmpty)) {
                                       return Padding(
                                         padding: const EdgeInsets.only(

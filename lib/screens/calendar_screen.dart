@@ -9,7 +9,7 @@ import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../request_controller/event_model.dart';
 import '../widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -510,11 +510,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     );
                   } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
-                    // 🔹 Filter events to only show "Standup" and "Celebrations"
                     final eventList = snapshot.data!.data!
                         .where((event) => event.category == "Standup" || event.category == "Celebration")
                         .toList();
-
                     if (eventList.isEmpty) {
                       return Center(
                         child: Text(
@@ -676,7 +674,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   //API CALL
   Future<EventModel?> getEventData() async {
-    String? employeeId = singletonClass.getJWTModel()?.empId;
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var client = http.Client();
 
     DateTime startDate, endDate;

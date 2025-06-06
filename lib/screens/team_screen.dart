@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 
 import '../request_controller/branch_model.dart';
 
@@ -99,7 +99,7 @@ class _TeamScreenState extends State<TeamScreen> {
           bool isSupervisor = department.supervisors?.any((supervisor) => supervisor.empId == reportingManagerId) ?? false;
           print('Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-          if (userGrade == "L0" || userGrade == "L1") {
+          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
             // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
@@ -121,7 +121,7 @@ class _TeamScreenState extends State<TeamScreen> {
                 }
               }
             }
-          } else if (userGrade == "L2" || userGrade == "L3") {
+          } else if (userGrade == "L4" || userGrade == "L4") {
             // Non-Supervisor: Add teams where the user is a member to underTeams
             for (var team in department.teams ?? []) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
@@ -281,7 +281,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1")...[
+                if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" ||singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")...[
                   Row(
                     children: [
                       buildOptionsCard(0, AppLocalizations.of(context)!.teamMates),
@@ -488,7 +488,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   ],
                 ],
 
-                if (singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")...[
+                if (singletonClass.getJWTModel()?.grade == "L4")...[
                   filteredTeams.isNotEmpty
                       ? ListView.builder(
                     padding: const EdgeInsets.all(5),

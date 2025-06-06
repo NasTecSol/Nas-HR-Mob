@@ -228,7 +228,7 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/$employeeId');
     var response = await client.get(uri);
-    log(response.body);
+    log("EMPLOYEE DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeData.fromJson(responseBody);

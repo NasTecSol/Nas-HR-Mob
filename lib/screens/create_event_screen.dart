@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -695,7 +695,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   //API CALLS
   void createEvent() async {
-    String? empID = singletonClass.getJWTModel()?.empId;
+    String? empID = singletonClass.getJWTModel()?.employeeId;
+    String? departmentID = singletonClass.employeeDataList.first.data!.departmentId;
+    String? name = singletonClass.employeeDataList.first.data!.firstName;
 
     // Prepare list of selected employees
     List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
@@ -739,7 +741,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       "date": DateFormat('yyyy-MM-dd').format(_selectedDate!),
       "category": _selectedCategory,
       "isNotification": true,
-      "departmentId": "DPT001"
+      "departmentId": departmentID,
+      "creatorName": name,
     };
 
     String jsonData = jsonEncode(data);
@@ -753,7 +756,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         },
         body: jsonData,
       );
-
+      print("EVENT RESPONSE ${response.body}");
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
         if (decodedResponse['statusCode'] == 200) {
@@ -768,7 +771,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
           Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen()));
           singletonClass.taskModelList.clear();
-        } else if (decodedResponse['statusCode'] == 400) {
+        } else if (decodedResponse['statusCode'] == 400 || decodedResponse['statusCode'] == 500 ) {
+          log("Server Message: ${decodedResponse['data']['message']}");
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),
             showCancelBtn: false,
@@ -777,6 +781,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             title: decodedResponse['data']['message'] ?? 'Error',
             type: QuickAlertType.error,
           );
+          log("Server Message: ${decodedResponse['data']['message']}");
         }
       } else {
         await QuickAlert.show(

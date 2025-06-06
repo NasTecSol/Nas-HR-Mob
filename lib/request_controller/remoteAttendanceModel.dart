@@ -26,14 +26,20 @@ class RemoteAttendanceModel {
 }
 
 class Data {
-  dynamic? employeeId;
-  bool? isRemoteAttendance;
-  dynamic? remoteAttendanceLoc;
+  String? employeeId;
+  String? userName;
+  String? lastLocation;
+  String? lastLocationUpdatedAt;
+  String? isRemoteAttendance;
+  String? remoteAttendanceLoc;
 
-  Data({this.employeeId, this.isRemoteAttendance, this.remoteAttendanceLoc});
+  Data({this.employeeId, this.userName, this.lastLocation, this.lastLocationUpdatedAt, this.isRemoteAttendance, this.remoteAttendanceLoc});
 
   Data.fromJson(Map<String, dynamic> json) {
     employeeId = json["employeeId"];
+    userName = json["userName"];
+    lastLocation = json["lastLocation"];
+    lastLocationUpdatedAt = json["lastLocationUpdatedAt"];
     isRemoteAttendance = json["isRemoteAttendance"];
     remoteAttendanceLoc = json["remoteAttendanceLoc"];
   }
@@ -41,6 +47,9 @@ class Data {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["employeeId"] = employeeId;
+    _data["userName"] = userName;
+    _data["lastLocation"] = lastLocation;
+    _data["lastLocationUpdatedAt"] = lastLocationUpdatedAt;
     _data["isRemoteAttendance"] = isRemoteAttendance;
     _data["remoteAttendanceLoc"] = remoteAttendanceLoc;
     return _data;

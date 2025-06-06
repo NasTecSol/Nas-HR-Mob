@@ -9,7 +9,7 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:http/http.dart' as http;
 import '../request_controller/branch_model.dart';
 import '../request_controller/teamClocking_model.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'dart:math' as math;
 
 class TeamClocking extends StatefulWidget {
@@ -60,7 +60,7 @@ class _TeamClockingState extends State<TeamClocking> {
           print(
               'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-          if (userGrade == "L0" || userGrade == "L1") {
+          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
             // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               for (var supervisor in department.supervisors ?? []) {
@@ -76,7 +76,7 @@ class _TeamClockingState extends State<TeamClocking> {
                 }
               }
             }
-          } else if (userGrade == "L2" || userGrade == "L3") {}
+          } else if (userGrade == "L4") {}
         }
       }
     }
