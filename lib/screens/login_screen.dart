@@ -409,13 +409,13 @@ class _LoginScreenState extends State<LoginScreen> {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
             await singletonClass.getUISettingsData();
-             singletonClass.getEmployeeData();
+            singletonClass.getEmployeeData();
             await singletonClass.getClockingData();
             await singletonClass.getBranchData();
-             await singletonClass.getCompanyData();
-             singletonClass.getRemoteAttendanceData();
-             await singletonClass.getEmployeeAttendanceData();
-             singletonClass.getNotifications();
+            singletonClass.getCompanyData();
+            singletonClass.getRemoteAttendanceData();
+            await singletonClass.getEmployeeAttendanceData();
+            singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             await QuickAlert.show(

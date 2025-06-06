@@ -65,17 +65,17 @@ class Data1 {
   String? date;
   String? clockInTime;
   String? clockOutTime;
-  dynamic totalHoursWorked;
+  int? totalHoursWorked;
   String? location;
   String? status;
-  List<Break>? breaksTaken;
+  List<dynamic>? breaksTaken;
   int? breakTime;
   int? lateMinutes;
   List<dynamic>? penalties;
   dynamic leaveDetails;
   String? shift;
   int? workingHoursPerday;
-  dynamic earlyCheckOut;
+  int? earlyCheckOut;
   String? remarks;
   String? createdAt;
   String? updatedAt;
@@ -96,9 +96,7 @@ class Data1 {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
-    breaksTaken = json["breaksTaken"] != null
-        ? (json["breaksTaken"] as List).map((e) => Break.fromJson(e)).toList()
-        : [];
+    breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
     penalties = json["penalties"] ?? [];
@@ -126,8 +124,8 @@ class Data1 {
     _data["totalHoursWorked"] = totalHoursWorked;
     _data["location"] = location;
     _data["status"] = status;
-    if (breaksTaken != null) {
-      _data["breaksTaken"] = breaksTaken!.map((e) => e.toJson()).toList();
+    if(breaksTaken != null) {
+      _data["breaksTaken"] = breaksTaken;
     }
     _data["breakTime"] = breakTime;
     _data["lateMinutes"] = lateMinutes;
