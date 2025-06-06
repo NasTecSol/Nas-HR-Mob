@@ -60,7 +60,7 @@ class _TeamClockingState extends State<TeamClocking> {
           print(
               'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-          if (userGrade == "L0" || userGrade == "L1") {
+          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
             // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               for (var supervisor in department.supervisors ?? []) {
@@ -76,7 +76,7 @@ class _TeamClockingState extends State<TeamClocking> {
                 }
               }
             }
-          } else if (userGrade == "L2" || userGrade == "L3") {}
+          } else if (userGrade == "L4") {}
         }
       }
     }
