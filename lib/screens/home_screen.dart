@@ -25,7 +25,6 @@ import '../UTILS/auth_services.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-
 import 'onsite_checkin.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -56,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getClockingData();
     singletonClass.getRemoteAttendanceData();
     singletonClass.getPolicyData();
+    singletonClass.getBranchesData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -1249,10 +1249,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       return entry.clockInTime
                                                                   ?.isNotEmpty ==
                                                               true
-                                                          ? singletonClass
-                                                              .formatCheckInTime(
-                                                                  entry
-                                                                      .clockInTime!)
+                                                          ? singletonClass.formatCheckInTime(entry.clockInTime!)
                                                           : 'NA';
                                                     } catch (_) {
                                                       return 'NA';
@@ -1297,7 +1294,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   .attendanceDataList
                                                                   .first
                                                                   .data!.data!
-                                                                  .last
+                                                                  .first
                                                                   .clockOutTime
                                                                   ?.isNotEmpty ==
                                                               true
@@ -1307,7 +1304,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   .attendanceDataList
                                                                   .first
                                                                   .data!.data!
-                                                                  .last
+                                                                  .first
                                                                   .clockOutTime!)
                                                       : 'NA',
                                                   style: GoogleFonts.inter(
@@ -1320,6 +1317,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ],
                                           ),
                                         ),
+
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 8.0,

@@ -7,6 +7,7 @@ import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
+import 'package:nashr/request_controller/branches_data_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
@@ -56,6 +57,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<BranchesDataModel> branchesDataList = [];
   List<BaseUrlModel> baseURLDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
@@ -316,6 +318,22 @@ class SingletonClass {
       var responseBody = json.decode(response.body);
       var branch = BranchData.fromJson(responseBody);
       setBranchData([branch]);
+      return branch;
+    }
+    return null ; // Print the response body
+  }
+
+  //Multiple branches data
+  Future<BranchesDataModel?> getBranchesData() async {
+    String? companyId = getJWTModel()?.companyId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/branches/companyId/$companyId');
+    var response = await client.get(uri);
+    log("Branches Data List ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var branch = BranchesDataModel.fromJson(responseBody);
+      branchesDataList.addAll([branch]);
       return branch;
     }
     return null ; // Print the response body
