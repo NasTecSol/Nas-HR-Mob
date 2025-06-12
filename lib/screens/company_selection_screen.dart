@@ -197,6 +197,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     });
 
     try {
+
       var client = http.Client();
       var uri = Uri.parse('https://dev.nashrms.com/api/organization/getStaticUrl/$companyCode');
       var response = await client.get(uri);

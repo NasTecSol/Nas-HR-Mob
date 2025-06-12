@@ -336,7 +336,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get salaryAndAllowances => 'Salary & Allowances';
 
   @override
-  String get orgChart => 'Through this chart, you can easily identify reporting relationships, team members, and department structures. You can also access the detailed profiles for each team member directly from the organizational chart.';
+  String get orgChart =>
+      'Through this chart, you can easily identify reporting relationships, team members, and department structures. You can also access the detailed profiles for each team member directly from the organizational chart.';
 
   @override
   String get lets => 'Let\'s';
@@ -345,7 +346,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign In';
 
   @override
-  String get enterTheEmailAndPassword => 'Enter the email & password your administrator provided you with';
+  String get enterTheEmailAndPassword =>
+      'Enter the email & password your administrator provided you with';
 
   @override
   String get userName => 'Username';
@@ -897,7 +899,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attachment => 'Attachment';
 
   @override
-  String get documentUploadError => 'Error uploading document. Please try again.';
+  String get documentUploadError =>
+      'Error uploading document. Please try again.';
 
   @override
   String get loan => 'Loan';
@@ -1137,19 +1140,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseAttachDocument => 'Please Attach Documents!';
 
   @override
-  String get youHaveNotCheckedInYet => 'You have not checked in yet. Please check in first.';
+  String get youHaveNotCheckedInYet =>
+      'You have not checked in yet. Please check in first.';
 
   @override
   String get currentLocationNotAvailable => 'Current location not available.';
 
   @override
-  String get sorryYouAreOutOfTheLocationRadius => 'Sorry, you are out of the location radius!';
+  String get sorryYouAreOutOfTheLocationRadius =>
+      'Sorry, you are out of the location radius!';
 
   @override
   String get title => 'Title';
 
   @override
-  String get maximum300 => 'Maximum 300 characters limit. Special characters are not allowed.';
+  String get maximum300 =>
+      'Maximum 300 characters limit. Special characters are not allowed.';
 
   @override
   String get typeYourComplainHere => 'Type your complain here..';
@@ -1161,7 +1167,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmUpload => 'Confirm Upload';
 
   @override
-  String get areYouSureYouWantToUploadThisFile => 'Are you sure you want to upload this file:';
+  String get areYouSureYouWantToUploadThisFile =>
+      'Are you sure you want to upload this file:';
 
   @override
   String get balanceToDate => 'Balance to Date';
@@ -1287,7 +1294,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get typeYourProjectNameHere => 'Type your project name here';
 
   @override
-  String get typeYourProjectDescriptionHere => 'Type your project description here';
+  String get typeYourProjectDescriptionHere =>
+      'Type your project description here';
 
   @override
   String get typeYourProjectKeyHere => 'Type your project key here';
@@ -1395,7 +1403,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventType => 'Event Type';
 
   @override
-  String get typeEventTypeOrSelectFromList => 'Type event type or select from the list';
+  String get typeEventTypeOrSelectFromList =>
+      'Type event type or select from the list';
 
   @override
   String get pleaseFillAllFields => 'Please fill all fields';
@@ -1504,4 +1513,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get card => 'Cards';
+
+  @override
+  String get cnic => 'CNIC';
+
+  @override
+  String get iqama => 'Iqama';
+
+  @override
+  String get passport => 'Passport';
+
+  @override
+  String get employmentContract => 'Employment Contract';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get cardNumber => 'Card Number';
+
+  @override
+  String get dateOfBirthInHijri => 'Date of Birth in Hijri';
+
+  @override
+  String get expiryDateInHijri => 'Expiry date in Hijri';
+
+  @override
+  String get placeOfBirth => 'Place of birth';
+
+  @override
+  String get contractId => 'Contract ID';
+
+  @override
+  String get employeeNumber => 'Employee Number';
+
+  @override
+  String get contractStatus => 'Contract Status';
+
+  @override
+  String get idNumber => 'ID Number';
+
+  @override
+  String get dateOfBirth => 'Date of birth';
+
+  @override
+  String get occupation => 'Occupation';
+
+  @override
+  String get religion => 'Religion';
 }
