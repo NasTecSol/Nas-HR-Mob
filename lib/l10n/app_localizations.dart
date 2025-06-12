@@ -62,7 +62,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -3088,9 +3091,106 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cards'**
   String get card;
+
+  /// No description provided for @cnic.
+  ///
+  /// In en, this message translates to:
+  /// **'CNIC'**
+  String get cnic;
+
+  /// No description provided for @iqama.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama'**
+  String get iqama;
+
+  /// No description provided for @passport.
+  ///
+  /// In en, this message translates to:
+  /// **'Passport'**
+  String get passport;
+
+  /// No description provided for @employmentContract.
+  ///
+  /// In en, this message translates to:
+  /// **'Employment Contract'**
+  String get employmentContract;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @cardNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Number'**
+  String get cardNumber;
+
+  /// No description provided for @dateOfBirthInHijri.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth in Hijri'**
+  String get dateOfBirthInHijri;
+
+  /// No description provided for @expiryDateInHijri.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry date in Hijri'**
+  String get expiryDateInHijri;
+
+  /// No description provided for @placeOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Place of birth'**
+  String get placeOfBirth;
+
+  /// No description provided for @contractId.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract ID'**
+  String get contractId;
+
+  /// No description provided for @employeeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee Number'**
+  String get employeeNumber;
+
+  /// No description provided for @contractStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Status'**
+  String get contractStatus;
+
+  /// No description provided for @idNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'ID Number'**
+  String get idNumber;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get dateOfBirth;
+
+  /// No description provided for @occupation.
+  ///
+  /// In en, this message translates to:
+  /// **'Occupation'**
+  String get occupation;
+
+  /// No description provided for @religion.
+  ///
+  /// In en, this message translates to:
+  /// **'Religion'**
+  String get religion;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3099,25 +3199,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return AppLocalizationsAr();
-    case 'en': return AppLocalizationsEn();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

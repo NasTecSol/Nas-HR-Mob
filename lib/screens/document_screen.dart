@@ -324,7 +324,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        "CNIC",
+                                        AppLocalizations.of(context)!.cnic,
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
@@ -338,7 +338,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             Navigator.pop(context);
                                           },
                                           child: Text(
-                                            "Done",
+                                            AppLocalizations.of(context)!.done,
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
@@ -367,7 +367,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                       children: [
                                         // Logos Row
                                         ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.zero,
                                           child: Expanded(
                                             child: Image.asset(
                                               "images/cnicLogo.png",
@@ -380,39 +380,42 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ),
                                         SizedBox(height: 20),
                                         Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             // Profile Image
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: (singletonClass.employeeDataList.first.data?.profilePic?.isNotEmpty ?? false)
-                                                  ? Image.network(
-                                                singletonClass.employeeDataList.first.data!.profilePic!,
-                                                fit: BoxFit.cover,
-                                                width: 100,
-                                                height: 100,
-                                                errorBuilder: (context, error, stackTrace) => Image.asset(
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 18.0),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.zero,
+                                                child: (singletonClass.employeeDataList.first.data?.profilePic?.isNotEmpty ?? false)
+                                                    ? Image.network(
+                                                  singletonClass.employeeDataList.first.data!.profilePic!,
+                                                  fit: BoxFit.cover,
+                                                  width: 110,
+                                                  height: 110,
+                                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                                    'images/DP.png',
+                                                    fit: BoxFit.cover,
+                                                    width: 110,
+                                                    height: 110,
+                                                  ),
+                                                )
+                                                    : Image.asset(
                                                   'images/DP.png',
                                                   fit: BoxFit.cover,
-                                                  width: 100,
-                                                  height: 100,
+                                                  width: 110,
+                                                  height: 110,
                                                 ),
-                                              )
-                                                  : Image.asset(
-                                                'images/DP.png',
-                                                fit: BoxFit.cover,
-                                                width: 100,
-                                                height: 100,
                                               ),
                                             ),
                                             const SizedBox(width: 20),
-                                            // Info Texts
-                                            Expanded(
+                                            SizedBox(
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    "ID Number: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -421,7 +424,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Name: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -430,7 +433,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Date of Birth: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -439,7 +442,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Nationality: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -448,7 +451,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Place of Birth: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -460,6 +463,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             ),
                                           ],
                                         ),
+                                        SizedBox(height: 20),
                                       ],
                                     ),
                                   ),
@@ -555,7 +559,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Name in Arabic",
+                                                    AppLocalizations.of(context)!.name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -599,11 +603,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    "Card Number",
+                                                    AppLocalizations.of(context)!.cardNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -655,7 +659,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Date of Birth in Hijri",
+                                                    AppLocalizations.of(context)!.dateOfBirthInHijri,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -705,7 +709,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Expiry date in Hijri",
+                                                    AppLocalizations.of(context)!.expiryDateInHijri,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -754,7 +758,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Place of Birth",
+                                                    AppLocalizations.of(context)!.placeOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -832,7 +836,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "CNIC",
+                            AppLocalizations.of(context)!.cnic,
                             maxLines: 2,
                             style: GoogleFonts.inter(
                               fontSize: 18,
@@ -883,7 +887,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        "Iqama",
+                                        AppLocalizations.of(context)!.iqama,
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
@@ -897,7 +901,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             Navigator.pop(context);
                                           },
                                           child: Text(
-                                            "Done",
+                                            AppLocalizations.of(context)!.done,
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
@@ -913,9 +917,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        // Logos Row
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
@@ -941,31 +943,30 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ),
                                         SizedBox(height: 20),
                                         Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            // Profile Image
                                             ClipRRect(
                                               child: Image.network(
                                                 singletonClass.employeeDataList.first.data?.profilePic ?? '',
                                                 fit: BoxFit.cover,
-                                                width: 100,
-                                                height: 100,
+                                                width: 110,
+                                                height: 130,
                                                 errorBuilder: (context, error, stackTrace) => Image.asset(
                                                   'images/DP.png',
                                                   fit: BoxFit.cover,
-                                                  width: 100,
-                                                  height: 100,
+                                                  width: 110,
+                                                  height: 130,
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 20),
-                                            // Info Texts
-                                            Expanded(
+                                            SizedBox(width: 60),
+                                            SizedBox(
                                               child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "ID Number: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -974,7 +975,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Name: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -983,7 +984,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Date of Birth: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -992,7 +993,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Nationality: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -1001,7 +1002,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Occupation: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -1010,7 +1011,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Place of Birth: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -1019,7 +1020,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "Religion: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? 'N/A' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? 'N/A' : 'N/A'}",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w500,
@@ -1031,6 +1032,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             ),
                                           ],
                                         ),
+                                        SizedBox(height: 10),
                                       ],
                                     ),
                                   ),
@@ -1126,7 +1128,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Name in Arabic",
+                                                    AppLocalizations.of(context)!.name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1174,7 +1176,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Card Number",
+                                                    AppLocalizations.of(context)!.cardNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1226,7 +1228,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Date of Birth in Hijri",
+                                                    AppLocalizations.of(context)!.dateOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1276,7 +1278,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Expiry date in Hijri",
+                                                    AppLocalizations.of(context)!.expiryDate,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1325,7 +1327,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Place of Birth",
+                                                    AppLocalizations.of(context)!.placeOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1403,7 +1405,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Iqama",
+                            AppLocalizations.of(context)!.iqama,
                             maxLines: 2,
                             style: GoogleFonts.inter(
                               fontSize: 18,
@@ -1454,7 +1456,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        "Passport",
+                                        AppLocalizations.of(context)!.passport,
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
@@ -1468,7 +1470,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             Navigator.pop(context);
                                           },
                                           child: Text(
-                                            "Done",
+                                            AppLocalizations.of(context)!.done,
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
@@ -1477,14 +1479,160 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      "images/passport.png",
-                                      height: 250,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment.topCenter,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: NasColors.lightGrey,
+                                      borderRadius: BorderRadius.circular(10),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFFF4F1E3),
+                                          Color(0xFFEFF0E6),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                            borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                                            child: Image.asset(
+                                              "images/passportHeader.png",
+                                              height: 80,
+                                              width: double.infinity,
+                                              fit: BoxFit.fitWidth,
+                                              alignment: Alignment.topCenter,
+                                            ),
+                                          ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 20.0),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.zero,
+                                                child:Image.network(
+                                                  singletonClass.employeeDataList.first.data?.profilePic ?? '',
+                                                  // URL for the network image, empty string if null
+                                                  fit: BoxFit.cover,
+                                                  width: 110,
+                                                  height: 130,
+                                                  errorBuilder: (BuildContext context,
+                                                      Object exception,
+                                                      StackTrace? stackTrace) {
+                                                    // Display the default asset image if the network image fails to load
+                                                    return Image.asset(
+                                                      'images/DP.png',
+                                                      fit: BoxFit.cover,
+                                                      width: 100,
+                                                      height: 100,
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            SizedBox(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      textAlign: TextAlign.left,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                            ),
+                                            Spacer()
+                                          ],
+                                        ),
+                                        SizedBox(height: 20),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -1579,7 +1727,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Name in Arabic",
+                                                    AppLocalizations.of(context)!.name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1627,7 +1775,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Card Number",
+                                                    AppLocalizations.of(context)!.cardNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1679,7 +1827,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Date of Birth in Hijri",
+                                                    AppLocalizations.of(context)!.dateOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1729,7 +1877,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Expiry date in Hijri",
+                                                    AppLocalizations.of(context)!.expiryDate,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1778,7 +1926,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Place of Birth",
+                                                    AppLocalizations.of(context)!.placeOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -1856,7 +2004,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Passport",
+                            AppLocalizations.of(context)!.passport,
                             maxLines: 2,
                             style: GoogleFonts.inter(
                               fontSize: 18,
@@ -1907,7 +2055,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        "Employment Contract",
+                                        AppLocalizations.of(context)!.employmentContract,
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
@@ -1921,7 +2069,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             Navigator.pop(context);
                                           },
                                           child: Text(
-                                            "Done",
+                                            AppLocalizations.of(context)!.done,
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
@@ -1933,27 +2081,39 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Container(
                                     decoration: BoxDecoration(
                                       color: NasColors.lightGrey,
-                                      borderRadius: BorderRadius.circular(10)
+                                      borderRadius: BorderRadius.circular(10),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFFD7DCE0),
+                                          Color(0xFFE6EBEE),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
                                     ),
                                     child: Column(
                                       children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                          child: Image.asset(
-                                            "images/employeeContractHeader.png",
-                                            height: 80,
-                                            width: double.infinity,
-                                            fit: BoxFit.fitWidth,
-                                            alignment: Alignment.topCenter,
-                                          ),
+                                        SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text("${singletonClass.companyDataList.first.data!.name}",
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black,
+                                                fontSize: 15
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        SizedBox(height: 15),
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(left: 8.0),
                                               child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius: BorderRadius.zero,
                                                 child:Image.network(
                                                   singletonClass.employeeDataList.first.data?.profilePic ?? '',
                                                   // URL for the network image, empty string if null
@@ -1981,7 +2141,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    "Contract ID: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : 'N/A'}",
                                                     maxLines: 4,
                                                     textAlign: TextAlign.left,
                                                     softWrap: true,
@@ -1992,7 +2152,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    "Name: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     textAlign: TextAlign.left,
@@ -2003,7 +2163,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    "Employee Number: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : 'N/A'}",
                                                     maxLines: 4,
                                                     textAlign: TextAlign.left,
                                                     softWrap: true,
@@ -2014,7 +2174,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    "Expiry Date: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : 'N/A'}",
                                                     maxLines: 4,
                                                     textAlign: TextAlign.left,
                                                     softWrap: true,
@@ -2025,7 +2185,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    "Contract Status: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : 'N/A'}",
+                                                    "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : 'N/A'}",
                                                     maxLines: 4,
                                                     textAlign: TextAlign.left,
                                                     softWrap: true,
@@ -2041,20 +2201,41 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             Spacer()
                                           ],
                                         ),
-                                        SizedBox(height: 10),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10) , bottomRight:  Radius.circular(10)),
-                                          child: Image.asset(
-                                            "images/employeeContractFooter.png",
-
-                                            fit: BoxFit.fitWidth,
-                                            alignment: Alignment.topCenter,
-                                          ),
+                                        SizedBox(height: 20),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10.0),
+                                              child: Container(
+                                                width: 86,
+                                                height: 37,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.zero,
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.zero,
+                                                  child: Image.network(
+                                                    singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '',
+                                                    fit: BoxFit.contain,
+                                                    errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                                      return Image.asset(
+                                                        'images/DP.png',
+                                                        fit: BoxFit.contain,
+                                                        width: 86,
+                                                        height: 37,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        SizedBox(height: 20),
                                       ],
                                     ),
                                   ),
-
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
@@ -2145,7 +2326,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Name",
+                                                    AppLocalizations.of(context)!.name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2194,7 +2375,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Employee Number",
+                                                    AppLocalizations.of(context)!.employeeNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2250,7 +2431,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Contract ID",
+                                                    AppLocalizations.of(context)!.contractId,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2305,7 +2486,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Contract expiry",
+                                                    AppLocalizations.of(context)!.expiryDate,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2359,7 +2540,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Contract Type",
+                                                    "${AppLocalizations.of(context)!.contract}${AppLocalizations.of(context)!.type}",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2444,7 +2625,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Employent Contract",
+                            AppLocalizations.of(context)!.employmentContract,
                             maxLines: 2,
                             style: GoogleFonts.inter(
                               fontSize: 18,
