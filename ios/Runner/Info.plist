@@ -47,14 +47,6 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need photo library access to save images</string>
 
-	<!-- Background Modes -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-		<string>fetch</string>
-		<string>location</string>
-	</array>
-
 	<!-- Notification Style -->
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
