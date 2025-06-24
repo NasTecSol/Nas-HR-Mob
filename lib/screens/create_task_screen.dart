@@ -713,9 +713,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     try {
       final response = await http.post(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       print(response.body);

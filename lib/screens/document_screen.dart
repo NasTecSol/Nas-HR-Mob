@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'dart:ui';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,6 +41,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
         expiryDateInHijri: '1450/11/29',
         placeOfBirth: 'Alqaan'),
   ];
+
+  final GlobalKey _containerKey = GlobalKey();
+  final GlobalKey _iqamaContainerKey = GlobalKey();
+  final GlobalKey _passportContainerKey = GlobalKey();
+  final GlobalKey _employeeContractContainerKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +141,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  if(_selectedOptionIndex == 0)
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -347,124 +356,127 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: NasColors.lightGrey,
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFFC3DBCB), // Start color
-                                          Color(0xFFDBDBCF), // Middle color
-                                          Color(0xFFC3DBCB), // End color
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                                  RepaintBoundary(
+                                    key: _containerKey,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: NasColors.lightGrey,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFFC3DBCB), // Start color
+                                            Color(0xFFDBDBCF), // Middle color
+                                            Color(0xFFC3DBCB), // End color
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        // Logos Row
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.zero,
-                                          child: Expanded(
-                                            child: Image.asset(
-                                              "images/cnicLogo.png",
-                                              height: 50,
-                                              width: double.infinity,
-                                              fit: BoxFit.fitWidth,
-                                              alignment: Alignment.topCenter,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Logos Row
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.zero,
+                                            child: Expanded(
+                                              child: Image.asset(
+                                                "images/cnicLogo.png",
+                                                height: 50,
+                                                width: double.infinity,
+                                                fit: BoxFit.fitWidth,
+                                                alignment: Alignment.topCenter,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        SizedBox(height: 20),
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            // Profile Image
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 18.0),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.zero,
-                                                child: (singletonClass.employeeDataList.first.data?.profilePic?.isNotEmpty ?? false)
-                                                    ? Image.network(
-                                                  singletonClass.employeeDataList.first.data!.profilePic!,
-                                                  fit: BoxFit.cover,
-                                                  width: 110,
-                                                  height: 110,
-                                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                          SizedBox(height: 20),
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              // Profile Image
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 18.0),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.zero,
+                                                  child: (singletonClass.employeeDataList.first.data?.profilePic?.isNotEmpty ?? false)
+                                                      ? Image.network(
+                                                    singletonClass.employeeDataList.first.data!.profilePic!,
+                                                    fit: BoxFit.cover,
+                                                    width: 110,
+                                                    height: 110,
+                                                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                                                      'images/DP.png',
+                                                      fit: BoxFit.cover,
+                                                      width: 110,
+                                                      height: 110,
+                                                    ),
+                                                  )
+                                                      : Image.asset(
                                                     'images/DP.png',
                                                     fit: BoxFit.cover,
                                                     width: 110,
                                                     height: 110,
                                                   ),
-                                                )
-                                                    : Image.asset(
-                                                  'images/DP.png',
-                                                  fit: BoxFit.cover,
-                                                  width: 110,
-                                                  height: 110,
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(width: 20),
-                                            SizedBox(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                              const SizedBox(width: 20),
+                                              SizedBox(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 20),
-                                      ],
+                                            ],
+                                          ),
+                                          SizedBox(height: 20),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -478,30 +490,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              // Load the asset image as bytes
-                                              final byteData = await rootBundle
-                                                  .load('images/iqama.png');
-                                              final tempDir =
-                                                  await getTemporaryDirectory();
-                                              final file = File(
-                                                  '${tempDir.path}/iqama.png');
-                                              await file.writeAsBytes(byteData
-                                                  .buffer
-                                                  .asUint8List());
-
-                                              // Share the temporary file
-                                              await Share.shareXFiles([
-                                                XFile(file.path)
-                                              ], text: 'Check out this image!');
+                                              RenderRepaintBoundary boundary = _containerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                                              var image = await boundary.toImage(pixelRatio: 3.0);
+                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+                                              final tempDir = await getTemporaryDirectory();
+                                              final file = await File('${tempDir.path}/container_image.png').create();
+                                              await file.writeAsBytes(pngBytes);
+                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
                                             } catch (e) {
-                                              // Handle any errors that occur during the process
-                                              debugPrint(
-                                                  'Error sharing image: $e');
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Failed to share image: $e')),
+                                              debugPrint('Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -910,130 +910,133 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: NasColors.lightGrey,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: Image.asset(
-                                                "images/iqamaLogoLeft.png",
-                                                width: 100,
-                                                fit: BoxFit.contain,
-                                                alignment: Alignment.topCenter,
+                                  RepaintBoundary(
+                                    key: _iqamaContainerKey,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: NasColors.lightGrey,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: Image.asset(
+                                                  "images/iqamaLogoLeft.png",
+                                                  width: 100,
+                                                  fit: BoxFit.contain,
+                                                  alignment: Alignment.topCenter,
+                                                ),
                                               ),
-                                            ),
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: Image.asset(
-                                                "images/iqamaLogo.png",
-                                                width: 100,
-                                                fit: BoxFit.contain,
-                                                alignment: Alignment.topCenter,
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: Image.asset(
+                                                  "images/iqamaLogo.png",
+                                                  width: 100,
+                                                  fit: BoxFit.contain,
+                                                  alignment: Alignment.topCenter,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            ClipRRect(
-                                              child: Image.network(
-                                                singletonClass.employeeDataList.first.data?.profilePic ?? '',
-                                                fit: BoxFit.cover,
-                                                width: 110,
-                                                height: 130,
-                                                errorBuilder: (context, error, stackTrace) => Image.asset(
-                                                  'images/DP.png',
+                                            ],
+                                          ),
+                                          SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              ClipRRect(
+                                                child: Image.network(
+                                                  singletonClass.employeeDataList.first.data?.profilePic ?? '',
                                                   fit: BoxFit.cover,
                                                   width: 110,
                                                   height: 130,
+                                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                                    'images/DP.png',
+                                                    fit: BoxFit.cover,
+                                                    width: 110,
+                                                    height: 130,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(width: 60),
-                                            SizedBox(
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                              SizedBox(width: 60),
+                                              SizedBox(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 2.5),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? 'N/A' : 'N/A'}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? 'N/A' : 'N/A'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 10),
-                                      ],
+                                            ],
+                                          ),
+                                          SizedBox(height: 10),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -1047,30 +1050,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              // Load the asset image as bytes
-                                              final byteData = await rootBundle
-                                                  .load('images/iqama.png');
-                                              final tempDir =
-                                              await getTemporaryDirectory();
-                                              final file = File(
-                                                  '${tempDir.path}/iqama.png');
-                                              await file.writeAsBytes(byteData
-                                                  .buffer
-                                                  .asUint8List());
-
-                                              // Share the temporary file
-                                              await Share.shareXFiles([
-                                                XFile(file.path)
-                                              ], text: 'Check out this image!');
+                                              RenderRepaintBoundary boundary = _iqamaContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                                              var image = await boundary.toImage(pixelRatio: 3.0);
+                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+                                              final tempDir = await getTemporaryDirectory();
+                                              final file = await File('${tempDir.path}/iqama.png').create();
+                                              await file.writeAsBytes(pngBytes);
+                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
                                             } catch (e) {
-                                              // Handle any errors that occur during the process
-                                              debugPrint(
-                                                  'Error sharing image: $e');
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Failed to share image: $e')),
+                                              debugPrint('Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -1479,160 +1470,163 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: NasColors.lightGrey,
-                                      borderRadius: BorderRadius.circular(10),
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFFF4F1E3),
-                                          Color(0xFFEFF0E6),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                                  RepaintBoundary(
+                                    key: _passportContainerKey,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: NasColors.lightGrey,
+                                        borderRadius: BorderRadius.circular(10),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFFF4F1E3),
+                                            Color(0xFFEFF0E6),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
                                       ),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        ClipRRect(
-                                            borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-                                            child: Image.asset(
-                                              "images/passportHeader.png",
-                                              height: 80,
-                                              width: double.infinity,
-                                              fit: BoxFit.fitWidth,
-                                              alignment: Alignment.topCenter,
-                                            ),
-                                          ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 20.0),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.zero,
-                                                child:Image.network(
-                                                  singletonClass.employeeDataList.first.data?.profilePic ?? '',
-                                                  // URL for the network image, empty string if null
-                                                  fit: BoxFit.cover,
-                                                  width: 110,
-                                                  height: 130,
-                                                  errorBuilder: (BuildContext context,
-                                                      Object exception,
-                                                      StackTrace? stackTrace) {
-                                                    // Display the default asset image if the network image fails to load
-                                                    return Image.asset(
-                                                      'images/DP.png',
-                                                      fit: BoxFit.cover,
-                                                      width: 100,
-                                                      height: 100,
-                                                    );
-                                                  },
-                                                ),
+                                      child: Column(
+                                        children: [
+                                          ClipRRect(
+                                              borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                                              child: Image.asset(
+                                                "images/passportHeader.png",
+                                                height: 80,
+                                                width: double.infinity,
+                                                fit: BoxFit.fitWidth,
+                                                alignment: Alignment.topCenter,
                                               ),
                                             ),
-                                            Spacer(),
-                                            SizedBox(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                      maxLines: 4,
-                                                      softWrap: true,
-                                                      textAlign: TextAlign.left,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 20.0),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.zero,
+                                                  child:Image.network(
+                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '',
+                                                    // URL for the network image, empty string if null
+                                                    fit: BoxFit.cover,
+                                                    width: 110,
+                                                    height: 130,
+                                                    errorBuilder: (BuildContext context,
+                                                        Object exception,
+                                                        StackTrace? stackTrace) {
+                                                      // Display the default asset image if the network image fails to load
+                                                      return Image.asset(
+                                                        'images/DP.png',
+                                                        fit: BoxFit.cover,
+                                                        width: 100,
+                                                        height: 100,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              SizedBox(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                        maxLines: 4,
+                                                        softWrap: true,
+                                                        textAlign: TextAlign.left,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : 'N/A'}",
+                                                        maxLines: 4,
+                                                        textAlign: TextAlign.left,
+                                                        softWrap: true,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                )
-                                            ),
-                                            Spacer()
-                                          ],
-                                        ),
-                                        SizedBox(height: 20),
-                                      ],
+                                                    ],
+                                                  )
+                                              ),
+                                              Spacer()
+                                            ],
+                                          ),
+                                          SizedBox(height: 20),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -1646,30 +1640,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              // Load the asset image as bytes
-                                              final byteData = await rootBundle
-                                                  .load('images/passport.png');
-                                              final tempDir =
-                                              await getTemporaryDirectory();
-                                              final file = File(
-                                                  '${tempDir.path}/passport.png');
-                                              await file.writeAsBytes(byteData
-                                                  .buffer
-                                                  .asUint8List());
-
-                                              // Share the temporary file
-                                              await Share.shareXFiles([
-                                                XFile(file.path)
-                                              ], text: 'Check out this image!');
+                                              RenderRepaintBoundary boundary = _passportContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                                              var image = await boundary.toImage(pixelRatio: 3.0);
+                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+                                              final tempDir = await getTemporaryDirectory();
+                                              final file = await File('${tempDir.path}/passport.png').create();
+                                              await file.writeAsBytes(pngBytes);
+                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
                                             } catch (e) {
-                                              // Handle any errors that occur during the process
-                                              debugPrint(
-                                                  'Error sharing image: $e');
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Failed to share image: $e')),
+                                              debugPrint('Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -2078,162 +2060,165 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           ))
                                     ],
                                   ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: NasColors.lightGrey,
-                                      borderRadius: BorderRadius.circular(10),
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFFD7DCE0),
-                                          Color(0xFFE6EBEE),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                                  RepaintBoundary(
+                                    key: _employeeContractContainerKey,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: NasColors.lightGrey,
+                                        borderRadius: BorderRadius.circular(10),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFFD7DCE0),
+                                            Color(0xFFE6EBEE),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
                                       ),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text("${singletonClass.companyDataList.first.data!.name}",
-                                              style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black,
-                                                fontSize: 15
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 15),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 8.0),
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.zero,
-                                                child:Image.network(
-                                                  singletonClass.employeeDataList.first.data?.profilePic ?? '',
-                                                  // URL for the network image, empty string if null
-                                                  fit: BoxFit.cover,
-                                                  width: 100,
-                                                  height: 100,
-                                                  errorBuilder: (BuildContext context,
-                                                      Object exception,
-                                                      StackTrace? stackTrace) {
-                                                    // Display the default asset image if the network image fails to load
-                                                    return Image.asset(
-                                                      'images/DP.png',
-                                                      fit: BoxFit.cover,
-                                                      width: 100,
-                                                      height: 100,
-                                                    );
-                                                  },
+                                      child: Column(
+                                        children: [
+                                          SizedBox(height: 10),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text("${singletonClass.companyDataList.first.data!.name}",
+                                                style: GoogleFonts.inter(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black,
+                                                  fontSize: 15
                                                 ),
                                               ),
-                                            ),
-                                            Spacer(),
-                                            SizedBox(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : 'N/A'}",
-                                                    maxLines: 4,
-                                                    textAlign: TextAlign.left,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    textAlign: TextAlign.left,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : 'N/A'}",
-                                                    maxLines: 4,
-                                                    textAlign: TextAlign.left,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : 'N/A'}",
-                                                    maxLines: 4,
-                                                    textAlign: TextAlign.left,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : 'N/A'}",
-                                                    maxLines: 4,
-                                                    textAlign: TextAlign.left,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                ],
-                                              )
-                                            ),
-                                            Spacer()
-                                          ],
-                                        ),
-                                        SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 10.0),
-                                              child: Container(
-                                                width: 86,
-                                                height: 37,
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.zero,
-                                                ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 15),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 8.0),
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.zero,
-                                                  child: Image.network(
-                                                    singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '',
-                                                    fit: BoxFit.contain,
-                                                    errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                                  child:Image.network(
+                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '',
+                                                    // URL for the network image, empty string if null
+                                                    fit: BoxFit.cover,
+                                                    width: 100,
+                                                    height: 100,
+                                                    errorBuilder: (BuildContext context,
+                                                        Object exception,
+                                                        StackTrace? stackTrace) {
+                                                      // Display the default asset image if the network image fails to load
                                                       return Image.asset(
                                                         'images/DP.png',
-                                                        fit: BoxFit.contain,
-                                                        width: 86,
-                                                        height: 37,
+                                                        fit: BoxFit.cover,
+                                                        width: 100,
+                                                        height: 100,
                                                       );
                                                     },
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 20),
-                                      ],
+                                              Spacer(),
+                                              SizedBox(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      textAlign: TextAlign.left,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : 'N/A'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              ),
+                                              Spacer()
+                                            ],
+                                          ),
+                                          SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 10.0),
+                                                child: Container(
+                                                  width: 86,
+                                                  height: 37,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.zero,
+                                                  ),
+                                                  child: ClipRRect(
+                                                    borderRadius: BorderRadius.zero,
+                                                    child: Image.network(
+                                                      singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '',
+                                                      fit: BoxFit.contain,
+                                                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                                        return Image.asset(
+                                                          'images/DP.png',
+                                                          fit: BoxFit.contain,
+                                                          width: 86,
+                                                          height: 37,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 20),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -2247,30 +2232,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              // Load the asset image as bytes
-                                              final byteData = await rootBundle
-                                                  .load('images/companyCard.png');
-                                              final tempDir =
-                                              await getTemporaryDirectory();
-                                              final file = File(
-                                                  '${tempDir.path}/companyCard.png');
-                                              await file.writeAsBytes(byteData
-                                                  .buffer
-                                                  .asUint8List());
-
-                                              // Share the temporary file
-                                              await Share.shareXFiles([
-                                                XFile(file.path)
-                                              ], text: 'Check out this image!');
+                                              RenderRepaintBoundary boundary = _employeeContractContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                                              var image = await boundary.toImage(pixelRatio: 3.0);
+                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+                                              final tempDir = await getTemporaryDirectory();
+                                              final file = await File('${tempDir.path}/employee_contract.png').create();
+                                              await file.writeAsBytes(pngBytes);
+                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
                                             } catch (e) {
-                                              // Handle any errors that occur during the process
-                                              debugPrint(
-                                                  'Error sharing image: $e');
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Failed to share image: $e')),
+                                              debugPrint('Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -2285,10 +2258,25 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           color: NasColors.lightBlue,
                                         ),
                                         child: IconButton(
-                                          onPressed: () {
-                                            // Copy the image URL or any text to the clipboard
-                                            Clipboard.setData(ClipboardData(
-                                                text: "images/companyCard.png")); // Text to be copied
+                                          onPressed: () async {
+                                            try {
+                                              RenderRepaintBoundary boundary = _employeeContractContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                                              ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+                                              ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+                                              final tempDir = await getTemporaryDirectory();
+                                              final file = File('${tempDir.path}/copied_image.png');
+                                              await file.writeAsBytes(pngBytes);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('image copied')),
+                                              );
+                                            } catch (e) {
+                                              debugPrint('Error copying image: $e');
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Failed to copy image: $e')),
+                                              );
+                                            }
                                           },
                                           icon: const Icon(Icons.copy,
                                               color: Colors.white),

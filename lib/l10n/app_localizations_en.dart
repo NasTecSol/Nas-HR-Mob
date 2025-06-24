@@ -1561,4 +1561,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get religion => 'Religion';
+
+  @override
+  String get missingCheckInAndCheckOut =>
+      'Check-out time is missing Auto updated by system';
 }

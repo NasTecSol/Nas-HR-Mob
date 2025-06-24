@@ -21,35 +21,50 @@ class LoginModel {
 
 //Token Model
 class JWTData {
-  final String? employeeId;
-  final String? companyId;
-  final String? branchId;
-  final String? departmentId;
-  final String? organizationId;
-  final String? empId;
-  final String? userName;
-  final String? role;
-  final String? grade;
-  final int? exp;
-  final int? iat;
+  String? employeeId;
+  String? companyId;
+  String? tenantId;
+  String? branchId;
+  String? departmentId;
+  String? organizationId;
+  String? empId;
+  String? userName;
+  String? role;
+  String? grade;
+  int? iat;
+  int? exp;
 
-  JWTData({this.employeeId, this.companyId, this.branchId, this.departmentId, this.organizationId, this.empId,this.userName , this.role , this.grade , this.exp , this.iat});
+  JWTData({this.employeeId, this.companyId, this.tenantId, this.branchId, this.departmentId, this.organizationId, this.empId, this.userName, this.role, this.grade, this.iat, this.exp});
 
-  factory JWTData.fromJson(Map<String, dynamic> json) {
-    return JWTData(
-      employeeId: json['employeeId'],
-      companyId: json['CompanyId'],
-      branchId: json['branchId'],
-      departmentId: json['departmentId'],
-      organizationId: json['organizationId'],
-      empId: json['empId'],
-      userName: json['userName'],
-      role: json['role'],
-      grade: json['grade'],
-      exp: json['exp'],
-      iat: json['iat'],
-    );
+  JWTData.fromJson(Map<String, dynamic> json) {
+    employeeId = json["employeeId"];
+    companyId = json["companyId"];
+    tenantId = json["tenantId"];
+    branchId = json["branchId"];
+    departmentId = json["departmentId"];
+    organizationId = json["organizationId"];
+    empId = json["empId"];
+    userName = json["userName"];
+    role = json["role"];
+    grade = json["grade"];
+    iat = json["iat"];
+    exp = json["exp"];
   }
 
-  toList() {}
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["employeeId"] = employeeId;
+    _data["companyId"] = companyId;
+    _data["tenantId"] = tenantId;
+    _data["branchId"] = branchId;
+    _data["departmentId"] = departmentId;
+    _data["organizationId"] = organizationId;
+    _data["empId"] = empId;
+    _data["userName"] = userName;
+    _data["role"] = role;
+    _data["grade"] = grade;
+    _data["iat"] = iat;
+    _data["exp"] = exp;
+    return _data;
+  }
 }

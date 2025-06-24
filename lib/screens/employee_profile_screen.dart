@@ -1197,7 +1197,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeDetailsData.fromJson(responseBody);
@@ -1226,7 +1226,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     print("Employee Attendance Data${response.body}");
     print(employeeId);
     print(firstDateString);
@@ -1258,7 +1258,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
 
     log("Employee Clock in / out data : ${response.body}");
 

@@ -37,7 +37,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   DateTime? _endDate;
 
   @override
-  void initState() {
+   void initState() {
     super.initState();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
@@ -49,7 +49,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
-
+    extractAllEmployeeIdsForBranch(null);
     loadData();
   }
 
@@ -219,7 +219,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     log("🌐 Final Employee ID list: $ids");
     log("🌐 API URL: $uri");
 
-    final response = await http.get(uri);
+    final response = await http.get(uri,headers: singletonClass.getHeaders());
 
     log("📨 TEAM DATA RESPONSE: ${response.statusCode}");
     log("📨 TEAM DATA BODY: ${response.body}");
@@ -555,7 +555,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         child: Lottie.asset('images/loader.json',
                             height: 200, width: 200),
                       );
-                    } else if (filteredAttendanceDataList.isEmpty) {
+                    } else if (filteredAttendanceDataList.isEmpty || selectedBranchIds.isEmpty) {
                       return Center(
                         child: Text(AppLocalizations.of(context)!.noData),
                       );
@@ -571,8 +571,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                         }
                         String date = formatDate(attendance.updatedAt!);
-                        String lateMinutes = formatMinutes(attendance.lateMinutes);
-                        String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
+                        int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+                        int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
                         String breakTime = formatMinutes(attendance.breakTime);
 
                         return GestureDetector(
@@ -635,16 +635,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    Text(
-                                      singletonClass.formatCheckInTime(
-                                          attendance.clockInTime),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
                                     Transform(
                                       transform: Matrix4.rotationY(math.pi),
                                       alignment: Alignment.center,
@@ -654,7 +644,29 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      singletonClass.formatCheckInTime(
+                                          attendance.clockInTime),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                                     const Spacer(),
+                                    if ((lateMinutes == null || lateMinutes <= 0) &&
+                                        (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
+                                      Text(
+                                        "✅",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+
+                                    if (lateMinutes != null && lateMinutes > 0)...[
                                     Text(
                                       "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
                                       style: GoogleFonts.inter(
@@ -664,12 +676,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       ),
                                     ),
                                     Icon(Icons.error,
-                                        size: 20, color: NasColors.pending),
+                                        size: 20, color: NasColors.pending),]
                                   ],
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
+                                    const Icon(Icons.exit_to_app_outlined,
+                                        size: 20),
+                                    const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(
                                           attendance.clockOutTime),
@@ -679,9 +694,18 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
-                                    const Icon(Icons.exit_to_app_outlined,
-                                        size: 20),
                                     const Spacer(),
+                                    if ((lateMinutes == null || lateMinutes <= 0) &&
+                                        (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
+                                      Text(
+                                        "${formatMinutes(attendance.totalHoursWorked)} ${AppLocalizations.of(context)!.minutes}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                    if (earlyCheckOut != null && earlyCheckOut > 0)...[
                                     Text(
                                       "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
                                       style: GoogleFonts.inter(
@@ -691,7 +715,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       ),
                                     ),
                                     Icon(Icons.directions_run_outlined,
-                                        size: 20, color: NasColors.onTime),
+                                        size: 20, color: NasColors.onTime),]
                                   ],
                                 ),
                                 const SizedBox(height: 10),
@@ -751,11 +775,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       case "Absent":
         return NasColors.red;
       case "Present":
-        return NasColors.onTime;
+        return NasColors.completed;
       case "Quarterly":
         return NasColors.pending;
       case "Missing CheckIn/Out":
-        return NasColors.onTime;
+        return NasColors.pending;
       default:
         return NasColors.completed;
     }

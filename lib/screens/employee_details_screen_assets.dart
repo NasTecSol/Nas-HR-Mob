@@ -277,7 +277,7 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
       int? assetId = widget.assetsInfo?.assetId;
       var client = http.Client();
       var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
-      var response = await client.get(uri);
+      var response = await client.get(uri,headers: singletonClass.getHeaders());
 
       log("EMPLOYEE ASSETS DETAILS RESPONSE: ${response.body}");
 

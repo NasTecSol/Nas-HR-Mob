@@ -468,7 +468,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         child:  Padding(
                           padding: const EdgeInsets.only(top: 5.0),
                           child: Text(
-                            AppLocalizations.of(context)!.totalDuration, // Dynamically setting the break number
+                            AppLocalizations.of(context)!.totalDuration,
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
@@ -558,14 +558,21 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(color: Colors.grey), // Same border as the TextFormField
                     ),
-                    child: Text(
-                      widget.attendanceData!.remarks ?? '', // Display the remarks text
+                    child: widget.attendanceData!.remarks == 'Check-out time is missing Auto updated by system' ? Text(
+                      AppLocalizations.of(context)!.missingCheckInAndCheckOut,
                       maxLines: 5,
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: Colors.black,
                       ),
-                    ),
+                    ) : Text(
+                      widget.attendanceData!.remarks ?? '',
+                      maxLines: 5,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                    )
                   )
                 ],
               ),
