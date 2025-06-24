@@ -940,5 +940,6 @@
   "idNumber":"ID Number",
   "dateOfBirth":"Date of birth",
   "occupation":"Occupation",
-  "religion":"Religion"
+  "religion":"Religion",
+  "missingCheckInAndCheckOut":"Check-out time is missing Auto updated by system"
 }

@@ -46,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   double _dragPosition = 0.0;
   bool _isSliderCompleted = false;
   String? _openLocation;
+  String? selectedCompanyId;
   String? _backgroundLocation;
 
   @override
@@ -1079,6 +1080,73 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
+                            child: Container(
+                              alignment: Alignment.topLeft,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                                color: Colors.white,
+                              ),
+                              height: 60,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      height: 50,
+                                      width: 50,
+                                      child: Image.asset("images/site.png"),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          value: selectedCompanyId,
+                                          // Define this as a String? in your StatefulWidget
+                                          hint: const Text("Select Company"),
+                                          items: singletonClass
+                                              .companiesDataList
+                                              .first
+                                              .data!
+                                              .companies!
+                                              .map<DropdownMenuItem<String>>(
+                                                  (company) {
+                                            return DropdownMenuItem<String>(
+                                              value:
+                                                  company.companyId.toString(),
+                                              // Assuming company.id is non-null
+                                              child: Text(
+                                                  "${company.companyName}"), // Assuming company.name is non-null
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              singletonClass.branchesDataList
+                                                  .clear();
+                                              selectedCompanyId = value;
+                                              singletonClass.selectedCompanyId =
+                                                  selectedCompanyId;
+                                              singletonClass.getBranchesData();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
@@ -1101,90 +1169,160 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     child: Column(
                                       children: [
                                         if (singletonClass.attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList.first.data != null &&
-                                            singletonClass.attendanceDataList.first.data!.data != null &&
-                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty &&
-                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime != null &&
-                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime!.isNotEmpty)
-                                        Container(
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.only(
-                                                topLeft: Radius.circular(15),
-                                                topRight: Radius.circular(15),
+                                            singletonClass.attendanceDataList.first.data !=
+                                                null &&
+                                            singletonClass.attendanceDataList
+                                                    .first.data!.data !=
+                                                null &&
+                                            singletonClass.attendanceDataList
+                                                .first.data!.data!.isNotEmpty &&
+                                            singletonClass
+                                                    .attendanceDataList
+                                                    .first
+                                                    .data!
+                                                    .data!
+                                                    .first
+                                                    .clockInTime !=
+                                                null &&
+                                            singletonClass
+                                                .attendanceDataList
+                                                .first
+                                                .data!
+                                                .data!
+                                                .first
+                                                .clockInTime!
+                                                .isNotEmpty)
+                                          Container(
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  topRight: Radius.circular(15),
+                                                ),
+                                                color: _getContainerColor(),
                                               ),
-                                              color: _getContainerColor(),
-                                            ),
-                                            child:Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                if (singletonClass.attendanceDataList.isNotEmpty &&
-                                                    singletonClass.attendanceDataList.first.data!.data != null &&
-                                                    singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
-                                                  Builder(builder: (context) {
-                                                    final today = DateTime.now();
-                                                    final dataList = singletonClass.attendanceDataList.first.data!.data!;
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  if (singletonClass
+                                                          .attendanceDataList
+                                                          .isNotEmpty &&
+                                                      singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data !=
+                                                          null &&
+                                                      singletonClass
+                                                          .attendanceDataList
+                                                          .first
+                                                          .data!
+                                                          .data!
+                                                          .isNotEmpty)
+                                                    Builder(builder: (context) {
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data!;
+                                                      Data1? entry;
+                                                      final filteredList =
+                                                          dataList.where((e) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                e.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
+                                                      }).toList();
 
-                                                    Data1? entry;
+                                                      if (filteredList
+                                                          .isNotEmpty) {
+                                                        entry =
+                                                            filteredList.first;
+                                                      }
+                                                      if (entry == null) {
+                                                        return SizedBox();
+                                                      }
 
-                                                    final filteredList = dataList.where((e) {
-                                                      final createdAt = DateTime.tryParse(e.createdAt ?? '');
-                                                      return createdAt != null &&
-                                                          createdAt.year == today.year &&
-                                                          createdAt.month == today.month &&
-                                                          createdAt.day == today.day;
-                                                    }).toList();
-
-                                                    if (filteredList.isNotEmpty) {
-                                                      entry = filteredList.first;
-                                                    }
-                                                    if (entry == null) {
-                                                      return SizedBox();
-                                                    }
-
-                                                    if ((entry.lateMinutes ?? 0) > 0) {
-                                                      return Text(
-                                                        AppLocalizations.of(context)!.lateComings,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 18,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: NasColors.lateComingText,
-                                                        ),
-                                                      );
-                                                    } else if ((entry.earlyCheckOut ?? 0) > 0) {
-                                                      return Text(
-                                                        AppLocalizations.of(context)!.earlyCheckOut,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 10,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: NasColors.onTime,
-                                                        ),
-                                                      );
-                                                    } else if (entry.clockInTime?.isNotEmpty == true) {
-                                                      return Text(
-                                                        AppLocalizations.of(context)!.onTime,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 18,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: NasColors.onTime,
-                                                        ),
-                                                      );
-                                                    } else {
-                                                      return SizedBox();
-                                                    }
-                                                  })
-                                                else
-                                                  Text(
-                                                    AppLocalizations.of(context)!.noData,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      if ((entry.lateMinutes ??
+                                                              0) >
+                                                          0) {
+                                                        return Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .lateComings,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: NasColors
+                                                                .lateComingText,
+                                                          ),
+                                                        );
+                                                      } else if ((entry
+                                                                  .earlyCheckOut ??
+                                                              0) >
+                                                          0) {
+                                                        return Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .earlyCheckOut,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: NasColors
+                                                                .onTime,
+                                                          ),
+                                                        );
+                                                      } else if (entry
+                                                              .clockInTime
+                                                              ?.isNotEmpty ==
+                                                          true) {
+                                                        return Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .onTime,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: NasColors
+                                                                .onTime,
+                                                          ),
+                                                        );
+                                                      } else {
+                                                        return SizedBox();
+                                                      }
+                                                    })
+                                                  else
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .noData,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                      ),
                                                     ),
-                                                  ),
-                                              ],
-                                            )
-                                        ),
+                                                ],
+                                              )),
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 8.0,
@@ -1205,21 +1343,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                  () { try {
-                                                      final today = DateTime.now();
-                                                      final dataList = singletonClass.attendanceDataList.first.data!.data;
-                                                      if (dataList == null || dataList.isEmpty) {
+                                                  () {
+                                                    try {
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data;
+                                                      if (dataList == null ||
+                                                          dataList.isEmpty) {
                                                         return 'NA';
                                                       }
 
-                                                      final entry = dataList.firstWhere((entry) {
-                                                        final createdAt = DateTime.tryParse( entry.createdAt ?? '');
-                                                        return createdAt != null && createdAt.year == today.year &&
-                                                            createdAt.month == today.month && createdAt.day == today.day;
+                                                      final entry = dataList
+                                                          .firstWhere((entry) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                entry.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
                                                       });
 
-                                                      return entry.clockInTime?.isNotEmpty == true
-                                                          ? singletonClass.formatCheckInTime(entry.clockInTime!)
+                                                      return entry.clockInTime
+                                                                  ?.isNotEmpty ==
+                                                              true
+                                                          ? singletonClass
+                                                              .formatCheckInTime(
+                                                                  entry
+                                                                      .clockInTime!)
                                                           : 'NA';
                                                     } catch (_) {
                                                       return 'NA';
@@ -1252,25 +1413,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                      () { try {
-                                                    final today = DateTime.now();
-                                                    final dataList = singletonClass.attendanceDataList.first.data!.data;
-                                                    if (dataList == null || dataList.isEmpty) {
+                                                  () {
+                                                    try {
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data;
+                                                      if (dataList == null ||
+                                                          dataList.isEmpty) {
+                                                        return 'NA';
+                                                      }
+
+                                                      final entry = dataList
+                                                          .firstWhere((entry) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                entry.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
+                                                      });
+
+                                                      return entry.clockOutTime
+                                                                  ?.isNotEmpty ==
+                                                              true
+                                                          ? singletonClass
+                                                              .formatCheckInTime(
+                                                                  entry
+                                                                      .clockOutTime!)
+                                                          : 'NA';
+                                                    } catch (_) {
                                                       return 'NA';
                                                     }
-
-                                                    final entry = dataList.firstWhere((entry) {
-                                                      final createdAt = DateTime.tryParse( entry.createdAt ?? '');
-                                                      return createdAt != null && createdAt.year == today.year &&
-                                                          createdAt.month == today.month && createdAt.day == today.day;
-                                                    });
-
-                                                    return entry.clockOutTime?.isNotEmpty == true
-                                                        ? singletonClass.formatCheckInTime(entry.clockOutTime!)
-                                                        : 'NA';
-                                                  } catch (_) {
-                                                    return 'NA';
-                                                  }
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -1282,7 +1466,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ],
                                           ),
                                         ),
-
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 8.0,
@@ -1302,8 +1485,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                               const SizedBox(width: 40),
                                               Text(
-                                                singletonClass.attendanceDataList.isNotEmpty &&
-                                                    singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                singletonClass
+                                                            .attendanceDataList
+                                                            .isNotEmpty &&
+                                                        singletonClass
+                                                            .attendanceDataList
+                                                            .first
+                                                            .data!
+                                                            .data!
+                                                            .isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                                     : 'NA',
                                                 style: GoogleFonts.inter(
@@ -1458,8 +1648,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass.attendanceDataList.isNotEmpty &&
-                                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                    singletonClass
+                                                                .attendanceDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                .attendanceDataList
+                                                                .first
+                                                                .data!
+                                                                .data!
+                                                                .isNotEmpty
                                                         ? '${AppLocalizations.of(context)!.worked} '
                                                             '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0)}'
                                                         : '${AppLocalizations.of(context)!.worked} NA',
@@ -1494,30 +1691,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    final lastData = singletonClass
-                                                .attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList
-                                                    .first.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                .first.data!.data!.isNotEmpty
-                                        ? singletonClass
-                                            .attendanceDataList.first.data!.data!.first
-                                        : null;
+                                    final today = DateTime.now();
+                                    final dataList = singletonClass
+                                            .attendanceDataList
+                                            .first
+                                            .data
+                                            ?.data ??
+                                        [];
 
-                                    final checkInTime = lastData?.clockInTime;
-                                    final checkOutTime = lastData?.clockOutTime;
+                                    Data1? todayData;
+                                    for (var entry in dataList) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
+                                      if (createdAt != null &&
+                                          createdAt.year == today.year &&
+                                          createdAt.month == today.month &&
+                                          createdAt.day == today.day) {
+                                        todayData = entry;
+                                        break;
+                                      }
+                                    }
 
-                                    if ((checkInTime == null && checkInTime!.isEmpty)  ||
-                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                    final checkInTime = todayData?.clockInTime;
+                                    final checkOutTime =
+                                        todayData?.clockOutTime;
+
+                                    if ((checkInTime == null ||
+                                            checkInTime.isEmpty) ||
+                                        (checkOutTime != null &&
+                                            checkOutTime.isNotEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition >
                                           MediaQuery.of(context).size.width *
                                               0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (checkInTime.isNotEmpty &&
-                                        checkOutTime == null) {
+                                    } else if (checkInTime != null &&
+                                        checkInTime.isNotEmpty &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition <
                                           -MediaQuery.of(context).size.width *
@@ -1529,53 +1741,57 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 },
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
-                                    final lastData = singletonClass
-                                                .attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList
-                                                    .first.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                .first.data!.data!.isNotEmpty
-                                        ? singletonClass
-                                            .attendanceDataList.first.data!.data!.last
-                                        : null;
+                                    final today = DateTime.now();
+                                    final dataList = singletonClass
+                                            .attendanceDataList
+                                            .first
+                                            .data
+                                            ?.data ??
+                                        [];
 
-                                    final checkInTime = lastData?.clockInTime;
-                                    final checkOutTime = lastData?.clockOutTime;
+                                    Data1? todayData;
+                                    for (var entry in dataList) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
+                                      if (createdAt != null &&
+                                          createdAt.year == today.year &&
+                                          createdAt.month == today.month &&
+                                          createdAt.day == today.day) {
+                                        todayData = entry;
+                                        break;
+                                      }
+                                    }
 
-                                    if (checkInTime == null ||
-                                        checkOutTime != null) {
+                                    final checkInTime = todayData?.clockInTime;
+                                    final checkOutTime =
+                                        todayData?.clockOutTime;
+
+                                    if ((checkInTime == null ||
+                                            checkInTime.isEmpty) ||
+                                        (checkOutTime != null &&
+                                            checkOutTime.isNotEmpty)) {
                                       if (_isSliderCompleted &&
                                           details.velocity.pixelsPerSecond.dx >
                                               0) {
                                         _overlayEntry = _createOverlayEntry();
                                         Overlay.of(context)
                                             .insert(_overlayEntry!);
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
-                                      } else {
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
                                       }
-                                    } else if (checkInTime.isNotEmpty &&
-                                        checkOutTime == null) {
+                                    } else if (checkInTime != null &&
+                                        checkInTime.isNotEmpty &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       if (_isSliderCompleted &&
                                           details.velocity.pixelsPerSecond.dx <
                                               0) {
                                         _overlayEntry = _createOverlayEntry();
                                         Overlay.of(context)
                                             .insert(_overlayEntry!);
-                                      } else {
-                                        setState(() {
-                                          _dragPosition = 0;
-                                          _isSliderCompleted = false;
-                                        });
                                       }
                                     }
+
+                                    _dragPosition = 0;
+                                    _isSliderCompleted = false;
                                   });
                                 },
                                 child: Container(
@@ -1597,22 +1813,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                   height: 60,
                                   child: (() {
-                                    final lastData = singletonClass
-                                                .attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList
-                                                    .first.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                .first.data!.data!.isNotEmpty
-                                        ? singletonClass
-                                            .attendanceDataList.first.data!.data!.first
-                                        : null;
+                                    final today = DateTime.now();
+                                    final dataList = singletonClass
+                                            .attendanceDataList
+                                            .first
+                                            .data
+                                            ?.data ??
+                                        [];
 
-                                    final checkInTime = lastData?.clockInTime;
-                                    final checkOutTime = lastData?.clockOutTime;
+                                    Data1? todayData;
+                                    for (var entry in dataList) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
+                                      if (createdAt != null &&
+                                          createdAt.year == today.year &&
+                                          createdAt.month == today.month &&
+                                          createdAt.day == today.day) {
+                                        todayData = entry;
+                                        break;
+                                      }
+                                    }
 
-                                    if ((checkInTime != null || checkInTime!.isNotEmpty) &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    final checkInTime = todayData?.clockInTime;
+                                    final checkOutTime =
+                                        todayData?.clockOutTime;
+
+                                    if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
+                                      // Show Check-Out Button
                                       return Padding(
                                         padding: const EdgeInsets.only(
                                             top: 5.0, left: 30),
@@ -1660,9 +1890,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                         context)
                                                                     .pop(),
                                                             child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
                                                               children: [
                                                                 const Icon(
                                                                     Icons
@@ -1699,9 +1926,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               await checkOut();
                                                             },
                                                             child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
                                                               children: [
                                                                 const Icon(
                                                                     Icons
@@ -1759,6 +1983,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       );
                                     } else {
+                                      // Show Swipe to Check-In UI
                                       return Transform.translate(
                                         offset: Offset(_dragPosition, -1),
                                         child: Padding(
@@ -2405,6 +2630,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ),
     );
   }
+
   Color _getContainerColor() {
     try {
       final today = DateTime.now();
@@ -2413,7 +2639,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return Colors.white;
       }
       final entry = dataList.firstWhere(
-            (entry) {
+        (entry) {
           final createdAt = DateTime.tryParse(entry.createdAt ?? '');
           return createdAt != null &&
               createdAt.year == today.year &&
@@ -2430,22 +2656,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return NasColors.onTime.withOpacity(0.25);
       }
     } catch (_) {
-      return Colors.white;
+      return NasColors.darkBlue;
     }
-    return Colors.white;
+    return NasColors.darkBlue;
   }
-
 
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';
     try {
-      // Ensure the value is treated as a double and then round it
       double roundedMinutes = (minutes is int)
           ? minutes.toDouble()
           : double.parse(minutes.toString());
-      return roundedMinutes
-          .ceil()
-          .toString(); // Round up to the nearest integer
+      return roundedMinutes.ceil().toString();
     } catch (e) {
       return '--';
     }
@@ -2467,14 +2689,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {
       isLoading = true;
     });
+
     try {
       final response = await http.post(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
       print(response.body);
       setState(() {
@@ -2486,11 +2706,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         singletonClass.setCheckInData([checkInData]);
         print(singletonClass.checkInDataList.first.data?.id);
         setState(() {
-          _dragPosition = 0;
-          _isSliderCompleted = true;
+          _dragPosition = 0; // Reset drag position
+          _isSliderCompleted = true; // Reset slider completion flag
           singletonClass.getClockingData();
         });
         await singletonClass.getClockingData();
+        // Show success alert
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -2577,10 +2798,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final response = await http.patch(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       setState(() {
@@ -2671,7 +2889,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
 

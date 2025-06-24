@@ -305,10 +305,7 @@ Future<void> checkIn(String type) async {
       final response = await http.post(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       setState(() {
@@ -416,10 +413,7 @@ Future<void> checkIn(String type) async {
         final response = await http.patch(
           uri,
           body: body,
-          headers: {
-            "Content-Type": "application/json",
-            "accept": "application/json",
-          },
+          headers: singletonClass.getHeaders(),
         );
 
         setState(() {

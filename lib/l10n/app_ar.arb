@@ -555,7 +555,7 @@
     "pleaseFillAllFields": "يرجى ملء جميع الحقول",
     "minutes": "دقائق",
     "quarterly": "ربع سنوي",
-    "missingCheckInOut": "تسجيل الدخول/الخروج المفقود",
+    "missingCheckInOut": "لم يتم تسجيل الخروج",
     "advanceExpense": "نفقة مقدمة",
     "businessExpense": "نفقة تجارية",
     "leaveRequestBottom": "نوع الإجازة",
@@ -605,5 +605,7 @@
     "idNumber": "رقم الهوية",
     "dateOfBirth": "تاريخ الميلاد",
     "occupation": "المهنة",
-    "religion": "الديانة"
+    "religion": "الديانة",
+    "missingCheckInAndCheckOut": "وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام"
+
 }

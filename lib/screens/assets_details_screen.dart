@@ -292,7 +292,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     int? assetId = widget.assetsInfo?.assetId;
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("ASSETS DETAILS RESPONSE: ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);

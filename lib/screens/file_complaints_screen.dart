@@ -365,10 +365,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       final response = await http.post(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+          headers: singletonClass.getHeaders()
       );
 
       setState(() {

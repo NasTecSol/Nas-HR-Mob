@@ -99,7 +99,9 @@ class TeamAttendanceData {
     breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
-    penalties = json["penalties"] == null ? null : (json["penalties"] as List).map((e) => Penalties.fromJson(e)).toList();
+    penalties = json["penalties"] == null
+        ? null
+        : (json["penalties"] as List).whereType<Map<String, dynamic>>().map((e) => Penalties.fromJson(e)).toList();
     leaveDetails = json["leaveDetails"];
     shift = json["shift"];
     workingHoursPerday = json["workingHoursPerday"];

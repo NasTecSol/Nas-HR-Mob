@@ -5948,7 +5948,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
       final mimeType =
           lookupMimeType(file.path ?? '') ?? 'application/octet-stream';
-
+      request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile(
         'file',
         http.ByteStream.fromBytes(fileBytes),
@@ -6111,10 +6111,7 @@ class _RequestScreenState extends State<RequestScreen> {
       final response = await http.post(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       setState(() {
@@ -6216,9 +6213,7 @@ class _RequestScreenState extends State<RequestScreen> {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
 
@@ -6273,7 +6268,7 @@ class _RequestScreenState extends State<RequestScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);
@@ -6330,10 +6325,7 @@ class _RequestScreenState extends State<RequestScreen> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       log("Request Log approver: ${response.body}");
@@ -6385,10 +6377,7 @@ class _RequestScreenState extends State<RequestScreen> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       log("Request Log: ${response.body}");

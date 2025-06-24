@@ -202,8 +202,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                       }
                       String date = formatDate(attendance.updatedAt!);
-                      String lateMinutes = formatMinutes(attendance.lateMinutes);
-                      String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
+                      int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+                      int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
                       String breakTime = formatMinutes(attendance.breakTime);
 
 
@@ -256,15 +256,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               const SizedBox(height: 20),
                               Row(
                                 children: [
-                                  Text(
-                                    singletonClass.formatCheckInTime(attendance.clockInTime!),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
                                   Transform(
                                     transform: Matrix4.rotationY(math.pi),
                                     alignment: Alignment.center,
@@ -274,7 +265,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       color: Colors.black,
                                     ),
                                   ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    singletonClass.formatCheckInTime(attendance.clockInTime!),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+
                                   const Spacer(),
+                                  if ((lateMinutes == null || lateMinutes <= 0) &&
+                                      (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
+                                    Text(
+                                      "✅",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                      if (lateMinutes != null && lateMinutes > 0)...[
                                   Text(
                                     "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
                                     style: GoogleFonts.inter(
@@ -287,15 +299,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     Icons.error,
                                     size: 20,
                                     color: NasColors.pending,
-                                  ),
+                                  ),]
                                 ],
                               ),
                               const SizedBox(height: 10),
                               Row(
                                 children: [
-                                  SizedBox(
-                                    width: 70,
-                                    child: Text(
+                                  const Icon(
+                                    Icons.exit_to_app_outlined,
+                                    size: 20,
+                                    color: Colors.black,
+                                  ),
+                                  const SizedBox(width: 5),
+                                   Text(
                                     singletonClass.formatCheckInTime(attendance.clockOutTime!),
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
@@ -303,13 +319,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.exit_to_app_outlined,
-                                    size: 20,
-                                    color: Colors.black,
-                                  ),
                                   const Spacer(),
+                                  if ((lateMinutes == null || lateMinutes <= 0) &&
+                                      (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
+                                    Text(
+                                      "${formatMinutes(attendance.totalHoursWorked)} ${AppLocalizations.of(context)!.minutes}",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                      if (earlyCheckOut != null && earlyCheckOut > 0)...[
                                   Text(
                                     "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
                                     style: GoogleFonts.inter(
@@ -322,7 +343,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     Icons.directions_run_outlined,
                                     size: 20,
                                     color: NasColors.onTime,
-                                  ),
+                                  ),]
                                 ],
                               ),
                               const SizedBox(height: 10),
@@ -426,7 +447,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     print(toDateString);
     print(fromDateString);
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("Attendance of login user${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -442,11 +463,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       case "Absent":
         return NasColors.red;
       case "Present":
-        return NasColors.onTime;
+        return NasColors.completed;
       case "Quarterly":
         return NasColors.pending;
       case "Missing CheckIn/Out":
-        return NasColors.onTime;
+        return NasColors.pending;
       default:
         return NasColors.completed;
     }

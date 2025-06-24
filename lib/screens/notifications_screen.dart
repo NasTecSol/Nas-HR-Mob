@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:translator/translator.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -15,11 +16,12 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   SingletonClass singletonClass = SingletonClass();
+  final translator = GoogleTranslator();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-  singletonClass.getNotifications();
+    singletonClass.getNotifications();
   }
 
   @override
@@ -129,137 +131,190 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       child: Text('Error: ${snapshot.error}'),
                     );
                   } else if (snapshot.hasData) {
-                    return singletonClass.notificationModelList.first.data!.isEmpty
+                    return singletonClass
+                            .notificationModelList.first.data!.isEmpty
                         ? Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.noData,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                          fontSize: 15,
-                        ),
-                      ),
-                    )
-                        : ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: singletonClass.notificationModelList.first.data!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final notificationData = singletonClass
-                            .notificationModelList.first.data![index];
-                        return Dismissible(
-                          key: Key(notificationData.id.toString()), // Ensure each item has a unique key
-                          direction: DismissDirection.endToStart, // Allows swipe from right to left
-                          onDismissed: (direction) {
-                            // Handle item removal
-                            setState(() {
-                              singletonClass.notificationModelList.first.data!.removeAt(index);
-                            });
-                          },
-                          background: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(15)),
-                              color: Colors.red,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 2,
-                                  blurRadius: 2,
-                                  offset: const Offset(3, 3),
-                                ),
-                              ],
-                            ),// Background color while swiping
-                            child: const Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Icon(Icons.delete_outline_rounded, color: Colors.white),
+                            child: Text(
+                              AppLocalizations.of(context)!.noData,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                fontSize: 15,
                               ),
                             ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 5),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 2,
-                                    offset: const Offset(3, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "${singletonClass.getJWTModel()!.userName}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey,
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: singletonClass
+                                .notificationModelList.first.data!.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final notificationData = singletonClass.notificationModelList.first.data![index];
+                              final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+                              Future<List<String>> getTranslatedText() async {
+                                if (!isArabic) {
+                                  return [
+                                    notificationData.notificationType ?? '',
+                                    notificationData.message ?? ''
+                                  ];
+                                } else {
+                                  final titleTranslation =
+                                      await translator.translate(notificationData.notificationType ?? '',
+                                          to: 'ar');
+                                  final messageTranslation = await translator.translate(notificationData.message ?? '',
+                                          to: 'ar');
+                                  return [
+                                    titleTranslation.text,
+                                    messageTranslation.text
+                                  ];
+                                }
+                              }
+
+                              return FutureBuilder<List<String>>(
+                                future: getTranslatedText(),
+                                builder: (context, snapshot) {
+                                  final translatedTitle = snapshot.hasData
+                                      ? snapshot.data![0]
+                                      : notificationData.notificationType ?? '';
+                                  final translatedMessage = snapshot.hasData
+                                      ? snapshot.data![1]
+                                      : notificationData.notificationMessage ?? '';
+
+                                  return Dismissible(
+                                    key: Key(notificationData.id.toString()),
+                                    direction: DismissDirection.endToStart,
+                                    onDismissed: (direction) {
+                                      setState(() {
+                                        singletonClass
+                                            .notificationModelList.first.data!
+                                            .removeAt(index);
+                                      });
+                                    },
+                                    background: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(15)),
+                                        color: Colors.red,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 2,
+                                            blurRadius: 2,
+                                            offset: const Offset(3, 3),
                                           ),
+                                        ],
+                                      ),
+                                      child: const Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: Icon(
+                                              Icons.delete_outline_rounded,
+                                              color: Colors.white),
                                         ),
-                                        const Spacer(),
-                                        Text(
-                                          formatRelativeTime("${notificationData.createdAt}"),
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                    Row(
-                                      children: [
-                                        Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 5),
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 2,
+                                              offset: const Offset(3, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                "${notificationData.notificationType}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    "${singletonClass.getJWTModel()!.userName}",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    formatRelativeTime(
+                                                        "${notificationData.createdAt}"),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              Text(
-                                                "${notificationData.message}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 4,
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          translatedTitle,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          translatedMessage,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          maxLines: 4,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 80,
+                                                    width: 80,
+                                                    child: Image.asset(
+                                                        _getNotificationImage(
+                                                            "${notificationData.notificationType}")),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
                                         ),
-                                        SizedBox(
-                                          height: 80,
-                                          width: 80,
-                                          child: Image.asset(_getNotificationImage("${notificationData.notificationType}")),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
+                                  );
+                                },
+                              );
+                            },
+                          );
                   } else {
                     return Center(
                       child: Text(
@@ -276,7 +331,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 },
               ),
             )
-
           ],
         ),
       ),
@@ -303,8 +357,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-
-
   String _getNotificationImage(String eventType) {
     switch (eventType) {
       case 'Leave Request':
@@ -319,5 +371,4 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return 'images/time.png'; // Default image for company or other types
     }
   }
-
 }
