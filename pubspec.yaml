@@ -76,6 +76,7 @@ dependencies:
   flutter_sound: ^9.2.13
   audioplayers: ^6.4.0
   speech_to_text: ^7.0.0
+  translator: ^1.0.3+1
 
 
 

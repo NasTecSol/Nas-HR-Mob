@@ -1007,7 +1007,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
 
       final mimeType = lookupMimeType(selectedFile!.path ?? '', headerBytes: fileBytes) ??
           'application/octet-stream';
-
+      request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile(
         'file',
         http.ByteStream.fromBytes(fileBytes),
@@ -1061,7 +1061,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/kanban-project/getDataByadminId/$employeeId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log(response.body);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -1126,9 +1126,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
     try {
       final response = await http.post(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       if (response.statusCode == 200) {
@@ -1192,7 +1190,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);

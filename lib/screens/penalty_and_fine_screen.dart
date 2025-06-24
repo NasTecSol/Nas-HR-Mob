@@ -1300,10 +1300,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       log("Penalties Log: ${response.body}");
@@ -1340,10 +1337,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
 
       log("penalties Log approver: ${response.body}");
@@ -1410,9 +1404,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       setState(() {

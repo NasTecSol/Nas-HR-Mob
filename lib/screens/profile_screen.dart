@@ -1905,9 +1905,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       var request = http.MultipartRequest('POST', uri);
 
+
       final mimeType = lookupMimeType(selectedFile!.path ?? '', headerBytes: fileBytes) ??
           'application/octet-stream';
 
+      request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile(
         'file',
         http.ByteStream.fromBytes(fileBytes),
@@ -1980,6 +1982,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       final mimeType = 'image/png';
 
       var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile(
         'file',
         http.ByteStream.fromBytes(data),
@@ -2070,9 +2073,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       // Send the PATCH request
       var response = await http.patch(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
 
@@ -2107,9 +2108,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       setState(() {

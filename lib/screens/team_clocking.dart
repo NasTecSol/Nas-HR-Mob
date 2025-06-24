@@ -463,7 +463,7 @@ class _TeamClockingState extends State<TeamClocking> {
   Future<TeamClockingModel?> getTeamClockingAPI() async {
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/all');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("Team ClockingData:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);

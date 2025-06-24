@@ -698,7 +698,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("Event Data : ${response.body}");
 
     if (response.statusCode == 200) {

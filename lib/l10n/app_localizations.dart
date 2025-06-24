@@ -3187,6 +3187,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Religion'**
   String get religion;
+
+  /// No description provided for @missingCheckInAndCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-out time is missing Auto updated by system'**
+  String get missingCheckInAndCheckOut;
 }
 
 class _AppLocalizationsDelegate

@@ -1414,7 +1414,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quarterly => 'ربع سنوي';
 
   @override
-  String get missingCheckInOut => 'تسجيل الدخول/الخروج المفقود';
+  String get missingCheckInOut => 'لم يتم تسجيل الخروج';
 
   @override
   String get advanceExpense => 'نفقة مقدمة';
@@ -1559,4 +1559,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get religion => 'الديانة';
+
+  @override
+  String get missingCheckInAndCheckOut =>
+      'وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام';
 }

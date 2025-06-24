@@ -200,7 +200,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
 
       var client = http.Client();
       var uri = Uri.parse('https://dev.nashrms.com/api/organization/getStaticUrl/$companyCode');
-      var response = await client.get(uri);
+      var response = await client.get(uri,headers: singletonClass.getHeaders());
       log("Company BASE URL Data: ${response.body}");
 
       if (response.statusCode == 200) {
