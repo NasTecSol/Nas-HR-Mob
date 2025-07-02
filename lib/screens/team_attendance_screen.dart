@@ -49,47 +49,45 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
-    extractAllEmployeeIdsForBranch(null);
     loadData();
   }
 
   void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
     List<String> allEmployeeIds = [];
 
-    final branches = singletonClass.branchesDataList.first.data;
-    final branchList = (selectedBranchId == null || selectedBranchId.isEmpty)
-        ? branches
-        : branches?.where((branch) => branch.branchCompanyId == selectedBranchId).toList();
+    if ((selectedBranchId != null && selectedBranchId.isNotEmpty)){
+      final branches = singletonClass.branchesDataList.first.data;
+      final branchList = branches?.where((branch) => branch.branchCompanyId == selectedBranchId).toList();
 
-    if (branchList != null && branchList.isNotEmpty) {
-      for (var branch in branchList) {
-        final departments = branch.departmentDetails ?? [];
+      if (branchList != null && branchList.isNotEmpty) {
+        for (var branch in branchList) {
+          final departments = branch.departmentDetails ?? [];
 
-        for (var department in departments) {
-          final departmentList = department.departments ?? [];
+          for (var department in departments) {
+            final departmentList = department.departments ?? [];
 
-          for (var dept in departmentList) {
-            final teams = dept.teams ?? [];
+            for (var dept in departmentList) {
+              final teams = dept.teams ?? [];
 
-            for (var team in teams) {
-              final teamData = team['teamData'] ?? [];
+              for (var team in teams) {
+                final teamData = team['teamData'] ?? [];
 
-              for (var employee in teamData) {
-                final employeeId = employee['employeeId'];
-                if (employeeId != null) {
-                  allEmployeeIds.add(employeeId);
-                  selectedBranchIds.clear();
+                for (var employee in teamData) {
+                  final employeeId = employee['employeeId'];
+                  if (employeeId != null) {
+                    allEmployeeIds.add(employeeId);
+                    selectedBranchIds.clear();
+                  }
                 }
               }
             }
           }
         }
       }
+      selectedBranchIds = allEmployeeIds.toSet();
+      print('✅ Total Employee IDs: ${allEmployeeIds.length}');
+      print('🔍 All IDs Set: $selectedBranchIds');
     }
-
-    selectedBranchIds = allEmployeeIds.toSet();
-    print('✅ Total Employee IDs: ${allEmployeeIds.length}');
-    print('🔍 All IDs Set: $selectedBranchIds');
   }
 
 
@@ -171,10 +169,23 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     if (grade == 'L0' || grade == 'L1') {
       if (selectedBranchIds.isNotEmpty) {
-
         employeeIds = selectedBranchIds;
-      } else {
-        log("❌ No selectedBranchIds found for grade $grade");
+      } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+        for (var team in filteredUnderTeams) {
+          log("👥 Checking team: ${team.teamId}");
+          if (team.teamData != null) {
+            for (var member in team.teamData!) {
+              if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+                employeeIds.add(member.employeeId!);
+                log(" - Found Employee ID: ${member.employeeId}");
+              } else {
+                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+              }
+            }
+          } else {
+            log(" - ⚠️ teamData is null for team: ${team.teamId}");
+          }
+        }
       }
     }
 
@@ -197,8 +208,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     }
 
     if (employeeIds.isEmpty) {
-      log("❌ No employee IDs found. Skipping API call.");
-      return null;
+      log("❌ No employee IDs found. Returning empty attendance data.");
+      filteredAttendanceDataList.clear();
+      return  null;
     }
 
     final ids = employeeIds.join(',');
@@ -394,7 +406,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+              if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
                 Padding(
                   padding: const EdgeInsets.only(left: 10.0, right: 10),
                   child: PopupMenuButton<String>(
@@ -405,16 +417,13 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     onSelected: (value) {
                       setState(() {
                         selectedBranchId = value;
-                        // Get selected branch name from branchId
-                        final branch = singletonClass.branchesDataList.first.data
-                            ?.firstWhere((branch) => branch.branchCompanyId == value);
+                        final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
                         selectedBranchName = branch?.branchName ?? "Unknown Branch";
+                        print('Selected Branch ID: $value');
+                        extractAllEmployeeIdsForBranch(value);
+                        getTeamAttendanceData();
+                        loadData();
                       });
-
-                      print('Selected Branch ID: $value');
-                      extractAllEmployeeIdsForBranch(value);
-                      getTeamAttendanceData();
-                      loadData();
                     },
                     itemBuilder: (BuildContext context) {
                       final branchList = singletonClass.branchesDataList.first.data;
@@ -439,7 +448,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         children: [
                           Flexible(
                             child: Text(
-                              selectedBranchName ?? AppLocalizations.of(context)!.selectBranch,
+                              selectedBranchName != null && selectedBranchName!.isNotEmpty
+                                  ? selectedBranchName!
+                                  : "${singletonClass.branchDataList.first.data!.branch!.branchName}",
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -447,7 +458,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ),
@@ -458,7 +469,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                 onPressed: () async {
                   final DateTime now = DateTime.now();
                   final DateTime lastSelectableDate = now;
-
                   final DateTimeRange? picked = await showDateRangePicker(
                     context: context,
                     firstDate: DateTime(now.year - 2),
@@ -483,7 +493,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     },
                     initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
                   );
-
                   if (picked != null) {
                     _startDate = picked.start;
                     _endDate = picked.end;
@@ -500,7 +509,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     color: NasColors.darkBlue,
                   ),
                 ),
-
               ),
             ],
           ),
@@ -555,7 +563,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         child: Lottie.asset('images/loader.json',
                             height: 200, width: 200),
                       );
-                    } else if (filteredAttendanceDataList.isEmpty || selectedBranchIds.isEmpty) {
+                    } else if (filteredAttendanceDataList.isEmpty) {
                       return Center(
                         child: Text(AppLocalizations.of(context)!.noData),
                       );
@@ -635,15 +643,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    Transform(
-                                      transform: Matrix4.rotationY(math.pi),
-                                      alignment: Alignment.center,
-                                      child: const Icon(
-                                        Icons.exit_to_app_outlined,
-                                        size: 20,
-                                        color: Colors.black,
-                                      ),
-                                    ),
+                                    const Icon(Icons.exit_to_app_outlined,
+                                        size: 20),
                                     const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(
@@ -682,8 +683,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
-                                    const Icon(Icons.exit_to_app_outlined,
-                                        size: 20),
+                                    Transform(
+                                      transform: Matrix4.rotationY(math.pi),
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.exit_to_app_outlined,
+                                        size: 20,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                                     const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(

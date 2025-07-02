@@ -350,7 +350,7 @@ class SingletonClass {
       setClockingData([clockingData]);
       return clockingData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
   //BRANCH DATA

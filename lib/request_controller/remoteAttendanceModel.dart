@@ -30,7 +30,7 @@ class Data {
   String? userName;
   String? lastLocation;
   String? lastLocationUpdatedAt;
-  bool? isRemoteAttendance;
+  dynamic isRemoteAttendance;
   String? remoteAttendanceLoc;
 
   Data({this.employeeId, this.userName, this.lastLocation, this.lastLocationUpdatedAt, this.isRemoteAttendance, this.remoteAttendanceLoc});

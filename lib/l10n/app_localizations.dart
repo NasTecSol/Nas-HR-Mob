@@ -3193,6 +3193,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check-out time is missing Auto updated by system'**
   String get missingCheckInAndCheckOut;
+
+  /// No description provided for @allBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'All Branches'**
+  String get allBranch;
 }
 
 class _AppLocalizationsDelegate

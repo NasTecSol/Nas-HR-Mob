@@ -941,5 +941,6 @@
   "dateOfBirth":"Date of birth",
   "occupation":"Occupation",
   "religion":"Religion",
-  "missingCheckInAndCheckOut":"Check-out time is missing Auto updated by system"
+  "missingCheckInAndCheckOut":"Check-out time is missing Auto updated by system",
+  "allBranch":"All Branches"
 }
