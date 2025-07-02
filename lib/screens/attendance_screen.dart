@@ -256,14 +256,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               const SizedBox(height: 20),
                               Row(
                                 children: [
-                                  Transform(
-                                    transform: Matrix4.rotationY(math.pi),
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.exit_to_app_outlined,
-                                      size: 20,
-                                      color: Colors.black,
-                                    ),
+                                  const Icon(
+                                    Icons.exit_to_app_outlined,
+                                    size: 20,
+                                    color: Colors.black,
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
@@ -305,10 +301,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               const SizedBox(height: 10),
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.exit_to_app_outlined,
-                                    size: 20,
-                                    color: Colors.black,
+                                  Transform(
+                                    transform: Matrix4.rotationY(math.pi),
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.exit_to_app_outlined,
+                                      size: 20,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                   const SizedBox(width: 5),
                                    Text(

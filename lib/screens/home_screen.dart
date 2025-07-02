@@ -1078,6 +1078,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )
                             ],
                           ),
+                          if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" || singletonClass.getJWTModel()?.grade == "L2")
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Container(
@@ -1111,7 +1112,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           isExpanded: true,
                                           value: selectedCompanyId,
                                           // Define this as a String? in your StatefulWidget
-                                          hint: const Text("Select Company"),
+                                          hint:  Text("${singletonClass.companyDataList.first.data!.name} ~ ${singletonClass.branchDataList.first.data!.branch!.branchName}"),
                                           items: singletonClass
                                               .companiesDataList
                                               .first
@@ -1247,17 +1248,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 today.day;
                                                       }).toList();
 
-                                                      if (filteredList
-                                                          .isNotEmpty) {
-                                                        entry =
-                                                            filteredList.first;
+                                                      if (filteredList.isNotEmpty) {
+                                                        entry = filteredList.first;
                                                       }
                                                       if (entry == null) {
                                                         return SizedBox();
                                                       }
 
-                                                      if ((entry.lateMinutes ??
-                                                              0) >
+                                                      if ((entry.lateMinutes ?? 0) >
                                                           0) {
                                                         return Text(
                                                           AppLocalizations.of(
@@ -2636,7 +2634,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final today = DateTime.now();
       final dataList = singletonClass.attendanceDataList.first.data!.data;
       if (dataList == null || dataList.isEmpty) {
-        return Colors.white;
+        return NasColors.darkBlue;
       }
       final entry = dataList.firstWhere(
         (entry) {

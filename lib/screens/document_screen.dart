@@ -2203,11 +2203,10 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '',
                                                       fit: BoxFit.contain,
                                                       errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                                        return Image.asset(
-                                                          'images/DP.png',
-                                                          fit: BoxFit.contain,
-                                                          width: 86,
-                                                          height: 37,
+                                                        return  Icon(
+                                                          Icons.broken_image,
+                                                          size: 30,
+                                                          color: NasColors.darkBlue,
                                                         );
                                                       },
                                                     ),

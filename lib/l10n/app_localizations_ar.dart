@@ -1563,4 +1563,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get missingCheckInAndCheckOut =>
       'وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام';
+
+  @override
+  String get allBranch => 'جميع الفروع';
 }
