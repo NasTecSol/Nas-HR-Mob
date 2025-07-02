@@ -606,6 +606,8 @@
     "dateOfBirth": "تاريخ الميلاد",
     "occupation": "المهنة",
     "religion": "الديانة",
-    "missingCheckInAndCheckOut": "وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام"
+    "missingCheckInAndCheckOut": "وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام",
+    "allBranch": "جميع الفروع"
+
 
 }
