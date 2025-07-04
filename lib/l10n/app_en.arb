@@ -198,6 +198,7 @@
   "leaveUsed": "Leave Used",
   "late": "Late",
   "earlyCheckOut": "Early Check-Out",
+  "earlyLeft": "Early Left",
   "comment": "Add Comment",
   "accept": "Accept",
   "acceptRequest": "Accept Request",
@@ -942,5 +943,6 @@
   "occupation":"Occupation",
   "religion":"Religion",
   "missingCheckInAndCheckOut":"Check-out time is missing Auto updated by system",
-  "allBranch":"All Branches"
+  "allBranch":"All Branches",
+  "attendanceDetail":"Attendance Detail"
 }

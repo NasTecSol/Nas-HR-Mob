@@ -200,6 +200,7 @@
   "leaveUsed": "الإجازات المستخدمة",
   "late": "متأخر",
   "earlyCheckOut": "الخروج المبكر",
+  "earlyLeft": "انصراف مبكر",
   "comment": "إضافة تعليق",
   "accept": "قبول",
   "acceptRequest": "قبول الطلب",
@@ -607,7 +608,8 @@
     "occupation": "المهنة",
     "religion": "الديانة",
     "missingCheckInAndCheckOut": "وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام",
-    "allBranch": "جميع الفروع"
+    "allBranch": "جميع الفروع",
+    "attendanceDetail": "تفاصيل الحضور"
 
 
 }

@@ -71,10 +71,10 @@ class Data1 {
   List<dynamic>? breaksTaken;
   int? breakTime;
   int? lateMinutes;
-  List<dynamic>? penalties;
+  List<Penalties>? penalties;
   dynamic leaveDetails;
   String? shift;
-  int? workingHoursPerday;
+  dynamic workingHoursPerday;
   int? earlyCheckOut;
   String? remarks;
   String? createdAt;
@@ -99,7 +99,9 @@ class Data1 {
     breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
-    penalties = json["penalties"] ?? [];
+    penalties = json["penalties"] == null
+        ? null
+        : (json["penalties"] as List).whereType<Map<String, dynamic>>().map((e) => Penalties.fromJson(e)).toList();
     leaveDetails = json["leaveDetails"];
     shift = json["shift"];
     workingHoursPerday = json["workingHoursPerday"];
@@ -130,7 +132,7 @@ class Data1 {
     _data["breakTime"] = breakTime;
     _data["lateMinutes"] = lateMinutes;
     if(penalties != null) {
-      _data["penalties"] = penalties;
+      _data["penalties"] = penalties?.map((e) => e.toJson()).toList();
     }
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
@@ -140,6 +142,34 @@ class Data1 {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    return _data;
+  }
+}
+
+class Penalties {
+  int? uniqueId;
+  String? action;
+  int? percentage;
+  int? lateMinute;
+  int? occurrence;
+
+  Penalties({this.uniqueId, this.action, this.percentage, this.lateMinute, this.occurrence});
+
+  Penalties.fromJson(Map<String, dynamic> json) {
+    uniqueId = json["uniqueId"];
+    action = json["action"];
+    percentage = json["percentage"];
+    lateMinute = json["lateMinute"];
+    occurrence = json["occurrence"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["uniqueId"] = uniqueId;
+    _data["action"] = action;
+    _data["percentage"] = percentage;
+    _data["lateMinute"] = lateMinute;
+    _data["occurrence"] = occurrence;
     return _data;
   }
 }

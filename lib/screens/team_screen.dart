@@ -25,7 +25,7 @@ class _TeamScreenState extends State<TeamScreen> {
     "https://img.freepik.com/free-psd/flat-man-character_23-2151534197.jpg?w=740&t=st=1723453930~exp=1723454530~hmac=f047b2fdb91350768e41906694186ffddadcde4b49b6d55de3083dfb18cbe3e3",
   ];
   int _selectedOptionIndex = 0;
-  late String reportingManagerId;
+  String? reportingManagerId;
   late List<Teams> filteredTeams;
   late List<Teams> filteredUnderTeams;
 
@@ -34,17 +34,9 @@ class _TeamScreenState extends State<TeamScreen> {
     super.initState();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     List<BranchData> branchDataList = singletonClass.branchDataList;
-
-    // Get the filtered teams
-    var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
-
-    // Assign the filtered teams (ownTeams and underTeams) to the filteredTeams list
-    filteredTeams = filteredData['ownTeams']!; // or underTeams if you need that specifically
-    filteredUnderTeams = filteredData['underTeams']!; // or underTeams if you need that specifically
-
-    // Debug Logs
-    print('filteredTeams length: ${filteredTeams.length}');
-    print('filteredTeams data: $filteredTeams');
+    var filteredData = getFilteredTeams(branchDataList, reportingManagerId!);
+    filteredTeams = filteredData['ownTeams']!;
+    filteredUnderTeams = filteredData['underTeams']!;
   }
 
   Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
@@ -52,45 +44,53 @@ class _TeamScreenState extends State<TeamScreen> {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    // Debugging: print branch data
     print('Branch Data List length: ${branchDataList.length}');
+    print('Reporting Manager ID: $reportingManagerId');
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
+      for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
-          // Check if the user is a supervisor in the department
-          bool isSupervisor = department.supervisors?.any((supervisor) => supervisor.empId == reportingManagerId) ?? false;
-          print('Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
+          final supervisors = department.supervisors ?? [];
+          final teams = department.teams ?? [];
 
-          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
-            // Supervisor with L0 or L1 grade
-            for (var team in department.teams ?? []) {
-              bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
-              if (isUserInTeam) {
-                print('Adding under team: ${team.teamId}');
-                ownTeams.addAll([team]); // Add to underTeams if the user is part of the team
+          if (["L0", "L1", "L2", "L3"].contains(userGrade)) {
+            // ✅ If user is a supervisor in this department
+            bool isUserSupervisorInDepartment = supervisors.any((s) => s.empId == reportingManagerId);
+
+            if (isUserSupervisorInDepartment) {
+              print('✅ User is a supervisor in this department');
+
+              // ✅ Add supervisors to ownTeams as fake team wrappers
+              for (var supervisor in supervisors) {
+                ownTeams.add(
+                  Teams(
+                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                    teamData: supervisors.map<TeamData>((supervisor) {
+                      return TeamData(
+                        empId: supervisor.empId,
+                        employeeId: supervisor.employeeId,
+                        userName: supervisor.userName,
+                        designation: supervisor.designation,
+                        grade: supervisor.grade,
+                      );
+                    }).toList(),
+                  ),
+                );
               }
 
-
-              // Check if the supervisor manages the team based on teamId match
-              for (var supervisor in department.supervisors ?? []) {
-                // Check if the supervisor empId matches the reportingManagerId
-                if (supervisor.empId == reportingManagerId) {
-                  // Now check if the supervisor's teamId matches the current team's teamId
-                  if (supervisor.teamId == team.teamId) {
-                    print('Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
-                    underTeams.add(team); // Add to underTeams if supervisor manages the team
-                  }
-                }
+              // ✅ Add full teams under this department to underTeams
+              for (var team in teams) {
+                print('➡️ Adding team to underTeams: ${team.teamId}');
+                underTeams.add(team);
               }
             }
-          } else if (userGrade == "L4" || userGrade == "L4") {
-            // Non-Supervisor: Add teams where the user is a member to underTeams
-            for (var team in department.teams ?? []) {
+          } else if (userGrade == "L4") {
+            // ✅ For non-supervisors: Add only teams the user is a member of
+            for (var team in teams) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
               if (isUserInTeam) {
-                print('Adding under team: ${team.teamId}');
-                ownTeams.addAll([team]); // Add to underTeams if the user is part of the team
+                print('👤 User is team member of ${team.teamId}, adding to ownTeams');
+                ownTeams.add(team);
               }
             }
           }
@@ -98,14 +98,11 @@ class _TeamScreenState extends State<TeamScreen> {
       }
     }
 
-    // Return both lists in a map
     return {
       'ownTeams': ownTeams,
       'underTeams': underTeams,
     };
   }
-
-
 
 
 
@@ -257,7 +254,6 @@ class _TeamScreenState extends State<TeamScreen> {
                                                 itemBuilder: (BuildContext context, int index) {
                           final team = filteredTeams.first.teamData![index];
                           String imageUrl = images[index % images.length];
-                          bool isSupervisor = team.empId == reportingManagerId;
                           return Column(
                             children: [
                               GestureDetector(
@@ -349,7 +345,6 @@ class _TeamScreenState extends State<TeamScreen> {
                             itemBuilder: (BuildContext context, int index) {
                           final team = filteredUnderTeams.first.teamData![index];
                           String imageUrl = images[index % images.length];
-                          bool isSupervisor = team.empId == reportingManagerId;
                           return Column(
                             children: [
                               GestureDetector(
@@ -383,26 +378,34 @@ class _TeamScreenState extends State<TeamScreen> {
                                             ),
                                           ),
                                         ),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${team.userName}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: NasColors.darkBlue,
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${team.userName}",
+                                                maxLines: 2,
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue,
+                                                ),
                                               ),
-                                            ),
-                                            Text(
-                                              "${team.designation}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey,
+                                              Text(
+                                                "${team.designation}",
+                                                maxLines: 2,
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),

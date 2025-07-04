@@ -1109,9 +1109,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     Expanded(
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<String>(
+                                          dropdownColor: Colors.white,
                                           isExpanded: true,
                                           value: selectedCompanyId,
-                                          // Define this as a String? in your StatefulWidget
                                           hint:  Text("${singletonClass.companyDataList.first.data!.name} ~ ${singletonClass.branchDataList.first.data!.branch!.branchName}"),
                                           items: singletonClass
                                               .companiesDataList
@@ -1130,11 +1130,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           }).toList(),
                                           onChanged: (value) {
                                             setState(() {
-                                              singletonClass.branchesDataList
-                                                  .clear();
+                                              singletonClass.branchesDataList.clear();
                                               selectedCompanyId = value;
-                                              singletonClass.selectedCompanyId =
-                                                  selectedCompanyId;
+                                              singletonClass.selectedCompanyId = selectedCompanyId;
                                               singletonClass.getBranchesData();
                                             });
                                           },

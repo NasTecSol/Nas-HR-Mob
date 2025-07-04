@@ -1280,6 +1280,12 @@ abstract class AppLocalizations {
   /// **'Early check-out'**
   String get earlyCheckOut;
 
+  /// No description provided for @earlyLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Left'**
+  String get earlyLeft;
+
   /// No description provided for @comment.
   ///
   /// In en, this message translates to:
@@ -3199,6 +3205,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All Branches'**
   String get allBranch;
+
+  /// No description provided for @attendanceDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Detail'**
+  String get attendanceDetail;
 }
 
 class _AppLocalizationsDelegate

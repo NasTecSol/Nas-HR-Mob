@@ -54,13 +54,13 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? baseURL;
+  String? baseURL = "https://www.nashrms.com/api";
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
-  List<BaseUrlModel> baseURLDataList = [];
+  List<TenantIdModel> tenantIDDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
   List<SignatureModel> signatureModelList = [];
@@ -184,10 +184,6 @@ class SingletonClass {
 
   void setCheckOutStatus(String status) {
     checkOutStatus = status;
-  }
-
-  void setBaseURL(String url) {
-    baseURL = url;
   }
 
   void setFCMToken(String token) {
@@ -533,7 +529,7 @@ class SingletonClass {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" :"nas_hr"
+      "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
     };
   }
 }

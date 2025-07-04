@@ -602,6 +602,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get earlyCheckOut => 'Early check-out';
 
   @override
+  String get earlyLeft => 'Early Left';
+
+  @override
   String get comment => 'Add Comment';
 
   @override
@@ -1568,4 +1571,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allBranch => 'All Branches';
+
+  @override
+  String get attendanceDetail => 'Attendance Detail';
 }
