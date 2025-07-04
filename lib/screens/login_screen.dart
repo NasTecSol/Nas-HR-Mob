@@ -392,9 +392,11 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);
+    print("///???${singletonClass.tenantIDDataList.first.data!.tenantId}");
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
+    print(uri);
     setState(() {
       isLoading = true;
     });
@@ -404,6 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: body,
         headers: singletonClass.getHeaders(),
       );
+      print(singletonClass.getHeaders());
       print(response.body);
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);

@@ -602,6 +602,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get earlyCheckOut => 'الخروج المبكر';
 
   @override
+  String get earlyLeft => 'انصراف مبكر';
+
+  @override
   String get comment => 'إضافة تعليق';
 
   @override
@@ -1566,4 +1569,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get allBranch => 'جميع الفروع';
+
+  @override
+  String get attendanceDetail => 'تفاصيل الحضور';
 }
