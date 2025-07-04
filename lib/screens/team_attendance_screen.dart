@@ -450,7 +450,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             child: Text(
                               selectedBranchName != null && selectedBranchName!.isNotEmpty
                                   ? selectedBranchName!
-                                  : "${singletonClass.branchDataList.first.data!.branch!.branchName}",
+                                  : "${singletonClass.branchesDataList.first.data!.first.branchName}",
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -582,7 +582,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
                         int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
                         String breakTime = formatMinutes(attendance.breakTime);
-
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -643,8 +642,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    const Icon(Icons.exit_to_app_outlined,
-                                        size: 20),
+                                     Icon(Icons.exit_to_app_outlined,
+                                       size: 20 , color: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,),
                                     const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(
@@ -652,7 +651,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
                                       ),
                                     ),
                                     const Spacer(),
@@ -686,10 +685,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     Transform(
                                       transform: Matrix4.rotationY(math.pi),
                                       alignment: Alignment.center,
-                                      child: const Icon(
+                                      child:  Icon(
                                         Icons.exit_to_app_outlined,
                                         size: 20,
-                                        color: Colors.black,
+                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                            ? NasColors.onTime
+                                            : (attendance.status == 'Missing CheckIn/Out')
+                                            ? NasColors.pending
+                                            : Colors.black,
+
                                       ),
                                     ),
                                     const SizedBox(width: 5),
@@ -699,19 +703,55 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                            ? NasColors.onTime
+                                            : (attendance.status == 'Missing CheckIn/Out')
+                                            ? NasColors.pending
+                                            : Colors.black,
                                       ),
                                     ),
                                     const Spacer(),
+                                    /// Progress bar logic
                                     if ((lateMinutes == null || lateMinutes <= 0) &&
-                                        (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
-                                      Text(
-                                        "${formatMinutes(attendance.totalHoursWorked)} ${AppLocalizations.of(context)!.minutes}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                        (earlyCheckOut == null || earlyCheckOut <= 0) &&
+                                        (attendance.status == 'Present' ||
+                                            attendance.status == 'Missing CheckIn/Out')) ...[
+                                      Builder(builder: (_) {
+                                        final int workedMinutes = attendance.totalHoursWorked ?? 0;
+                                        final int totalWorkingMinutes = 11 * 60;
+                                        final double progress = (workedMinutes / totalWorkingMinutes)
+                                            .clamp(0.0, 1.0);
+
+                                        return Row(
+                                          children: [
+                                            Text(
+                                              "${formatMinutes(workedMinutes)} ${AppLocalizations.of(context)!.minutes}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              width: 80,
+                                              height: 8,
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: LinearProgressIndicator(
+                                                  value: progress,
+                                                  backgroundColor: Colors.grey[300],
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                    progress >= 1.0
+                                                        ? Colors.green
+                                                        : Colors.orange,
+                                                  ),
+                                                  minHeight: 8,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
                                     ],
                                     if (earlyCheckOut != null && earlyCheckOut > 0)...[
                                     Text(

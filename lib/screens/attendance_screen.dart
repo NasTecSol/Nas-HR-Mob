@@ -256,10 +256,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               const SizedBox(height: 20),
                               Row(
                                 children: [
-                                  const Icon(
+                                   Icon(
                                     Icons.exit_to_app_outlined,
                                     size: 20,
-                                    color: Colors.black,
+                                    color: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
@@ -267,7 +267,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
                                     ),
                                   ),
 
@@ -304,10 +304,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   Transform(
                                     transform: Matrix4.rotationY(math.pi),
                                     alignment: Alignment.center,
-                                    child: const Icon(
+                                    child:  Icon(
                                       Icons.exit_to_app_outlined,
                                       size: 20,
-                                      color: Colors.black,
+                                      color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                          ? NasColors.onTime
+                                          : (attendance.status == 'Missing CheckIn/Out')
+                                          ? NasColors.pending
+                                          : Colors.black,
+
                                     ),
                                   ),
                                   const SizedBox(width: 5),
@@ -316,19 +321,52 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                            ? NasColors.onTime
+                                            : (attendance.status == 'Missing CheckIn/Out')
+                                            ? NasColors.pending
+                                            : Colors.black,
                                       ),
                                     ),
                                   const Spacer(),
                                   if ((lateMinutes == null || lateMinutes <= 0) &&
                                       (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
-                                    Text(
-                                      "${formatMinutes(attendance.totalHoursWorked)} ${AppLocalizations.of(context)!.minutes}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    Builder(builder: (_) {
+                                      final int workedMinutes = attendance.totalHoursWorked ?? 0;
+                                      final int totalWorkingMinutes = 11 * 60;
+                                      final double progress = (workedMinutes / totalWorkingMinutes)
+                                          .clamp(0.0, 1.0);
+
+                                      return Row(
+                                        children: [
+                                          Text(
+                                            "${formatMinutes(workedMinutes)} ${AppLocalizations.of(context)!.minutes}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            width: 80,
+                                            height: 8,
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: LinearProgressIndicator(
+                                                value: progress,
+                                                backgroundColor: Colors.grey[300],
+                                                valueColor: AlwaysStoppedAnimation<Color>(
+                                                  progress >= 1.0
+                                                      ? Colors.green
+                                                      : Colors.orange,
+                                                ),
+                                                minHeight: 8,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
                                   ],
                                       if (earlyCheckOut != null && earlyCheckOut > 0)...[
                                   Text(
@@ -445,7 +483,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$toDateString/$fromDateString?limit=$limit&page=$page');
 
-    print(toDateString);
+    print(uri);
     print(fromDateString);
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("Attendance of login user${response.body}");

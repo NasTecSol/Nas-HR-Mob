@@ -31,7 +31,6 @@ class _SplashscreenState extends State<SplashScreen>
       final preferences = await SharedPreferences.getInstance();
       final String? url =preferences.getString('baseURL');
       if (url != null && url.isNotEmpty){
-        singletonClass.baseURL = url ;
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
