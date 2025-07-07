@@ -67,7 +67,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Future<void> _loadData() async {
     try {
-      await _loadInitialData(); // Call the combined API loader
+      setState(() {
+        isLoading = true;
+      });
+      await _loadInitialData();
+      setState(() {
+        isLoading = false;
+      });
     } catch (e) {
       // Optional: Show error toast or retry
       debugPrint('Error loading initial data: $e');
