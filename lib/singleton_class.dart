@@ -532,15 +532,6 @@ class SingletonClass {
       "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
     };
   }
-
-  void setEnvironment(String env) {
-    if (env == 'dev') {
-      baseURL = 'https://dev.nashrms.com/api';
-    } else {
-      baseURL = 'https://www.nashrms.com/api';
-    }
-    print("✅ Using baseURL: $baseURL");
-  }
 }
 
 

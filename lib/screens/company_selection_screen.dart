@@ -199,7 +199,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     try {
 
       var client = http.Client();
-      var uri = Uri.parse('https://www.nashrms.com/api/organization/getOrganizationTenancy?tenantName=$companyCode');
+      var uri = Uri.parse('${singletonClass.baseURL}/organization/getOrganizationTenancy?tenantName=$companyCode');
       var response = await client.get(uri);
       log("Tenant ID Data: ${response.body}");
 
