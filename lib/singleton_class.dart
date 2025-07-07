@@ -54,7 +54,7 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? baseURL = "https://www.nashrms.com/api";
+  String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
@@ -531,6 +531,15 @@ class SingletonClass {
       "Accept": "application/json",
       "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
     };
+  }
+
+  void setEnvironment(String env) {
+    if (env == 'dev') {
+      baseURL = 'https://dev.nashrms.com/api';
+    } else {
+      baseURL = 'https://www.nashrms.com/api';
+    }
+    print("✅ Using baseURL: $baseURL");
   }
 }
 
