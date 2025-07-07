@@ -52,12 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    singletonClass.getCompanyData();
-    singletonClass.getEmployeeAttendanceData();
-    singletonClass.getClockingData();
-    singletonClass.getRemoteAttendanceData();
-    singletonClass.getPolicyData();
-    singletonClass.getBranchesData();
+    _loadData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -70,6 +65,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {});
   }
 
+  Future<void> _loadData() async {
+    try {
+      await _loadInitialData(); // Call the combined API loader
+    } catch (e) {
+      // Optional: Show error toast or retry
+      debugPrint('Error loading initial data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadInitialData() async {
+    await Future.wait([
+      singletonClass.getCompanyData(),
+      singletonClass.getEmployeeAttendanceData(),
+      singletonClass.getClockingData(),
+      singletonClass.getRemoteAttendanceData(),
+      singletonClass.getPolicyData(),
+      singletonClass.getBranchesData(),
+    ]);
+  }
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
