@@ -13,6 +13,8 @@ import 'Controller/language_change_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const env = String.fromEnvironment('ENV', defaultValue: 'prod');
+  SingletonClass().setEnvironment(env);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
