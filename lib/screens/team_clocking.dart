@@ -60,7 +60,7 @@ class _TeamClockingState extends State<TeamClocking> {
           print(
               'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
 
-          if (userGrade == "L0" || userGrade == "L1") {
+          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
             // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               for (var supervisor in department.supervisors ?? []) {
@@ -76,7 +76,7 @@ class _TeamClockingState extends State<TeamClocking> {
                 }
               }
             }
-          } else if (userGrade == "L2" || userGrade == "L3") {}
+          } else if (userGrade == "L4") {}
         }
       }
     }
@@ -463,7 +463,7 @@ class _TeamClockingState extends State<TeamClocking> {
   Future<TeamClockingModel?> getTeamClockingAPI() async {
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/all');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("Team ClockingData:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);

@@ -47,14 +47,6 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need photo library access to save images</string>
 
-	<!-- Background Modes -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-		<string>fetch</string>
-		<string>location</string>
-	</array>
-
 	<!-- Notification Style -->
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
@@ -109,5 +101,7 @@
     <string>This app requires access to the microphone to record audio messages.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSFaceIDUsageDescription</key>
+        <string>We use Face ID to secure your data</string>
 </dict>
 </plist>

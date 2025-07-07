@@ -30,11 +30,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   DateTime? _selectedDate;
   int? _selectedDateIndex;
   final List<DateTime> _dates = [];
+  Set<String> selectedBranchIds = {};
   DateTime? _startDate;
+  String? selectedBranchName;
+  String? selectedBranchId;
   DateTime? _endDate;
 
   @override
-  void initState() {
+   void initState() {
     super.initState();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
@@ -46,9 +49,50 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
-
     loadData();
   }
+
+  void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
+    List<String> allEmployeeIds = [];
+
+    if ((selectedBranchId != null && selectedBranchId.isNotEmpty)){
+      final branches = singletonClass.branchesDataList.first.data;
+      final branchList = branches?.where((branch) => branch.branchCompanyId == selectedBranchId).toList();
+
+      if (branchList != null && branchList.isNotEmpty) {
+        for (var branch in branchList) {
+          final departments = branch.departmentDetails ?? [];
+
+          for (var department in departments) {
+            final departmentList = department.departments ?? [];
+
+            for (var dept in departmentList) {
+              final teams = dept.teams ?? [];
+
+              for (var team in teams) {
+                final teamData = team['teamData'] ?? [];
+
+                for (var employee in teamData) {
+                  final employeeId = employee['employeeId'];
+                  if (employeeId != null) {
+                    allEmployeeIds.add(employeeId);
+                    selectedBranchIds.clear();
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      selectedBranchIds = allEmployeeIds.toSet();
+      print('✅ Total Employee IDs: ${allEmployeeIds.length}');
+      print('🔍 All IDs Set: $selectedBranchIds');
+    }
+  }
+
+
+
+
 
 
   void _setDefaultDates() {
@@ -121,25 +165,52 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     log("📡 Fetching attendance data...");
     Set<String> employeeIds = {};
 
-    for (var team in filteredUnderTeams) {
-      log("👥 Checking team: ${team.teamId}");
-      if (team.teamData != null) {
-        for (var member in team.teamData!) {
-          if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-            employeeIds.add(member.employeeId!);
-            log(" - Found Employee ID: ${member.employeeId}");
+    final grade = singletonClass.getJWTModel()?.grade;
+
+    if (grade == 'L0' || grade == 'L1') {
+      if (selectedBranchIds.isNotEmpty) {
+        employeeIds = selectedBranchIds;
+      } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+        for (var team in filteredUnderTeams) {
+          log("👥 Checking team: ${team.teamId}");
+          if (team.teamData != null) {
+            for (var member in team.teamData!) {
+              if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+                employeeIds.add(member.employeeId!);
+                log(" - Found Employee ID: ${member.employeeId}");
+              } else {
+                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+              }
+            }
           } else {
-            log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+            log(" - ⚠️ teamData is null for team: ${team.teamId}");
           }
         }
-      } else {
-        log(" - ⚠️ teamData is null for team: ${team.teamId}");
+      }
+    }
+
+    if (grade == 'L2' || grade == 'L3') {
+      for (var team in filteredUnderTeams) {
+        log("👥 Checking team: ${team.teamId}");
+        if (team.teamData != null) {
+          for (var member in team.teamData!) {
+            if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+              employeeIds.add(member.employeeId!);
+              log(" - Found Employee ID: ${member.employeeId}");
+            } else {
+              log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+            }
+          }
+        } else {
+          log(" - ⚠️ teamData is null for team: ${team.teamId}");
+        }
       }
     }
 
     if (employeeIds.isEmpty) {
-      log("❌ No employee IDs found. Skipping API call.");
-      return null;
+      log("❌ No employee IDs found. Returning empty attendance data.");
+      filteredAttendanceDataList.clear();
+      return  null;
     }
 
     final ids = employeeIds.join(',');
@@ -154,11 +225,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     final uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page');
+      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page',
+    );
+
     log("🌐 Final Employee ID list: $ids");
     log("🌐 API URL: $uri");
 
-    final response = await http.get(uri);
+    final response = await http.get(uri,headers: singletonClass.getHeaders());
+
     log("📨 TEAM DATA RESPONSE: ${response.statusCode}");
     log("📨 TEAM DATA BODY: ${response.body}");
 
@@ -171,10 +245,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       return attendance;
     } else {
       log("❌ Failed to fetch attendance data");
+      return null;
     }
-
-    return null;
   }
+
 
 
   void filterAttendanceData() {
@@ -256,16 +330,50 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   onSelected: (value) {
-                    selectedEmployeeId = value;
+                    setState(() {
+                      selectedEmployeeId = value;
+                    });
                     filterAttendanceData();
                   },
                   itemBuilder: (BuildContext context) {
-                    return filteredUnderTeams.first.teamData!
-                        .map((data) => PopupMenuItem<String>(
-                              value: data.employeeId,
-                              child: Text(data.userName ?? "Unknown"),
-                            ))
-                        .toList();
+                    final grade = singletonClass.getJWTModel()?.grade;
+                    List<PopupMenuEntry<String>> items = [];
+
+                    if (grade == 'L0' || grade == 'L1') {
+                      // Use selectedBranchIds to find employee names
+                      final branches = singletonClass.branchesDataList.first.data;
+                      final branchEmployees = <Map<String, dynamic>>[];
+
+                      for (var branch in branches ?? []) {
+                        for (var deptGroup in branch.departmentDetails ?? []) {
+                          for (var dept in deptGroup.departments ?? []) {
+                            for (var team in dept.teams ?? []) {
+                              for (var emp in team['teamData'] ?? []) {
+                                if (selectedBranchIds.contains(emp['employeeId'])) {
+                                  branchEmployees.add(emp);
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+
+                      items = branchEmployees.map((emp) {
+                        return PopupMenuItem<String>(
+                          value: emp['employeeId'],
+                          child: Text(emp['userName'] ?? 'Unknown'),
+                        );
+                      }).toList();
+                    } else if (grade == 'L2' || grade == 'L3') {
+                      items = filteredUnderTeams.first.teamData!
+                          .map((data) => PopupMenuItem<String>(
+                        value: data.employeeId,
+                        child: Text(data.userName ?? "Unknown"),
+                      ))
+                          .toList();
+                    }
+
+                    return items;
                   },
                   child: Container(
                     height: 30,
@@ -277,8 +385,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.filter_alt,
-                            color: Colors.white, size: 20),
+                        const Icon(Icons.filter_alt, color: Colors.white, size: 20),
                         const SizedBox(width: 5),
                         Text(
                           AppLocalizations.of(context)!.filter,
@@ -299,11 +406,69 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0, right: 10),
+                  child: PopupMenuButton<String>(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    onSelected: (value) {
+                      setState(() {
+                        selectedBranchId = value;
+                        final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
+                        selectedBranchName = branch?.branchName ?? "Unknown Branch";
+                        print('Selected Branch ID: $value');
+                        extractAllEmployeeIdsForBranch(value);
+                        getTeamAttendanceData();
+                        loadData();
+                      });
+                    },
+                    itemBuilder: (BuildContext context) {
+                      final branchList = singletonClass.branchesDataList.first.data;
+                      if (branchList == null || branchList.isEmpty) {
+                        return [];
+                      }
+
+                      return branchList.map((branch) => PopupMenuItem<String>(
+                        value: branch.branchCompanyId,
+                        child: Text(branch.branchName ?? "Unknown Branch"),
+                      )).toList();
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        color: NasColors.darkBlue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              selectedBranchName != null && selectedBranchName!.isNotEmpty
+                                  ? selectedBranchName!
+                                  : "${singletonClass.branchesDataList.first.data!.first.branchName}",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              Spacer(),
               TextButton.icon(
                 onPressed: () async {
                   final DateTime now = DateTime.now();
                   final DateTime lastSelectableDate = now;
-
                   final DateTimeRange? picked = await showDateRangePicker(
                     context: context,
                     firstDate: DateTime(now.year - 2),
@@ -328,7 +493,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     },
                     initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
                   );
-
                   if (picked != null) {
                     _startDate = picked.start;
                     _endDate = picked.end;
@@ -345,7 +509,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     color: NasColors.darkBlue,
                   ),
                 ),
-
               ),
             ],
           ),
@@ -416,10 +579,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                         }
                         String date = formatDate(attendance.updatedAt!);
-                        String lateMinutes = formatMinutes(attendance.lateMinutes);
-                        String earlyCheckOut = formatMinutes(attendance.earlyCheckOut);
+                        int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+                        int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
                         String breakTime = formatMinutes(attendance.breakTime);
-
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -480,26 +642,31 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
+                                     Icon(Icons.exit_to_app_outlined,
+                                       size: 20 , color: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,),
+                                    const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(
                                           attendance.clockInTime),
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Transform(
-                                      transform: Matrix4.rotationY(math.pi),
-                                      alignment: Alignment.center,
-                                      child: const Icon(
-                                        Icons.exit_to_app_outlined,
-                                        size: 20,
-                                        color: Colors.black,
+                                        color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
                                       ),
                                     ),
                                     const Spacer(),
+                                    if ((lateMinutes == null || lateMinutes <= 0) &&
+                                        (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
+                                      Text(
+                                        "✅",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+
+                                    if (lateMinutes != null && lateMinutes > 0)...[
                                     Text(
                                       "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
                                       style: GoogleFonts.inter(
@@ -509,24 +676,84 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       ),
                                     ),
                                     Icon(Icons.error,
-                                        size: 20, color: NasColors.pending),
+                                        size: 20, color: NasColors.pending),]
                                   ],
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
+                                    Transform(
+                                      transform: Matrix4.rotationY(math.pi),
+                                      alignment: Alignment.center,
+                                      child:  Icon(
+                                        Icons.exit_to_app_outlined,
+                                        size: 20,
+                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                            ? NasColors.onTime
+                                            : (attendance.status == 'Missing CheckIn/Out')
+                                            ? NasColors.pending
+                                            : Colors.black,
+
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
                                     Text(
                                       singletonClass.formatCheckInTime(
                                           attendance.clockOutTime),
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
+                                            ? NasColors.onTime
+                                            : (attendance.status == 'Missing CheckIn/Out')
+                                            ? NasColors.pending
+                                            : Colors.black,
                                       ),
                                     ),
-                                    const Icon(Icons.exit_to_app_outlined,
-                                        size: 20),
                                     const Spacer(),
+                                    /// Progress bar logic
+                                    if ((lateMinutes == null || lateMinutes <= 0) &&
+                                        (earlyCheckOut == null || earlyCheckOut <= 0) &&
+                                        (attendance.status == 'Present' ||
+                                            attendance.status == 'Missing CheckIn/Out')) ...[
+                                      Builder(builder: (_) {
+                                        final int workedMinutes = attendance.totalHoursWorked ?? 0;
+                                        final int totalWorkingMinutes = 11 * 60;
+                                        final double progress = (workedMinutes / totalWorkingMinutes)
+                                            .clamp(0.0, 1.0);
+
+                                        return Row(
+                                          children: [
+                                            Text(
+                                              "${formatMinutes(workedMinutes)} ${AppLocalizations.of(context)!.minutes}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              width: 80,
+                                              height: 8,
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: LinearProgressIndicator(
+                                                  value: progress,
+                                                  backgroundColor: Colors.grey[300],
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                                    progress >= 1.0
+                                                        ? Colors.green
+                                                        : Colors.orange,
+                                                  ),
+                                                  minHeight: 8,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                    if (earlyCheckOut != null && earlyCheckOut > 0)...[
                                     Text(
                                       "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
                                       style: GoogleFonts.inter(
@@ -536,7 +763,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       ),
                                     ),
                                     Icon(Icons.directions_run_outlined,
-                                        size: 20, color: NasColors.onTime),
+                                        size: 20, color: NasColors.onTime),]
                                   ],
                                 ),
                                 const SizedBox(height: 10),
@@ -596,11 +823,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       case "Absent":
         return NasColors.red;
       case "Present":
-        return NasColors.onTime;
+        return NasColors.completed;
       case "Quarterly":
         return NasColors.pending;
       case "Missing CheckIn/Out":
-        return NasColors.onTime;
+        return NasColors.pending;
       default:
         return NasColors.completed;
     }

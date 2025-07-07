@@ -1168,10 +1168,7 @@ class _ComplaintsState extends State<Complaints> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+          headers: singletonClass.getHeaders()
       );
 
       log("Complaints Log: ${response.body}");
@@ -1212,10 +1209,7 @@ class _ComplaintsState extends State<Complaints> {
       final response = await http.post(
         uri,
         body: json.encode(requestBody),
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+          headers: singletonClass.getHeaders()
       );
 
       log("complaints Log approver %%: ${response.body}");
@@ -1281,9 +1275,7 @@ class _ComplaintsState extends State<Complaints> {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       setState(() {
