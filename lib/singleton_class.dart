@@ -96,6 +96,7 @@ class SingletonClass {
   String? selectedCompanyId ;
   String? checkOutStatus ;
   String? fcmToken;
+  String? tenantId;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -529,7 +530,7 @@ class SingletonClass {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
+      "x-tenant-id" : tenantId.toString()
     };
   }
 }

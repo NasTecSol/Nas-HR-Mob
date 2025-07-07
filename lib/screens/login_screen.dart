@@ -388,7 +388,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);
-    print("///???${singletonClass.tenantIDDataList.first.data!.tenantId}");
+    print("shared preference id ${singletonClass.tenantId}");
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
