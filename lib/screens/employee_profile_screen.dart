@@ -28,23 +28,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
   late Future<EmployeeDetailsData?> _employeeDetailsFuture;
-  final List<Document> documentInfoDummy = [
-    // Example data, replace with your actual document data
-    Document(
-        imageUrl: 'images/cnic.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-    Document(
-        imageUrl: 'images/iqama.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-  ];
 
   @override
   void initState() {
@@ -199,64 +182,73 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              "${widget.teamData!.userName}",
-                                              maxLines: 2,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                "${widget.teamData!.userName}",
+                                                maxLines: 2,
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              "${widget.teamData!.designation}",
-                                              maxLines: 2,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
+                                            const SizedBox(height: 10),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                "${widget.teamData!.designation}",
+                                                maxLines: 2,
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              "${widget.teamData!.grade}",
-                                              // Call the method to mask the account number
-                                              maxLines: 2,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
+                                            const SizedBox(height: 10),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                "${widget.teamData!.grade}",
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              "${widget.teamData!.empId}",
-                                              maxLines: 2,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
+                                            const SizedBox(height: 10),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                "${widget.teamData!.empId}",
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       )
                                     ],
                                   ),
@@ -268,23 +260,21 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 children: [
                                   buildOptionsCard(
                                       0, AppLocalizations.of(context)!.profile),
-                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
+                                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2' || singletonClass.getJWTModel()?.grade == 'L3' )...[
                                     buildOptionsCard(
-                                        1, AppLocalizations.of(context)!.onLeaves),
+                                        1, AppLocalizations.of(context)!.leaveBalance),
                                     buildOptionsCard(
                                         2, AppLocalizations.of(context)!.attendance),
                                     buildOptionsCard(
-                                        3, AppLocalizations.of(context)!.checkIn),
+                                        3, AppLocalizations.of(context)!.documents),
                                     buildOptionsCard(
-                                        4, AppLocalizations.of(context)!.documents),
-                                    buildOptionsCard(
-                                        5, AppLocalizations.of(context)!.assets),
+                                        4, AppLocalizations.of(context)!.assets),
                                   ],
                                 ],
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' )...[
+                            if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2'|| singletonClass.getJWTModel()?.grade == 'L3')...[
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
@@ -543,13 +533,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.grey.withValues(alpha: 0.4),
-                                        // Shadow color with opacity
                                         spreadRadius: 5,
-                                        // Spread radius
                                         blurRadius: 10,
-                                        // Blur radius
                                         offset: const Offset(
-                                            0, 3), // Offset in the x and y directions
+                                            0, 3),
                                       ),
                                     ],
                                   ),
@@ -917,181 +904,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                 )
                               ],
                               if (_selectedOptionIndex == 3) ...[
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(25),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withValues(alpha: 0.4),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                        offset: const Offset(
-                                            0, 3), // Offset in the x and y directions
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      // Set to min to avoid infinite height issues
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!
-                                                  .checkIn,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500,
-                                                color: NasColors.darkBlue,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Icon(
-                                              Icons.history,
-                                              color: NasColors.darkBlue,
-                                            ),
-                                          ],
-                                        ),
-                                        Flexible(
-                                          fit: FlexFit.loose,
-                                          child: ListView.separated(
-                                            shrinkWrap: true,
-                                            padding: EdgeInsets.zero,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemCount: singletonClass.employeeDetailsClockingDataList.first.data!.length,
-                                            separatorBuilder: (BuildContext context, int index) {
-                                              return const Padding(
-                                                padding: EdgeInsets.only(left: 10.0 , right: 10.0),
-                                                child: Divider(
-                                                  color: Colors.grey,
-                                                  thickness: 1,
-                                                  height: 20,
-                                                ),
-                                              );
-                                            },
-                                            itemBuilder: (BuildContext context, int index) {
-                                              final clocking = singletonClass.employeeDetailsClockingDataList.first.data![index];
-                                              final dateTime = DateTime.parse(clocking.createdAt!); // Parse date string to DateTime object
-                                              final formattedDate = singletonClass.formatDate(dateTime);
-                                              final checkInTime = singletonClass.formatCheckInTime(clocking.checkInTime!);
-
-                                              return Padding(padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          formattedDate,
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Container(
-                                                          height: 20,
-                                                          width: 75,
-                                                          decoration: BoxDecoration(
-                                                            shape: BoxShape.rectangle,
-                                                            color: NasColors.onTime,
-                                                            borderRadius: BorderRadius.circular(10),
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              "On time",
-                                                              textAlign: TextAlign.center,
-                                                              style: GoogleFonts.inter(
-                                                                fontWeight: FontWeight.bold,
-                                                                color: Colors.white,
-                                                                fontSize: 10,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.checkIn}:  $checkInTime',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.checkOut}: N/A',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.breaks}:  N/A',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.worked}: N/A',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.late}:  --_--',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.earlyCheckOut}: N/A',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (_selectedOptionIndex == 4) ...[
                                 Column(
                                   children: [
                                     singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo!.isNotEmpty
@@ -1198,7 +1010,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   ],
                                 ),
                               ],
-                              if (_selectedOptionIndex == 5) ...[
+                              if (_selectedOptionIndex == 4) ...[
                                 ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     shrinkWrap: true,
@@ -1394,7 +1206,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeDetailsData.fromJson(responseBody);
@@ -1423,7 +1235,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     print("Employee Attendance Data${response.body}");
     print(employeeId);
     print(firstDateString);
@@ -1455,7 +1267,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
 
     log("Employee Clock in / out data : ${response.body}");
 

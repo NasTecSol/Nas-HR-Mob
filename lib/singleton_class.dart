@@ -7,8 +7,10 @@ import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
+import 'package:nashr/request_controller/branches_data_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
+import 'package:nashr/request_controller/companies_data_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
@@ -52,11 +54,13 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? baseURL;
+  String? baseURL = "https://www.nashrms.com/api";
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
-  List<BaseUrlModel> baseURLDataList = [];
+  List<CompaniesDataModel> companiesDataList = [];
+  List<BranchesDataModel> branchesDataList = [];
+  List<TenantIdModel> tenantIDDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
   List<SignatureModel> signatureModelList = [];
@@ -89,6 +93,7 @@ class SingletonClass {
   List<PolicyModel> policyModelDataList = [];
   List<UiSettingsModel> uiSettingsModelDataList = [];
   String? checkInStatus ;
+  String? selectedCompanyId ;
   String? checkOutStatus ;
   String? fcmToken;
 
@@ -181,10 +186,6 @@ class SingletonClass {
     checkOutStatus = status;
   }
 
-  void setBaseURL(String url) {
-    baseURL = url;
-  }
-
   void setFCMToken(String token) {
     fcmToken = token;
   }
@@ -192,12 +193,31 @@ class SingletonClass {
 
 
 //API Calls
+  Future<CompaniesDataModel?> getCompaniesData() async {
+    String? organizationId =  getJWTModel()?.organizationId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/organization/$organizationId');
+    var response = await client.get(uri , headers: getHeaders());
+    log("organization Companies Data ${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var companiesData = CompaniesDataModel.fromJson(responseBody);
+      companiesDataList.addAll([companiesData]);
+      return companiesData;
+    }
+    return null ; // Print the response body
+  }
+
+
   Future<UiSettingsModel?> getUISettingsData() async {
     String? employeeId =  getJWTModel()?.employeeId;
     String? grade =  getJWTModel()?.grade;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/organization/getUiSettings/$employeeId/$grade');
-    var response = await client.get(uri);
+    var response = await client.get(
+        uri,
+        headers: getHeaders()
+    );
     log("UI SETTINGS DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -212,7 +232,8 @@ class SingletonClass {
     String? policyId =  companyDataList.first.data!.policies!.first.policyId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/policies/$policyId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,
+        headers: getHeaders());
     log("POLICY DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -227,8 +248,8 @@ class SingletonClass {
     String? employeeId =  getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/$employeeId');
-    var response = await client.get(uri);
-    log(response.body);
+    var response = await client.get(uri,headers: getHeaders());
+    log("EMPLOYEE DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeData.fromJson(responseBody);
@@ -243,7 +264,7 @@ class SingletonClass {
     String? employeeId =  getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/getEMPRemoteLocation/$employeeId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: getHeaders());
     log("Remote Attendance Data : ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -259,7 +280,7 @@ class SingletonClass {
     String? employeeId =  getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/notification-data/getNotificationData/$employeeId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: getHeaders());
     log(response.body);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -271,19 +292,42 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId =  getJWTModel()?.companyId;
+    String? companyId = getJWTModel()?.companyId;
+    print(getJWTModel()?.companyId);
+    print(getJWTModel()?.employeeId);
+    print(getJWTModel()?.empId);
+    print(getJWTModel()?.tenantId);
+    print(getJWTModel()?.organizationId);
+    if (companyId == null) {
+      log("❌ companyId is null!");
+      return null;
+    }
+
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
-    var response = await client.get(uri);
-    log("Company Log ??|||${response.body}");
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var companyData = CompanyData.fromJson(responseBody);
-      setCompanyData([companyData]);
-      return companyData;
+
+    log("📡 Requesting company data from: $uri");
+    log("📦 Headers: ${getHeaders()}");
+
+    try {
+      var response = await client.get(uri, headers: getHeaders());
+      log("📥 Company Response: ${response.statusCode} || ${response.body}");
+
+      if (response.statusCode == 200) {
+        var responseBody = json.decode(response.body);
+        var companyData = CompanyData.fromJson(responseBody);
+        setCompanyData([companyData]);
+        return companyData;
+      } else {
+        log("❌ Failed to fetch company data. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      log("❗ Exception while calling company API: $e");
     }
-    return null ; // Print the response body
+
+    return null;
   }
+
 
   Future<ClockingData?> getClockingData() async {
     String? employeeId = getJWTModel()?.employeeId;
@@ -294,7 +338,7 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: getHeaders());
     log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -302,7 +346,7 @@ class SingletonClass {
       setClockingData([clockingData]);
       return clockingData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
   //BRANCH DATA
@@ -310,7 +354,7 @@ class SingletonClass {
     String? branchId = getJWTModel()?.branchId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: getHeaders());
     log("Branch Data List ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -320,6 +364,43 @@ class SingletonClass {
     }
     return null ; // Print the response body
   }
+
+  //Multiple branches data
+  Future<BranchesDataModel?> getBranchesData() async {
+    String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
+        ? selectedCompanyId
+        : getJWTModel()?.companyId;
+
+    if (companyId == null || companyId.isEmpty) {
+      log("❌ No companyId available from selectedCompanyId or JWT!");
+      return null;
+    }
+
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/branches/companyId/$companyId');
+
+    log("📡 Requesting branches for companyId: $companyId");
+    log("🔗 URL: $uri");
+
+    try {
+      var response = await client.get(uri, headers: getHeaders());
+      log("📥 Branches Data Response: ${response.statusCode} || ${response.body}");
+
+      if (response.statusCode == 200) {
+        var responseBody = json.decode(response.body);
+        var branch = BranchesDataModel.fromJson(responseBody);
+        branchesDataList.add(branch);
+        return branch;
+      } else {
+        log("❌ Failed to fetch branches. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      log("❗ Exception while fetching branches: $e");
+    }
+
+    return null;
+  }
+
 
   //formated date method
   String formatDate(DateTime date) {
@@ -354,7 +435,7 @@ class SingletonClass {
     var uri = Uri.parse(
         '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: getHeaders());
     log("attendance of user${response.body}");
     print(employeeId);
     print(firstDateString);
@@ -383,9 +464,7 @@ class SingletonClass {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: getHeaders(),
         body: jsonData,
       );
       print("<><><><>${response.body}");
@@ -400,8 +479,8 @@ class SingletonClass {
 
   Future<TaskModel?> getTasks() async {
     var client = http.Client();
-    var uri = Uri.parse('${baseURL}/kanban-task');
-    var response = await client.get(uri);
+    var uri = Uri.parse('$baseURL/kanban-task');
+    var response = await client.get(uri,headers: getHeaders());
     log("Task Data Log ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -443,6 +522,16 @@ class SingletonClass {
     return datetimeString.startsWith(today);
   }
 
+
+  //Header for api call
+
+  Map<String, String> getHeaders() {
+    return {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
+    };
+  }
 }
 
 

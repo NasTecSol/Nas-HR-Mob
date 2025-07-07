@@ -336,7 +336,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get salaryAndAllowances => 'الراتب والبدلات';
 
   @override
-  String get orgChart => 'من خلال هذا الرسم البياني، يمكنك بسهولة تحديد العلاقات التنظيمية، أعضاء الفريق، وهياكل الأقسام. يمكنك أيضًا الوصول إلى الملفات الشخصية لكل عضو فريق مباشرة من المخطط التنظيمي.';
+  String get orgChart =>
+      'من خلال هذا الرسم البياني، يمكنك بسهولة تحديد العلاقات التنظيمية، أعضاء الفريق، وهياكل الأقسام. يمكنك أيضًا الوصول إلى الملفات الشخصية لكل عضو فريق مباشرة من المخطط التنظيمي.';
 
   @override
   String get lets => 'لنبدأ';
@@ -345,7 +346,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signIn => 'تسجيل الدخول';
 
   @override
-  String get enterTheEmailAndPassword => 'أدخل البريد الإلكتروني وكلمة المرور التي زودك بها المدير';
+  String get enterTheEmailAndPassword =>
+      'أدخل البريد الإلكتروني وكلمة المرور التي زودك بها المدير';
 
   @override
   String get userName => 'اسم المستخدم';
@@ -598,6 +600,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get earlyCheckOut => 'الخروج المبكر';
+
+  @override
+  String get earlyLeft => 'انصراف مبكر';
 
   @override
   String get comment => 'إضافة تعليق';
@@ -1056,7 +1061,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterNotes => 'يرجى إدخال ملاحظة';
 
   @override
-  String get enterToAndFromDate => 'يرجى تحديد كل من تاريخ البداية وتاريخ النهاية';
+  String get enterToAndFromDate =>
+      'يرجى تحديد كل من تاريخ البداية وتاريخ النهاية';
 
   @override
   String get selectSubType => 'نوع الإجازة';
@@ -1137,13 +1143,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseAttachDocument => 'يرجى إرفاق المستندات!';
 
   @override
-  String get youHaveNotCheckedInYet => 'لم تقم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.';
+  String get youHaveNotCheckedInYet =>
+      'لم تقم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.';
 
   @override
   String get currentLocationNotAvailable => 'الموقع الحالي غير متاح.';
 
   @override
-  String get sorryYouAreOutOfTheLocationRadius => 'عذرًا، أنت خارج نطاق دائرة الموقع!';
+  String get sorryYouAreOutOfTheLocationRadius =>
+      'عذرًا، أنت خارج نطاق دائرة الموقع!';
 
   @override
   String get title => 'العنوان';
@@ -1161,7 +1169,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get confirmUpload => 'تأكيد الرفع';
 
   @override
-  String get areYouSureYouWantToUploadThisFile => 'هل أنت متأكد أنك تريد رفع هذا الملف:';
+  String get areYouSureYouWantToUploadThisFile =>
+      'هل أنت متأكد أنك تريد رفع هذا الملف:';
 
   @override
   String get balanceToDate => 'الرصيد حتى اليوم';
@@ -1395,7 +1404,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get eventType => 'نوع الحدث';
 
   @override
-  String get typeEventTypeOrSelectFromList => 'اكتب نوع الحدث أو اختر من القائمة';
+  String get typeEventTypeOrSelectFromList =>
+      'اكتب نوع الحدث أو اختر من القائمة';
 
   @override
   String get pleaseFillAllFields => 'يرجى ملء جميع الحقول';
@@ -1407,7 +1417,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quarterly => 'ربع سنوي';
 
   @override
-  String get missingCheckInOut => 'تسجيل الدخول/الخروج المفقود';
+  String get missingCheckInOut => 'لم يتم تسجيل الخروج';
 
   @override
   String get advanceExpense => 'نفقة مقدمة';
@@ -1504,4 +1514,62 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get card => 'بطاقات';
+
+  @override
+  String get cnic => 'رقم الهوية الوطنية';
+
+  @override
+  String get iqama => 'الإقامة';
+
+  @override
+  String get passport => 'جواز السفر';
+
+  @override
+  String get employmentContract => 'عقد العمل';
+
+  @override
+  String get done => 'تم';
+
+  @override
+  String get cardNumber => 'رقم البطاقة';
+
+  @override
+  String get dateOfBirthInHijri => 'تاريخ الميلاد (هجري)';
+
+  @override
+  String get expiryDateInHijri => 'تاريخ الانتهاء (هجري)';
+
+  @override
+  String get placeOfBirth => 'مكان الميلاد';
+
+  @override
+  String get contractId => 'رقم العقد';
+
+  @override
+  String get employeeNumber => 'رقم الموظف';
+
+  @override
+  String get contractStatus => 'حالة العقد';
+
+  @override
+  String get idNumber => 'رقم الهوية';
+
+  @override
+  String get dateOfBirth => 'تاريخ الميلاد';
+
+  @override
+  String get occupation => 'المهنة';
+
+  @override
+  String get religion => 'الديانة';
+
+  @override
+  String get missingCheckInAndCheckOut =>
+      'وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام';
+
+  @override
+  String get allBranch => 'جميع الفروع';
+
+  @override
+  String get attendanceDetail => 'تفاصيل الحضور';
 }

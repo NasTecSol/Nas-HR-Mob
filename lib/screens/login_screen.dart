@@ -90,7 +90,20 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = true ;
           });
+          final SharedPreferences preferences = await SharedPreferences.getInstance();
+          String? token = preferences.getString('token');
+          decodeJwt(token!.trim());
           await singletonClass.getEmployeeData();
+          await singletonClass.getCompaniesData();
+          await singletonClass.getUISettingsData();
+          singletonClass.getEmployeeData();
+          await singletonClass.getClockingData();
+          await singletonClass.getBranchData();
+          singletonClass.getCompanyData();
+          singletonClass.getRemoteAttendanceData();
+          await singletonClass.getEmployeeAttendanceData();
+          singletonClass.getNotifications();
+          singletonClass.sendFCMToken();
           setState(() {
             isLoading = false ;
           });
@@ -379,9 +392,11 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);
+    print("///???${singletonClass.tenantIDDataList.first.data!.tenantId}");
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
+    print(uri);
     setState(() {
       isLoading = true;
     });
@@ -389,14 +404,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await http.post(
         uri,
         body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: singletonClass.getHeaders(),
       );
-      setState(() {
-        isLoading = false;
-      });
+      print(singletonClass.getHeaders());
       print(response.body);
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
@@ -408,16 +418,20 @@ class _LoginScreenState extends State<LoginScreen> {
           if (data != null && data.data != null) {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
+            await singletonClass.getCompaniesData();
             await singletonClass.getUISettingsData();
-             singletonClass.getEmployeeData();
+            singletonClass.getEmployeeData();
             await singletonClass.getClockingData();
             await singletonClass.getBranchData();
-             await singletonClass.getCompanyData();
-             singletonClass.getRemoteAttendanceData();
-             await singletonClass.getEmployeeAttendanceData();
-             singletonClass.getNotifications();
+            singletonClass.getCompanyData();
+            singletonClass.getRemoteAttendanceData();
+            await singletonClass.getEmployeeAttendanceData();
+            singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
+            setState(() {
+              isLoading = false;
+            });
             await QuickAlert.show(
               autoCloseDuration: const Duration(seconds: 2),
               showCancelBtn: false,
@@ -485,6 +499,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String payload = parts[1];
     String decodedHeader = utf8.decode(base64Url.decode(header));
     String decodedPayload = utf8.decode(base64Url.decode(payload));
+    print('Full Payload: $decodedPayload');
     Map<String, dynamic> headerJson = json.decode(decodedHeader);
     Map<String, dynamic> payloadJson = json.decode(decodedPayload);
     JWTData jwtData = JWTData.fromJson(payloadJson);

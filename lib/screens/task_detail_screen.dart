@@ -956,9 +956,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     try {
       final response = await http.patch(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: singletonClass.getHeaders(),
         body: jsonData,
       );
       log("PATCH CALL RESPONSE ${response.body}");

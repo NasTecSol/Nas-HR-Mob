@@ -506,7 +506,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
     setState(() {
       _isLoading = false;
     });
@@ -546,7 +546,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   //API CALL
   Future<void> getTemplate() async {
     final response =
-        await http.get(Uri.parse('${singletonClass.baseURL}/documents'));
+        await http.get(Uri.parse('${singletonClass.baseURL}/documents'),headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final templates = jsonData['data']?['data'] as List<dynamic>?;

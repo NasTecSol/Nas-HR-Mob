@@ -142,7 +142,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                       IconButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            await getBASEURL();
+                            await getTenantID();
                           } else {}
                         },
                         icon: Icon(
@@ -153,7 +153,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                       ),
                     ],
                   ),
-                  if(singletonClass.baseURLDataList.isNotEmpty && singletonClass.baseURLDataList.first.data != null && singletonClass.baseURLDataList.first.data!.isNotEmpty)...[
+                  if(singletonClass.tenantIDDataList.isNotEmpty && singletonClass.tenantIDDataList.first.data != null && singletonClass.tenantIDDataList.first.data!.tenantName!.isNotEmpty)...[
                     Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -190,34 +190,34 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   }
 
   //API CALL
-  Future<BaseUrlModel?> getBASEURL() async {
+  Future<TenantIdModel?> getTenantID() async {
     String? companyCode = _searchController.text;
     setState(() {
       _isLoading = true;
     });
 
     try {
+
       var client = http.Client();
-      var uri = Uri.parse('https://dev.nashrms.com/api/organization/getStaticUrl/$companyCode');
+      var uri = Uri.parse('https://www.nashrms.com/api/organization/getOrganizationTenancy?tenantName=$companyCode');
       var response = await client.get(uri);
-      log("Company BASE URL Data: ${response.body}");
+      log("Tenant ID Data: ${response.body}");
 
       if (response.statusCode == 200) {
         var responseBody = json.decode(response.body);
-        var baseURLData = BaseUrlModel.fromJson(responseBody);
+        var tenantID = TenantIdModel.fromJson(responseBody);
 
-        if (baseURLData.data == null || baseURLData.data!.isEmpty) {
+        if (tenantID.data == null || tenantID.data!.tenantName!.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('No company found with that code.'))
           );
           return null;
         }
-        singletonClass.baseURLDataList.clear();
-        singletonClass.baseURLDataList.add(baseURLData);
-        singletonClass.baseURL = baseURLData.data;
+        singletonClass.tenantIDDataList.clear();
+        singletonClass.tenantIDDataList.addAll([tenantID]);
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('baseURL', baseURLData.data!);
-        return baseURLData;
+        await prefs.setString('baseURL', tenantID.data!.tenantId.toString());
+        return tenantID;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${response.statusCode}'))

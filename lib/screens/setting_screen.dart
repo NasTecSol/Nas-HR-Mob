@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/language_screen.dart';
 import 'package:nashr/screens/splash_screen.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -16,6 +17,7 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  SingletonClass singletonClass = SingletonClass();
   bool _isToggled = false ;
   bool _isBiometricEnabled = false;
 
@@ -48,6 +50,12 @@ class _SettingScreenState extends State<SettingScreen> {
   logout() async {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.remove('token');
+    singletonClass.branchDataList.clear();
+    singletonClass.branchesDataList.clear();
+    singletonClass.companyDataList.clear();
+    singletonClass.companiesDataList.clear();
+    singletonClass.selectedCompanyId = null;
+    singletonClass.companiesDataList.clear();
   }
 
   @override
