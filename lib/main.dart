@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:nashr/screens/splash_screen.dart';
@@ -34,6 +35,8 @@ void main() async {
   await SingletonClass().init();
   MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA");
 
+  final prefs = await SharedPreferences.getInstance();
+  SingletonClass().tenantId = prefs.getString('baseURL') ?? '';
   try {
     // Request notification permissions
     await FirebaseMessaging.instance.requestPermission(

@@ -217,6 +217,9 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
         singletonClass.tenantIDDataList.addAll([tenantID]);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('baseURL', tenantID.data!.tenantId.toString());
+        singletonClass.tenantId = prefs.getString('baseURL') ?? '';
+        print(singletonClass.tenantId);
+        print("model tenant id ${singletonClass.tenantIDDataList.first.data!.tenantId}");
         return tenantID;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
