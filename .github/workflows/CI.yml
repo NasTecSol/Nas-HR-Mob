@@ -116,13 +116,23 @@ jobs:
     needs: [build_ios_app, build_android_app]
     if: always()
     steps:
+      - name: Set Slack Color
+        id: slackcolor
+        run: |
+          if [[ "${{ needs.build_ios_app.result }}" == "success" && "${{ needs.build_android_app.result }}" == "success" ]]; then
+            echo "color=#2cde04" >> $GITHUB_OUTPUT
+          else
+            echo "color=#de2c2c" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: flutter-builds
-          SLACK_COLOR: ${{ needs.build_ios_app.result == 'success' && needs.build_android_app.result == 'success' && '#2cde04' || '#de2c2c' }}
+          SLACK_COLOR: ${{ steps.slackcolor.outputs.color }}
           SLACK_ICON: https://github.com/ED209Repo/AnyPick/blob/main/images/mainlogo.png?size=48
           SLACK_MESSAGE: '🚀 New build for Nas-HR completed for ${{ github.event.inputs.environment || 'dev' }} environment.'
           SLACK_TITLE: Flutter CI Build
           SLACK_USERNAME: Danial
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
