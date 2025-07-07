@@ -54,7 +54,7 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? baseURL = "https://www.nashrms.com/api";
+  String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];

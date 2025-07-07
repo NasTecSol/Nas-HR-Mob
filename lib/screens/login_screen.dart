@@ -267,44 +267,55 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: NasColors.lightGrey,
-                      ),
-                      child: TextFormField(
-                        controller: _password,
-                        obscureText: _obscurePassword,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return AppLocalizations.of(context)!.pleaseEnterPassword;
-                          }
-                          return null;
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: NasColors.lightGrey,
+                  ),
+                  child: TextFormField(
+                    controller: _password,
+                    obscureText: _obscurePassword,
+                    obscuringCharacter: '*',
+                    cursorColor: Colors.grey,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return AppLocalizations.of(context)!.pleaseEnterPassword;
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
-                        obscuringCharacter: '*',
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context)!.password,
-                          hintStyle: GoogleFonts.inter(color: Colors.grey),
-                          prefixIcon: Icon(
-                            Icons.lock_outline,
-                            color: NasColors.icons,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          color: NasColors.icons,
                         ),
                       ),
+                      hintText: AppLocalizations.of(context)!.password,
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: NasColors.icons,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.transparent),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.transparent),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
                     ),
+                  ),
+                ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -321,21 +332,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          child: Text(
-                            _obscurePassword ? AppLocalizations.of(context)!.showPassword : AppLocalizations.of(context)!.hidePassword,
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     NasButton(

@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -13,6 +14,20 @@ import 'Controller/language_change_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kDebugMode) {
+    print("App is running in Debug mode.");
+    SingletonClass().baseURL = "https://dev.nashrms.com/api";
+    print("Debug url ${SingletonClass().baseURL}");
+  }
+
+  if (kReleaseMode) {
+    SingletonClass().baseURL = "https://www.nashrms.com/api";
+    print("Prod Url${SingletonClass().baseURL}");
+  }
+
+  if (kProfileMode) {
+    print("App is running in Profile mode.");
+  }
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
