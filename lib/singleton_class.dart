@@ -14,6 +14,7 @@ import 'package:nashr/request_controller/companies_data_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
+import 'package:nashr/request_controller/document_notification_model.dart';
 import 'package:nashr/request_controller/employee_details_assets_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
@@ -60,6 +61,7 @@ class SingletonClass {
   List<EmployeeData> employeeDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
+  List<DocumentNotificationModel> documentNotificationDataList = [];
   List<TenantIdModel> tenantIDDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
