@@ -1572,4 +1572,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get attendanceDetail => 'تفاصيل الحضور';
+
+  @override
+  String get attendanceHistory => 'سجل الحضور';
+
+  @override
+  String get onlyMe => 'فقط أنا';
+
+  @override
+  String get assetsDetails => 'تفاصيل الأصل';
+
+  @override
+  String get documentNotification => 'إشعار المستند';
 }

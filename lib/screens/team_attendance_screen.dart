@@ -10,7 +10,6 @@ import 'package:nashr/screens/team_attendance_detail_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:http/http.dart' as http;
-import 'dart:math' as math;
 import '../request_controller/branch_model.dart';
 
 class TeamAttendanceScreen extends StatefulWidget {
@@ -22,7 +21,7 @@ class TeamAttendanceScreen extends StatefulWidget {
 
 class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   final SingletonClass singletonClass = SingletonClass();
-
+  bool _isChecked = false;
   late String reportingManagerId;
   late List<Teams> filteredUnderTeams;
   List<TeamAttendanceData> filteredAttendanceDataList = [];
@@ -35,6 +34,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   String? selectedBranchName;
   String? selectedBranchId;
   DateTime? _endDate;
+  int _selectedOptionIndex = 0;
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
 
   @override
    void initState() {
@@ -166,11 +168,30 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     Set<String> employeeIds = {};
 
     final grade = singletonClass.getJWTModel()?.grade;
+    if(_isChecked == false){
+      if (grade == 'L0' || grade == 'L1') {
+        if (selectedBranchIds.isNotEmpty) {
+          employeeIds = selectedBranchIds;
+        } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+          for (var team in filteredUnderTeams) {
+            log("👥 Checking team: ${team.teamId}");
+            if (team.teamData != null) {
+              for (var member in team.teamData!) {
+                if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+                  employeeIds.add(member.employeeId!);
+                  log(" - Found Employee ID: ${member.employeeId}");
+                } else {
+                  log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+                }
+              }
+            } else {
+              log(" - ⚠️ teamData is null for team: ${team.teamId}");
+            }
+          }
+        }
+      }
 
-    if (grade == 'L0' || grade == 'L1') {
-      if (selectedBranchIds.isNotEmpty) {
-        employeeIds = selectedBranchIds;
-      } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+      if (grade == 'L2' || grade == 'L3') {
         for (var team in filteredUnderTeams) {
           log("👥 Checking team: ${team.teamId}");
           if (team.teamData != null) {
@@ -187,24 +208,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           }
         }
       }
-    }
-
-    if (grade == 'L2' || grade == 'L3') {
-      for (var team in filteredUnderTeams) {
-        log("👥 Checking team: ${team.teamId}");
-        if (team.teamData != null) {
-          for (var member in team.teamData!) {
-            if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-              employeeIds.add(member.employeeId!);
-              log(" - Found Employee ID: ${member.employeeId}");
-            } else {
-              log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
-            }
-          }
-        } else {
-          log(" - ⚠️ teamData is null for team: ${team.teamId}");
-        }
-      }
+    } else {
+      String? userID = singletonClass.getJWTModel()?.employeeId;
+      employeeIds.add(userID!);
     }
 
     if (employeeIds.isEmpty) {
@@ -316,7 +322,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.teamAttendance,
+                  AppLocalizations.of(context)!.attendanceHistory,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -324,405 +330,376 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                   ),
                 ),
                 const Spacer(),
-                PopupMenuButton<String>(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  onSelected: (value) {
-                    setState(() {
-                      selectedEmployeeId = value;
-                    });
-                    filterAttendanceData();
-                  },
-                  itemBuilder: (BuildContext context) {
-                    final grade = singletonClass.getJWTModel()?.grade;
-                    List<PopupMenuEntry<String>> items = [];
-
-                    if (grade == 'L0' || grade == 'L1') {
-                      // Use selectedBranchIds to find employee names
-                      final branches = singletonClass.branchesDataList.first.data;
-                      final branchEmployees = <Map<String, dynamic>>[];
-
-                      for (var branch in branches ?? []) {
-                        for (var deptGroup in branch.departmentDetails ?? []) {
-                          for (var dept in deptGroup.departments ?? []) {
-                            for (var team in dept.teams ?? []) {
-                              for (var emp in team['teamData'] ?? []) {
-                                if (selectedBranchIds.contains(emp['employeeId'])) {
-                                  branchEmployees.add(emp);
-                                }
-                              }
-                            }
-                          }
-                        }
+                  IconButton(
+                    onPressed: () async {
+                      final DateTime now = DateTime.now();
+                      final DateTime lastSelectableDate = now;
+                      final DateTimeRange? picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(now.year - 2),
+                        lastDate: lastSelectableDate,
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData.light().copyWith(
+                              scaffoldBackgroundColor: Colors.white,
+                              textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: NasColors.darkBlue, // Button color
+                                ),
+                              ),
+                              colorScheme: ColorScheme.light(
+                                primary: NasColors.darkBlue, // Selection color
+                                onPrimary: Colors.white, // Default text color
+                                secondaryContainer: NasColors.icons,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                        initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+                      );
+                      if (picked != null) {
+                        _startDate = picked.start;
+                        _endDate = picked.end;
+                        _initDates(start: picked.start, end: picked.end);
+                        await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
+                        filterAttendanceData();
                       }
-
-                      items = branchEmployees.map((emp) {
-                        return PopupMenuItem<String>(
-                          value: emp['employeeId'],
-                          child: Text(emp['userName'] ?? 'Unknown'),
-                        );
-                      }).toList();
-                    } else if (grade == 'L2' || grade == 'L3') {
-                      items = filteredUnderTeams.first.teamData!
-                          .map((data) => PopupMenuItem<String>(
-                        value: data.employeeId,
-                        child: Text(data.userName ?? "Unknown"),
-                      ))
-                          .toList();
-                    }
-
-                    return items;
-                  },
-                  child: Container(
-                    height: 30,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      color: NasColors.darkBlue,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.filter_alt, color: Colors.white, size: 20),
-                        const SizedBox(width: 5),
-                        Text(
-                          AppLocalizations.of(context)!.filter,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
+                    },
+                    icon:  Icon(Icons.date_range,color: NasColors.darkBlue,size: 30,),
                   ),
-                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
-                Padding(
-                  padding: const EdgeInsets.only(left: 10.0, right: 10),
-                  child: PopupMenuButton<String>(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    onSelected: (value) {
-                      setState(() {
-                        selectedBranchId = value;
-                        final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
-                        selectedBranchName = branch?.branchName ?? "Unknown Branch";
-                        print('Selected Branch ID: $value');
-                        extractAllEmployeeIdsForBranch(value);
-                        getTeamAttendanceData();
-                        loadData();
-                      });
-                    },
-                    itemBuilder: (BuildContext context) {
-                      final branchList = singletonClass.branchesDataList.first.data;
-                      if (branchList == null || branchList.isEmpty) {
-                        return [];
-                      }
-
-                      return branchList.map((branch) => PopupMenuItem<String>(
-                        value: branch.branchCompanyId,
-                        child: Text(branch.branchName ?? "Unknown Branch"),
-                      )).toList();
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                buildOptionsCard(0, AppLocalizations.of(context)!.all),
+                buildOptionsCard(1, AppLocalizations.of(context)!.present),
+                buildOptionsCard(2, AppLocalizations.of(context)!.absent),
+                buildOptionsCard(3, AppLocalizations.of(context)!.missingCheckInOut),
+              ],
+            ),
+          ),
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _dates.length,
+                itemBuilder: (ctx, i) {
+                  final date = _dates[i];
+                  final selected = _selectedDateIndex == i;
+                  return GestureDetector(
+                    onTap: () {
+                      _selectedDateIndex = i;
+                      _selectedDate = date;
+                      filterAttendanceData();
                     },
                     child: Container(
-                      height: 40,
-                      width: 150,
+                      width: 55,
+                      margin: const EdgeInsets.symmetric(horizontal: 5),
                       decoration: BoxDecoration(
-                        color: NasColors.darkBlue,
-                        borderRadius: BorderRadius.circular(10),
+                        color: selected ? NasColors.darkBlue : Colors.transparent,
+                        borderRadius: BorderRadius.circular(35),
                       ),
-                      child: Row(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Flexible(
-                            child: Text(
-                              selectedBranchName != null && selectedBranchName!.isNotEmpty
-                                  ? selectedBranchName!
-                                  : "${singletonClass.branchesDataList.first.data!.first.branchName}",
+                          Text("${date.day}",
                               style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: selected ? Colors.white : Colors.grey)),
+                          Text(_getDayOfWeek(date),
+                              style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: selected ? Colors.white : Colors.grey)),
                         ],
                       ),
                     ),
-                  ),
-                ),
-              Spacer(),
-              TextButton.icon(
-                onPressed: () async {
-                  final DateTime now = DateTime.now();
-                  final DateTime lastSelectableDate = now;
-                  final DateTimeRange? picked = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(now.year - 2),
-                    lastDate: lastSelectableDate,
-                    builder: (BuildContext context, Widget? child) {
-                      return Theme(
-                        data: ThemeData.light().copyWith(
-                          scaffoldBackgroundColor: Colors.white,
-                          textButtonTheme: TextButtonThemeData(
-                            style: TextButton.styleFrom(
-                              foregroundColor: NasColors.darkBlue, // Button color
-                            ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if(isSearching == false)...[
+                if(_isChecked == false)...[
+                  if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0, right: 10),
+                      child: PopupMenuButton<String>(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        onSelected: (value) {
+                          setState(() {
+                            selectedBranchId = value;
+                            final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
+                            selectedBranchName = branch?.branchName ?? "Unknown Branch";
+                            print('Selected Branch ID: $value');
+                            extractAllEmployeeIdsForBranch(value);
+                            getTeamAttendanceData();
+                            loadData();
+                          });
+                        },
+                        itemBuilder: (BuildContext context) {
+                          final branchList = singletonClass.branchesDataList.first.data;
+                          if (branchList == null || branchList.isEmpty) {
+                            return [];
+                          }
+
+                          return branchList.map((branch) => PopupMenuItem<String>(
+                            value: branch.branchCompanyId,
+                            child: Text(branch.branchName ?? "Unknown Branch"),
+                          )).toList();
+                        },
+                        child: Container(
+                          height: 59,
+                          width: 176,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(45),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          colorScheme: ColorScheme.light(
-                            primary: NasColors.darkBlue, // Selection color
-                            onPrimary: Colors.white, // Default text color
-                            secondaryContainer: NasColors.icons,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(width: 8),
+                              Image.asset(
+                                'images/site.png', // <-- Replace with your actual image path
+                                height: 24,
+                                width: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  selectedBranchName != null && selectedBranchName!.isNotEmpty
+                                      ? selectedBranchName!
+                                      : "${singletonClass.branchesDataList.first.data!.first.branchName}",
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                              const SizedBox(width: 10),
+                            ],
                           ),
                         ),
-                        child: child!,
-                      );
+                      ),
+                    ),
+                ],
+                Spacer(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0 , right: 20),
+                  child: Row(
+                    children: [
+                      Text(AppLocalizations.of(context)!.onlyMe,
+                        style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue
+                        ),
+                      ),
+                      Checkbox(value: _isChecked,
+                          activeColor: NasColors.onTime,
+                          onChanged: (bool? value){
+                            setState(() {
+                              _isChecked = value ?? false;
+                              _setDefaultDates();
+                              _initDates(start: _startDate!, end: _endDate!);
+                              loadData();
+                            });
+                          }),
+                    ],
+                  ),
+                ),
+              ],
+              if(isSearching == true)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: (value) {
+                      setState(() {
+
+                      });
                     },
-                    initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
-                  );
-                  if (picked != null) {
-                    _startDate = picked.start;
-                    _endDate = picked.end;
-                    _initDates(start: picked.start, end: picked.end);
-                    await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
-                    filterAttendanceData();
-                  }
-                },
-                icon:  Icon(Icons.date_range,color: NasColors.darkBlue,),
-                label: Text(
-                  AppLocalizations.of(context)!.selectDate,
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
+                    decoration: InputDecoration(
+                      hintText: 'Search by name',
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Colors.black),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          setState(() {
+                            isSearching = false;
+                            searchController.clear();
+                          });
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
+              IconButton(onPressed: (){
+                setState(() {
+                  isSearching = true;
+                });
+              }, icon: Icon(Icons.search, size: 30,color: Colors.black,))
             ],
           ),
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _dates.length,
-              itemBuilder: (ctx, i) {
-                final date = _dates[i];
-                final selected = _selectedDateIndex == i;
-                return GestureDetector(
-                  onTap: () {
-                    _selectedDateIndex = i;
-                    _selectedDate = date;
-                    filterAttendanceData();
-                  },
-                  child: Container(
-                    width: 55,
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      color: selected ? NasColors.darkBlue : Colors.transparent,
-                      borderRadius: BorderRadius.circular(35),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("${date.day}",
-                            style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: selected ? Colors.white : Colors.grey)),
-                        Text(_getDayOfWeek(date),
-                            style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: selected ? Colors.white : Colors.grey)),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-              child: FutureBuilder(
-                  future: getTeamAttendanceData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: Lottie.asset('images/loader.json',
-                            height: 200, width: 200),
-                      );
-                    } else if (filteredAttendanceDataList.isEmpty) {
-                      return Center(
-                        child: Text(AppLocalizations.of(context)!.noData),
-                      );
-                    }
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount:filteredAttendanceDataList.length,
-                      itemBuilder: (ctx, i) {
-                        final attendance = filteredAttendanceDataList[i];
+            SizedBox(height: 10),
+            Expanded(
+                child: FutureBuilder(
+                    future: getTeamAttendanceData(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: Lottie.asset('images/loader.json',
+                              height: 200, width: 200),
+                        );
+                      } else if (filteredAttendanceDataList.isEmpty) {
+                        return Center(
+                          child: Text(AppLocalizations.of(context)!.noData),
+                        );
+                      }
+                      final hasMatchingData = filteredAttendanceDataList.any((attendance) {
+                        if (_selectedOptionIndex == 0) return true; // All
+                        if (_selectedOptionIndex == 1) return attendance.status?.toLowerCase() == 'present';
+                        if (_selectedOptionIndex == 2) return attendance.status?.toLowerCase() == 'absent';
+                        if (_selectedOptionIndex == 3) return attendance.status == 'missing checkin/out';
+                        return false;
+                      });
+                      return  hasMatchingData
+                          ? ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount:filteredAttendanceDataList.length,
+                        itemBuilder: (ctx, i) {
+                          final attendance = filteredAttendanceDataList[i];
+                          final searchText = searchController.text.toLowerCase();
+                          if (isSearching &&
+                              !(attendance.name?.toLowerCase().contains(searchText) ?? false)) {
+                            return const SizedBox.shrink();
+                          }
+                          if (_selectedOptionIndex != 0 &&
+                              ((_selectedOptionIndex == 1 && attendance.status?.toLowerCase() != 'present') ||
+                                  (_selectedOptionIndex == 2 && attendance.status?.toLowerCase() != 'absent') ||
+                                  (_selectedOptionIndex == 3 && attendance.status?.toLowerCase() != 'missing checkin/out'))) {
+                            return const SizedBox.shrink();
+                          }
 
-                        String formatDate(String updatedAt) {
-                          DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                          return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
-                        }
-                        String date = formatDate(attendance.updatedAt!);
-                        int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
-                        int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
-                        String breakTime = formatMinutes(attendance.breakTime);
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => TeamAttendanceDetailScreen(attendanceData: attendance),
+                          String formatDate(String updatedAt) {
+                            DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                            return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                          }
+                          String date = formatDate(attendance.updatedAt!);
+                          int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+                          int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
+                          String breakTime = formatMinutes(attendance.breakTime);
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => TeamAttendanceDetailScreen(attendanceData: attendance),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: Colors.white,
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      attendance.name ?? "N/A",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    Container(
-                                      height: attendance.status ==
-                                              "Missing CheckIn/Out"
-                                          ? 30
-                                          : 20,
-                                      width: attendance.status ==
-                                              "Missing CheckIn/Out"
-                                          ? 120
-                                          : 75,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            getStatusColor(attendance.status!),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          _translateStatus(
-                                              attendance.status, context),
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 10,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      ClipOval(
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.white,
+                                          radius: 30,
+                                          child: ClipOval(
+                                            child: Image.asset(
+                                              'images/DP.png',
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                     Icon(Icons.exit_to_app_outlined,
-                                       size: 20 , color: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      singletonClass.formatCheckInTime(
-                                          attendance.clockInTime),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
+                                      SizedBox(width: 5),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            attendance.name ?? "N/A",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Text(
+                                            _translateStatus(attendance.status, context),
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.bold,
+                                              color: getStatusColor(attendance.status!),
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    const Spacer(),
-                                    if ((lateMinutes == null || lateMinutes <= 0) &&
-                                        (earlyCheckOut == null || earlyCheckOut <= 0) && (attendance.status == 'Present' || attendance.status == 'Missing CheckIn/Out')) ...[
-                                      Text(
-                                        "✅",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-
-                                    if (lateMinutes != null && lateMinutes > 0)...[
-                                    Text(
-                                      "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.pending,
-                                      ),
-                                    ),
-                                    Icon(Icons.error,
-                                        size: 20, color: NasColors.pending),]
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Transform(
-                                      transform: Matrix4.rotationY(math.pi),
-                                      alignment: Alignment.center,
-                                      child:  Icon(
-                                        Icons.exit_to_app_outlined,
-                                        size: 20,
-                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
-                                            ? NasColors.onTime
-                                            : (attendance.status == 'Missing CheckIn/Out')
-                                            ? NasColors.pending
-                                            : Colors.black,
-
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      singletonClass.formatCheckInTime(
-                                          attendance.clockOutTime),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: (earlyCheckOut != null && earlyCheckOut > 0)
-                                            ? NasColors.onTime
-                                            : (attendance.status == 'Missing CheckIn/Out')
-                                            ? NasColors.pending
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    /// Progress bar logic
-                                    if ((lateMinutes == null || lateMinutes <= 0) &&
-                                        (earlyCheckOut == null || earlyCheckOut <= 0) &&
-                                        (attendance.status == 'Present' ||
-                                            attendance.status == 'Missing CheckIn/Out')) ...[
+                                      const Spacer(),
                                       Builder(builder: (_) {
                                         final int workedMinutes = attendance.totalHoursWorked ?? 0;
                                         final int totalWorkingMinutes = 11 * 60;
                                         final double progress = (workedMinutes / totalWorkingMinutes)
                                             .clamp(0.0, 1.0);
 
-                                        return Row(
+                                        return Column(
                                           children: [
                                             Text(
                                               "${formatMinutes(workedMinutes)} ${AppLocalizations.of(context)!.minutes}",
@@ -731,8 +708,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            const SizedBox(width: 6),
-                                            Container(
+                                            const SizedBox(height: 5),
+                                            SizedBox(
                                               width: 80,
                                               height: 8,
                                               child: ClipRRect(
@@ -753,48 +730,143 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                         );
                                       }),
                                     ],
-                                    if (earlyCheckOut != null && earlyCheckOut > 0)...[
-                                    Text(
-                                      "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.onTime,
-                                      ),
-                                    ),
-                                    Icon(Icons.directions_run_outlined,
-                                        size: 20, color: NasColors.onTime),]
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Text(date,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Text(date,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          )),
+                                      const Spacer(),
+                                      Text(
+                                        "$breakTime ${AppLocalizations.of(context)!.minutes}",
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
-                                        )),
-                                    const Spacer(),
-                                    Text(
-                                      "$breakTime ${AppLocalizations.of(context)!.minutes}",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                        ),
                                       ),
+                                      const Icon(Icons.coffee,
+                                          size: 20, color: Colors.brown),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Divider(
+                                    color: Colors.grey,
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade200,
+                                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
                                     ),
-                                    const Icon(Icons.coffee,
-                                        size: 20, color: Colors.brown),
-                                  ],
-                                ),
-                              ],
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                         children: [
+                                           Text(
+                                             AppLocalizations.of(context)!.checkIn,
+                                             style: GoogleFonts.inter(
+                                               fontSize: 13,
+                                               fontWeight: FontWeight.bold,
+                                               color: Colors.grey
+                                             ),
+                                           ),
+                                           SizedBox(height: 5),
+                                           Text(
+                                             singletonClass.formatCheckInTime(
+                                                 attendance.clockInTime),
+                                             style: GoogleFonts.inter(
+                                               fontSize: 13,
+                                               fontWeight: FontWeight.bold,
+                                               color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
+                                             ),
+                                           ),
+                                         ],
+                                        ),
+                                        SizedBox(width: 10),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.checkOut,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              singletonClass.formatCheckInTime(
+                                                  attendance.clockOutTime),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 10),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.late,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: NasColors.pending,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 10),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.earlyLeft,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: NasColors.onTime,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  })),
+                          );
+                        },
+                      ) : Center(
+                        child: Text(AppLocalizations.of(context)!.noData),
+                      );
+                    })),
         ],
       ),
     );
@@ -844,4 +916,73 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       return '--';
     }
   }
+
+  Widget buildOptionsCard(int index, String title) {
+    Color getTextColor() {
+      if (_selectedOptionIndex == index) return Colors.white;
+      switch (index) {
+        case 0:
+          return NasColors.darkBlue;
+        case 1:
+          return NasColors.completed;
+        case 2:
+          return NasColors.red;
+        case 3:
+          return NasColors.pending;
+        default:
+          return NasColors.darkBlue;
+      }
+    }
+
+    Color getCardColor() {
+      if (_selectedOptionIndex != index) return Colors.white;
+      switch (index) {
+        case 0:
+          return NasColors.darkBlue;
+        case 1:
+          return NasColors.completed;
+        case 2:
+          return NasColors.red;
+        case 3:
+          return NasColors.pending;
+        default:
+          return NasColors.darkBlue;
+      }
+    }
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedOptionIndex = index;
+        });
+      },
+      child: SizedBox(
+        height: 70,
+        width: index == 3 ? 200 : 160,
+        child: Card(
+          color: getCardColor(),
+          margin: const EdgeInsets.all(10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+            side: const BorderSide(
+              color: Colors.white,
+              width: 0,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: getTextColor(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 }

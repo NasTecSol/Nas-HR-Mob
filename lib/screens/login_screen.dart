@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -154,6 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (kDebugMode)
+                          Text("You're in Debug mode"),
                         IconButton(onPressed: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
                         }, icon: Icon(Icons.apartment_outlined,

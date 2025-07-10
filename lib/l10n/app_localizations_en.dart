@@ -1243,7 +1243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get description => 'Description';
 
   @override
-  String get type => 'type';
+  String get type => 'Type';
 
   @override
   String get comments => 'Comments';
@@ -1574,4 +1574,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attendanceDetail => 'Attendance Detail';
+
+  @override
+  String get attendanceHistory => 'Attendance History';
+
+  @override
+  String get onlyMe => 'Only me';
+
+  @override
+  String get assetsDetails => 'Asset Detail';
+
+  @override
+  String get documentNotification => 'Document Notification';
 }

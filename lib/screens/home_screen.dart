@@ -582,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                const AttendanceScreen()));
+                                                const TeamAttendanceScreen()));
                                   },
                                   child: Container(
                                     height: 65,
@@ -671,56 +671,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 const SizedBox(height: 5),
                                 Text(
                                   AppLocalizations.of(context)!.teamClocking,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 40),
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TeamAttendanceScreen()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/teamClocking.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.teamAttendance,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

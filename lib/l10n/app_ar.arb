@@ -609,7 +609,12 @@
     "religion": "الديانة",
     "missingCheckInAndCheckOut": "وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام",
     "allBranch": "جميع الفروع",
-    "attendanceDetail": "تفاصيل الحضور"
+    "attendanceDetail": "تفاصيل الحضور",
+    "attendanceHistory": "سجل الحضور",
+    "onlyMe": "فقط أنا",
+    "assetsDetails": "تفاصيل الأصل",
+    "documentNotification": "إشعار المستند"
+
 
 
 }

@@ -830,7 +830,7 @@
   "tag":"Tags",
   "assignee":"Assignee",
   "description":"Description",
-  "type":"type",
+  "type":"Type",
   "comments":"Comments",
   "selectStatus":"Select Status",
   "duration":"Duration",
@@ -944,5 +944,9 @@
   "religion":"Religion",
   "missingCheckInAndCheckOut":"Check-out time is missing Auto updated by system",
   "allBranch":"All Branches",
-  "attendanceDetail":"Attendance Detail"
+  "attendanceDetail":"Attendance Detail",
+  "attendanceHistory":"Attendance History",
+  "onlyMe":"Only me",
+  "assetsDetails":"Asset Detail",
+  "documentNotification":"Document Notification"
 }
