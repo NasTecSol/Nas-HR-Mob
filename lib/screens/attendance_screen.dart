@@ -80,45 +80,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
+            padding: const EdgeInsets.only(top: 0.0, left: 20, right: 20),
             child: Column(
               children: [
                 Row(
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.4),
-                              spreadRadius: 5,
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_outlined,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      AppLocalizations.of(context)!.attendance,
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
                     const Spacer(),
                     Padding(
                       padding: const EdgeInsets.only(top: 0.0),

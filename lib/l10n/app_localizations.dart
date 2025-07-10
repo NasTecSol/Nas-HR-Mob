@@ -2555,7 +2555,7 @@ abstract class AppLocalizations {
   /// No description provided for @type.
   ///
   /// In en, this message translates to:
-  /// **'type'**
+  /// **'Type'**
   String get type;
 
   /// No description provided for @comments.
@@ -3211,6 +3211,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attendance Detail'**
   String get attendanceDetail;
+
+  /// No description provided for @attendanceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance History'**
+  String get attendanceHistory;
+
+  /// No description provided for @onlyMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Only me'**
+  String get onlyMe;
+
+  /// No description provided for @assetsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset Detail'**
+  String get assetsDetails;
+
+  /// No description provided for @documentNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Document Notification'**
+  String get documentNotification;
 }
 
 class _AppLocalizationsDelegate
