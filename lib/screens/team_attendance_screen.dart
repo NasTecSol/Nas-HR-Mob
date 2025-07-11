@@ -41,6 +41,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   @override
    void initState() {
     super.initState();
+    setState(() {
+      if(singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L4'){
+        _isChecked = true;
+      }
+    });
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
 
@@ -508,6 +513,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     ),
                 ],
                 Spacer(),
+                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
                 Padding(
                   padding: const EdgeInsets.only(left: 20.0 , right: 20),
                   child: Row(
@@ -696,13 +702,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       Builder(builder: (_) {
                                         final int workedMinutes = attendance.totalHoursWorked ?? 0;
                                         final int totalWorkingMinutes = 11 * 60;
-                                        final double progress = (workedMinutes / totalWorkingMinutes)
-                                            .clamp(0.0, 1.0);
+                                        final double progress = (workedMinutes / totalWorkingMinutes).clamp(0.0, 1.0);
 
                                         return Column(
                                           children: [
                                             Text(
-                                              "${formatMinutes(workedMinutes)} ${AppLocalizations.of(context)!.minutes}",
+                                              "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,

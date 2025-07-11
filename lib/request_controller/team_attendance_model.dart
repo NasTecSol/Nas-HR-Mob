@@ -74,6 +74,7 @@ class TeamAttendanceData {
   List<Penalties>? penalties;
   dynamic leaveDetails;
   dynamic shift;
+  List<Slots>? slots;
   dynamic workingHoursPerday;
   dynamic earlyCheckOut;
   dynamic remarks;
@@ -81,7 +82,7 @@ class TeamAttendanceData {
   dynamic updatedAt;
   int? v;
 
-  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.slots, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 
   TeamAttendanceData.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -104,6 +105,9 @@ class TeamAttendanceData {
         : (json["penalties"] as List).whereType<Map<String, dynamic>>().map((e) => Penalties.fromJson(e)).toList();
     leaveDetails = json["leaveDetails"];
     shift = json["shift"];
+    slots = json["slots"] == null
+        ? null
+        : (json["slots"] as List).whereType<Map<String, dynamic>>().map((e) => Slots.fromJson(e)).toList();
     workingHoursPerday = json["workingHoursPerday"];
     earlyCheckOut = json["earlyCheckOut"];
     remarks = json["remarks"];
@@ -136,6 +140,9 @@ class TeamAttendanceData {
     }
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
+    if(slots != null) {
+      _data["slots"] = slots?.map((e) => e.toJson()).toList();
+    }
     _data["workingHoursPerday"] = workingHoursPerday;
     _data["earlyCheckOut"] = earlyCheckOut;
     _data["remarks"] = remarks;
@@ -146,6 +153,47 @@ class TeamAttendanceData {
   }
 }
 
+class Slots {
+  String? slotStart;
+  String? slotEnd;
+  String? checkInTime;
+  String? checkOutTime;
+  String? status;
+  bool? isActive;
+  List<dynamic>? breaksTaken;
+  int? lateMinutes;
+  int? earlyCheckOut;
+
+  Slots({this.slotStart, this.slotEnd, this.checkInTime, this.checkOutTime, this.status, this.isActive, this.breaksTaken, this.lateMinutes, this.earlyCheckOut});
+
+  Slots.fromJson(Map<String, dynamic> json) {
+    slotStart = json["slotStart"];
+    slotEnd = json["slotEnd"];
+    checkInTime = json["checkInTime"];
+    checkOutTime = json["checkOutTime"];
+    status = json["status"];
+    isActive = json["isActive"];
+    breaksTaken = json["breaksTaken"] ?? [];
+    lateMinutes = json["lateMinutes"];
+    earlyCheckOut = json["earlyCheckOut"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["slotStart"] = slotStart;
+    _data["slotEnd"] = slotEnd;
+    _data["checkInTime"] = checkInTime;
+    _data["checkOutTime"] = checkOutTime;
+    _data["status"] = status;
+    _data["isActive"] = isActive;
+    if(breaksTaken != null) {
+      _data["breaksTaken"] = breaksTaken;
+    }
+    _data["lateMinutes"] = lateMinutes;
+    _data["earlyCheckOut"] = earlyCheckOut;
+    return _data;
+  }
+}
 class Penalties {
   int? uniqueId;
   String? action;

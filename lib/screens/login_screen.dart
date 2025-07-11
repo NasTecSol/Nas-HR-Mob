@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -38,14 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   bool _isTokenSaved = false;
-  bool _isBiometricEnabled = false; // State variable for biometric toggle
+  bool _isBiometricEnabled = false;
   final LocalAuthentication _localAuth = LocalAuthentication();
+  String version = '';
 
   @override
   void initState() {
     super.initState();
     _checkToken();
     _checkBiometricStatus();
+    loadVersion();
+  }
+
+  void loadVersion() async {
+    if(Platform.isAndroid || Platform.isIOS){
+      final info = await PackageInfo.fromPlatform();
+      setState(() {
+        version = 'v${info.version}';
+      });
+    }
+
   }
 
   Future<void> _checkToken() async {
@@ -361,6 +375,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: NasColors.darkBlue,
                         ),
                       ),
+                    Text(
+                      version.isEmpty ? 'Loading version...' : version,
+                      style: GoogleFonts.inter(fontSize: 14, color: Colors.grey),
+                    ),
                   ],
                 ),
                   if (isLoading)
