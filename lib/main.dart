@@ -43,11 +43,11 @@ void main() async {
       alert: true,
       badge: true,
       sound: true,
-      provisional: true,
     );
 
     // Get the FCM token and set it in SingletonClass
     String? fcmToken = await FirebaseMessaging.instance.getToken();
+    print('FCM TOKEN: $fcmToken');
     if (fcmToken != null) {
       SingletonClass().setFCMToken(fcmToken);
       print('FCM TOKEN: $fcmToken');

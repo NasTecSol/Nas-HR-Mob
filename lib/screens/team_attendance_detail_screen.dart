@@ -60,6 +60,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
             .reduce((value, element) => value + element);
 
     String totalDurationString = formatMinutes(totalDurationMinutes.toString());
+    final int workedMinutes = widget.attendanceData!.totalHoursWorked ?? 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -282,7 +283,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              SizedBox(width: 8),
                               Icon(
                                 Icons.directions_run_outlined,
                                 size: 25,
@@ -296,7 +297,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: 5),
                               Text(
                                 earlyMinutes,
                                 style: GoogleFonts.inter(
@@ -321,7 +322,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               SizedBox(width: 10),
                               Text(
-                                "${widget.attendanceData!.totalHoursWorked}",
+                                "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -961,6 +962,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  if (widget.attendanceData!.shift =='timeTableShift')...[
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -1296,7 +1298,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 20),],
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,

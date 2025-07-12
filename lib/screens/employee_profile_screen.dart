@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/screens/employee_details_screen_assets.dart';
-import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -816,81 +816,244 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               final attendance = singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data!.reversed.toList()[index];
                                               int breakHours = (attendance.breakTime! ~/ 60);
                                               int breakMinutes = (attendance.breakTime! % 60).round();
-                                              int totalMinutes = (attendance.totalHoursWorked! * 60).round();
-                                              int hours = totalMinutes ~/ 60;
-                                              int minutes = totalMinutes % 60;
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                              String formatDate(String updatedAt) {
+                                                DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                                return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                              }
+                                              String date = formatDate(attendance.updatedAt!);
+                                              int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+                                              int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
+                                              return Container(
+                                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                                padding: const EdgeInsets.all(10.0),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(15),
+                                                  color: Colors.white,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey.withOpacity(0.3),
+                                                      blurRadius: 6,
+                                                      offset: const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
                                                 child: Column(
                                                   children: [
                                                     Row(
                                                       children: [
-                                                        Text(
-                                                          '${attendance.date}',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                           attendance.status == 'absent' ? AppLocalizations.of(context)!.absent :
-                                                          AppLocalizations.of(context)!.present,
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: attendance.status == 'absent' ? Colors.red : NasColors.onTime,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.checkIn}:  ${singletonClass.formatCheckInTime(attendance.clockInTime!)}',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                          '${AppLocalizations.of(context)!.checkOut}: ${singletonClass.formatCheckInTime(attendance.clockOutTime!)}',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      children: [
-                                                        SizedBox(
-                                                          width:140,
-                                                          child: Text(
-                                                            '${AppLocalizations.of(context)!.breaks}:  $breakHours hours $breakMinutes mins',
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 15,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: NasColors.darkBlue,
+                                                        ClipOval(
+                                                          child: CircleAvatar(
+                                                            backgroundColor: Colors.white,
+                                                            radius: 30,
+                                                            child: ClipOval(
+                                                              child: Image.asset(
+                                                                'images/DP.png',
+                                                                fit: BoxFit.cover,
+                                                                width: 100,
+                                                                height: 100,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
+                                                        SizedBox(width: 5),
+                                                        Column(
+                                                          children: [
+                                                            Text(
+                                                              attendance.name ?? "N/A",
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 5),
+                                                            Text(
+                                                              _translateStatus(attendance.status, context),
+                                                              textAlign: TextAlign.center,
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: getStatusColor(attendance.status!),
+                                                                fontSize: 13,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                         const Spacer(),
+                                                        Builder(builder: (_) {
+                                                          final int workedMinutes = attendance.totalHoursWorked ?? 0;
+                                                          final int totalWorkingMinutes = 11 * 60;
+                                                          final double progress = (workedMinutes / totalWorkingMinutes).clamp(0.0, 1.0);
+
+                                                          return Column(
+                                                            children: [
+                                                              Text(
+                                                                "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(height: 5),
+                                                              SizedBox(
+                                                                width: 80,
+                                                                height: 8,
+                                                                child: ClipRRect(
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                  child: LinearProgressIndicator(
+                                                                    value: progress,
+                                                                    backgroundColor: Colors.grey[300],
+                                                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                                                      progress >= 1.0
+                                                                          ? Colors.green
+                                                                          : Colors.orange,
+                                                                    ),
+                                                                    minHeight: 8,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        }),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: 10),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      children: [
                                                         Text(
-                                                          '${AppLocalizations.of(context)!.worked}: $hours hours $minutes mins',
+                                                          attendance.empId ?? "N/A",
                                                           style: GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: NasColors.darkBlue,
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black,
                                                           ),
                                                         ),
                                                       ],
+                                                    ),
+                                                    SizedBox(height: 5),
+                                                    Row(
+                                                      children: [
+                                                        Text(date,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.black,
+                                                            )),
+                                                        const Spacer(),
+                                                        Text(
+                                                          "${breakHours}h ${breakMinutes}m",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                        const Icon(Icons.coffee,
+                                                            size: 20, color: Colors.brown),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Divider(
+                                                      color: Colors.grey,
+                                                    ),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey.shade200,
+                                                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Column(
+                                                            children: [
+                                                              Text(
+                                                                AppLocalizations.of(context)!.checkIn,
+                                                                style: GoogleFonts.inter(
+                                                                    fontSize: 13,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Colors.grey
+                                                                ),
+                                                              ),
+                                                              SizedBox(height: 5),
+                                                              Text(
+                                                                singletonClass.formatCheckInTime(attendance.clockInTime!),
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Column(
+                                                            children: [
+                                                              Text(
+                                                                AppLocalizations.of(context)!.checkOut,
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.grey,
+                                                                ),
+                                                              ),
+                                                              SizedBox(height: 5),
+                                                              Text(
+                                                                singletonClass.formatCheckInTime(attendance.clockOutTime!),
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Column(
+                                                            children: [
+                                                              Text(
+                                                                AppLocalizations.of(context)!.late,
+                                                                style: GoogleFonts.inter(
+                                                                    fontSize: 13,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Colors.grey
+                                                                ),
+                                                              ),
+                                                              SizedBox(height: 5),
+                                                              Text(
+                                                                "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: NasColors.pending,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Column(
+                                                            children: [
+                                                              Text(
+                                                                AppLocalizations.of(context)!.earlyLeft,
+                                                                style: GoogleFonts.inter(
+                                                                    fontSize: 13,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Colors.grey
+                                                                ),
+                                                              ),
+                                                              SizedBox(height: 5),
+                                                              Text(
+                                                                "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: NasColors.onTime,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -1017,9 +1180,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     itemCount:  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo!.length,
                                     itemBuilder: (BuildContext context, int index) {
                                       final assets =  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo![index];
-                                      return Directionality(
-                                        textDirection: TextDirection.ltr,
-                                        child: GestureDetector(
+                                      return  GestureDetector(
                                           onTap: (){
                                             Navigator.push(context, MaterialPageRoute(builder: (context)=> EmployeeDetailsScreenAssets(assetsInfo: assets,)));
                                           },
@@ -1142,7 +1303,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               ],
                                             ),
                                           ),
-                                        ),
                                       );
                                     })
                               ]
@@ -1157,6 +1317,50 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         ]));
   }
 
+  String formatMinutes(dynamic minutes) {
+    if (minutes == null) return '--';
+    try {
+      double roundedMinutes = (minutes is int)
+          ? minutes.toDouble()
+          : double.parse(minutes.toString());
+      return roundedMinutes.ceil().toString();
+    } catch (e) {
+      return '--';
+    }
+  }
+
+  String _translateStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    if (status == null) return localizations.noData;
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'Quarterly':
+        return localizations.quarterly;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      default:
+        return status;
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status) {
+      case "Absent":
+        return NasColors.red;
+      case "Present":
+        return NasColors.completed;
+      case "Quarterly":
+        return NasColors.pending;
+      case "Missing CheckIn/Out":
+        return NasColors.pending;
+      default:
+        return NasColors.completed;
+    }
+  }
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {
