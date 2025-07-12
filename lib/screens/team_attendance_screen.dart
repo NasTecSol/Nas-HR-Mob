@@ -22,6 +22,7 @@ class TeamAttendanceScreen extends StatefulWidget {
 class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   final SingletonClass singletonClass = SingletonClass();
   bool _isChecked = false;
+  bool _isTeamChecked = true;
   late String reportingManagerId;
   late List<Teams> filteredUnderTeams;
   List<TeamAttendanceData> filteredAttendanceDataList = [];
@@ -173,8 +174,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     Set<String> employeeIds = {};
 
     final grade = singletonClass.getJWTModel()?.grade;
-    if(_isChecked == false){
-      if (grade == 'L0' || grade == 'L1') {
+    if(_isChecked == false || _isTeamChecked == true){
+      if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3") {
         if (selectedBranchIds.isNotEmpty) {
           employeeIds = selectedBranchIds;
         } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
@@ -195,24 +196,23 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           }
         }
       }
-
-      if (grade == 'L2' || grade == 'L3') {
-        for (var team in filteredUnderTeams) {
-          log("👥 Checking team: ${team.teamId}");
-          if (team.teamData != null) {
-            for (var member in team.teamData!) {
-              if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-                employeeIds.add(member.employeeId!);
-                log(" - Found Employee ID: ${member.employeeId}");
-              } else {
-                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
-              }
-            }
-          } else {
-            log(" - ⚠️ teamData is null for team: ${team.teamId}");
-          }
-        }
-      }
+      // if (grade == 'L2' || grade == 'L3') {
+      //   for (var team in filteredUnderTeams) {
+      //     log("👥 Checking team: ${team.teamId}");
+      //     if (team.teamData != null) {
+      //       for (var member in team.teamData!) {
+      //         if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+      //           employeeIds.add(member.employeeId!);
+      //           log(" - Found Employee ID: ${member.employeeId}");
+      //         } else {
+      //           log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+      //         }
+      //       }
+      //     } else {
+      //       log(" - ⚠️ teamData is null for team: ${team.teamId}");
+      //     }
+      //   }
+      // }
     } else {
       String? userID = singletonClass.getJWTModel()?.employeeId;
       employeeIds.add(userID!);
@@ -453,6 +453,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             extractAllEmployeeIdsForBranch(value);
                             getTeamAttendanceData();
                             loadData();
+                            _isTeamChecked = false ;
+                            _isChecked = false ;
                           });
                         },
                         itemBuilder: (BuildContext context) {
@@ -467,8 +469,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           )).toList();
                         },
                         child: Container(
-                          height: 59,
-                          width: 176,
+                          height: 49,
+                          width: 120,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(45),
@@ -486,15 +488,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               const SizedBox(width: 8),
                               Image.asset(
                                 'images/site.png', // <-- Replace with your actual image path
-                                height: 24,
-                                width: 24,
+                                height: 14,
+                                width: 14,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
                                   selectedBranchName != null && selectedBranchName!.isNotEmpty
                                       ? selectedBranchName!
-                                      : "${singletonClass.branchesDataList.first.data!.first.branchName}",
+                                      : AppLocalizations.of(context)!.selectBranch,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -503,19 +505,42 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 10),
                               const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                              const SizedBox(width: 10),
                             ],
                           ),
                         ),
                       ),
                     ),
-                ],
                 Spacer(),
                 if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                  Padding(
+                    padding: const EdgeInsets.all(0),
+                    child: Row(
+                      children: [
+                        Text(AppLocalizations.of(context)!.teams,
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue
+                          ),
+                        ),
+                        Checkbox(value: _isTeamChecked,
+                            activeColor: NasColors.onTime,
+                            onChanged: (bool? value){
+                              setState(() {
+                                _isChecked = false;
+                                _isTeamChecked = value ?? false;
+                                _setDefaultDates();
+                                _initDates(start: _startDate!, end: _endDate!);
+                                loadData();
+                              });
+                            }),
+                      ],
+                    ),
+                  ),],
+                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
                 Padding(
-                  padding: const EdgeInsets.only(left: 20.0 , right: 20),
+                  padding: const EdgeInsets.all(0),
                   child: Row(
                     children: [
                       Text(AppLocalizations.of(context)!.onlyMe,
@@ -529,6 +554,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           activeColor: NasColors.onTime,
                           onChanged: (bool? value){
                             setState(() {
+                              _isTeamChecked = false;
                               _isChecked = value ?? false;
                               _setDefaultDates();
                               _initDates(start: _startDate!, end: _endDate!);
@@ -737,6 +763,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     ],
                                   ),
                                   SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        attendance.empId ?? "N/A",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
                                   Row(
                                     children: [
                                       Text(date,

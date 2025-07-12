@@ -22,57 +22,6 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-
-	<!-- Firebase and basic app config -->
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<true/>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-
-	<!-- Location Permissions -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location for remote login and services.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location in the background for tracking.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app uses your location even when the app is in the background.</string>
-
-	<!-- Camera & Photos -->
-	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to take pictures</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need photo library access to select images</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need photo library access to save images</string>
-
-	<!-- Notification Style -->
-	<key>NSUserNotificationAlertStyle</key>
-	<string>alert</string>
-
-	<!-- Launch screen -->
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-
-	<!-- iPhone orientation -->
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-
-	<!-- iPad orientation -->
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-
-	<!-- App URL Scheme for Firebase or deep linking -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -84,8 +33,10 @@
 			</array>
 		</dict>
 	</array>
-
-	<!-- Permissions for Opening Files -->
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>tel</string>
@@ -95,13 +46,48 @@
 		<string>sms</string>
 		<string>file</string>
 	</array>
-	<key>NSSpeechRecognitionUsageDescription</key>
-    <string>We need access to speech recognition for voice features.</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take pictures</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We use Face ID to secure your data</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location in the background for tracking.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app uses your location even when the app is in the background.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location for remote login and services.</string>
 	<key>NSMicrophoneUsageDescription</key>
-    <string>This app requires access to the microphone to record audio messages.</string>
+	<string>This app requires access to the microphone to record audio messages.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need photo library access to save images</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select images</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We need access to speech recognition for voice features.</string>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSFaceIDUsageDescription</key>
-        <string>We use Face ID to secure your data</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 </dict>
 </plist>
