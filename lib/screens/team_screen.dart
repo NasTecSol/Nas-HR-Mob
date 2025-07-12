@@ -436,7 +436,6 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ],
                 ],
-
                 if (singletonClass.getJWTModel()?.grade == "L4")...[
                   filteredTeams.isNotEmpty
                       ? Expanded(
