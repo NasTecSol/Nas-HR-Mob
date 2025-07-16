@@ -1,4 +1,3 @@
-
 class EmployeeData {
   int? statusCode;
   String? statusMessage;

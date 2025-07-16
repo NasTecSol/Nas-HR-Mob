@@ -948,5 +948,9 @@
   "attendanceHistory":"Attendance History",
   "onlyMe":"Only me",
   "assetsDetails":"Asset Detail",
-  "documentNotification":"Document Notification"
+  "documentNotification":"Document Notification",
+  "shifts":"Shifts",
+  "timeTable":"Time Table",
+  "time":"Time",
+  "to":"to"
 }
