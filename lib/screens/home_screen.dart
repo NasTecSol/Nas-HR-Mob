@@ -7,10 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
-import 'package:nashr/screens/attendance_screen.dart';
 import 'package:nashr/screens/chat_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
+import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
@@ -660,7 +660,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Center(
                                       child: Image.asset(
-                                        'images/clock.png',
+                                        'images/teamClocking.png',
                                         fit: BoxFit.contain,
                                         width: 30,
                                         height: 30,
@@ -671,6 +671,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 const SizedBox(height: 5),
                                 Text(
                                   AppLocalizations.of(context)!.teamClocking,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 30),
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ManageTimeScreen()));
+                                  },
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 0.5,
+                                          offset: const Offset(0,
+                                              0), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'images/clock.png',
+                                        fit: BoxFit.contain,
+                                        width: 30,
+                                        height: 30,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.manageTime,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

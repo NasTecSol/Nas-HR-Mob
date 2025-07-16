@@ -4790,8 +4790,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                 print('File selection canceled.');
                               }
                             },
-                            child: Row(
+                            child:Row(
                               mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const Icon(
                                   Icons.add,
@@ -4799,56 +4800,59 @@ class _RequestScreenState extends State<RequestScreen> {
                                   size: 20,
                                 ),
                                 const SizedBox(width: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.attachDocuments,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 15,
+
+                                /// Flexible Text to avoid overflow
+                                Flexible(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.attachDocuments,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
-                                SizedBox(width: 10),
-                                Column(
-                                  children: [
-                                    if (selectedFile != null)
-                                      Stack(
-                                        clipBehavior: Clip.none,
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          ClipOval(
-                                            child: Image.file(
-                                              File(selectedFile!.path!),
-                                              width: 80,
-                                              height: 80,
-                                              fit: BoxFit.cover,
-                                            ),
+                                const SizedBox(width: 10),
+
+                                /// Wrap image preview in Flexible to prevent overflow
+                                if (selectedFile != null)
+                                  Flexible(
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      alignment: Alignment.topRight,
+                                      children: [
+                                        ClipOval(
+                                          child: Image.file(
+                                            File(selectedFile!.path!),
+                                            width: 60, // reduced width to help fit
+                                            height: 60,
+                                            fit: BoxFit.cover,
                                           ),
-                                          Positioned(
-                                            top: -5,
-                                            right: -5,
-                                            child: GestureDetector(
-                                              onTap: () => setState(
-                                                  () => selectedFile = null),
-                                              child: Container(
-                                                width: 20,
-                                                height: 20,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.close,
-                                                  color: Colors.white,
-                                                  size: 14,
-                                                ),
+                                        ),
+                                        Positioned(
+                                          top: -5,
+                                          right: -5,
+                                          child: GestureDetector(
+                                            onTap: () => setState(() => selectedFile = null),
+                                            child: Container(
+                                              width: 20,
+                                              height: 20,
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                                size: 14,
                                               ),
                                             ),
-                                          )
-                                        ],
-                                      ),
-                                  ],
-                                )
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -5997,16 +6001,11 @@ class _RequestScreenState extends State<RequestScreen> {
 
     String? selectedRequestType = _selectedRequestType;
     String? selectedSubType = _selectedSubType?.requestType;
-
-    // Format dates
     String formattedFromDate = DateFormat('yyyy-MM-dd').format(fromDate!);
     String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
     int totalDays = toDate!.difference(fromDate!).inDays + 1;
     String totalDaysString = totalDays.toString();
-    int? loanAmount = int.tryParse(_totalLoanAmount.text);
-    int? totalMonth = int.tryParse(totalMonths!);
 
-    // Check if requestType and subType are selected
     if (selectedRequestType == null || selectedSubType == null) {
       QuickAlert.show(
         context: context,
@@ -6035,6 +6034,8 @@ class _RequestScreenState extends State<RequestScreen> {
     List<Map<String, dynamic>> requestData = [];
 
     if (selectedRequestType == 'loanRequest') {
+      int? loanAmount = int.tryParse(_totalLoanAmount.text);
+      int? totalMonth = int.tryParse(totalMonths!);
       requestData.add({
         "loanAmount": loanAmount,
         "loanCycle": "monthly",

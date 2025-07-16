@@ -2042,7 +2042,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       "NIC": singletonClass.employeeDataList.first.data!.nic,
       "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
       "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus": singletonClass.employeeDataList.first.data!.imigrationSatus,
+      "imigrationSatus": singletonClass.employeeDataList.first.data!..imigrationSatus,
       "DOB": singletonClass.employeeDataList.first.data!.dob,
       "age": singletonClass.employeeDataList.first.data!.age,
       "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,

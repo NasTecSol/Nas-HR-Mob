@@ -626,7 +626,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get from => 'From';
 
   @override
-  String get to => 'To';
+  String get to => 'to';
 
   @override
   String get reason => 'Reason';
@@ -1586,4 +1586,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get documentNotification => 'Document Notification';
+
+  @override
+  String get shifts => 'Shifts';
+
+  @override
+  String get timeTable => 'Time Table';
+
+  @override
+  String get time => 'Time';
 }

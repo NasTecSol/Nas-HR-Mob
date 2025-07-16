@@ -44,6 +44,7 @@ class _MainScreenState extends State<MainScreen> {
 
 
   void _fetchEmployeeData() async {
+    singletonClass.getEmployeeData();
     if (singletonClass.employeeDataList.isNotEmpty) {
       setState(() {
         _isLoading = false;
@@ -57,6 +58,7 @@ class _MainScreenState extends State<MainScreen> {
   }
   @override
   Widget build(BuildContext context) {
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -94,6 +96,10 @@ class _MainScreenState extends State<MainScreen> {
                   final color = isActive ? Colors.white : Colors.grey;
 
                   if (index == imageIconList.length) {
+                    final hasProfilePic = singletonClass.employeeDataList.isNotEmpty &&
+                        singletonClass.employeeDataList.first.data?.profilePic != null &&
+                        singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty;
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
@@ -109,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
                           backgroundColor: Colors.white,
                           radius: 35,
                           child: ClipOval(
-                            child: (singletonClass.employeeDataList.first.data?.profilePic != null && singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            child: hasProfilePic
                                 ? Image.network(
                               singletonClass.employeeDataList.first.data!.profilePic!,
                               fit: BoxFit.cover,
@@ -117,36 +123,19 @@ class _MainScreenState extends State<MainScreen> {
                               height: 70,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
+                                return const Center(child: CircularProgressIndicator());
                               },
                               errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'images/DP.png',
-                                  fit: BoxFit.cover,
-                                  width: 70,
-                                  height: 70,
-                                );
+                                return Image.asset('images/DP.png', fit: BoxFit.cover);
                               },
                             )
-                                : Image.asset(
-                              'images/DP.png', // Default image if profilePic is null/empty
-                              fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
-                            ),
+                                : Image.asset('images/DP.png', fit: BoxFit.cover),
                           ),
                         ),
                       ),
                     );
                   }
-                   return Padding(
+                  return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       width: 70,

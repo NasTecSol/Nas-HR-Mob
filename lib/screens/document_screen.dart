@@ -191,102 +191,92 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 children: [
                   documentInfo!.isNotEmpty
                       ? ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: documentInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final documents = documentInfo[index];
-                            final fileType = documents.format
-                                ?.split('.')
-                                .last
-                                .toLowerCase(); // Null check for documents.type
-                            final isImage = fileType != null &&
-                                ['png', 'jpg', 'jpeg', 'gif']
-                                    .contains(fileType);
-                            final isPdf = fileType == 'pdf';
+                    shrinkWrap: true,
+                    itemCount: documentInfo.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final documents = documentInfo[index];
+                      final url = documents.remarks ?? '';
+                      final fileType = url.split('.').last.toLowerCase();
+                      final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+                      final isPdf = fileType == 'pdf';
 
-                            return Transform.translate(
-                              offset: Offset(0, index == 0 ? 0 : -10),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (isImage || isPdf) {
-                                    if (await canLaunch(documents.url)) {
-                                      await launch(documents.url);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Could not open the document!')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('Unsupported file type!')),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.only(
-                                      top: 10.0, left: 30, right: 30),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      if (index != 0)
-                                        const BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          spreadRadius: 10,
-                                          offset: Offset(0, -6),
-                                        ),
-                                      const BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
+                      return Transform.translate(
+                        offset: Offset(0, index == 0 ? 0 : -10),
+                        child: GestureDetector(
+                          onTap: () async {
+                            if (isImage || isPdf || url.isNotEmpty) {
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not open the document!')),
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Unsupported file type!')),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                if (index != 0)
+                                  const BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    spreadRadius: 10,
+                                    offset: Offset(0, -6),
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${documents.type}",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: isImage
-                                            ? Image.network(
-                                                documents.url,
-                                                height: 60,
-                                                width: double.infinity,
-                                                fit: BoxFit.cover,
-                                                alignment: Alignment.topCenter,
-                                              )
-                                            : Icon(
-                                                isPdf
-                                                    ? Icons.picture_as_pdf
-                                                    : Icons.insert_drive_file,
-                                                size: 60,
-                                                color: NasColors.darkBlue,
-                                              ),
-                                      ),
-                                    ],
+                                const BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  documents.type == "Doc_Contract_Emp"
+                                      ? AppLocalizations.of(context)!.employmentContract
+                                      : documents.type ?? '',
+                                  maxLines: 2,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: NasColors.darkBlue,
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        )
+                                const SizedBox(height: 10),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: isImage
+                                      ? Image.network(
+                                    url,
+                                    height: 60,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  )
+                                      : Icon(
+                                    isPdf
+                                        ? Icons.picture_as_pdf
+                                        : Icons.insert_drive_file,
+                                    size: 60,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  )
                       : Center(
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -637,7 +627,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.nic}",)); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.nic}",));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -689,7 +679,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.dob}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -2107,7 +2097,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     errorBuilder: (BuildContext context,
                                                         Object exception,
                                                         StackTrace? stackTrace) {
-                                                      // Display the default asset image if the network image fails to load
                                                       return Image.asset(
                                                         'images/DP.png',
                                                         fit: BoxFit.cover,

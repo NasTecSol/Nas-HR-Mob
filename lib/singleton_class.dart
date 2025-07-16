@@ -7,6 +7,7 @@ import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
+import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/branches_data_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
@@ -38,6 +39,7 @@ import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/teamClocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
+import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
 
 class SingletonClass {
@@ -94,11 +96,14 @@ class SingletonClass {
   List<EventModel> eventDataList = [];
   List<PolicyModel> policyModelDataList = [];
   List<UiSettingsModel> uiSettingsModelDataList = [];
+  List<BranchShiftModel> branchShiftsDataList = [];
+  List<TimeTableShiftModel> timeTableShiftsDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
   String? fcmToken;
   String? tenantId;
+  String? companyName;
 
   init() async {
     _singleton ??= SingletonClass._();
