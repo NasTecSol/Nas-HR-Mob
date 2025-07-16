@@ -613,8 +613,9 @@
     "attendanceHistory": "سجل الحضور",
     "onlyMe": "فقط أنا",
     "assetsDetails": "تفاصيل الأصل",
-    "documentNotification": "إشعار المستند"
-
-
-
+    "documentNotification": "إشعار المستند",
+    "shifts": "الورديات",
+    "timeTable": "الجدول الزمني",
+    "time": "الوقت",
+    "to": "إلى"
 }

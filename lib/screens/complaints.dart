@@ -216,9 +216,7 @@ class _ComplaintsState extends State<Complaints> {
                     onPressed: () {
                       Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const FileComplaintsScreen()));
+                          MaterialPageRoute(builder: (context) => const FileComplaintsScreen()));
                     },
                     child: SizedBox(
                       height: 30,

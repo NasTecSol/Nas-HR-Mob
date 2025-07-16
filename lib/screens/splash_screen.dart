@@ -30,6 +30,8 @@ class _SplashscreenState extends State<SplashScreen>
     _animationController.forward().then((value) async {
       final preferences = await SharedPreferences.getInstance();
       final String? url =preferences.getString('baseURL');
+      singletonClass.tenantId = preferences.getString('baseURL');
+      singletonClass.companyName = preferences.getString('companyName');
       if (url != null && url.isNotEmpty){
         await Navigator.pushReplacement(
           context,

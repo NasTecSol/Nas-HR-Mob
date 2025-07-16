@@ -1584,4 +1584,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get documentNotification => 'إشعار المستند';
+
+  @override
+  String get shifts => 'الورديات';
+
+  @override
+  String get timeTable => 'الجدول الزمني';
+
+  @override
+  String get time => 'الوقت';
 }

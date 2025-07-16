@@ -195,24 +195,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
             }
           }
         }
-      }
-      // if (grade == 'L2' || grade == 'L3') {
-      //   for (var team in filteredUnderTeams) {
-      //     log("👥 Checking team: ${team.teamId}");
-      //     if (team.teamData != null) {
-      //       for (var member in team.teamData!) {
-      //         if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-      //           employeeIds.add(member.employeeId!);
-      //           log(" - Found Employee ID: ${member.employeeId}");
-      //         } else {
-      //           log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
-      //         }
-      //       }
-      //     } else {
-      //       log(" - ⚠️ teamData is null for team: ${team.teamId}");
-      //     }
-      //   }
-      // }
+      } else {
+      String? userID = singletonClass.getJWTModel()?.employeeId;
+      employeeIds.add(userID!);
+     }
     } else {
       String? userID = singletonClass.getJWTModel()?.employeeId;
       employeeIds.add(userID!);

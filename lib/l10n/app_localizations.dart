@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @to.
   ///
   /// In en, this message translates to:
-  /// **'To'**
+  /// **'to'**
   String get to;
 
   /// No description provided for @reason.
@@ -3235,6 +3235,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Document Notification'**
   String get documentNotification;
+
+  /// No description provided for @shifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifts'**
+  String get shifts;
+
+  /// No description provided for @timeTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Table'**
+  String get timeTable;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
 }
 
 class _AppLocalizationsDelegate
