@@ -33,6 +33,7 @@ class _RequestScreenState extends State<RequestScreen> {
   int _selectedOptionIndex = 0;
   int _selectedOptionIndexBottom = 0;
   PlatformFile? selectedFile;
+  bool isSearching = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
   final TextEditingController _notes = TextEditingController();
   final TextEditingController _amount = TextEditingController();
@@ -40,6 +41,7 @@ class _RequestScreenState extends State<RequestScreen> {
   final TextEditingController _totalLoanAmount = TextEditingController();
   final TextEditingController _comment = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
   bool _showSearchResult = false;
   final List<SearchedResult> _employeeSearchResults = [];
   final List<SearchedResult?> _selectedEmployees = [];
@@ -506,6 +508,13 @@ class _RequestScreenState extends State<RequestScreen> {
                     children: [
                       Expanded(
                         child: TextField(
+                          cursorColor: Colors.grey,
+                          onChanged: (value) {
+                            setState(() {
+                              isSearching = true;
+                            });
+                          },
+                          controller: searchController,
                           decoration: InputDecoration(
                             hintText:
                                 '${AppLocalizations.of(context)!.search}...',
@@ -521,23 +530,11 @@ class _RequestScreenState extends State<RequestScreen> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    print(
-                        "Singleton Data : ${singletonClass.requestDataList.first.data!.data!.first.employeeName}");
-                  },
-                  icon: Icon(
-                    Icons.filter_list_alt,
-                    size: 35,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 30),
             if (singletonClass.getJWTModel()?.grade == 'L4') ...[
               Expanded(
-                // Wrap ListView with Expanded
                 child: FutureBuilder(
                     future: getRequestData(),
                     builder: (context, snapshot) {
@@ -571,6 +568,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                 itemCount: _request!.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   final request = _request![index];
+                                  final searchText = searchController.text.toLowerCase();
+                                  if (isSearching &&
+                                      !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
+                                    return const SizedBox.shrink();
+                                  }
                                   return GestureDetector(
                                     onTap: () => _toggleExpand(index),
                                     child: AnimatedContainer(
@@ -1231,7 +1233,6 @@ class _RequestScreenState extends State<RequestScreen> {
                 singletonClass.getJWTModel()?.grade == 'L3') ...[
               if (_selectedOptionIndex == 0) ...[
                 Expanded(
-                  // Wrap ListView with Expanded
                   child: FutureBuilder(
                       future: getRequestData(),
                       builder: (context, snapshot) {
@@ -1267,6 +1268,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = _request![index];
+                                    final searchText = searchController.text.toLowerCase();
+                                    if (isSearching &&
+                                        !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
+                                      return const SizedBox.shrink();
+                                    }
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -2037,6 +2043,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final request = _approver![index];
+                                    final searchText = searchController.text.toLowerCase();
+                                    if (isSearching &&
+                                        !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
+                                      return const SizedBox.shrink();
+                                    }
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -4800,8 +4811,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                   size: 20,
                                 ),
                                 const SizedBox(width: 5),
-
-                                /// Flexible Text to avoid overflow
                                 Flexible(
                                   child: Text(
                                     AppLocalizations.of(context)!.attachDocuments,
@@ -4814,8 +4823,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-
-                                /// Wrap image preview in Flexible to prevent overflow
                                 if (selectedFile != null)
                                   Flexible(
                                     child: Stack(

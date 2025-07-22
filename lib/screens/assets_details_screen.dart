@@ -308,13 +308,16 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
-                        var documentNotificationDetails = snapshot.data!;
+                        final documentNotificationDetails = snapshot.data!;
+                        final assetId = singletonClass.assetsDetailsModel.isNotEmpty &&
+                            singletonClass.assetsDetailsModel.first.data != null &&
+                            singletonClass.assetsDetailsModel.first.data!.isNotEmpty
+                            ? singletonClass.assetsDetailsModel.first.data!.first.id
+                            : null;
+                        print("🔍 assetId: $assetId");
+                        print("📦 documentNotificationDetails.data: ${documentNotificationDetails.data}");
 
-                        var matchingData = documentNotificationDetails.data?.where((e) => e.objectId == singletonClass.assetsDetailsModel.first.data!.first.id).toList();
-
-                        print("asset id ${singletonClass.assetsDetailsModel.first.data!.first.id}");
-
-                        if (matchingData == null || matchingData.isEmpty) {
+                        if (assetId == null) {
                           return Center(
                             child: Text(
                               AppLocalizations.of(context)!.noData,
@@ -327,6 +330,28 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                             ),
                           );
                         }
+                        final matchingData = documentNotificationDetails.data
+                            ?.where((e) => e.objectId?.toString() == assetId.toString())
+                            .toList() ??
+                            [];
+
+                        print("✅ matchingData: $matchingData");
+
+                        if (matchingData.isEmpty) {
+                          return Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.noData,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final item = matchingData.first;
 
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 10),
@@ -347,29 +372,38 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(AppLocalizations.of(context)!.type, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(AppLocalizations.of(context)!.name, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(AppLocalizations.of(context)!.expiryDate, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(AppLocalizations.of(context)!.status, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text("Action", style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(AppLocalizations.of(context)!.type,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(AppLocalizations.of(context)!.name,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(AppLocalizations.of(context)!.expiryDate,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(AppLocalizations.of(context)!.status,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text("Action",
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
-                              Divider(color: Colors.grey),
+                              const Divider(color: Colors.grey),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(matchingData.first.objectType ?? '-', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(matchingData.first.attachmentName ?? '-', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(matchingData.first.expiryDate ?? '-', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text(matchingData.first.status ?? '-', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text("View", style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blue)),
+                                  Text(item.objectType ?? '-',
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(item.attachmentName ?? '-',
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(item.expiryDate ?? '-',
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(item.status ?? '-',
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text("View",
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blue)),
                                 ],
                               ),
                             ],
                           ),
                         );
-                      }
-                      else {
+                      } else {
                         return Center(
                           child: Text(
                             AppLocalizations.of(context)!.noData,
