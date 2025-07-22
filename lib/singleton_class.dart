@@ -9,6 +9,7 @@ import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/branches_data_model.dart';
+import 'package:nashr/request_controller/branches_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/companies_data_model.dart';
@@ -98,6 +99,7 @@ class SingletonClass {
   List<UiSettingsModel> uiSettingsModelDataList = [];
   List<BranchShiftModel> branchShiftsDataList = [];
   List<TimeTableShiftModel> timeTableShiftsDataList = [];
+  List<BranchesModel> branchesModelDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;

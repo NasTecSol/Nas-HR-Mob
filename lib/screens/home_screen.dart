@@ -52,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _loadData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -65,35 +64,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {});
   }
 
-  Future<void> _loadData() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      await _loadInitialData();
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      // Optional: Show error toast or retry
-      debugPrint('Error loading initial data: $e');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 
-  Future<void> _loadInitialData() async {
-    await Future.wait([
-      singletonClass.getCompanyData(),
-      singletonClass.getEmployeeAttendanceData(),
-      singletonClass.getClockingData(),
-      singletonClass.getRemoteAttendanceData(),
-      singletonClass.getPolicyData(),
-      singletonClass.getBranchesData(),
-    ]);
-  }
+
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -2421,25 +2394,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 decoration: BoxDecoration(
                                                   border: Border(
                                                     left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          4.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 4.0, // Set the border width
                                                     ),
                                                     right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 2.0, // Set the border width
                                                     ),
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
+                                                  borderRadius: BorderRadius.all(Radius.circular(12)),
                                                 ),
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
+                                                  padding: const EdgeInsets.all(5.0),
                                                   child: Column(
                                                     children: [
                                                       Row(
@@ -2447,15 +2413,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                               width: 110,
                                                               child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .leaveThisMonth,
+                                                                AppLocalizations.of(context)!.annualLeave,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontSize: 13),
                                                               )),
                                                           SizedBox(
                                                             height: 50,
@@ -2466,12 +2427,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         ],
                                                       ),
                                                       Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
+                                                        mainAxisAlignment: MainAxisAlignment.center,
                                                         children: [
                                                           Text(
-                                                            "1/6",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:
@@ -2609,7 +2568,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                            "0/6",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:

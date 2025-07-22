@@ -435,15 +435,6 @@ class _LoginScreenState extends State<LoginScreen> {
           if (data != null && data.data != null) {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
-            await singletonClass.getCompaniesData();
-            await singletonClass.getUISettingsData();
-            singletonClass.getEmployeeData();
-            await singletonClass.getClockingData();
-            await singletonClass.getBranchData();
-            singletonClass.getCompanyData();
-            singletonClass.getRemoteAttendanceData();
-            await singletonClass.getEmployeeAttendanceData();
-            singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
@@ -463,6 +454,9 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else if (loginResponse.statusCode == 400) {
+          setState(() {
+            isLoading = false;
+          });
           QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 5),
             showCancelBtn: false,
@@ -475,7 +469,9 @@ class _LoginScreenState extends State<LoginScreen> {
           print('Error: ${loginResponse.statusCode}');
         }
       } else if (response.statusCode == 405) {
-        // Handle 405 Not Allowed error
+        setState(() {
+          isLoading = false;
+        });
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
@@ -490,6 +486,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       print('Error: $e');
+      setState(() {
+        isLoading = false;
+      });
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 5),
         showCancelBtn: false,
@@ -499,9 +498,6 @@ class _LoginScreenState extends State<LoginScreen> {
         text:  AppLocalizations.of(context)!.tryAgain,
         type: QuickAlertType.error,
       );
-      setState(() {
-        isLoading = false;
-      });
     }
   }
   // Decoding Token Data Here

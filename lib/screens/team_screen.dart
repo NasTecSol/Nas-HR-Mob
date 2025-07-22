@@ -16,7 +16,8 @@ class TeamScreen extends StatefulWidget {
 
 class _TeamScreenState extends State<TeamScreen> {
   SingletonClass singletonClass = SingletonClass();
-
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
   final List<String> images = [
     "https://img.freepik.com/premium-photo/happy-fashionable-handsome-man_739685-5867.jpg?w=740",
     "https://img.freepik.com/premium-photo/smiling-businessman-formal-wear-using-tablet-while-standing-rooftop_1289061-391.jpg?w=740",
@@ -222,6 +223,12 @@ class _TeamScreenState extends State<TeamScreen> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: searchController,
+                          onChanged: (value) {
+                            setState(() {
+                              isSearching = true;
+                            });
+                          },
                           cursorColor: Colors.black,
                           decoration: InputDecoration(
                             hintText: '${AppLocalizations.of(context)!.search}...',
@@ -249,11 +256,19 @@ class _TeamScreenState extends State<TeamScreen> {
                     filteredTeams.isNotEmpty
                         ? Expanded(
                           child: ListView.builder(
-                                                padding: const EdgeInsets.all(5),
-                                                itemCount: filteredTeams.first.teamData!.length,
-                                                itemBuilder: (BuildContext context, int index) {
+                            padding: const EdgeInsets.all(5),
+                            itemCount: filteredTeams.first.teamData!.length,
+                            itemBuilder: (BuildContext context, int index) {
                           final team = filteredTeams.first.teamData![index];
                           String imageUrl = images[index % images.length];
+                          if(singletonClass.getJWTModel()?.employeeId == team.employeeId){
+                            return SizedBox.shrink();
+                          }
+                          final searchText = searchController.text.toLowerCase();
+                          if (isSearching &&
+                              !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
+                            return const SizedBox.shrink();
+                          }
                           return Column(
                             children: [
                               GestureDetector(
@@ -345,6 +360,14 @@ class _TeamScreenState extends State<TeamScreen> {
                             itemBuilder: (BuildContext context, int index) {
                           final team = filteredUnderTeams.first.teamData![index];
                           String imageUrl = images[index % images.length];
+                          if(singletonClass.getJWTModel()?.employeeId == team.employeeId){
+                            return SizedBox.shrink();
+                          }
+                          final searchText = searchController.text.toLowerCase();
+                          if (isSearching &&
+                              !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
+                            return const SizedBox.shrink();
+                          }
                           return Column(
                             children: [
                               GestureDetector(
@@ -445,6 +468,14 @@ class _TeamScreenState extends State<TeamScreen> {
                           itemBuilder: (BuildContext context, int index) {
                         final team = filteredTeams.first.teamData![index];
                         String imageUrl = images[index % images.length];
+                        if(singletonClass.getJWTModel()?.employeeId == team.employeeId){
+                          return SizedBox.shrink();
+                        }
+                        final searchText = searchController.text.toLowerCase();
+                        if (isSearching &&
+                            !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
+                          return const SizedBox.shrink();
+                        }
                         return Column(
                           children: [
                             GestureDetector(
@@ -538,6 +569,7 @@ class _TeamScreenState extends State<TeamScreen> {
       onTap: () {
         setState(() {
           _selectedOptionIndex = index;
+          searchController.clear();
         });
       },
       child: SizedBox(
