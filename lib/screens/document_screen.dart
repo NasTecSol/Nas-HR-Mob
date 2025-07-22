@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/create_hr_letter_screen.dart';
-import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,24 +23,8 @@ class DocumentScreen extends StatefulWidget {
 class _DocumentScreenState extends State<DocumentScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
-  final List<Document> documentInfoDummy = [
-    // Example data, replace with your actual document data
-    Document(
-        imageUrl: 'images/cnic.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-    Document(
-        imageUrl: 'images/iqama.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-  ];
-
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
   final GlobalKey _containerKey = GlobalKey();
   final GlobalKey _iqamaContainerKey = GlobalKey();
   final GlobalKey _passportContainerKey = GlobalKey();
@@ -166,6 +149,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           children: [
                             Expanded(
                               child: TextField(
+                                controller: searchController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isSearching = true;
+                                  });
+                                },
+                                cursorColor: Colors.grey,
                                 decoration: InputDecoration(
                                   hintText:
                                       '${AppLocalizations.of(context)!.search}...',
@@ -199,7 +189,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       final fileType = url.split('.').last.toLowerCase();
                       final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
                       final isPdf = fileType == 'pdf';
-
+                      final searchText = searchController.text.toLowerCase();
+                      if (isSearching &&
+                          !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
+                        return const SizedBox.shrink();
+                      }
                       return Transform.translate(
                         offset: Offset(0, index == 0 ? 0 : -10),
                         child: GestureDetector(
@@ -811,13 +805,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               blurRadius: 10,
                               spreadRadius: 10,
                               offset: Offset(0,
-                                  -6), // Top shadow added only for items after the first one
+                                  -6),
                             ),
                           const BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
                             offset: Offset(0,
-                                5), // Bottom shadow to enhance overlap effect
+                                5),
                           ),
                         ],
                       ),
@@ -865,7 +859,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         ),
                         context: context,
                         builder: (BuildContext context) {
-                          // Pass the document data to the bottom sheet
                           return Container(
                             height: MediaQuery.of(context).size.height * 0.9,
                             width: double.infinity,
@@ -897,7 +890,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               fontWeight: FontWeight.w500,
                                               color: Colors.white,
                                             ),
-                                          ))
+                                          )),
                                     ],
                                   ),
                                   RepaintBoundary(
@@ -1067,9 +1060,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ),
                                         child: IconButton(
                                           onPressed: () {
-                                            // Copy the image URL or any text to the clipboard
                                             Clipboard.setData(ClipboardData(
-                                                text: "images/iqama.png")); // Text to be copied
+                                                text: "images/iqama.png"));
                                           },
                                           icon: const Icon(Icons.copy,
                                               color: Colors.white),

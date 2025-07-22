@@ -38,7 +38,6 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   SingletonClass().tenantId = prefs.getString('baseURL') ?? '';
   try {
-    // Request notification permissions
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
       badge: true,
@@ -73,7 +72,6 @@ void main() async {
     print('Error setting up Firebase Messaging: $e');
   }
 
-  // Initialize language controller
   LanguageChangeController languageController = LanguageChangeController();
   await languageController.loadLanguage();
 

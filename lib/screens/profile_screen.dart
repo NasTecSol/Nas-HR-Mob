@@ -80,25 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
-
-  final List<Document> documentInfoDummy = [
-    // Example data, replace with your actual document data
-    Document(
-        imageUrl: 'images/cnic.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-    Document(
-        imageUrl: 'images/iqama.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-  ];
-
   bool isLoading = false;
   PlatformFile? selectedFile;
 
@@ -2070,14 +2051,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     };
 
     try {
-      // Send the PATCH request
       var response = await http.patch(
         uri,
         headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
-
-      // Check the response status
       if (response.statusCode == 200) {
         print('Employee data updated successfully');
       } else {
@@ -2091,17 +2069,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   void updateSignature() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String url = '${singletonClass.baseURL}/employee/updateEMPSignature/$employeeID';
-
-    // Define the JSON data to send
     Map<String, dynamic> data = {
       "empSignature": "${singletonClass.signatureModelList.first.data!.url}",
     };
-
-    // Convert data to JSON string
     String jsonData = jsonEncode(data);
     log("Signature Json$jsonData");
-
-    // Make the PATCH request
     setState(() {
       isLoading = true;
     });
@@ -2170,20 +2142,3 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 }
 
-class Document {
-  final String imageUrl;
-  final String name;
-  final String cardNumber;
-  final String dateOfBirthInHijri;
-  final String expiryDateInHijri;
-  final String placeOfBirth;
-
-  Document({
-    required this.imageUrl,
-    required this.name,
-    required this.cardNumber,
-    required this.dateOfBirthInHijri,
-    required this.expiryDateInHijri,
-    required this.placeOfBirth,
-  });
-}

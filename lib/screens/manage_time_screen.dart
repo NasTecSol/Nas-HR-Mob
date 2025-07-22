@@ -6,8 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
+import 'package:nashr/screens/update_shift_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import '../request_controller/branches_model.dart';
 import '../singleton_class.dart';
 
 class ManageTimeScreen extends StatefulWidget {
@@ -28,19 +30,13 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   String? selectedEMPID;
   Future<TimeTableShiftModel?>? timeTableFuture;
   TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> finalShiftDetailList = [];
   final List<Map<String, String>> timeTableShiftEmployees = [];
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      fetchAndSetShiftDetails();
-      if (timeTableShiftEmployees.isNotEmpty) {
-        selectedEMPID = timeTableShiftEmployees[0]['employeeId'];
-        timeTableFuture = getTimeTable(selectedEMPID!);
-      }
-    });
+    fetchAndSetShiftDetails();
+    getShiftsFromBranches();
   }
 
   @override
@@ -122,6 +118,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                           _isChecked = false;
                           timeTableShiftEmployees.clear();
                           fetchAndSetShiftDetails();
+                          getShiftsFromBranches();
                         });
                       },
                       itemBuilder: (BuildContext context) {
@@ -209,6 +206,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                 if (_isChecked == true){
                                   timeTableShiftEmployees.clear();
                                   fetchAndSetShiftDetails();
+                                  getShiftsFromBranches();
                                   selectedBranchId = null;
                                   selectedBranchName = null;
                                 }
@@ -273,132 +271,170 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
             SizedBox(height: 20),
             if (_selectedOptionIndex == 0) ...[
               Expanded(
-                child: finalShiftDetailList.isEmpty
-                    ? Center(
-                  child: Lottie.asset('images/loader.json', height: 200, width: 200),
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: finalShiftDetailList.length,
-                  itemBuilder: (ctx, i) {
-                    final shift = finalShiftDetailList[i];
-                    final searchText = searchController.text.toLowerCase();
-
-                    if (isSearching &&
-                        !(shift['employeeName']
-                            ?.toLowerCase()
-                            .contains(searchText) ??
-                            false)) {
-                      return const SizedBox.shrink();
+                child: FutureBuilder(
+                  future: fetchAndSetShiftDetails(), // replace this with your actual API/fetch function
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Lottie.asset('images/loader.json', height: 200, width: 200),
+                      );
                     }
+                    if (snapshot.hasError) {
+                      return const Center(child: Text('Error loading data'));
+                    }
+                    final employees = singletonClass.branchShiftsDataList.first.data?.employees ?? [];
+                    if (employees.isEmpty) {
+                      return const Center(child: Text("No employee here"));
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: employees.length,
+                      itemBuilder: (ctx, i) {
+                        final employee = employees[i];
+                        final searchText = searchController.text.toLowerCase();
 
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              ClipOval(
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  radius: 23,
-                                  child: Image.asset(
-                                    'images/DP.png',
-                                    fit: BoxFit.cover,
-                                    width: 100,
-                                    height: 100,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                width: 160,
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  shift['employeeName'] ?? '',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  softWrap: true,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: 88,
-                                child: Text(
-                                  "${shift['shiftType'] ?? ''}",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  softWrap: true,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                        if (isSearching &&
+                            !(employee.userName?.toLowerCase().contains(searchText) ?? false)) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Column(
                             children: [
-                              Text(
-                                "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(shift['timeFrom'])} ${AppLocalizations.of(context)!.to} ${formatIsoTime(shift['timeTo'])}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
+                              Row(
+                                children: [
+                                  ClipOval(
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      radius: 23,
+                                      child: Image.asset(
+                                        'images/DP.png',
+                                        fit: BoxFit.cover,
+                                        width: 100,
+                                        height: 100,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    width: 160,
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${employee.userName}",
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 88,
+                                    child: Text(
+                                      "${employee.shiftInfo?.shiftType ?? ''}",
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.more_vert_outlined),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(employee.shiftInfo?.timeFrom)} ${AppLocalizations.of(context)!.to} ${formatIsoTime(employee.shiftInfo?.timeTo)}",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Builder(
+                                    builder: (context) {
+                                      return IconButton(
+                                        icon: const Icon(Icons.more_vert_outlined),
+                                        onPressed: () async {
+                                          final RenderBox button = context.findRenderObject() as RenderBox;
+                                          final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+                                          final RelativeRect position = RelativeRect.fromRect(
+                                            Rect.fromPoints(
+                                              button.localToGlobal(Offset.zero, ancestor: overlay),
+                                              button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+                                            ),
+                                            Offset.zero & overlay.size,
+                                          );
+
+                                          await showMenu(
+                                            context: context,
+                                            position: position,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            color: Colors.white,
+                                            items: [
+                                              PopupMenuItem(
+                                                padding: EdgeInsets.zero,
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateShiftScreen(employees: employee)));
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(Icons.edit, size: 18),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          "Update",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 13,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  )
+                                ],
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "• ${AppLocalizations.of(context)!.totalHours} ${shift['totalHours'] ?? ''}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                "• Allowed Breaks ${shift['allowedBreak'] ?? ''}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 ),
               ),
+
             ],
             if (_selectedOptionIndex == 1) ...[
               SizedBox(
@@ -448,7 +484,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                               const SizedBox(height: 4),
                               if (isSelected) ...[
                                 SizedBox(
-                                  height: 30, // Enough height for line + arrow
+                                  height: 30,
                                   width:
                                       MediaQuery.of(context).size.width * 0.4,
                                   child: Column(
@@ -762,11 +798,12 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     }
 
     final String? loggedInEmpId = singletonClass.getJWTModel()?.employeeId;
+    final String? departmentId = singletonClass.getJWTModel()?.departmentId;
 
     if (branchId == null || loggedInEmpId == null) return;
 
     final uri =
-        Uri.parse('${singletonClass.baseURL}/branches/branchId/$branchId');
+        Uri.parse('${singletonClass.baseURL}/branches/branchEmplyeesInfo/$branchId/$departmentId/$loggedInEmpId');
     final response = await http.get(uri, headers: singletonClass.getHeaders());
     print("shift data ${response.body}");
 
@@ -775,106 +812,31 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       final branch = BranchShiftModel.fromJson(responseBody);
 
       singletonClass.branchShiftsDataList.clear();
-      singletonClass.branchShiftsDataList.add(branch);
+      singletonClass.branchShiftsDataList.addAll([branch]);
+      final employees = singletonClass.branchShiftsDataList.first.data?.employees;
+      if (employees != null) {
+        timeTableShiftEmployees.clear(); // clear before re-adding
+        for (var emp in employees) {
+          final shiftType = emp.shiftInfo?.shiftType;
 
-      final employeeShifts = branch.data?.employeeShifts ?? [];
-      final departmentDetails = branch.data?.branch?.departmentDetails ?? [];
-      final departmentShifts = departmentDetails.first.shifts ?? [];
-
-      Map<String, String> employeeIdToNameMap = {};
-      if (selectedBranchId != null && selectedBranchId!.isNotEmpty) {
-        for (var dept in departmentDetails) {
-          for (var department in dept.departments ?? []) {
-            for (var team in department.teams ?? []) {
-              for (var emp in team.teamData ?? []) {
-                if (emp.employeeId != null && emp.userName != null) {
-                  employeeIdToNameMap[emp.employeeId!] = emp.userName!;
-                }
-              }
-            }
-          }
-        }
-      } else {
-        String? userTeamId;
-
-        for (var dept in departmentDetails) {
-          for (var department in dept.departments ?? []) {
-            for (var supervisor in department.supervisors ?? []) {
-              if (supervisor.employeeId == loggedInEmpId) {
-                userTeamId = supervisor.teamId;
-                break;
-              }
-            }
-            if (userTeamId != null) break;
-          }
-          if (userTeamId != null) break;
-        }
-
-        if (userTeamId == null) {
-          setState(() => finalShiftDetailList = []);
-          return;
-        }
-
-        for (var dept in departmentDetails) {
-          for (var department in dept.departments ?? []) {
-            for (var team in department.teams ?? []) {
-              if (team.teamId == userTeamId) {
-                for (var emp in team.teamData ?? []) {
-                  if (emp.employeeId != null && emp.userName != null) {
-                    employeeIdToNameMap[emp.employeeId!] = emp.userName!;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      // 🔄 Match employeeShifts with employee names and shift details
-      final List<Map<String, dynamic>> shiftList = [];
-
-      for (var empShift in employeeShifts) {
-        final String? empId = empShift.employeeId;
-        final String? shiftName = empShift.employeeShift;
-
-        if (empId != null &&
-            shiftName != null &&
-            employeeIdToNameMap.containsKey(empId)) {
-          if (shiftName == "timeTableShift") {
+          if (shiftType != null && shiftType.toLowerCase() == 'timetableshift') {
+            final userName = emp.userName ?? "Unknown";
+            final userId = emp.id ?? "NoID";
             timeTableShiftEmployees.add({
-              'employeeId': empId,
-              'employeeName': employeeIdToNameMap[empId] ?? '',
-            });
-          }
-
-          final matchedShift = departmentShifts.firstWhere(
-            (shift) => shift.shiftName == shiftName,
-            orElse: () => Shifts(),
-          );
-
-          if (matchedShift.shiftName != null &&
-              matchedShift.shiftName!.isNotEmpty) {
-            shiftList.add({
-              'employeeName': employeeIdToNameMap[empId],
-              'shiftName': shiftName,
-              'shiftType': matchedShift.shiftType,
-              'timeFrom': matchedShift.timeFrom,
-              'timeTo': matchedShift.timeTo,
-              'totalHours': matchedShift.totalHours,
-              'allowedBreak': matchedShift.allowedBreak,
+              "employeeId": userId,
+              "employeeName": userName,
             });
           }
         }
-      }
 
-      // Optional: Print timeTableShiftEmployees for verification
-      print("🕐 Employees with 'timeTableShift':");
-      for (var emp in timeTableShiftEmployees) {
-        print("${emp['employeeName']} (${emp['employeeId']})");
+        // If not empty, call the timetable API
+        if (timeTableShiftEmployees.isNotEmpty) {
+          selectedEMPID = timeTableShiftEmployees[0]['employeeId'];
+          setState(() {
+            timeTableFuture = getTimeTable(selectedEMPID!);
+          });
+        }
       }
-
-      setState(() {
-        finalShiftDetailList = shiftList;
-      });
     }
   }
 
@@ -907,6 +869,31 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     }
     return null;
   }
+
+
+  //3rd API
+  Future<void> getShiftsFromBranches() async {
+    String? branchId;
+    if(_isChecked == false){
+      branchId = selectedBranchId?.isNotEmpty == true
+          ? selectedBranchId
+          : singletonClass.getJWTModel()?.branchId;
+    } else {
+      branchId = singletonClass.getJWTModel()?.branchId;
+    }
+
+    final uri =
+    Uri.parse('${singletonClass.baseURL}/branches/branchId/$branchId');
+    final response = await http.get(uri, headers: singletonClass.getHeaders());
+    print("shift data ${response.body}");
+
+    if (response.statusCode == 200) {
+      final responseBody = json.decode(response.body);
+      final branch = BranchesModel.fromJson(responseBody);
+
+      singletonClass.branchesModelDataList.clear();
+      singletonClass.branchesModelDataList.addAll([branch]);
+  }}
 
   String formatIsoTime(String? isoTime) {
     if (isoTime == null || isoTime.isEmpty) return '--';
