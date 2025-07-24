@@ -10,6 +10,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../request_controller/attendance_model.dart';
 import '../request_controller/check_in_model.dart';
 
 class OnsiteCheckin extends StatefulWidget {
@@ -60,9 +61,26 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
 
   // Load the check-in state from shared preferences
   Future<void> _loadMapState() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final dataList = singletonClass.attendanceDataList.first.data?.data ?? [];
+    Data1? todayData;
+    for (var entry in dataList) {
+      final createdAt = DateTime.tryParse(
+          entry.createdAt ?? '');
+      if (createdAt != null &&
+          createdAt.year == today.year &&
+          createdAt.month == today.month &&
+          createdAt.day == today.day) {
+        todayData = entry;
+        break;
+      }
+    }
+
+    final checkInTime = todayData?.clockInTime;
+    final checkOutTime =
+        todayData?.clockOutTime;
     setState(() {
-      isCheckedIn = prefs.getBool('isCheckInCompleted') ?? false;
+      isCheckedIn = checkInTime != null && checkInTime.isNotEmpty;
     });
   }
 
@@ -321,7 +339,6 @@ Future<void> checkIn(String type) async {
         setState(() {
           isCheckedIn = true;
         });
-        await _saveCheckInState();
         await Future.delayed(const Duration(seconds: 2));
         await QuickAlert.show(
           context: context,
@@ -426,7 +443,6 @@ Future<void> checkIn(String type) async {
           setState(() {
             isCheckedIn = false;
           });
-          await _saveCheckInState();
           await QuickAlert.show(
             context: context,
             type: QuickAlertType.success,

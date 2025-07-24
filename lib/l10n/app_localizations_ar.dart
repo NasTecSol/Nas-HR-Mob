@@ -1593,4 +1593,52 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get time => 'الوقت';
+
+  @override
+  String get shortLeaves => 'إجازات قصيرة';
+
+  @override
+  String get loading => 'جارٍ التحميل';
+
+  @override
+  String get assignedAt => 'تم التعيين في';
+
+  @override
+  String get id => 'المعرف';
+
+  @override
+  String get specialLeaveRequest => 'طلب إجازة خاصة';
+
+  @override
+  String get specialLeaveRequestBottom => 'نوع طلب إجازة خاصة';
+
+  @override
+  String get approvalDocumentRequestBottom => 'نوع الموافقة على طلب المستند';
+
+  @override
+  String get approvalDocumentRequest => 'الموافقة على طلب المستند';
+
+  @override
+  String get assignedTo => 'مُعين إلى';
+
+  @override
+  String get assigned => 'مُعين';
+
+  @override
+  String get deactive => 'غير نشط';
+
+  @override
+  String get unAssigned => 'غير معين';
+
+  @override
+  String get marriageLeave => 'إجازة زواج';
+
+  @override
+  String get examLeave => 'إجازة امتحان';
+
+  @override
+  String get deathLeave => 'إجازة وفاة';
+
+  @override
+  String get specialDocument => 'مستند خاص';
 }

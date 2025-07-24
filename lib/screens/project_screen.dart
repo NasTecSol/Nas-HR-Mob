@@ -16,11 +16,13 @@ import 'package:nashr/screens/task_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:open_file/open_file.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/branch_model.dart';
 import '../request_controller/project_logo_model.dart';
 import '../request_controller/search_employee_model.dart';
+import '../request_controller/task_model.dart';
 
 class ProjectScreen extends StatefulWidget {
   const ProjectScreen({super.key});
@@ -49,6 +51,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
   @override
   void initState() {
     super.initState();
+    getTasks();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
     List<BranchData> branchDataList = singletonClass.branchDataList;
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
@@ -169,30 +172,35 @@ class _ProjectScreenState extends State<ProjectScreen> {
                         return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10.0),
                               child: GestureDetector(
-                                onTap: () async {
-                                  await singletonClass.getTasks();
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> TaskScreen(projectData: project,)));
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TaskScreen(projectData: project),
+                                    ),
+                                  );
                                 },
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      height: 60,
-                                      width: 60,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8), // Optional padding for better tap target
+                                  color: Colors.transparent, // Makes the whole area tappable
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 60,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
                                         ),
-                                      ),
                                         child: Image.network(
                                           project.logo ?? '',
                                           fit: BoxFit.cover,
                                           width: 50,
                                           height: 50,
-                                          errorBuilder: (BuildContext context, Object exception,
-                                              StackTrace? stackTrace) {
-                                            // Display a default image if loading fails
+                                          errorBuilder: (context, error, stackTrace) {
                                             return Image.asset(
                                               'images/DP.png',
                                               fit: BoxFit.cover,
@@ -201,31 +209,32 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                             );
                                           },
                                         ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          project.name ?? '',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                            fontSize: 15,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            project.name ?? '',
+                                            style: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Text(
-                                          project.projectKey ?? '',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.grey,
-                                            fontSize: 13,
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            project.projectKey ?? '',
+                                            style: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.grey,
+                                              fontSize: 13,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                         );
@@ -299,601 +308,661 @@ class _ProjectScreenState extends State<ProjectScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child:
-                        ListView(
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _resetBottomSheetData();
-                                },
-                                icon: Container(
-                                  height: 40,
-                                  width: 40,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
+                        Stack(
+                          children: [ ListView(
+                          children: [
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _resetBottomSheetData();
+                                  },
+                                  icon: Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: Colors.white,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.close,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  AppLocalizations.of(context)!.createAProject,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                AppLocalizations.of(context)!.createAProject,
-                                style: GoogleFonts.inter(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_selectedEmployees.isNotEmpty) ...[
-                            SizedBox(
-                              height: 60,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: _selectedEmployees.length,
-                                itemBuilder: (context, index) {
-                                  var employee = _selectedEmployees[index];
-                                  return Stack(
-                                    children: [
-                                      // Main container for the employee tile
-                                      Container(
-                                        margin: const EdgeInsets.all(3),
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(15)),
-                                          color: NasColors.lightBlue,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                              Colors.grey.withOpacity(0.3),
-                                              spreadRadius: 1,
-                                              blurRadius: 5,
-                                              offset: const Offset(0, 0),
-                                            ),
-                                          ],
-                                        ),
-                                        width: 150,
-                                        // Set a fixed width for each employee tile
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              height: 30,
-                                              width: 40,
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                image: DecorationImage(
-                                                  image: AssetImage(
-                                                      "images/DP.png"),
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  employee!.employeeName ??
-                                                      "Unknown",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                  ),
-                                                  overflow: TextOverflow
-                                                      .ellipsis, // Optional: Handle long text
-                                                ),
-                                                Text(
-                                                  employee.empId ?? "Unknown",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Small remove button on top-right
-                                      Positioned(
-                                        top: 0,
-                                        right: 0,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedEmployees
-                                                  .remove(employee);
-                                            });
-                                          },
-                                          child: Container(
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.red,
-                                            ),
-                                            padding: const EdgeInsets.all(4.0),
-                                            // Adjust padding for icon size
-                                            child: const Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                              size: 16, // Adjust icon size
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                          Text(
-                            AppLocalizations.of(context)!.searchEmployee,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Container(
-                                height: 50,
-                                width: MediaQuery.of(context).size.width - 100,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: TextFormField(
-                                  controller: _searchController,
-                                  decoration: InputDecoration(
-                                    hintText:
-                                    '${AppLocalizations.of(context)!.search}...',
-                                    border: InputBorder.none,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    getSearchEmployeeData();
-                                  });
-                                },
-                                icon: Icon(
-                                  Icons.search,
-                                  size: 25,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_showSearchResult == true) ...[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _employeeSearchResults.clear();
-                                      });
-                                    },
-                                    child: Text(
-                                      AppLocalizations.of(context)!.clearAll,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    )),
                               ],
                             ),
-                            SizedBox(
-                              height: 200, // Adjust as needed
-                              child: ListView.builder(
-                                itemCount: _employeeSearchResults.length,
-                                itemBuilder: (context, index) {
-                                  var employee = _employeeSearchResults[index];
-                                  return ListTile(
-                                    title: Row(
+                            if (_selectedEmployees.isNotEmpty) ...[
+                              SizedBox(
+                                height: 60,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: _selectedEmployees.length,
+                                  itemBuilder: (context, index) {
+                                    var employee = _selectedEmployees[index];
+                                    return Stack(
                                       children: [
+                                        // Main container for the employee tile
                                         Container(
-                                          height: 50,
-                                          width: 60,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            image: DecorationImage(
-                                              image:
-                                              AssetImage("images/DP.png"),
-                                              fit: BoxFit.fill,
+                                          margin: const EdgeInsets.all(3),
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(15)),
+                                            color: NasColors.lightBlue,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color:
+                                                Colors.grey.withOpacity(0.3),
+                                                spreadRadius: 1,
+                                                blurRadius: 5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          width: 150,
+                                          // Set a fixed width for each employee tile
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                height: 30,
+                                                width: 40,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  image: DecorationImage(
+                                                    image: AssetImage(
+                                                        "images/DP.png"),
+                                                    fit: BoxFit.fill,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    employee!.employeeName ??
+                                                        "Unknown",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                    overflow: TextOverflow
+                                                        .ellipsis, // Optional: Handle long text
+                                                  ),
+                                                  Text(
+                                                    employee.empId ?? "Unknown",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Small remove button on top-right
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedEmployees
+                                                    .remove(employee);
+                                              });
+                                            },
+                                            child: Container(
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.red,
+                                              ),
+                                              padding: const EdgeInsets.all(4.0),
+                                              // Adjust padding for icon size
+                                              child: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                                size: 16, // Adjust icon size
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              employee.employeeName ??
-                                                  "Unknown",
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: NasColors.darkBlue),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                            Text(
+                              AppLocalizations.of(context)!.searchEmployee,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Container(
+                                  height: 50,
+                                  width: MediaQuery.of(context).size.width - 100,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText:
+                                      '${AppLocalizations.of(context)!.search}...',
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      getSearchEmployeeData();
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.search,
+                                    size: 25,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_showSearchResult == true) ...[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _employeeSearchResults.clear();
+                                        });
+                                      },
+                                      child: Text(
+                                        AppLocalizations.of(context)!.clearAll,
+                                        style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red),
+                                      )),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 200, // Adjust as needed
+                                child: ListView.builder(
+                                  itemCount: _employeeSearchResults.length,
+                                  itemBuilder: (context, index) {
+                                    var employee = _employeeSearchResults[index];
+                                    return ListTile(
+                                      title: Row(
+                                        children: [
+                                          Container(
+                                            height: 50,
+                                            width: 60,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              image: DecorationImage(
+                                                image:
+                                                AssetImage("images/DP.png"),
+                                                fit: BoxFit.fill,
+                                              ),
                                             ),
-                                            Text(
-                                              employee.empId ?? "Unknown",
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                employee.employeeName ??
+                                                    "Unknown",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: NasColors.darkBlue),
+                                              ),
+                                              Text(
+                                                employee.empId ?? "Unknown",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: GestureDetector(
+                                        onTap: () {
+                                          setState((){
+                                            if (_selectedEmployees
+                                                .contains(
+                                                employee)) {
+                                              _selectedEmployees
+                                                  .remove(
+                                                  employee);
+                                            } else {
+                                              _selectedEmployees
+                                                  .add(employee);
+                                            }
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.green,
+                                          ),
+                                          padding: const EdgeInsets.all(8.0),
+                                          // Space around the icon
+                                          child: const Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.projectName,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Please Enter Project name";
+                                }
+                                return null;
+                              },
+                              controller: _projectName,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder:  OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                hintText: AppLocalizations.of(context)!.typeYourProjectNameHere,
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                                counterStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.description,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              maxLength: 300,
+                              maxLines: 5,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Please Enter Project Description";
+                                }
+                                return null;
+                              },
+                              controller: _projectDescription,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder:  OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                hintText: AppLocalizations.of(context)!.typeYourProjectDescriptionHere,
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                                counterStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.projectKey,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Please Enter Project Key";
+                                }
+                                return null;
+                              },
+                              controller: _projectKey,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder:  OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                hintText: AppLocalizations.of(context)!.typeYourProjectKeyHere,
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                                counterStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.teamName,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Please Enter your team name";
+                                }
+                                return null;
+                              },
+                              controller: _teamName,
+                              cursorColor: Colors.black,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder:  OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                hintText: AppLocalizations.of(context)!.typeYourTeamNameHere,
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                                counterStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.logo,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType
+                                      .image,
+                                );
+
+                                if (result != null &&
+                                    result.files.single.path != null) {
+                                  PlatformFile file = result.files.single;
+                                  setState(() {
+                                    selectedFile = file;
+                                  });
+
+                                  print('Selected file: ${file.name}');
+                                  _showConfirmationDialog(
+                                      file);
+                                } else {
+                                  print('File selection canceled.');
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  Icon(Icons.link,
+                                  size: 30,
+                                  color: NasColors.darkBlue,),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    AppLocalizations.of(context)!.addLogo,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  if (selectedFile != null &&
+                                      selectedFile!.path != null &&
+                                      selectedFile!.path!.isNotEmpty) ...[
+                                    Stack(
+                                      children: [ GestureDetector(
+                                        onTap: () async {
+                                          await OpenFile.open(selectedFile!.path);
+                                        },
+                                        child: Container(
+                                          height: 50,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.rectangle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
                                             ),
-                                          ],
+                                          ),
+                                          child: () {
+                                            final extension = selectedFile!.path!.split('.').last.toLowerCase();
+
+                                            if (['png', 'jpg', 'jpeg', 'gif', 'webp'].contains(extension)) {
+                                              return Image.file(
+                                                File("${selectedFile!.path}"),
+                                                height: 50,
+                                                width: 50,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Icon(Icons.broken_image, size: 30);
+                                                },
+                                              );
+                                            } else if (extension == 'pdf') {
+                                              return const Icon(Icons.picture_as_pdf, color: Colors.red, size: 30);
+                                            } else if (extension == 'docx' || extension == 'doc') {
+                                              return const Icon(Icons.description, color: Colors.blue, size: 30);
+                                            } else {
+                                              return const Icon(Icons.insert_drive_file, color: Colors.grey, size: 30);
+                                            }
+                                          }(),
+                                        ),
+                                      ),
+                                        Positioned(
+                                          top: -16,
+                                          right: -16,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.cancel, size: 18, color: Colors.red),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            onPressed: () {
+                                              setState(() {
+                                                selectedFile = null;
+                                              });
+                                            },
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    trailing: GestureDetector(
-                                      onTap: () {
-                                        setState((){
-                                          if (_selectedEmployees
-                                              .contains(
-                                              employee)) {
-                                            _selectedEmployees
-                                                .remove(
-                                                employee);
-                                          } else {
-                                            _selectedEmployees
-                                                .add(employee);
-                                          }
-                                        });
-                                      },
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.green,
-                                        ),
-                                        padding: const EdgeInsets.all(8.0),
-                                        // Space around the icon
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Colors.white,
-                                        ),
+                                  ]
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50.0, right: 50),
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    if( selectedFile == null) {
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.error,
+                                        title: AppLocalizations.of(context)!.pleaseAttachDocument,
+                                        autoCloseDuration:
+                                        const Duration(seconds: 5),
+                                        showCancelBtn: false,
+                                        showConfirmBtn: false,
+                                      );
+                                    } else if (_selectedEmployees == null || _selectedEmployees.isEmpty){
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.error,
+                                        title: AppLocalizations.of(context)!.selectAssignee,
+                                        autoCloseDuration:
+                                        const Duration(seconds: 5),
+                                        showCancelBtn: false,
+                                        showConfirmBtn: false,
+                                      );
+                                    }else{
+                                      createProject();
+                                      Navigator.pop(context);
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(AppLocalizations.of(context)!
+                                            .pleaseEnterNotes),
+                                        duration: const Duration(seconds: 4),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  width: 100,
+                                  height: 50,
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF47734D),
+                                        Color(0xFF5B9362),
+                                        Color(0xFF66A56E),
+                                        Color(0xFF76BE7F),
+                                        Color(0xFF86D991),
+                                      ],
+                                      begin: Alignment.topRight,
+                                      end: Alignment.bottomLeft,
+                                    ),
+                                  ),
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      AppLocalizations.of(context)!.submit,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 19,
+                                        color: Colors.white,
                                       ),
                                     ),
-                                  );
-                                },
+                                  ),
+                                ),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 10),
-                          Text(
-                            AppLocalizations.of(context)!.projectName,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
                           ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Please Enter Project name";
-                              }
-                              return null;
-                            },
-                            controller: _projectName,
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder:  OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              hintText: AppLocalizations.of(context)!.typeYourProjectNameHere,
-                              hintStyle: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                              counterStyle: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            AppLocalizations.of(context)!.description,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            maxLength: 300,
-                            maxLines: 5,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Please Enter Project Description";
-                              }
-                              return null;
-                            },
-                            controller: _projectDescription,
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder:  OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              hintText: AppLocalizations.of(context)!.typeYourProjectDescriptionHere,
-                              hintStyle: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                              counterStyle: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            AppLocalizations.of(context)!.projectKey,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Please Enter Project Key";
-                              }
-                              return null;
-                            },
-                            controller: _projectKey,
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder:  OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              hintText: AppLocalizations.of(context)!.typeYourProjectKeyHere,
-                              hintStyle: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                              counterStyle: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            AppLocalizations.of(context)!.teamName,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Please Enter your team name";
-                              }
-                              return null;
-                            },
-                            controller: _teamName,
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder:  OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              hintText: AppLocalizations.of(context)!.typeYourTeamNameHere,
-                              hintStyle: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                              counterStyle: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            AppLocalizations.of(context)!.logo,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () async {
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType
-                                    .image, // Ensures only image files are allowed
-                              );
-
-                              if (result != null &&
-                                  result.files.single.path != null) {
-                                PlatformFile file = result.files.single;
-
-                                // Save the file data for sending in the API call
-                                setState(() {
-                                  selectedFile = file;
-                                });
-
-                                print('Selected file: ${file.name}');
-
-                                // Show confirmation dialog before uploading
-                                _showConfirmationDialog(
-                                    file); // Upload the selected file to the API
-                              } else {
-                                // User canceled the file picker
-                                print('File selection canceled.');
-                              }
-                            },
-                            child: Row(
-                              children: [
-                                Icon(Icons.link,
-                                size: 30,
-                                color: NasColors.darkBlue,),
-                                const SizedBox(width: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.addLogo,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey,
-                                  ),
+                            if (isLoading)
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/loader.json'),
                                 ),
-                                const SizedBox(width: 5),
-                                if (selectedFile != null  && selectedFile!.path!.isNotEmpty &&
-                                    selectedFile!.path!.isNotEmpty  == true) ...[
-                                  Container(
-                                    height: 50,
-                                    width: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.rectangle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child:  Image.file(
-                                      File(selectedFile!.path!),
-                                      height: 50,
-                                      width: 50,
-                                      fit: BoxFit.cover,
-                                    )
-                                  ),
-                                ]
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 50.0, right: 50),
-                            child: GestureDetector(
-                              onTap: () {
-                                if (_formKey.currentState!.validate()) {
-                                  if( selectedFile == null) {
-                                    // Validation for required document
-                                    QuickAlert.show(
-                                      context: context,
-                                      type: QuickAlertType.error,
-                                      title: AppLocalizations.of(context)!
-                                          .pleaseAttachDocument,
-                                      autoCloseDuration:
-                                      const Duration(seconds: 5),
-                                      showCancelBtn: false,
-                                      showConfirmBtn: false,
-                                    );
-                                  } else{
-                                    createProject();
-                                    Navigator.pop(context);
-                                  }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(AppLocalizations.of(context)!
-                                          .pleaseEnterNotes),
-                                      duration: const Duration(seconds: 4),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Container(
-                                width: 100,
-                                height: 50,
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF47734D),
-                                      Color(0xFF5B9362),
-                                      Color(0xFF66A56E),
-                                      Color(0xFF76BE7F),
-                                      Color(0xFF86D991),
-                                    ],
-                                    begin: Alignment.topRight,
-                                    end: Alignment.bottomLeft,
-                                  ),
-                                ),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    AppLocalizations.of(context)!.submit,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 19,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                              )
+                          ]
+                        ),
                   ),
                 ),
               );
@@ -1223,16 +1292,30 @@ class _ProjectScreenState extends State<ProjectScreen> {
       );
     }
   }
+
+  //3rd API Call
+  Future<TaskModel?> getTasks() async {
+    var client = http.Client();
+    var uri = Uri.parse('${singletonClass.baseURL}/kanban-task');
+    setState(() {
+      isLoading = true;
+    });
+    var response = await client.get(uri,headers: singletonClass.getHeaders());
+    log("Task Data Log ${response.body}");
+    setState(() {
+      isLoading = false;
+    });
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var taskData = TaskModel.fromJson(responseBody);
+      singletonClass.taskModelList.addAll([taskData]);
+      return taskData;
+    }
+    return null ; // Print the response body
+  }
 }
 
-class TaskModel {
-  String? taskName;
-  String? status;
-  String? duration;
-  String? projectName;
 
-  TaskModel(this.taskName, this.status, this.duration, this.projectName);
-}
 
 
 class SearchedResults {

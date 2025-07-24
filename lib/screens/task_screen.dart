@@ -83,8 +83,6 @@ class _TaskScreenState extends State<TaskScreen> {
     int totalToDoTasks = toDoTasks.length;
     int totalInProgressTasks = inProgressTask.length;
     int totalCompletedTasks = completedTask.length;
-
-// Initialize variables for assignees and tags
     int totalToDoAssignees = 0;
     int totalInProgressAssignees = 0;
     int totalCompletedAssignees = 0;
@@ -220,7 +218,7 @@ class _TaskScreenState extends State<TaskScreen> {
                           child: Column(
                             children: [
                               //To Do Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(toDoTasks: toDoTasks,projectData: widget.projectData,)));
                                 },
@@ -365,7 +363,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                 ),
                               ),
                               //In Progress Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(inProgressTasks: inProgressTask,projectData: widget.projectData,)));
                                 },
@@ -524,7 +522,7 @@ class _TaskScreenState extends State<TaskScreen> {
                               ),
                               const SizedBox(height: 10),
                               // Completed Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(completedTask: completedTask,projectData: widget.projectData,)));
                                 },

@@ -3007,6 +3007,10 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.documentRequest;
       case "Expense Request":
         return localizations.expenseRequest;
+      case "Special leave Request":
+        return localizations.specialLeaveRequest;
+      case "Approval Document Request":
+        return localizations.approvalDocumentRequest;
       default:
         return status!;
     }
@@ -3033,6 +3037,10 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.documentRequestBottom;
       case "Expense Request":
         return localizations.expenseRequestBottom;
+      case "Special leave Request":
+        return localizations.specialLeaveRequestBottom;
+      case "Approval Document Request":
+        return localizations.approvalDocumentRequestBottom;
       default:
         return status!;
     }
@@ -3079,6 +3087,14 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.moon;
       case "Bad Behaviour":
         return localizations.badBehaviour;
+      case "Marraige Leave":
+        return localizations.marriageLeave;
+      case "Exam Leave":
+        return localizations.examLeave;
+      case "Death Leave":
+        return localizations.deathLeave;
+      case "Special Document":
+        return localizations.specialDocument;
       default:
         return status!;
     }

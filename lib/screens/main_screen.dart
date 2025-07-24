@@ -77,6 +77,7 @@ class _MainScreenState extends State<MainScreen> {
     singletonClass.getRemoteAttendanceData(),
      singletonClass.getEmployeeAttendanceData(),
     singletonClass.getNotifications(),
+    singletonClass.getBranchesData(),
     ]);
   }
 
