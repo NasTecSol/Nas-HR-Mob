@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/create_event_screen.dart';
-import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../request_controller/event_model.dart';
 import '../widgets/colors.dart';
@@ -28,14 +27,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         "Design Nas-HR Meeting", "12:00 PM", "C105-With Ammar + 5 People"),
     MeetingModel("N-Collect Development Meeting", "1:00 PM",
         "CT200-With Annas + 5 People"),
-  ];
-  final List<TaskModel> tasks = [
-    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00",
-        "Nas-Hr Project"),
-    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00",
-        "Nas-Hr Project"),
-    TaskModel(
-        "N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
   ];
 
   final List<EventModels> events = [

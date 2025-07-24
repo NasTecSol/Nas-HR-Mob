@@ -1,27 +1,27 @@
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:developer';
-
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
-import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
-class AssetsDetailsScreen extends StatefulWidget {
-  final AssetsInfo? assetsInfo;
+import '../request_controller/company_assets_details_model.dart';
+import '../request_controller/company_model.dart';
 
-  const AssetsDetailsScreen({super.key, this.assetsInfo});
+
+class CompanyAssetsDetailsScreen extends StatefulWidget {
+  final Assets? assetsInfo;
+  const CompanyAssetsDetailsScreen({super.key, this.assetsInfo});
 
   @override
-  State<AssetsDetailsScreen> createState() => _AssetsDetailsScreenState();
+  State<CompanyAssetsDetailsScreen> createState() => _CompanyAssetsDetailsScreenState();
 }
 
-class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
+class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
 
@@ -31,10 +31,9 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     getAssetsDetailsData();
     getDocumentNotificationData();
   }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
         padding: EdgeInsets.zero,
@@ -90,7 +89,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                   ),
                 ),
                 if(_selectedOptionIndex == 0)...[
-                  FutureBuilder<AssetDetailsModel?>(
+                  FutureBuilder<CompanyAssetsDetailsModel?>(
                     future: getAssetsDetailsData(), // Your API call
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -309,7 +308,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
                         final documentNotificationDetails = snapshot.data!;
-                        final assetIds = singletonClass.assetsDetailsModel
+                        final assetIds = singletonClass.companyAssetsDataList
                             .expand((assetDetail) => assetDetail.data ?? [])
                             .map((e) => e.id.toString())
                             .toSet(); // Unique asset IDs
@@ -449,16 +448,16 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
 
 
 
-  Future<AssetDetailsModel?> getAssetsDetailsData() async {
-    int? assetId = widget.assetsInfo?.assetId;
+  Future<CompanyAssetsDetailsModel?> getAssetsDetailsData() async {
+    int? assetId = widget.assetsInfo?.randomId;
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("ASSETS DETAILS RESPONSE: ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
-      var assetData = AssetDetailsModel.fromJson(responseBody);
-      singletonClass.assetsDetailsModel.add(assetData);
+      var assetData = CompanyAssetsDetailsModel.fromJson(responseBody);
+      singletonClass.companyAssetsDataList.add(assetData);
       return assetData;
     }
     return null;
@@ -479,4 +478,3 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     return null;
   }
 }
-

@@ -47,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isSliderCompleted = false;
   String? _openLocation;
   String? selectedCompanyId;
+  String? selectedBranchName;
+  String? selectedBranchId;
+  bool isLoadingBranches = false;
   String? _backgroundLocation;
 
   @override
@@ -1076,71 +1079,117 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ],
                           ),
                           if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" || singletonClass.getJWTModel()?.grade == "L2")
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Container(
-                              alignment: Alignment.topLeft,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(15)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 6,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                                color: Colors.white,
-                              ),
-                              height: 60,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height: 50,
-                                      width: 50,
-                                      child: Image.asset("images/site.png"),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Row(
+                                children: [
+                                  /// Company Dropdown
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<String>(
                                           dropdownColor: Colors.white,
                                           isExpanded: true,
                                           value: selectedCompanyId,
-                                          hint:  Text("${singletonClass.companyDataList.first.data!.name} ~ ${singletonClass.branchDataList.first.data!.branch!.branchName}"),
-                                          items: singletonClass
-                                              .companiesDataList
-                                              .first
-                                              .data!
-                                              .companies!
-                                              .map<DropdownMenuItem<String>>(
-                                                  (company) {
+                                          hint: Row(
+                                            children: [
+                                              Image.asset('images/site.png', width: 15, height: 15),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                singletonClass.companyDataList.isNotEmpty &&
+                                                    singletonClass.companyDataList.first.data?.name != null
+                                                    ? "${singletonClass.companyDataList.first.data!.name}"
+                                                    : AppLocalizations.of(context)!.select,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                          items: singletonClass.companiesDataList.isNotEmpty
+                                              ? singletonClass.companiesDataList.first.data?.companies
+                                              ?.map<DropdownMenuItem<String>>((company) {
                                             return DropdownMenuItem<String>(
-                                              value:
-                                                  company.companyId.toString(),
-                                              // Assuming company.id is non-null
-                                              child: Text(
-                                                  "${company.companyName}"), // Assuming company.name is non-null
+                                              value: company.companyId.toString(),
+                                              child: Text(company.companyName ?? "No Name"),
                                             );
-                                          }).toList(),
-                                          onChanged: (value) {
+                                          }).toList()
+                                              : [],
+                                          onChanged: (value) async {
                                             setState(() {
-                                              singletonClass.branchesDataList.clear();
                                               selectedCompanyId = value;
                                               singletonClass.selectedCompanyId = selectedCompanyId;
-                                              singletonClass.getBranchesData();
+                                              selectedBranchId = null;
+                                              isLoadingBranches = true;
+                                              singletonClass.branchID = null;
+                                              singletonClass.branchesDataList.clear();
+                                            });
+
+                                            await singletonClass.getBranchesData();
+
+                                            setState(() {
+                                              isLoadingBranches = false;
                                             });
                                           },
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+
+                                  /// Branch Dropdown
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          dropdownColor: Colors.white,
+                                          isExpanded: true,
+                                          value: selectedBranchId,
+                                          hint: Text(
+                                            isLoadingBranches
+                                                ? AppLocalizations.of(context)!.loading
+                                                : AppLocalizations.of(context)!.selectBranch,
+                                          ),
+                                          items: !isLoadingBranches &&
+                                              singletonClass.branchesDataList.isNotEmpty
+                                              ? singletonClass.branchesDataList.first.data
+                                              ?.map<DropdownMenuItem<String>>((branch) {
+                                            return DropdownMenuItem<String>(
+                                              value: branch.id.toString(),
+                                              child: Text(branch.branchName ?? "No Name"),
+                                            );
+                                          }).toList()
+                                              : [],
+                                          onChanged: isLoadingBranches
+                                              ? null
+                                              : (value) {
+                                            setState(() {
+                                              selectedBranchId = value;
+                                              singletonClass.branchID = selectedBranchId;
+
+                                              // Parse and store branch name
+                                              final selectedBranch = singletonClass.branchesDataList.first.data!
+                                                  .firstWhere((branch) => branch.id.toString() == selectedBranchId);
+                                              singletonClass.branchName = selectedBranch.branchName ?? '';
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
+
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Row(
@@ -2430,7 +2479,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         mainAxisAlignment: MainAxisAlignment.center,
                                                         children: [
                                                           Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement}",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(2)}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:
@@ -2506,6 +2555,136 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                     FontWeight
                                                                         .bold),
                                                           )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 90,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .casualLeave,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/remoteIcon.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement}",
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 18,
+                                                                fontWeight: FontWeight.bold),
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 95,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text( AppLocalizations.of(context)!.shortLeaves,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontSize: 12),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/remoteIcon.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                                "${singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes} ${AppLocalizations.of(context)!.minutes}",
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
                                                         ],
                                                       )
                                                     ],

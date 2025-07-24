@@ -1595,4 +1595,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get time => 'Time';
+
+  @override
+  String get shortLeaves => 'Short Leaves';
+
+  @override
+  String get loading => 'Loading';
+
+  @override
+  String get assignedAt => 'Assigned at';
+
+  @override
+  String get id => 'ID';
+
+  @override
+  String get specialLeaveRequest => 'Special Leave Request';
+
+  @override
+  String get specialLeaveRequestBottom => 'Special Leave Request';
+
+  @override
+  String get approvalDocumentRequestBottom => 'Approve Document Request';
+
+  @override
+  String get approvalDocumentRequest => 'Approve Document Request';
+
+  @override
+  String get assignedTo => 'Assigned to';
+
+  @override
+  String get assigned => 'Assigned';
+
+  @override
+  String get deactive => 'Deactive';
+
+  @override
+  String get unAssigned => 'unassigned';
+
+  @override
+  String get marriageLeave => 'Marriage Leave';
+
+  @override
+  String get examLeave => 'Exam Leave';
+
+  @override
+  String get deathLeave => 'Death Leave';
+
+  @override
+  String get specialDocument => 'Special Document';
 }

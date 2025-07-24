@@ -43,20 +43,20 @@ class Data {
   int? extension;
   List<Rules>? rules;
   List<Policies>? policies;
-  List<dynamic>? assets;
-  List<dynamic>? documents;
-  List<Request>? request;
-  List<ApprovalGroupData>? approvalGroupData;
+  List<Assets>? assets;
+  List<Documents>? documents;
   String? createdBy;
   String? organizationId;
-  NotificationSettings? notificationSettings;
-  PayrollSettings? payrollSettings;
-  ExpenseSettings? expenseSettings;
   String? createdAt;
   String? updatedAt;
   int? v;
+  List<ApprovalGroupData>? approvalGroupData;
+  List<Request>? request;
+  NotificationSettings? notificationSettings;
+  PayrollSettings? payrollSettings;
+  ExpenseSettings? expenseSettings;
 
-  Data({this.id, this.name, this.title, this.city, this.country, this.address, this.shortCode, this.licenseId, this.establishmentNo, this.commericalReg, this.logo, this.license, this.phoneNumber, this.email, this.extension, this.rules, this.policies, this.assets, this.documents, this.request, this.approvalGroupData, this.createdBy, this.organizationId, this.notificationSettings, this.payrollSettings, this.expenseSettings, this.createdAt, this.updatedAt, this.v});
+  Data({this.id, this.name, this.title, this.city, this.country, this.address, this.shortCode, this.licenseId, this.establishmentNo, this.commericalReg, this.logo, this.license, this.phoneNumber, this.email, this.extension, this.rules, this.policies, this.assets, this.documents, this.createdBy, this.organizationId, this.createdAt, this.updatedAt, this.v, this.approvalGroupData, this.request, this.notificationSettings, this.payrollSettings, this.expenseSettings});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -76,18 +76,18 @@ class Data {
     extension = json["extension"];
     rules = json["rules"] == null ? null : (json["rules"] as List).map((e) => Rules.fromJson(e)).toList();
     policies = json["policies"] == null ? null : (json["policies"] as List).map((e) => Policies.fromJson(e)).toList();
-    assets = json["assets"] ?? [];
-    documents = json["documents"] ?? [];
-    request = json["request"] == null ? null : (json["request"] as List).map((e) => Request.fromJson(e)).toList();
-    approvalGroupData = json["approvalGroupData"] == null ? null : (json["approvalGroupData"] as List).map((e) => ApprovalGroupData.fromJson(e)).toList();
+    assets = json["assets"] == null ? null : (json["assets"] as List).map((e) => Assets.fromJson(e)).toList();
+    documents = json["documents"] == null ? null : (json["documents"] as List).map((e) => Documents.fromJson(e)).toList();
     createdBy = json["createdBy"];
     organizationId = json["organizationId"];
-    notificationSettings = json["notificationSettings"] == null ? null : NotificationSettings.fromJson(json["notificationSettings"]);
-    payrollSettings = json["payrollSettings"] == null ? null : PayrollSettings.fromJson(json["payrollSettings"]);
-    expenseSettings = json["expenseSettings"] == null ? null : ExpenseSettings.fromJson(json["expenseSettings"]);
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
+    approvalGroupData = json["approvalGroupData"] == null ? null : (json["approvalGroupData"] as List).map((e) => ApprovalGroupData.fromJson(e)).toList();
+    request = json["request"] == null ? null : (json["request"] as List).map((e) => Request.fromJson(e)).toList();
+    notificationSettings = json["notificationSettings"] == null ? null : NotificationSettings.fromJson(json["notificationSettings"]);
+    payrollSettings = json["payrollSettings"] == null ? null : PayrollSettings.fromJson(json["payrollSettings"]);
+    expenseSettings = json["expenseSettings"] == null ? null : ExpenseSettings.fromJson(json["expenseSettings"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -116,19 +116,22 @@ class Data {
       _data["policies"] = policies?.map((e) => e.toJson()).toList();
     }
     if(assets != null) {
-      _data["assets"] = assets;
+      _data["assets"] = assets?.map((e) => e.toJson()).toList();
     }
     if(documents != null) {
-      _data["documents"] = documents;
+      _data["documents"] = documents?.map((e) => e.toJson()).toList();
+    }
+    _data["createdBy"] = createdBy;
+    _data["organizationId"] = organizationId;
+    _data["createdAt"] = createdAt;
+    _data["updatedAt"] = updatedAt;
+    _data["__v"] = v;
+    if(approvalGroupData != null) {
+      _data["approvalGroupData"] = approvalGroupData?.map((e) => e.toJson()).toList();
     }
     if(request != null) {
       _data["request"] = request?.map((e) => e.toJson()).toList();
     }
-    if(approvalGroupData != null) {
-      _data["approvalGroupData"] = approvalGroupData?.map((e) => e.toJson()).toList();
-    }
-    _data["createdBy"] = createdBy;
-    _data["organizationId"] = organizationId;
     if(notificationSettings != null) {
       _data["notificationSettings"] = notificationSettings?.toJson();
     }
@@ -138,9 +141,6 @@ class Data {
     if(expenseSettings != null) {
       _data["expenseSettings"] = expenseSettings?.toJson();
     }
-    _data["createdAt"] = createdAt;
-    _data["updatedAt"] = updatedAt;
-    _data["__v"] = v;
     return _data;
   }
 }
@@ -291,14 +291,14 @@ class PayrollSettings {
 class NotificationSettings {
   PushNotification? pushNotification;
   Emailsettings? emailsettings;
-  NotificationTypes? notificationTypes;
+  DocNotifications? docNotifications;
 
-  NotificationSettings({this.pushNotification, this.emailsettings, this.notificationTypes});
+  NotificationSettings({this.pushNotification, this.emailsettings, this.docNotifications});
 
   NotificationSettings.fromJson(Map<String, dynamic> json) {
     pushNotification = json["pushNotification"] == null ? null : PushNotification.fromJson(json["pushNotification"]);
     emailsettings = json["emailsettings"] == null ? null : Emailsettings.fromJson(json["emailsettings"]);
-    notificationTypes = json["notificationTypes"] == null ? null : NotificationTypes.fromJson(json["notificationTypes"]);
+    docNotifications = json["docNotifications"] == null ? null : DocNotifications.fromJson(json["docNotifications"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -309,28 +309,28 @@ class NotificationSettings {
     if(emailsettings != null) {
       _data["emailsettings"] = emailsettings?.toJson();
     }
-    if(notificationTypes != null) {
-      _data["notificationTypes"] = notificationTypes?.toJson();
+    if(docNotifications != null) {
+      _data["docNotifications"] = docNotifications?.toJson();
     }
     return _data;
   }
 }
 
-class NotificationTypes {
-  bool? promotion;
-  bool? alert;
+class DocNotifications {
+  bool? enabled;
+  String? expiry;
 
-  NotificationTypes({this.promotion, this.alert});
+  DocNotifications({this.enabled, this.expiry});
 
-  NotificationTypes.fromJson(Map<String, dynamic> json) {
-    promotion = json["promotion"];
-    alert = json["alert"];
+  DocNotifications.fromJson(Map<String, dynamic> json) {
+    enabled = json["enabled"];
+    expiry = json["expiry"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["promotion"] = promotion;
-    _data["alert"] = alert;
+    _data["enabled"] = enabled;
+    _data["expiry"] = expiry;
     return _data;
   }
 }
@@ -373,61 +373,6 @@ class PushNotification {
   }
 }
 
-class ApprovalGroupData {
-  int? groupId;
-  String? groupName;
-  List<GroupData>? groupData;
-
-  ApprovalGroupData({this.groupId, this.groupName, this.groupData});
-
-  ApprovalGroupData.fromJson(Map<String, dynamic> json) {
-    groupId = json["groupId"];
-    groupName = json["groupName"];
-    groupData = json["groupData"] == null ? null : (json["groupData"] as List).map((e) => GroupData.fromJson(e)).toList();
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["groupId"] = groupId;
-    _data["groupName"] = groupName;
-    if(groupData != null) {
-      _data["groupData"] = groupData?.map((e) => e.toJson()).toList();
-    }
-    return _data;
-  }
-}
-
-class GroupData {
-  String? employeeId;
-  String? name;
-  String? designation;
-  String? grade;
-  String? departmentId;
-  bool? isRequired;
-
-  GroupData({this.employeeId, this.name, this.designation, this.grade, this.departmentId, this.isRequired});
-
-  GroupData.fromJson(Map<String, dynamic> json) {
-    employeeId = json["employeeId"];
-    name = json["name"];
-    designation = json["designation"];
-    grade = json["grade"];
-    departmentId = json["departmentId"];
-    isRequired = json["isRequired"];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["employeeId"] = employeeId;
-    _data["name"] = name;
-    _data["designation"] = designation;
-    _data["grade"] = grade;
-    _data["departmentId"] = departmentId;
-    _data["isRequired"] = isRequired;
-    return _data;
-  }
-}
-
 class Request {
   int? groupId;
   String? requestType;
@@ -464,7 +409,7 @@ class Request {
 class SubTypes {
   String? requestType;
   String? requestName;
-  dynamic docRequired;
+  bool? docRequired;
 
   SubTypes({this.requestType, this.requestName, this.docRequired});
 
@@ -479,6 +424,141 @@ class SubTypes {
     _data["requestType"] = requestType;
     _data["requestName"] = requestName;
     _data["docRequired"] = docRequired;
+    return _data;
+  }
+}
+
+class ApprovalGroupData {
+  List<GroupData>? groupData;
+  String? groupName;
+  int? groupId;
+
+  ApprovalGroupData({this.groupData, this.groupName, this.groupId});
+
+  ApprovalGroupData.fromJson(Map<String, dynamic> json) {
+    groupData = json["groupData"] == null ? null : (json["groupData"] as List).map((e) => GroupData.fromJson(e)).toList();
+    groupName = json["groupName"];
+    groupId = json["groupId"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    if(groupData != null) {
+      _data["groupData"] = groupData?.map((e) => e.toJson()).toList();
+    }
+    _data["groupName"] = groupName;
+    _data["groupId"] = groupId;
+    return _data;
+  }
+}
+
+class GroupData {
+  String? employeeId;
+  String? name;
+  String? designation;
+  String? grade;
+  String? departmentId;
+  bool? isRequired;
+
+  GroupData({this.employeeId, this.name, this.designation, this.grade, this.departmentId, this.isRequired});
+
+  GroupData.fromJson(Map<String, dynamic> json) {
+    employeeId = json["employeeId"];
+    name = json["name"];
+    designation = json["designation"];
+    grade = json["grade"];
+    departmentId = json["departmentId"];
+    isRequired = json["isRequired"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["employeeId"] = employeeId;
+    _data["name"] = name;
+    _data["designation"] = designation;
+    _data["grade"] = grade;
+    _data["departmentId"] = departmentId;
+    _data["isRequired"] = isRequired;
+    return _data;
+  }
+}
+
+class Documents {
+  String? docId;
+  String? type;
+
+  Documents({this.docId, this.type});
+
+  Documents.fromJson(Map<String, dynamic> json) {
+    docId = json["docId"];
+    type = json["type"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["docId"] = docId;
+    _data["type"] = type;
+    return _data;
+  }
+}
+
+class Assets {
+  String? assetId;
+  int? randomId;
+  String? currentAssignedEmp;
+  String? currentAssignedEmpName;
+  String? currentAssignedDate;
+  List<History>? history;
+  String? status;
+
+  Assets({this.assetId, this.randomId, this.currentAssignedEmp, this.currentAssignedEmpName, this.currentAssignedDate, this.history, this.status});
+
+  Assets.fromJson(Map<String, dynamic> json) {
+    assetId = json["assetId"];
+    randomId = json["randomId"];
+    currentAssignedEmp = json["currentAssignedEmp"];
+    currentAssignedEmpName = json["currentAssignedEmpName"];
+    currentAssignedDate = json["currentAssignedDate"];
+    history = json["History"] == null ? null : (json["History"] as List).map((e) => History.fromJson(e)).toList();
+    status = json["status"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["assetId"] = assetId;
+    _data["randomId"] = randomId;
+    _data["currentAssignedEmp"] = currentAssignedEmp;
+    _data["currentAssignedEmpName"] = currentAssignedEmpName;
+    _data["currentAssignedDate"] = currentAssignedDate;
+    if(history != null) {
+      _data["History"] = history?.map((e) => e.toJson()).toList();
+    }
+    _data["status"] = status;
+    return _data;
+  }
+}
+
+class History {
+  String? employeeId;
+  String? employeeName;
+  String? issueDateFrom;
+  String? issueDateTo;
+
+  History({this.employeeId, this.employeeName, this.issueDateFrom, this.issueDateTo});
+
+  History.fromJson(Map<String, dynamic> json) {
+    employeeId = json["employeeId"];
+    employeeName = json["employeeName"];
+    issueDateFrom = json["issueDateFrom"];
+    issueDateTo = json["issueDateTo"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["employeeId"] = employeeId;
+    _data["employeeName"] = employeeName;
+    _data["issueDateFrom"] = issueDateFrom;
+    _data["issueDateTo"] = issueDateTo;
     return _data;
   }
 }
