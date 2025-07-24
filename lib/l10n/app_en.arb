@@ -952,5 +952,21 @@
   "shifts":"Shifts",
   "timeTable":"Time Table",
   "time":"Time",
-  "to":"to"
+  "to":"to",
+  "shortLeaves":"Short Leaves",
+  "loading":"Loading",
+  "assignedAt":"Assigned at",
+  "id":"ID",
+  "specialLeaveRequest":"Special Leave Request",
+  "specialLeaveRequestBottom":"Special Leave Request",
+  "approvalDocumentRequestBottom":"Approve Document Request",
+  "approvalDocumentRequest":"Approve Document Request",
+  "assignedTo":"Assigned to",
+  "assigned":"Assigned",
+  "deactive":"Deactive",
+  "unAssigned":"unassigned",
+  "marriageLeave":"Marriage Leave",
+  "examLeave":"Exam Leave",
+  "deathLeave":"Death Leave",
+  "specialDocument":"Special Document"
 }

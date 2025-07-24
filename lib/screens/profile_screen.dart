@@ -2056,6 +2056,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
+      print("DATA ><><>< $employeeData");
       if (response.statusCode == 200) {
         print('Employee data updated successfully');
       } else {

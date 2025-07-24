@@ -43,7 +43,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
    void initState() {
     super.initState();
     setState(() {
-      if(singletonClass.getJWTModel()?.grade == 'L3' || singletonClass.getJWTModel()?.grade == 'L4'){
+      if(singletonClass.getJWTModel()?.grade == 'L4'){
         _isChecked = true;
       }
     });
@@ -432,8 +432,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         ),
                         onSelected: (value) {
                           setState(() {
-                            selectedBranchId = value;
+                            singletonClass.branchID = value;
+                            selectedBranchId = singletonClass.branchID;
                             final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
+                            singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
                             selectedBranchName = branch?.branchName ?? "Unknown Branch";
                             print('Selected Branch ID: $value');
                             extractAllEmployeeIdsForBranch(value);
@@ -456,7 +458,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         },
                         child: Container(
                           height: 49,
-                          width: 120,
+                          width: 105,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(45),
@@ -480,8 +482,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
-                                  selectedBranchName != null && selectedBranchName!.isNotEmpty
-                                      ? selectedBranchName!
+                                  singletonClass.branchName != null && singletonClass.branchName!.isNotEmpty
+                                      ? singletonClass.branchName!
                                       : AppLocalizations.of(context)!.selectBranch,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -498,7 +500,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ),
                     ),
                 Spacer(),
-                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")
                   Padding(
                     padding: const EdgeInsets.all(0),
                     child: Row(
@@ -524,7 +526,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ],
                     ),
                   ),],
-                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" ||singletonClass.getJWTModel()?.grade == "L3")
                 Padding(
                   padding: const EdgeInsets.all(0),
                   child: Row(

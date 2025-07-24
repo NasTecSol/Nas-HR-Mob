@@ -107,13 +107,11 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                       ),
                       onSelected: (value) {
                         setState(() {
-                          selectedBranchId = value;
-                          final branch = singletonClass
-                              .branchesDataList.first.data
-                              ?.firstWhere(
-                                  (branch) => branch.branchCompanyId == value);
-                          selectedBranchName =
-                              branch?.branchName ?? "Unknown Branch";
+                          singletonClass.branchID = value;
+                          selectedBranchId = singletonClass.branchID;
+                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
+                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
+                          selectedBranchName = branch?.branchName ?? "Unknown Branch";
                           print('Selected Branch ID: $value');
                           _isChecked = false;
                           timeTableShiftEmployees.clear();
@@ -155,16 +153,15 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                             const SizedBox(width: 8),
                             Image.asset(
                               'images/site.png',
-                              // <-- Replace with your actual image path
                               height: 14,
                               width: 14,
                             ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                selectedBranchName != null &&
-                                        selectedBranchName!.isNotEmpty
-                                    ? selectedBranchName!
+                                singletonClass.branchName != null &&
+                                    singletonClass.branchName!.isNotEmpty
+                                    ? singletonClass.branchName!
                                     : AppLocalizations.of(context)!
                                         .selectBranch,
                                 style: GoogleFonts.inter(

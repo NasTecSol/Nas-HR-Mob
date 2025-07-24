@@ -403,7 +403,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 20),
+                                              const SizedBox(width: 10),
                                               SizedBox(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,12 +418,15 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
                                                     ),
                                                     SizedBox(height: 2.5),
@@ -944,7 +947,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(width: 60),
+                                              SizedBox(width: 10),
                                               SizedBox(
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -959,12 +962,15 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
                                                     ),
                                                     SizedBox(height: 2.5),
@@ -2111,20 +2117,23 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
                                                     ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
-                                                      maxLines: 4,
-                                                      softWrap: true,
-                                                      textAlign: TextAlign.left,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                        maxLines: 4,
+                                                        softWrap: true,
+                                                        textAlign: TextAlign.left,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
                                                       ),
                                                     ),
                                                     Text(
@@ -2133,7 +2142,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
@@ -2144,7 +2153,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
@@ -2155,7 +2164,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),

@@ -13,6 +13,7 @@ import 'package:nashr/request_controller/branches_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/companies_data_model.dart';
+import 'package:nashr/request_controller/company_assets_details_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
@@ -100,12 +101,15 @@ class SingletonClass {
   List<BranchShiftModel> branchShiftsDataList = [];
   List<TimeTableShiftModel> timeTableShiftsDataList = [];
   List<BranchesModel> branchesModelDataList = [];
+  List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
   String? fcmToken;
   String? tenantId;
   String? companyName;
+  String? branchID;
+  String? branchName;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -302,16 +306,15 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = getJWTModel()?.companyId;
-    print(getJWTModel()?.companyId);
-    print(getJWTModel()?.employeeId);
-    print(getJWTModel()?.empId);
-    print(getJWTModel()?.tenantId);
-    print(getJWTModel()?.organizationId);
-    if (companyId == null) {
-      log("❌ companyId is null!");
+    String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
+        ? selectedCompanyId
+        : getJWTModel()?.companyId;
+
+    if (companyId == null || companyId.isEmpty) {
+      log("❌ No companyId available from selectedCompanyId or JWT!");
       return null;
     }
+
 
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
@@ -375,7 +378,6 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
-  //Multiple branches data
   Future<BranchesDataModel?> getBranchesData() async {
     String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
         ? selectedCompanyId
@@ -487,19 +489,7 @@ class SingletonClass {
     }
   }
 
-  Future<TaskModel?> getTasks() async {
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/kanban-task');
-    var response = await client.get(uri,headers: getHeaders());
-    log("Task Data Log ${response.body}");
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var taskData = TaskModel.fromJson(responseBody);
-      taskModelList.addAll([taskData]);
-      return taskData;
-    }
-    return null ; // Print the response body
-  }
+
 
   String formatTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);

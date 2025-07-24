@@ -468,7 +468,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           print('Error: ${loginResponse.statusCode}');
         }
-      } else if (response.statusCode == 405) {
+      } else if (response.statusCode == 405 || response.statusCode == 502) {
         setState(() {
           isLoading = false;
         });

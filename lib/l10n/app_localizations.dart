@@ -3253,6 +3253,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time'**
   String get time;
+
+  /// No description provided for @shortLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Leaves'**
+  String get shortLeaves;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
+
+  /// No description provided for @assignedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned at'**
+  String get assignedAt;
+
+  /// No description provided for @id.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get id;
+
+  /// No description provided for @specialLeaveRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Leave Request'**
+  String get specialLeaveRequest;
+
+  /// No description provided for @specialLeaveRequestBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Leave Request'**
+  String get specialLeaveRequestBottom;
+
+  /// No description provided for @approvalDocumentRequestBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Document Request'**
+  String get approvalDocumentRequestBottom;
+
+  /// No description provided for @approvalDocumentRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Document Request'**
+  String get approvalDocumentRequest;
+
+  /// No description provided for @assignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to'**
+  String get assignedTo;
+
+  /// No description provided for @assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assigned;
+
+  /// No description provided for @deactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactive'**
+  String get deactive;
+
+  /// No description provided for @unAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'unassigned'**
+  String get unAssigned;
+
+  /// No description provided for @marriageLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Marriage Leave'**
+  String get marriageLeave;
+
+  /// No description provided for @examLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam Leave'**
+  String get examLeave;
+
+  /// No description provided for @deathLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Death Leave'**
+  String get deathLeave;
+
+  /// No description provided for @specialDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Document'**
+  String get specialDocument;
 }
 
 class _AppLocalizationsDelegate

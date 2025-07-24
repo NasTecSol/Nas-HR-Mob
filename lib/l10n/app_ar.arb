@@ -617,5 +617,22 @@
     "shifts": "الورديات",
     "timeTable": "الجدول الزمني",
     "time": "الوقت",
-    "to": "إلى"
+    "to": "إلى",
+    "shortLeaves": "إجازات قصيرة",
+    "loading": "جارٍ التحميل",
+    "assignedAt": "تم التعيين في",
+    "id": "المعرف",
+    "specialLeaveRequest": "طلب إجازة خاصة",
+    "specialLeaveRequestBottom": "نوع طلب إجازة خاصة",
+      "approvalDocumentRequestBottom": "نوع الموافقة على طلب المستند",
+    "approvalDocumentRequest": "الموافقة على طلب المستند",
+    "assignedTo": "مُعين إلى",
+    "assigned": "مُعين",
+    "deactive": "غير نشط",
+    "unAssigned": "غير معين",
+    "marriageLeave": "إجازة زواج",
+    "examLeave": "إجازة امتحان",
+    "deathLeave": "إجازة وفاة",
+    "specialDocument": "مستند خاص"
+
 }
