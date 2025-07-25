@@ -147,12 +147,15 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ),
                       ),
                       SizedBox(width: 5),
-                      Text(
-                        "${widget.attendanceData!.name}",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: NasColors.darkBlue,
+                      SizedBox(
+                        width: 130,
+                        child: Text(
+                          "${widget.attendanceData!.name}",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: NasColors.darkBlue,
+                          ),
                         ),
                       ),
                       Spacer(),
@@ -1003,7 +1006,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               SizedBox(width: 5),
                               Text(
-                                "Slots",
+                                "${AppLocalizations.of(context)!.slots}",
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.normal,
@@ -1042,234 +1045,171 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                 ?.isNotEmpty ==
                                             true
                                         ? ListView.builder(
-                                            padding: EdgeInsets.zero,
-                                            itemCount: widget
-                                                .attendanceData!.slots!.length,
-                                            itemBuilder: (context, index) {
-                                              final slots = widget
-                                                  .attendanceData!
-                                                  .slots![index];
-                                              DateTime? checkIn = parseTime(
-                                                      slots.checkInTime
-                                                          .toString())
-                                                  ?.toLocal();
-                                              DateTime? checkOut = parseTime(
-                                                      slots.checkOutTime
-                                                          .toString())
-                                                  ?.toLocal();
+                                      padding: EdgeInsets.zero,
+                                      itemCount: widget.attendanceData?.slots?.length ?? 0,
+                                      itemBuilder: (context, index) {
+                                        final slots = widget.attendanceData!.slots![index];
 
-                                              return Padding(
-                                                padding: const EdgeInsets.all(10),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey.withOpacity(0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
+                                        DateTime? checkIn = parseTime(slots.checkInTime?.toString() ?? '')?.toLocal();
+                                        DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
+
+                                        return Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.zero,
+                                              color: NasColors.lightGrey,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.4),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1,
+                                                  offset: const Offset(0, 3),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          const Icon(Icons.exit_to_app_outlined, size: 20, color: Colors.black),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.clockIn}:",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            checkIn != null ? "$checkIn" : "___",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(width: 20),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.error, size: 20, color: NasColors.pending),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.late}:",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: NasColors.pending,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            (slots.lateMinutes?.toString().isNotEmpty ?? false)
+                                                                ? "${slots.lateMinutes}"
+                                                                : "___",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Container(
+                                                            height: 20,
+                                                            width: 75,
+                                                            decoration: BoxDecoration(
+                                                              color: getStatusColor(slots.status ?? ''),
+                                                              borderRadius: BorderRadius.circular(10),
+                                                            ),
+                                                            child: Center(
+                                                              child: Text(
+                                                                _translateStatus(slots.status ?? '', context),
+                                                                textAlign: TextAlign.center,
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.white,
+                                                                  fontSize: 10,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(10.0),
-                                                    child: Column(
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                const Icon(
-                                                                    Icons
-                                                                        .exit_to_app_outlined,
-                                                                    size: 20,
-                                                                    color: Colors
-                                                                        .black),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${AppLocalizations.of(context)!.clockIn}:",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "$checkIn",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                              ],
+                                                  Divider(color: Colors.grey.shade400),
+                                                  Row(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Transform(
+                                                            transform: Matrix4.rotationY(math.pi),
+                                                            alignment: Alignment.center,
+                                                            child: const Icon(Icons.exit_to_app_outlined, size: 20, color: Colors.black),
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.clockOut}:",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                             ),
-                                                            const SizedBox(
-                                                                width: 20),
-                                                            Row(
-                                                              children: [
-                                                                Icon(Icons.error,
-                                                                    size: 20,
-                                                                    color: NasColors
-                                                                        .pending),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${AppLocalizations.of(context)!.late}:",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: NasColors
-                                                                          .pending),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${slots.lateMinutes}",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                                SizedBox(width: 10),
-                                                                Container(
-                                                                  height: 20,
-                                                                  width: 75,
-                                                                  decoration: BoxDecoration(
-                                                                    color: getStatusColor(slots.status!),
-                                                                    borderRadius: BorderRadius.circular(10),
-                                                                  ),
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                      _translateStatus(slots.status , context),
-                                                                      textAlign: TextAlign.center,
-                                                                      style: GoogleFonts.inter(
-                                                                        fontWeight: FontWeight.bold,
-                                                                        color: Colors.white,
-                                                                        fontSize: 10,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            checkOut != null ? "$checkOut" : "___",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                             ),
-                                                          ],
-                                                        ),
-                                                        Divider(
-                                                            color: Colors
-                                                                .grey.shade400),
-                                                        Row(
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                Transform(
-                                                                  transform: Matrix4
-                                                                      .rotationY(
-                                                                          math.pi),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child: const Icon(
-                                                                      Icons
-                                                                          .exit_to_app_outlined,
-                                                                      size: 20,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${AppLocalizations.of(context)!.clockOut}:",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "$checkOut",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                              ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(width: 20),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.directions_run_outlined, size: 20, color: NasColors.onTime),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.earlyLeft}:",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: NasColors.onTime,
                                                             ),
-                                                            const SizedBox(
-                                                                width: 20),
-                                                            Row(
-                                                              children: [
-                                                                Icon(
-                                                                    Icons
-                                                                        .directions_run_outlined,
-                                                                    size: 20,
-                                                                    color: NasColors
-                                                                        .onTime),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${AppLocalizations.of(context)!.earlyLeft}:",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: NasColors
-                                                                          .onTime),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  "${slots.earlyCheckOut}",
-                                                                  style: GoogleFonts.inter(
-                                                                      fontSize:
-                                                                          13,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      color: Colors
-                                                                          .black),
-                                                                ),
-                                                              ],
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            (slots.earlyCheckOut?.toString().isNotEmpty ?? false)
+                                                                ? "${slots.earlyCheckOut}"
+                                                                : "___",
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.black,
                                                             ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                          )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
                                         : Center(
                                             child: Text(
                                               AppLocalizations.of(context)!
@@ -1349,13 +1289,16 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         SizedBox(height: 20),
                         if (_leaveExpanded) ...[
                           Text(
-                            "${widget.attendanceData!.leaveDetails}",
+                            widget.attendanceData?.leaveDetails?.isNotEmpty == true
+                                ? widget.attendanceData!.leaveDetails!
+                                : '___',
                             style: GoogleFonts.inter(
                               fontSize: 18,
                               fontWeight: FontWeight.normal,
                               color: NasColors.darkBlue,
                             ),
                           ),
+                          SizedBox(height: 20),
                         ]
                       ],
                     ),

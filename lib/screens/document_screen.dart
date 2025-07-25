@@ -289,6 +289,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
             ],
             if (_selectedOptionIndex == 1) ...[
               SizedBox(height: 30),
+              if(singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia")
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -363,8 +364,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           // Logos Row
                                           ClipRRect(
                                             borderRadius: BorderRadius.zero,
-                                            child: Expanded(
-                                              child: Image.asset(
+                                            child: Image.asset(
                                                 "images/cnicLogo.png",
                                                 height: 50,
                                                 width: double.infinity,
@@ -372,7 +372,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 alignment: Alignment.topCenter,
                                               ),
                                             ),
-                                          ),
                                           SizedBox(height: 20),
                                           Row(
                                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -846,6 +845,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Iqama
+              (singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia") ? const SizedBox.shrink() :
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -1407,6 +1408,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Passport
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -1997,6 +1999,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Employee Contract
               Column(children: [
                 GestureDetector(
                     onTap: () {

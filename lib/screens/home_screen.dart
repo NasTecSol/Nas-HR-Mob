@@ -1140,7 +1140,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
 
                                   const SizedBox(width: 12),
-
                                   /// Branch Dropdown
                                   Expanded(
                                     child: Container(
@@ -1175,8 +1174,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             setState(() {
                                               selectedBranchId = value;
                                               singletonClass.branchID = selectedBranchId;
-
-                                              // Parse and store branch name
                                               final selectedBranch = singletonClass.branchesDataList.first.data!
                                                   .firstWhere((branch) => branch.id.toString() == selectedBranchId);
                                               singletonClass.branchName = selectedBranch.branchName ?? '';
@@ -1189,7 +1186,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ],
                               ),
                             ),
-
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Row(
@@ -1214,29 +1210,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     child: Column(
                                       children: [
                                         if (singletonClass.attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList.first.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                    .first.data!.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                .first.data!.data!.isNotEmpty &&
-                                            singletonClass
-                                                    .attendanceDataList
-                                                    .first
-                                                    .data!
-                                                    .data!
-                                                    .first
-                                                    .clockInTime !=
-                                                null &&
-                                            singletonClass
-                                                .attendanceDataList
-                                                .first
-                                                .data!
-                                                .data!
-                                                .first
-                                                .clockInTime!
-                                                .isNotEmpty)
+                                            singletonClass.attendanceDataList.first.data != null &&
+                                            singletonClass.attendanceDataList.first.data!.data != null &&
+                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty &&
+                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime != null &&
+                                            singletonClass.attendanceDataList.first.data!.data!.first.clockInTime!.isNotEmpty)
                                           Container(
                                               height: 30,
                                               decoration: BoxDecoration(
@@ -1251,101 +1229,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  if (singletonClass
-                                                          .attendanceDataList
-                                                          .isNotEmpty &&
-                                                      singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .attendanceDataList
-                                                          .first
-                                                          .data!
-                                                          .data!
-                                                          .isNotEmpty)
+                                                  if (singletonClass.attendanceDataList.isNotEmpty &&
+                                                      singletonClass.attendanceDataList.first.data!.data != null &&
+                                                      singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
                                                     Builder(builder: (context) {
-                                                      final today =
-                                                          DateTime.now();
+                                                      final today = DateTime.now();
                                                       final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data!;
+                                                          singletonClass.attendanceDataList.first.data!.data!;
                                                       Data1? entry;
-                                                      final filteredList =
-                                                          dataList.where((e) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                e.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
+                                                      final filteredList = dataList.where((e) {
+                                                        final createdAt = DateTime.tryParse(e.createdAt ?? '');
+                                                        return createdAt != null && createdAt.year == today.year && createdAt.month ==
+                                                                today.month && createdAt.day == today.day;
                                                       }).toList();
-
                                                       if (filteredList.isNotEmpty) {
                                                         entry = filteredList.first;
                                                       }
                                                       if (entry == null) {
                                                         return SizedBox();
                                                       }
-
-                                                      if ((entry.lateMinutes ?? 0) >
-                                                          0) {
-                                                        return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .lateComings,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .lateComingText,
-                                                          ),
-                                                        );
-                                                      } else if ((entry
-                                                                  .earlyCheckOut ??
-                                                              0) >
-                                                          0) {
-                                                        return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .earlyCheckOut,
-                                                          style:
-                                                              GoogleFonts.inter(
+                                                      if ((entry.lateMinutes ?? 0) > 0) {
+                                                        return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes}",
+                                                          style: GoogleFonts.inter(
                                                             fontSize: 10,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .onTime,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.lateComingText,
                                                           ),
                                                         );
-                                                      } else if (entry
-                                                              .clockInTime
-                                                              ?.isNotEmpty ==
-                                                          true) {
+                                                      } else if ((entry.earlyCheckOut ?? 0) > 0) {
                                                         return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .onTime,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .onTime,
+                                                          "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        );
+                                                      } else if (entry.clockInTime?.isNotEmpty == true) {
+                                                        return Text( AppLocalizations.of(context)!.onTime,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
                                                           ),
                                                         );
                                                       } else {
@@ -1354,26 +1279,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     })
                                                   else
                                                     Text(
-                                                      AppLocalizations.of(
-                                                              context)!
-                                                          .noData,
+                                                      AppLocalizations.of(context)!.noData,
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
                                                         fontWeight:
-                                                            FontWeight.normal,
+                                                        FontWeight.normal,
                                                       ),
                                                     ),
                                                 ],
                                               )),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8.0,
-                                              left: 15,
-                                              right: 8,
-                                              bottom: 8),
+                                          padding: const EdgeInsets.only(top: 8.0, left: 15, right: 8, bottom: 8),
                                           child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
                                               SizedBox(
                                                 height: 25,
@@ -1387,25 +1305,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Text(
                                                   () {
                                                     try {
-                                                      final today =
-                                                          DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data;
-                                                      if (dataList == null ||
-                                                          dataList.isEmpty) {
+                                                      final today = DateTime.now();
+                                                      final dataList = singletonClass.attendanceDataList.first.data!.data;
+                                                      if (dataList == null || dataList.isEmpty) {
                                                         return 'NA';
                                                       }
 
-                                                      final entry = dataList
-                                                          .firstWhere((entry) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                entry.createdAt ??
-                                                                    '');
+                                                      final entry = dataList.firstWhere((entry) {
+                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
                                                         return createdAt !=
                                                                 null &&
                                                             createdAt.year ==
@@ -2607,7 +2514,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             height: 50,
                                                             width: 50,
                                                             child: Image.asset(
-                                                                "images/remoteIcon.png"),
+                                                                "images/thisMonth.png"),
                                                           )
                                                         ],
                                                       ),

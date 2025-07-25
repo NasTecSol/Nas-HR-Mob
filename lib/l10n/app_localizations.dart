@@ -3349,6 +3349,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Special Document'**
   String get specialDocument;
+
+  /// No description provided for @slots.
+  ///
+  /// In en, this message translates to:
+  /// **'Slots'**
+  String get slots;
+
+  /// No description provided for @currentOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Organization'**
+  String get currentOrganization;
+
+  /// No description provided for @searchYourCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your Company'**
+  String get searchYourCompany;
 }
 
 class _AppLocalizationsDelegate
