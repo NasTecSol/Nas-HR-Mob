@@ -372,6 +372,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                 buildOptionsCard(1, AppLocalizations.of(context)!.present),
                 buildOptionsCard(2, AppLocalizations.of(context)!.absent),
                 buildOptionsCard(3, AppLocalizations.of(context)!.missingCheckInOut),
+                buildOptionsCard(4, AppLocalizations.of(context)!.late),
+                buildOptionsCard(5, AppLocalizations.of(context)!.earlyCheckOut),
               ],
             ),
           ),
@@ -457,8 +459,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           )).toList();
                         },
                         child: Container(
-                          height: 49,
-                          width: 105,
+                          height: 60,
+                          width: 150,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(45),
@@ -502,16 +504,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                 Spacer(),
                 if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")
                   Padding(
-                    padding: const EdgeInsets.all(0),
-                    child: Row(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: Column(
                       children: [
-                        Text(AppLocalizations.of(context)!.teams,
-                          style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue
-                          ),
-                        ),
                         Checkbox(value: _isTeamChecked,
                             activeColor: NasColors.onTime,
                             onChanged: (bool? value){
@@ -523,21 +518,21 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 loadData();
                               });
                             }),
+                        Text(AppLocalizations.of(context)!.teams,
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue
+                          ),
+                        ),
                       ],
                     ),
                   ),],
                 if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" ||singletonClass.getJWTModel()?.grade == "L3")
                 Padding(
-                  padding: const EdgeInsets.all(0),
-                  child: Row(
+                  padding: const EdgeInsets.only(left: 5 , right: 5),
+                  child: Column(
                     children: [
-                      Text(AppLocalizations.of(context)!.onlyMe,
-                        style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: NasColors.darkBlue
-                        ),
-                      ),
                       Checkbox(value: _isChecked,
                           activeColor: NasColors.onTime,
                           onChanged: (bool? value){
@@ -549,6 +544,13 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               loadData();
                             });
                           }),
+                      Text(AppLocalizations.of(context)!.onlyMe,
+                        style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -565,7 +567,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       });
                     },
                     decoration: InputDecoration(
-                      hintText: 'Search by name',
+                      hintText: AppLocalizations.of(context)!.search,
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: Icon(Icons.search),
@@ -617,10 +619,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         );
                       }
                       final hasMatchingData = filteredAttendanceDataList.any((attendance) {
-                        if (_selectedOptionIndex == 0) return true; // All
+                        if (_selectedOptionIndex == 0) return true;
                         if (_selectedOptionIndex == 1) return attendance.status?.toLowerCase() == 'present';
                         if (_selectedOptionIndex == 2) return attendance.status?.toLowerCase() == 'absent';
-                        if (_selectedOptionIndex == 3) return attendance.status == 'missing checkin/out';
+                        if (_selectedOptionIndex == 3) return attendance.status?.toLowerCase() == 'missing checkin/out';
+                        if (_selectedOptionIndex == 4) return (attendance.lateMinutes ?? 0) > 0;
+                        if (_selectedOptionIndex == 5) return (attendance.earlyCheckOut ?? 0) > 0;
                         return false;
                       });
                       return  hasMatchingData
@@ -634,11 +638,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               !(attendance.name?.toLowerCase().contains(searchText) ?? false)) {
                             return const SizedBox.shrink();
                           }
-                          if (_selectedOptionIndex != 0 &&
-                              ((_selectedOptionIndex == 1 && attendance.status?.toLowerCase() != 'present') ||
-                                  (_selectedOptionIndex == 2 && attendance.status?.toLowerCase() != 'absent') ||
-                                  (_selectedOptionIndex == 3 && attendance.status?.toLowerCase() != 'missing checkin/out'))) {
-                            return const SizedBox.shrink();
+                          if (_selectedOptionIndex != 0) {
+                            if ((_selectedOptionIndex == 1 && attendance.status != 'present') ||
+                                (_selectedOptionIndex == 2 && attendance.status != 'absent') ||
+                                (_selectedOptionIndex == 3 && attendance.status != 'missing checkin/out') ||
+                                (_selectedOptionIndex == 4 && (attendance.lateMinutes ?? 0) <= 0) ||
+                                (_selectedOptionIndex == 5 && (attendance.earlyCheckOut ?? 0) <= 0)) {
+                              return const SizedBox.shrink();
+                            }
                           }
 
                           String formatDate(String updatedAt) {
@@ -693,7 +700,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       Column(
                                         children: [
                                           Text(
-                                            attendance.name ?? "N/A",
+                                            attendance.name ?? "___",
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.bold,
@@ -755,7 +762,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Text(
-                                        attendance.empId ?? "N/A",
+                                        attendance.empId ?? "___",
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -962,6 +969,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           return NasColors.red;
         case 3:
           return NasColors.pending;
+        case 4:
+          return NasColors.pending;
+        case 5:
+          return NasColors.onTime;
         default:
           return NasColors.darkBlue;
       }
@@ -978,6 +989,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           return NasColors.red;
         case 3:
           return NasColors.pending;
+        case 4:
+          return NasColors.pending;
+        case 5:
+          return NasColors.onTime;
         default:
           return NasColors.darkBlue;
       }

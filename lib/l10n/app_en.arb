@@ -968,5 +968,8 @@
   "marriageLeave":"Marriage Leave",
   "examLeave":"Exam Leave",
   "deathLeave":"Death Leave",
-  "specialDocument":"Special Document"
+  "specialDocument":"Special Document",
+  "slots":"Slots",
+  "currentOrganization":"Current Organization",
+  "searchYourCompany":"Search your Company"
 }

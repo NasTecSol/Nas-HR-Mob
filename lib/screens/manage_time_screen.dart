@@ -812,7 +812,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       singletonClass.branchShiftsDataList.addAll([branch]);
       final employees = singletonClass.branchShiftsDataList.first.data?.employees;
       if (employees != null) {
-        timeTableShiftEmployees.clear(); // clear before re-adding
+        timeTableShiftEmployees.clear();
         for (var emp in employees) {
           final shiftType = emp.shiftInfo?.shiftType;
 

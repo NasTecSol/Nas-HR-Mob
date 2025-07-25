@@ -1643,4 +1643,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get specialDocument => 'Special Document';
+
+  @override
+  String get slots => 'Slots';
+
+  @override
+  String get currentOrganization => 'Current Organization';
+
+  @override
+  String get searchYourCompany => 'Search your Company';
 }

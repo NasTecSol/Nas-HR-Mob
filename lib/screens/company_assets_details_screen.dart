@@ -8,7 +8,12 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter/rendering.dart';
 import '../request_controller/company_assets_details_model.dart';
 import '../request_controller/company_model.dart';
 
@@ -23,6 +28,7 @@ class CompanyAssetsDetailsScreen extends StatefulWidget {
 
 class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen> {
   SingletonClass singletonClass = SingletonClass();
+  final GlobalKey _captureKey = GlobalKey();
   int _selectedOptionIndex = 0;
 
   @override
@@ -120,158 +126,166 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                         )
                             : Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 15),
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(15)),
-                              color: NasColors.containerColor,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  spreadRadius: 2,
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 0),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    objectDetails.objectName ?? 'N/A',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                          child: RepaintBoundary(
+                            key: _captureKey,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 15),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                color: NasColors.containerColor,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 0),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Wrap(
+                                      alignment: WrapAlignment.spaceBetween,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      spacing: 10,
+                                      runSpacing: 10,
+                                      children: [
+                                        Text(
+                                          objectDetails.objectName ?? 'N/A',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => _captureAndShare(),
+                                          icon: const Icon(Icons.print , color:  Colors.black, size: 30,),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Wrap(
-                                    spacing: 4.0,
-                                    children: (assetDetails.data?.first.templateType ?? 'N/A')
-                                        .split('_')
-                                        .where((word) => word.toLowerCase() != 'asset')
-                                        .map((tag) => Chip(
-                                      label: Text(tag),
-                                      backgroundColor: NasColors.darkBlue,
-                                      labelStyle: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
-                                      materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                    ))
-                                        .toList(),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Dialog(
-                                            backgroundColor: Colors.transparent,
-                                            child: Container(
-                                              width:
-                                              MediaQuery.of(context).size.width * 0.8,
-                                              height:
-                                              MediaQuery.of(context).size.height * 0.3,
-                                              decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius: BorderRadius.circular(12.0),
+                                    const SizedBox(height: 10),
+                                    Wrap(
+                                      spacing: 4.0,
+                                      children: (assetDetails.data?.first.templateType ?? 'N/A')
+                                          .split('_')
+                                          .where((word) => word.toLowerCase() != 'asset')
+                                          .map((tag) => Chip(
+                                        label: Text(tag),
+                                        backgroundColor: NasColors.darkBlue,
+                                        labelStyle: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                        materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                      ))
+                                          .toList(),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    GestureDetector(
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Dialog(
+                                              backgroundColor: Colors.transparent,
+                                              child: Container(
+                                                width:
+                                                MediaQuery.of(context).size.width * 0.8,
+                                                height:
+                                                MediaQuery.of(context).size.height * 0.3,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  borderRadius: BorderRadius.circular(12.0),
+                                                ),
+                                                child: objectDetails.img != null &&
+                                                    objectDetails.img!.isNotEmpty
+                                                    ? (objectDetails.img!
+                                                    .startsWith('http')
+                                                    ? Image.network(
+                                                  objectDetails.img!,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const Icon(Icons.error),
+                                                )
+                                                    : Image.memory(
+                                                  base64Decode(
+                                                      objectDetails.img!),
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const Icon(Icons.error),
+                                                ))
+                                                    : const Icon(Icons.image_not_supported,
+                                                    size: 50, color: Colors.grey),
                                               ),
-                                              child: objectDetails.img != null &&
-                                                  objectDetails.img!.isNotEmpty
-                                                  ? (objectDetails.img!
-                                                  .startsWith('http')
-                                                  ? Image.network(
-                                                objectDetails.img!,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) =>
-                                                const Icon(Icons.error),
-                                              )
-                                                  : Image.memory(
-                                                base64Decode(
-                                                    objectDetails.img!),
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) =>
-                                                const Icon(Icons.error),
-                                              ))
-                                                  : Image.network(
-                                                'https://via.placeholder.com/150',
-                                                fit: BoxFit.fill,
-                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: objectDetails.img != null &&
+                                          objectDetails.img!.isNotEmpty
+                                          ? (objectDetails.img!.startsWith('http')
+                                          ? Image.network(
+                                        objectDetails.img!,
+                                        height: 150,
+                                        width: 150,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                        const Icon(Icons.error),
+                                      )
+                                          : Image.memory(
+                                        base64Decode(objectDetails.img!),
+                                        height: 150,
+                                        width: 150,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                        const Icon(Icons.error),
+                                      ))
+                                          : const Icon(Icons.image_not_supported,
+                                          size: 50, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    if (objectDetails.parameters != null)
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children:
+                                        objectDetails.parameters!.entries.map((entry) {
+                                          return Padding(
+                                            padding:
+                                            const EdgeInsets.symmetric(vertical: 4.0),
+                                            child: Text(
+                                              '${entry.key}: ${entry.value}',
+                                              style: GoogleFonts.inter(fontSize: 16),
                                             ),
                                           );
-                                        },
-                                      );
-                                    },
-                                    child: objectDetails.img != null &&
-                                        objectDetails.img!.isNotEmpty
-                                        ? (objectDetails.img!.startsWith('http')
-                                        ? Image.network(
-                                      objectDetails.img!,
-                                      height: 150,
-                                      width: 150,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
-                                    )
-                                        : Image.memory(
-                                      base64Decode(objectDetails.img!),
-                                      height: 150,
-                                      width: 150,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
-                                    ))
-                                        : Image.network(
-                                      'https://via.placeholder.com/150',
-                                      height: 150,
-                                      width: 150,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  if (objectDetails.parameters != null)
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children:
-                                      objectDetails.parameters!.entries.map((entry) {
-                                        return Padding(
-                                          padding:
-                                          const EdgeInsets.symmetric(vertical: 4.0),
-                                          child: Text(
-                                            '${entry.key}: ${entry.value}',
-                                            style: GoogleFonts.inter(fontSize: 16),
-                                          ),
+                                        }).toList(),
+                                      ),
+                                    if (objectDetails.childObjs != null)
+                                      ...objectDetails.childObjs!.map((child) {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(child.objectName ?? ''),
+                                            if (child.parameters != null)
+                                              ...child.parameters!.entries.map((entry) {
+                                                return Text('${entry.key}: ${entry.value}');
+                                              }).toList(),
+                                            if (child.additionalInfo != null)
+                                              ...child.additionalInfo!.entries.map((entry) {
+                                                return Text('${entry.key}: ${entry.value}');
+                                              }).toList(),
+                                          ],
                                         );
                                       }).toList(),
-                                    ),
-                                  if (objectDetails.childObjs != null)
-                                    ...objectDetails.childObjs!.map((child) {
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(child.objectName ?? ''),
-                                          if (child.parameters != null)
-                                            ...child.parameters!.entries.map((entry) {
-                                              return Text('${entry.key}: ${entry.value}');
-                                            }).toList(),
-                                          if (child.additionalInfo != null)
-                                            ...child.additionalInfo!.entries.map((entry) {
-                                              return Text('${entry.key}: ${entry.value}');
-                                            }).toList(),
-                                        ],
-                                      );
-                                    }).toList(),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -355,8 +369,6 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                   Text(AppLocalizations.of(context)!.status,
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text("Action",
-                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                               const Divider(color: Colors.grey),
@@ -371,8 +383,6 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                   Text(item.status ?? '-',
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  Text("View",
-                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blue)),
                                 ],
                               ),
                             ],
@@ -477,4 +487,36 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
     }
     return null;
   }
-}
+
+  Future<void> _captureAndShare() async {
+    try {
+      // Wait until after the current frame has been rendered
+      await Future.delayed(Duration(milliseconds: 100));
+      await WidgetsBinding.instance.endOfFrame;
+
+      final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        debugPrint("Capture boundary is null");
+        return;
+      }
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        debugPrint("ByteData is null");
+        return;
+      }
+
+      final pngBytes = byteData.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/asset_capture.png').create();
+      await file.writeAsBytes(pngBytes);
+
+      await Share.shareXFiles([XFile(file.path)], text: 'Captured Asset Screenshot');
+    } catch (e) {
+      debugPrint('Error capturing image: $e');
+    }
+  }
+
+  }

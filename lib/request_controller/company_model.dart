@@ -26,30 +26,30 @@ class CompanyData {
 }
 
 class Data {
-  String? id;
-  String? name;
-  String? title;
-  String? city;
-  String? country;
-  String? address;
-  String? shortCode;
-  String? licenseId;
-  String? establishmentNo;
-  String? commericalReg;
-  String? logo;
+  dynamic id;
+  dynamic name;
+  dynamic title;
+  dynamic city;
+  dynamic country;
+  dynamic address;
+  dynamic shortCode;
+  dynamic licenseId;
+  dynamic establishmentNo;
+  dynamic commericalReg;
+  dynamic logo;
   License? license;
-  String? phoneNumber;
-  String? email;
-  int? extension;
+  dynamic phoneNumber;
+  dynamic email;
+  dynamic extension;
   List<Rules>? rules;
   List<Policies>? policies;
   List<Assets>? assets;
   List<Documents>? documents;
-  String? createdBy;
-  String? organizationId;
-  String? createdAt;
-  String? updatedAt;
-  int? v;
+  dynamic createdBy;
+  dynamic organizationId;
+  dynamic createdAt;
+  dynamic updatedAt;
+  dynamic v;
   List<ApprovalGroupData>? approvalGroupData;
   List<Request>? request;
   NotificationSettings? notificationSettings;
@@ -179,12 +179,12 @@ class ExpenseSettings {
 }
 
 class AccountType {
-  String? accountType;
-  String? name;
-  int? limit;
-  bool? isDefault;
-  int? creditLimit;
-  int? expenseLimit;
+  dynamic accountType;
+  dynamic name;
+  dynamic limit;
+  dynamic isDefault;
+  dynamic creditLimit;
+  dynamic expenseLimit;
 
   AccountType({this.accountType, this.name, this.limit, this.isDefault, this.creditLimit, this.expenseLimit});
 
@@ -210,8 +210,8 @@ class AccountType {
 }
 
 class AdvanceRequestLimits {
-  int? maxAmount;
-  int? maxOutstandingRequests;
+  dynamic maxAmount;
+  dynamic maxOutstandingRequests;
 
   AdvanceRequestLimits({this.maxAmount, this.maxOutstandingRequests});
 
@@ -229,8 +229,8 @@ class AdvanceRequestLimits {
 }
 
 class ApprovalThresholds {
-  int? amount;
-  int? approvalGroupId;
+  dynamic amount;
+  dynamic approvalGroupId;
 
   ApprovalThresholds({this.amount, this.approvalGroupId});
 
@@ -248,9 +248,9 @@ class ApprovalThresholds {
 }
 
 class ExpenseCategories {
-  String? name;
-  String? description;
-  bool? active;
+  dynamic name;
+  dynamic description;
+  dynamic active;
 
   ExpenseCategories({this.name, this.description, this.active});
 
@@ -270,8 +270,8 @@ class ExpenseCategories {
 }
 
 class PayrollSettings {
-  int? salaryDate;
-  bool? editPayrollDraft;
+  dynamic salaryDate;
+  dynamic editPayrollDraft;
 
   PayrollSettings({this.salaryDate, this.editPayrollDraft});
 
@@ -317,8 +317,8 @@ class NotificationSettings {
 }
 
 class DocNotifications {
-  bool? enabled;
-  String? expiry;
+  dynamic enabled;
+  dynamic expiry;
 
   DocNotifications({this.enabled, this.expiry});
 
@@ -336,8 +336,8 @@ class DocNotifications {
 }
 
 class Emailsettings {
-  bool? enabled;
-  String? expiry;
+  dynamic enabled;
+  dynamic expiry;
 
   Emailsettings({this.enabled, this.expiry});
 
@@ -355,8 +355,8 @@ class Emailsettings {
 }
 
 class PushNotification {
-  bool? enabled;
-  String? expiry;
+  dynamic enabled;
+  dynamic expiry;
 
   PushNotification({this.enabled, this.expiry});
 
@@ -374,12 +374,12 @@ class PushNotification {
 }
 
 class Request {
-  int? groupId;
-  String? requestType;
-  String? requestName;
-  bool? docRequired;
+  dynamic groupId;
+  dynamic requestType;
+  dynamic requestName;
+  dynamic docRequired;
   List<SubTypes>? subTypes;
-  String? groupName;
+  dynamic groupName;
 
   Request({this.groupId, this.requestType, this.requestName, this.docRequired, this.subTypes, this.groupName});
 
@@ -407,9 +407,9 @@ class Request {
 }
 
 class SubTypes {
-  String? requestType;
-  String? requestName;
-  bool? docRequired;
+  dynamic requestType;
+  dynamic requestName;
+  dynamic docRequired;
 
   SubTypes({this.requestType, this.requestName, this.docRequired});
 
@@ -430,8 +430,8 @@ class SubTypes {
 
 class ApprovalGroupData {
   List<GroupData>? groupData;
-  String? groupName;
-  int? groupId;
+  dynamic groupName;
+  dynamic groupId;
 
   ApprovalGroupData({this.groupData, this.groupName, this.groupId});
 
@@ -453,12 +453,12 @@ class ApprovalGroupData {
 }
 
 class GroupData {
-  String? employeeId;
-  String? name;
-  String? designation;
-  String? grade;
-  String? departmentId;
-  bool? isRequired;
+  dynamic employeeId;
+  dynamic name;
+  dynamic designation;
+  dynamic grade;
+  dynamic departmentId;
+  dynamic isRequired;
 
   GroupData({this.employeeId, this.name, this.designation, this.grade, this.departmentId, this.isRequired});
 
@@ -484,8 +484,8 @@ class GroupData {
 }
 
 class Documents {
-  String? docId;
-  String? type;
+  dynamic docId;
+  dynamic type;
 
   Documents({this.docId, this.type});
 
@@ -503,13 +503,13 @@ class Documents {
 }
 
 class Assets {
-  String? assetId;
-  int? randomId;
-  String? currentAssignedEmp;
-  String? currentAssignedEmpName;
-  String? currentAssignedDate;
+  dynamic assetId;
+  dynamic randomId;
+  dynamic currentAssignedEmp;
+  dynamic currentAssignedEmpName;
+  dynamic currentAssignedDate;
   List<History>? history;
-  String? status;
+  dynamic status;
 
   Assets({this.assetId, this.randomId, this.currentAssignedEmp, this.currentAssignedEmpName, this.currentAssignedDate, this.history, this.status});
 
@@ -539,10 +539,10 @@ class Assets {
 }
 
 class History {
-  String? employeeId;
-  String? employeeName;
-  String? issueDateFrom;
-  String? issueDateTo;
+  dynamic employeeId;
+  dynamic employeeName;
+  dynamic issueDateFrom;
+  dynamic issueDateTo;
 
   History({this.employeeId, this.employeeName, this.issueDateFrom, this.issueDateTo});
 
@@ -564,9 +564,9 @@ class History {
 }
 
 class Policies {
-  String? policyId;
-  String? policyName;
-  String? policyType;
+  dynamic policyId;
+  dynamic policyName;
+  dynamic policyType;
 
   Policies({this.policyId, this.policyName, this.policyType});
 
@@ -586,7 +586,7 @@ class Policies {
 }
 
 class Rules {
-  String? rules;
+  dynamic rules;
 
   Rules({this.rules});
 

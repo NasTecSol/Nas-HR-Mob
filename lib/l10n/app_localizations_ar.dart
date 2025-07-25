@@ -1641,4 +1641,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get specialDocument => 'مستند خاص';
+
+  @override
+  String get slots => 'الفترات';
+
+  @override
+  String get currentOrganization => 'المؤسسة الحالية';
+
+  @override
+  String get searchYourCompany => 'ابحث عن شركتك';
 }

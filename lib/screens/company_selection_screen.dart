@@ -81,7 +81,6 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
           children: [
             Column(
               children: [
-                // Top Container
                 Container(
                   height: MediaQuery.of(context).size.height * 0.2,
                   decoration: BoxDecoration(
@@ -102,6 +101,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 55),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         if (_hasBaseUrl)
                           IconButton(
@@ -134,7 +134,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Current Organization",
+                              "${AppLocalizations.of(context)!.currentOrganization}",
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                         padding: EdgeInsets.zero,
                         children: [
                            Text(
-                              "Search your Company",
+                              "${AppLocalizations.of(context)!.searchYourCompany}",
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,

@@ -633,6 +633,9 @@
     "marriageLeave": "إجازة زواج",
     "examLeave": "إجازة امتحان",
     "deathLeave": "إجازة وفاة",
-    "specialDocument": "مستند خاص"
+    "specialDocument": "مستند خاص",
+    "slots": "الفترات",
+    "currentOrganization": "المؤسسة الحالية",
+    "searchYourCompany": "ابحث عن شركتك"
 
 }
