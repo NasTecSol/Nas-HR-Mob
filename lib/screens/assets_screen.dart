@@ -19,8 +19,16 @@ class _AssetsScreenState extends State<AssetsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final assetsInfo = singletonClass.employeeDataList.first.data?.assetsInfo;
-    final companyAssetsInfo = singletonClass.companyDataList.first.data?.assets;
+    final assetsInfo = (singletonClass.employeeDataList.isNotEmpty &&
+        singletonClass.employeeDataList.first.data?.assetsInfo != null)
+        ? singletonClass.employeeDataList.first.data!.assetsInfo
+        : [];
+
+    final companyAssetsInfo = (singletonClass.companyDataList.isNotEmpty &&
+        singletonClass.companyDataList.first.data?.assets != null)
+        ? singletonClass.companyDataList.first.data!.assets
+        : [];
+
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
@@ -71,45 +79,6 @@ class _AssetsScreenState extends State<AssetsScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      onPressed: () {
-                        // Add your onPressed functionality here
-                      },
-                      child: SizedBox(
-                        height: 30,
-                        width: 90,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.filter_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              AppLocalizations.of(context)!.filter,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 20),

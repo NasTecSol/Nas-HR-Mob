@@ -108,17 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
           final SharedPreferences preferences = await SharedPreferences.getInstance();
           String? token = preferences.getString('token');
           decodeJwt(token!.trim());
-          await singletonClass.getEmployeeData();
-          await singletonClass.getCompaniesData();
-          await singletonClass.getUISettingsData();
-          singletonClass.getEmployeeData();
-          await singletonClass.getClockingData();
-          await singletonClass.getBranchData();
-          singletonClass.getCompanyData();
-          singletonClass.getRemoteAttendanceData();
-          await singletonClass.getEmployeeAttendanceData();
-          singletonClass.getNotifications();
-          singletonClass.sendFCMToken();
           setState(() {
             isLoading = false ;
           });
