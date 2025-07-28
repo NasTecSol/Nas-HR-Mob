@@ -615,7 +615,28 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         );
                       } else if (filteredAttendanceDataList.isEmpty) {
                         return Center(
-                          child: Text(AppLocalizations.of(context)!.noData),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       }
                       final hasMatchingData = filteredAttendanceDataList.any((attendance) {
@@ -639,9 +660,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             return const SizedBox.shrink();
                           }
                           if (_selectedOptionIndex != 0) {
-                            if ((_selectedOptionIndex == 1 && attendance.status != 'present') ||
-                                (_selectedOptionIndex == 2 && attendance.status != 'absent') ||
-                                (_selectedOptionIndex == 3 && attendance.status != 'missing checkin/out') ||
+                            final status = attendance.status?.toLowerCase();
+                            if ((_selectedOptionIndex == 1 && status != 'present') ||
+                                (_selectedOptionIndex == 2 && status != 'absent') ||
+                                (_selectedOptionIndex == 3 && status != 'missing checkin/out') ||
                                 (_selectedOptionIndex == 4 && (attendance.lateMinutes ?? 0) <= 0) ||
                                 (_selectedOptionIndex == 5 && (attendance.earlyCheckOut ?? 0) <= 0)) {
                               return const SizedBox.shrink();
@@ -904,7 +926,30 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           );
                         },
                       ) : Center(
-                        child: Text(AppLocalizations.of(context)!.noData),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                       );
                     })),
         ],

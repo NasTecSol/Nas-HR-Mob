@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart' show Lottie;
 import 'package:nashr/screens/assets_details_screen.dart';
 import 'package:nashr/screens/company_assets_details_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -219,13 +220,24 @@ class _AssetsScreenState extends State<AssetsScreen> {
                     : Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      AppLocalizations.of(context)!.noData,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/empty.json'),
+                          ),
+                        ),
+                        Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -354,13 +366,24 @@ class _AssetsScreenState extends State<AssetsScreen> {
                        : Center(
                      child: Padding(
                        padding: const EdgeInsets.all(20.0),
-                       child: Text(
-                         AppLocalizations.of(context)!.noData,
-                         style: GoogleFonts.inter(
-                           fontSize: 18,
-                           fontWeight: FontWeight.bold,
-                           color: NasColors.darkBlue,
-                         ),
+                       child: Column(
+                         children: [
+                           Center(
+                             child: SizedBox(
+                               height: 200,
+                               width: 200,
+                               child: Lottie.asset('images/empty.json'),
+                             ),
+                           ),
+                           Text(
+                             AppLocalizations.of(context)!.noData,
+                             style: GoogleFonts.inter(
+                               fontSize: 18,
+                               fontWeight: FontWeight.w500,
+                               color: NasColors.darkBlue,
+                             ),
+                           ),
+                         ],
                        ),
                      ),
                    ),
@@ -490,13 +513,24 @@ class _AssetsScreenState extends State<AssetsScreen> {
                        : Center(
                      child: Padding(
                        padding: const EdgeInsets.all(20.0),
-                       child: Text(
-                         AppLocalizations.of(context)!.noData,
-                         style: GoogleFonts.inter(
-                           fontSize: 18,
-                           fontWeight: FontWeight.bold,
-                           color: NasColors.darkBlue,
-                         ),
+                       child: Column(
+                         children: [
+                           Center(
+                             child: SizedBox(
+                               height: 200,
+                               width: 200,
+                               child: Lottie.asset('images/empty.json'),
+                             ),
+                           ),
+                           Text(
+                             AppLocalizations.of(context)!.noData,
+                             style: GoogleFonts.inter(
+                               fontSize: 18,
+                               fontWeight: FontWeight.w500,
+                               color: NasColors.darkBlue,
+                             ),
+                           ),
+                         ],
                        ),
                      ),
                    ),

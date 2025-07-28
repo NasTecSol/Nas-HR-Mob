@@ -378,6 +378,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
 
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$fromDateString&endDate=$toDateString');
     var response = await client.get(uri,headers: singletonClass.getHeaders());
+    print(uri);
     log("ClockingData my clocking:${response.body}");
     log(fromDateString);
     log(toDateString);

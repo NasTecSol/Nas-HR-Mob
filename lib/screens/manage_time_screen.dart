@@ -24,21 +24,25 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool _isChecked = true;
   bool isSearching = false;
-  String? selectedBranchName;
-  String? selectedBranchId;
   int selectedEmployeeIndex = 0;
   String? selectedEMPID;
   Future<TimeTableShiftModel?>? timeTableFuture;
   TextEditingController searchController = TextEditingController();
   final List<Map<String, String>> timeTableShiftEmployees = [];
+  Future<void>? _shiftFuture;
 
   @override
   void initState() {
     super.initState();
-    fetchAndSetShiftDetails();
-    getShiftsFromBranches();
+    _teamCheck();
+    _shiftFuture = fetchAndSetShiftDetails();
   }
 
+  void _teamCheck(){
+    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
+      _isChecked = false ;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,123 +99,125 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
             ),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               if (isSearching == false) ...[
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1' ||
-                    singletonClass.getJWTModel()?.grade == "L2")
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10.0, right: 10),
-                    child: PopupMenuButton<String>(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      onSelected: (value) {
-                        setState(() {
-                          singletonClass.branchID = value;
-                          selectedBranchId = singletonClass.branchID;
-                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
-                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
-                          selectedBranchName = branch?.branchName ?? "Unknown Branch";
-                          print('Selected Branch ID: $value');
-                          _isChecked = false;
-                          timeTableShiftEmployees.clear();
-                          fetchAndSetShiftDetails();
-                          getShiftsFromBranches();
-                        });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        final branchList =
-                            singletonClass.branchesDataList.first.data;
-                        if (branchList == null || branchList.isEmpty) {
-                          return [];
-                        }
-                        return branchList
-                            .map((branch) => PopupMenuItem<String>(
-                                  value: branch.branchCompanyId,
-                                  child: Text(
-                                      branch.branchName ?? "Unknown Branch"),
-                                ))
-                            .toList();
-                      },
-                      child: Container(
-                        height: 49,
-                        width: 170,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(45),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                if(_selectedOptionIndex == 0)...[
+                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                      singletonClass.getJWTModel()?.grade == 'L1' ||
+                      singletonClass.getJWTModel()?.grade == "L2")
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0, right: 10),
+                      child: PopupMenuButton<String>(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(width: 8),
-                            Image.asset(
-                              'images/site.png',
-                              height: 14,
-                              width: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                singletonClass.branchName != null &&
-                                    singletonClass.branchName!.isNotEmpty
-                                    ? singletonClass.branchName!
-                                    : AppLocalizations.of(context)!
-                                        .selectBranch,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                        onSelected: (value) {
+                          setState(() {
+                            timeTableShiftEmployees.clear();
+                            singletonClass.branchID = value;
+                            final branch = singletonClass.branchesDataList.first.data?.firstWhere(
+                                    (branch) => branch.branchCompanyId == value);
+                            singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
+                            _isChecked = false;
+
+                            /// UPDATE _shiftFuture so FutureBuilder gets refreshed
+                            _shiftFuture = fetchAndSetShiftDetails();
+                          });
+                        },
+                        itemBuilder: (BuildContext context) {
+                          final branchList = singletonClass.branchesDataList.first.data;
+                          if (branchList == null || branchList.isEmpty) {
+                            return [];
+                          }
+                          return branchList
+                              .map((branch) => PopupMenuItem<String>(
+                            value: branch.branchCompanyId,
+                            child: Text(
+                                branch.branchName ?? "Unknown Branch"),
+                          ))
+                              .toList();
+                        },
+                        child: Container(
+                          height: 49,
+                          width: 170,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(45),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
-                            const Icon(Icons.keyboard_arrow_down,
-                                color: Colors.black),
-                          ],
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(width: 8),
+                              Image.asset(
+                                'images/site.png',
+                                // <-- Replace with your actual image path
+                                height: 14,
+                                width: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  singletonClass.branchName != null &&
+                                      singletonClass.branchName!.isNotEmpty
+                                      ? singletonClass.branchName!
+                                      : AppLocalizations.of(context)!
+                                      .selectBranch,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const Icon(Icons.keyboard_arrow_down,
+                                  color: Colors.black),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                Spacer(),
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1' ||
-                    singletonClass.getJWTModel()?.grade == "L2")
-                  Padding(
-                    padding: const EdgeInsets.all(0),
-                    child: Row(
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.teams,
-                          style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue),
-                        ),
-                        Checkbox(
+                  Spacer(),
+                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                      singletonClass.getJWTModel()?.grade == 'L1' ||
+                      singletonClass.getJWTModel()?.grade == "L2")
+                    Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Row(
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.teams,
+                            style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: NasColors.darkBlue),
+                          ),
+                          Checkbox(
                             value: _isChecked,
                             activeColor: NasColors.onTime,
                             onChanged: (bool? value) {
                               setState(() {
                                 _isChecked = value ?? false;
-                                if (_isChecked == true){
+                                if (_isChecked == true) {
                                   timeTableShiftEmployees.clear();
-                                  fetchAndSetShiftDetails();
-                                  getShiftsFromBranches();
-                                  selectedBranchId = null;
-                                  selectedBranchName = null;
+                                  singletonClass.branchID = null;
+                                  singletonClass.branchName = null;
+                                  /// ✅ UPDATE _shiftFuture
+                                  _shiftFuture = fetchAndSetShiftDetails();
                                 }
                               });
-                            }),
-                      ],
+                            },),
+                        ],
+                      ),
                     ),
-                  ),
+                ]
+
               ],
               if (isSearching == true)
                 Expanded(
@@ -223,7 +229,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         setState(() {});
                       },
                       decoration: InputDecoration(
-                        hintText: 'Search by name',
+                        hintText: AppLocalizations.of(context)!.search,
                         filled: true,
                         fillColor: Colors.white,
                         prefixIcon: Icon(Icons.search),
@@ -238,7 +244,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide:
-                              const BorderSide(color: Colors.black, width: 1.5),
+                          const BorderSide(color: Colors.black, width: 1.5),
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(Icons.close),
@@ -269,169 +275,195 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
             if (_selectedOptionIndex == 0) ...[
               Expanded(
                 child: FutureBuilder(
-                  future: fetchAndSetShiftDetails(), // replace this with your actual API/fetch function
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: Lottie.asset('images/loader.json', height: 200, width: 200),
-                      );
-                    }
-                    if (snapshot.hasError) {
-                      return const Center(child: Text('Error loading data'));
-                    }
-                    final employees = singletonClass.branchShiftsDataList.first.data?.employees ?? [];
-                    if (employees.isEmpty) {
-                      return const Center(child: Text("No employee here"));
-                    }
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: employees.length,
-                      itemBuilder: (ctx, i) {
-                        final employee = employees[i];
-                        final searchText = searchController.text.toLowerCase();
-
-                        if (isSearching &&
-                            !(employee.userName?.toLowerCase().contains(searchText) ?? false)) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10),
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  ClipOval(
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      radius: 23,
-                                      child: Image.asset(
-                                        'images/DP.png',
-                                        fit: BoxFit.cover,
-                                        width: 100,
-                                        height: 100,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    width: 160,
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${employee.userName}",
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  SizedBox(
-                                    width: 88,
-                                    child: Text(
-                                      "${employee.shiftInfo?.shiftType ?? ''}",
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      softWrap: true,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(employee.shiftInfo?.timeFrom)} ${AppLocalizations.of(context)!.to} ${formatIsoTime(employee.shiftInfo?.timeTo)}",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Builder(
-                                    builder: (context) {
-                                      return IconButton(
-                                        icon: const Icon(Icons.more_vert_outlined),
-                                        onPressed: () async {
-                                          final RenderBox button = context.findRenderObject() as RenderBox;
-                                          final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-
-                                          final RelativeRect position = RelativeRect.fromRect(
-                                            Rect.fromPoints(
-                                              button.localToGlobal(Offset.zero, ancestor: overlay),
-                                              button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
-                                            ),
-                                            Offset.zero & overlay.size,
-                                          );
-
-                                          await showMenu(
-                                            context: context,
-                                            position: position,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                            color: Colors.white,
-                                            items: [
-                                              PopupMenuItem(
-                                                padding: EdgeInsets.zero,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateShiftScreen(employees: employee)));
-                                                  },
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                    child: Row(
-                                                      children: [
-                                                        const Icon(Icons.edit, size: 18),
-                                                        const SizedBox(width: 8),
-                                                        Text(
-                                                          "Update",
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 13,
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  )
-                                ],
-                              ),
-                            ],
+                    future: _shiftFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/loader.json'),
                           ),
                         );
-                      },
-                    );
-                  },
-                ),
-              ),
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        );
+                      } else  {
+                        final employees = singletonClass.branchShiftsDataList.first.data?.employees ?? [];
+                        return employees.isEmpty
+                            ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                            : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: employees.length,
+                          itemBuilder: (ctx, i) {
+                            final employee = employees[i];
+                            final searchText = searchController.text.toLowerCase();
 
+                            if (isSearching &&
+                                !(employee.userName?.toLowerCase().contains(searchText) ?? false)) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      ClipOval(
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.white,
+                                          radius: 23,
+                                          child: Image.asset(
+                                            'images/DP.png',
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Container(
+                                        width: 160,
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "${employee.userName}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      SizedBox(
+                                        width: 88,
+                                        child: Text(
+                                          "${employee.shiftInfo?.shiftType ?? ''}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(employee.shiftInfo?.timeFrom)} ${AppLocalizations.of(context)!.to} ${formatIsoTime(employee.shiftInfo?.timeTo)}",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      Builder(
+                                        builder: (context) {
+                                          return IconButton(
+                                            icon: const Icon(Icons.more_vert_outlined),
+                                            onPressed: () async {
+                                              final RenderBox button = context.findRenderObject() as RenderBox;
+                                              final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+                                              final RelativeRect position = RelativeRect.fromRect(
+                                                Rect.fromPoints(
+                                                  button.localToGlobal(Offset.zero, ancestor: overlay),
+                                                  button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+                                                ),
+                                                Offset.zero & overlay.size,
+                                              );
+
+                                              await showMenu(
+                                                context: context,
+                                                position: position,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                color: Colors.white,
+                                                items: [
+                                                  PopupMenuItem(
+                                                    padding: EdgeInsets.zero,
+                                                    child: InkWell(
+                                                      onTap: () {
+                                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateShiftScreen(employees: employee)));
+                                                      },
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(Icons.edit, size: 18),
+                                                            const SizedBox(width: 8),
+                                                            Text(
+                                                              "Update",
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 13,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    }),
+              ),
             ],
             if (_selectedOptionIndex == 1) ...[
               SizedBox(
@@ -483,7 +515,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                 SizedBox(
                                   height: 30,
                                   width:
-                                      MediaQuery.of(context).size.width * 0.4,
+                                  MediaQuery.of(context).size.width * 0.4,
                                   child: Column(
                                     children: [
                                       Flexible(
@@ -538,17 +570,32 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData ||
                         singletonClass.timeTableShiftsDataList.isEmpty ||
-                        singletonClass
-                                .timeTableShiftsDataList.first.data?.isEmpty !=
-                            false ||
-                        singletonClass.timeTableShiftsDataList.first.data?.first
-                                .shifts?.isEmpty !=
-                            false ||
-                        singletonClass.timeTableShiftsDataList.first.data!.first
-                                .shifts!.first.shiftDates?.isEmpty !=
-                            false) {
-                      return const Center(
-                          child: Text('No time table data available.'));
+                        singletonClass.timeTableShiftsDataList.first.data!.first.shifts!.isEmpty ||
+                        singletonClass.timeTableShiftsDataList.first.data!.first.shifts!.first.shiftDates!.isEmpty) {
+                      return  Center(
+                        child: Padding(
+                          padding:  EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     }
 
                     final shiftDates = singletonClass.timeTableShiftsDataList
@@ -580,7 +627,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                               String formatDate(String updatedAt) {
                                 try {
                                   final updatedAtDateTime =
-                                      DateTime.parse(updatedAt);
+                                  DateTime.parse(updatedAt);
                                   return DateFormat('dd-MM-yyyy')
                                       .format(updatedAtDateTime);
                                 } catch (e) {
@@ -589,7 +636,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                               }
 
                               final String date =
-                                  formatDate(timeTable.date ?? '');
+                              formatDate(timeTable.date ?? '');
 
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -609,7 +656,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                     children: slots.map((slot) {
                                       final Color baseColor =
                                           parseColor(slot.color)
-                                                  ?.withOpacity(0.85) ??
+                                              ?.withOpacity(0.85) ??
                                               Colors.orange.shade400;
 
                                       return Row(
@@ -621,7 +668,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                             decoration: BoxDecoration(
                                               color: baseColor,
                                               borderRadius:
-                                                  const BorderRadius.only(
+                                              const BorderRadius.only(
                                                 topLeft: Radius.circular(8),
                                                 bottomLeft: Radius.circular(8),
                                               ),
@@ -651,7 +698,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                             decoration: BoxDecoration(
                                               color: Colors.white,
                                               borderRadius:
-                                                  BorderRadius.circular(4),
+                                              BorderRadius.circular(4),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.grey
@@ -668,7 +715,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                             decoration: BoxDecoration(
                                               color: baseColor,
                                               borderRadius:
-                                                  const BorderRadius.only(
+                                              const BorderRadius.only(
                                                 topRight: Radius.circular(8),
                                                 bottomRight: Radius.circular(8),
                                               ),
@@ -739,11 +786,18 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     );
   }
 
+  /// CARDS
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedOptionIndex = index;
+          if (index == 0) {
+            _shiftFuture = fetchAndSetShiftDetails();
+            isSearching = false;
+          } else {
+            isSearching = true;
+          }
         });
       },
       child: SizedBox(
@@ -751,13 +805,13 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
         width: 140,
         child: Card(
           color:
-              _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
+          _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
           margin: const EdgeInsets.all(10),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
             side: BorderSide(
               color:
-                  _selectedOptionIndex == index ? Colors.white : Colors.white,
+              _selectedOptionIndex == index ? Colors.white : Colors.white,
               width: 0,
             ),
           ),
@@ -783,12 +837,12 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     );
   }
 
-  //API CALL
+  /// API CALLS
   Future<void> fetchAndSetShiftDetails() async {
     String? branchId;
-    if(_isChecked == false){
-      branchId = selectedBranchId?.isNotEmpty == true
-          ? selectedBranchId
+    if (_isChecked == false) {
+      branchId = singletonClass.branchID?.isNotEmpty == true
+          ? singletonClass.branchID
           : singletonClass.getJWTModel()?.branchId;
     } else {
       branchId = singletonClass.getJWTModel()?.branchId;
@@ -799,81 +853,81 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
 
     if (branchId == null || loggedInEmpId == null) return;
 
-    final uri =
-        Uri.parse('${singletonClass.baseURL}/branches/branchEmplyeesInfo/$branchId/$departmentId/$loggedInEmpId');
+    final uri = Uri.parse(
+      '${singletonClass.baseURL}/branches/branchEmplyeesInfo/$branchId/$departmentId/$loggedInEmpId',
+    );
     final response = await http.get(uri, headers: singletonClass.getHeaders());
-    print("shift data ${response.body}");
+
+    print("Shifts uri $uri");
+    print("Shift data: ${response.body}");
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
       final branch = BranchShiftModel.fromJson(responseBody);
 
       singletonClass.branchShiftsDataList.clear();
-      singletonClass.branchShiftsDataList.addAll([branch]);
-      final employees = singletonClass.branchShiftsDataList.first.data?.employees;
+      singletonClass.branchShiftsDataList.add(branch);
+
+      final employees = branch.data?.employees;
+      timeTableShiftEmployees.clear();
+
       if (employees != null) {
-        timeTableShiftEmployees.clear();
         for (var emp in employees) {
           final shiftType = emp.shiftInfo?.shiftType;
-
-          if (shiftType != null && shiftType.toLowerCase() == 'timetableshift') {
-            final userName = emp.userName ?? "Unknown";
-            final userId = emp.id ?? "NoID";
+          if (shiftType != null &&
+              shiftType.toLowerCase() == 'timetableshift') {
             timeTableShiftEmployees.add({
-              "employeeId": userId,
-              "employeeName": userName,
+              "employeeId": emp.id ?? "NoID",
+              "employeeName": emp.userName ?? "Unknown",
             });
           }
         }
 
-        // If not empty, call the timetable API
         if (timeTableShiftEmployees.isNotEmpty) {
           selectedEMPID = timeTableShiftEmployees[0]['employeeId'];
-          setState(() {
-            timeTableFuture = getTimeTable(selectedEMPID!);
-          });
         }
       }
     }
   }
-
-  //2nd API Call
+  /// TIME TABLE API CALL
   Future<TimeTableShiftModel?> getTimeTable(String employeeId) async {
     String? companyId;
     String? branchId;
 
-    if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+    if (singletonClass.branchID == null || singletonClass.branchID!.isEmpty) {
       companyId = singletonClass.getJWTModel()?.companyId;
       branchId = singletonClass.getJWTModel()?.branchId;
     } else {
-      companyId =
-          singletonClass.timeTableShiftsDataList.first.data!.first.companyId;
-      branchId =
-          singletonClass.timeTableShiftsDataList.first.data!.first.branchId;
+      companyId = singletonClass.selectedCompanyId;
+      branchId = singletonClass.branchID;
+      print(companyId);
+      print(branchId);
     }
 
     final uri = Uri.parse(
-      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=June&employeeId=$employeeId',
+      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=July&employeeId=$employeeId',
     );
 
     final response = await http.get(uri, headers: singletonClass.getHeaders());
+    print("time table uri $uri");
     print("TIME TABLE RESPONSE ${response.body}");
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
       final timeTable = TimeTableShiftModel.fromJson(responseBody);
-      singletonClass.timeTableShiftsDataList.add(timeTable);
+      singletonClass.timeTableShiftsDataList.clear();
+      singletonClass.timeTableShiftsDataList.addAll([timeTable]);
       return timeTable;
     }
     return null;
   }
 
 
-  //3rd API
+  /// UPDATE SHIFT DATA
   Future<void> getShiftsFromBranches() async {
     String? branchId;
     if(_isChecked == false){
-      branchId = selectedBranchId?.isNotEmpty == true
-          ? selectedBranchId
+      branchId = singletonClass.branchID?.isNotEmpty == true
+          ? singletonClass.branchID
           : singletonClass.getJWTModel()?.branchId;
     } else {
       branchId = singletonClass.getJWTModel()?.branchId;
@@ -890,7 +944,9 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
 
       singletonClass.branchesModelDataList.clear();
       singletonClass.branchesModelDataList.addAll([branch]);
-  }}
+    }}
+
+
 
   String formatIsoTime(String? isoTime) {
     if (isoTime == null || isoTime.isEmpty) return '--';

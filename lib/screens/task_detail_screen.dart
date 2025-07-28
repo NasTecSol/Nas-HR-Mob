@@ -86,10 +86,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ? (widget.inProgressTasks!.first.status == "InProgress" ?  AppLocalizations.of(context)!.inProgress : AppLocalizations.of(context)!.inProgress)
                       : widget.completedTask?.isNotEmpty == true
                       ? (widget.completedTask!.first.status == "completed" ?  AppLocalizations.of(context)!.completed : AppLocalizations.of(context)!.completed)
-                      : AppLocalizations.of(context)!.noData,
+                      : "____",
                   style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
                     color: NasColors.darkBlue,
                   ),
                 ),

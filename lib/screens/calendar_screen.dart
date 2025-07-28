@@ -194,9 +194,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                     if (meetingList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black , fontWeight: FontWeight.w500),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -307,9 +325,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   } else {
                     return Center(
-                      child: Text(
-                       AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -347,9 +383,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                     if (eventList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black,fontWeight: FontWeight.w500),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -506,12 +560,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         .toList();
                     if (eventList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -639,12 +707,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   } else {
                     return Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                          fontSize: 15,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
