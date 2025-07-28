@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -11,7 +10,6 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -117,13 +115,26 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
 
                         if (objectDetails == null) {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -171,8 +182,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                         ),
                                       ],
                                     ),
-
-
                                     const SizedBox(height: 10),
                                     Wrap(
                                       spacing: 4.0,
@@ -337,7 +346,28 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
 
                         if (matchingData.isEmpty) {
                           return Center(
-                            child: Text(AppLocalizations.of(context)!.noData),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         }
 
@@ -394,13 +424,26 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         );
                       } else {
                         return Center(
-                          child: Text(
-                            AppLocalizations.of(context)!.noData,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                              fontSize: 15,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );

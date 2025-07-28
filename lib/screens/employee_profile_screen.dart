@@ -114,11 +114,26 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         );
                       } else if (!snapshot.hasData || snapshot.data == null) {
                         return Center(
-                          child: Text(
-                            AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              color: NasColors.darkBlue,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -821,47 +836,50 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         child: ListView.separated(
                                           padding: EdgeInsets.zero,
                                           shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemCount: singletonClass
-                                                  .employeeDetailsAttendanceDataList
-                                                  .first
-                                                  .data
-                                                  ?.first
-                                                  .data
-                                                  ?.length ??
-                                              0,
-                                          separatorBuilder: (_, __) =>
-                                              const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10),
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemCount: singletonClass.employeeDetailsAttendanceDataList.first.data?.first.data?.length ?? 0,
+                                          separatorBuilder: (_, __) => const Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 10),
                                             child: Divider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                                 height: 20),
                                           ),
                                           itemBuilder: (context, index) {
-                                            final attendanceList = singletonClass
-                                                .employeeDetailsAttendanceDataList
-                                                .first
-                                                .data
-                                                ?.first
-                                                .data;
-                                            if (attendanceList == null ||
-                                                attendanceList.isEmpty) {
-                                              return SizedBox();
+                                            final attendanceList = singletonClass.employeeDetailsAttendanceDataList.first.data?.first.data;
+                                            if (attendanceList == null || attendanceList.isEmpty) {
+                                              return Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(20.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Center(
+                                                        child: SizedBox(
+                                                          height: 200,
+                                                          width: 200,
+                                                          child: Lottie.asset('images/empty.json'),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        AppLocalizations.of(context)!.noData,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 18,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
                                             }
-                                            final reversedList = attendanceList
-                                                .reversed
-                                                .toList();
+                                            final reversedList = attendanceList.reversed.toList();
                                             if (index >= reversedList.length) {
                                               return SizedBox();
                                             }
-                                            final attendance =
-                                                reversedList[index];
+                                            final attendance = reversedList[index];
 
-                                            int breakTime =
-                                                attendance.breakTime ?? 0;
+                                            int breakTime = attendance.breakTime ?? 0;
                                             int breakHours = breakTime ~/ 60;
                                             int breakMinutes = breakTime % 60;
 
@@ -940,10 +958,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                           const SizedBox(
                                                               height: 5),
                                                           Text(
-                                                            _translateStatus(
-                                                                attendance
-                                                                    .status,
-                                                                context),
+                                                            _translateStatus(attendance.status, context),
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontWeight:
@@ -1374,13 +1389,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                       : Center(
                                     child: Padding(
                                       padding: const EdgeInsets.all(20.0),
-                                      child: Text(
-                                        AppLocalizations.of(context)!.noData,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
+                                      child: Column(
+                                        children: [
+                                          Center(
+                                            child: SizedBox(
+                                              height: 200,
+                                              width: 200,
+                                              child: Lottie.asset('images/empty.json'),
+                                            ),
+                                          ),
+                                          Text(
+                                            AppLocalizations.of(context)!.noData,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -1523,13 +1549,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                   : Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: NasColors.darkBlue,
-                                    ),
+                                  child: Column(
+                                    children: [
+                                      Center(
+                                        child: SizedBox(
+                                          height: 200,
+                                          width: 200,
+                                          child: Lottie.asset('images/empty.json'),
+                                        ),
+                                      ),
+                                      Text(
+                                        AppLocalizations.of(context)!.noData,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: NasColors.darkBlue,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

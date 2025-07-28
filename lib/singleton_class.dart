@@ -351,6 +351,7 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
+    print(uri);
     var response = await client.get(uri,headers: getHeaders());
     log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {

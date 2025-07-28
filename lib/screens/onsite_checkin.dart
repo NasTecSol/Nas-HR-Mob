@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:math' as math;
@@ -299,22 +302,29 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       ),
     );
   }
-
-Future<void> checkIn(String type) async {
-  String currentTime = DateTime.now().toUtc().toIso8601String();
-  String checkInTime = '${currentTime.split('.')[0]}.000Z';
-  print(checkInTime);
+///check in api call
+  Future<void> checkIn(String type) async {
+    String? empId = singletonClass.getJWTModel()?.empId;
+    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String deviceIp = await _getLocalIpAddress();
+    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    print(currentTime);
 
     Map<String, dynamic> data = {
-      "employeeId": singletonClass.getJWTModel()?.employeeId,
-      "employeeName": singletonClass.getJWTModel()?.userName,
-      "checkInTime": checkInTime,
-      "type": type,
+      "deviceUserId": "$empId",
+      "sn": sn,
+      "timestamp": currentTime,
+      "status": 1,
+      "verify_type": 0,
+      "deviceIp": deviceIp,
+      "deviceName": "remoteLocation",
+      "captureTime": currentTime,
+      "timeZone" : timeZoneName
     };
-    print(data);
-
     String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
+    print("body of check in ${body}");
+    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
     });
@@ -325,30 +335,26 @@ Future<void> checkIn(String type) async {
         body: body,
         headers: singletonClass.getHeaders(),
       );
-
+      print(response.body);
       setState(() {
         isLoading = false;
       });
-      print(response.body);
-
-      if (response.statusCode == 200) {
-        final decodedResponse = json.decode(response.body);
-        var checkInData = CheckInData.fromJson(decodedResponse);
-        singletonClass.setCheckInData([checkInData]);
-        print(singletonClass.checkInDataList.first.data?.id);
+      if (response.statusCode == 201) {
         setState(() {
-          isCheckedIn = true;
+          singletonClass.getClockingData();
         });
-        await Future.delayed(const Duration(seconds: 2));
+        await singletonClass.getClockingData();
+        // Show success alert
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
-          title:  AppLocalizations.of(context)!.success,
+          title: AppLocalizations.of(context)!.success,
           text: AppLocalizations.of(context)!.checkInComplete,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
+        setState(() {});
       } else if (response.statusCode == 400) {
         // Show error alert for status code 400
         QuickAlert.show(
@@ -392,118 +398,119 @@ Future<void> checkIn(String type) async {
     }
   }
 
-//CHECK OUT API CALL
+  ///CHECK OUT API CALL
   Future<void> checkOut() async {
-    String checkOutTime = DateTime.now().toIso8601String();
+    String? empId = singletonClass.getJWTModel()?.empId;
+    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String deviceIp = await _getLocalIpAddress();
+    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    print(currentTime);
 
-    // Fetch the check-in time from the singleton class
-    String? checkInTime = singletonClass.checkInDataList.first.data?.checkInTime;
+    Map<String, dynamic> data = {
+      "deviceUserId": "$empId",
+      "sn": sn,
+      "timestamp": currentTime,
+      "status": 1,
+      "verify_type": 0,
+      "deviceIp": deviceIp,
+      "deviceName": "remoteLocation",
+      "captureTime": currentTime,
+      "timeZone" : timeZoneName
+    };
+    print(data);
 
-    // Calculate the duration between check-in and check-out
-    if (checkInTime != null) {
-      DateTime checkInDateTime = DateTime.parse(checkInTime);
-      DateTime checkOutDateTime = DateTime.parse(checkOutTime);
-      Duration difference = checkOutDateTime.difference(checkInDateTime);
-      String totalHours = "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
-      print("Total time spent: $totalHours");
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
+    setState(() {
+      isLoading = true;
+    });
 
-      // Fetch the check-in ID for updating the record
-      String? id = singletonClass.checkInDataList.first.data?.id;
+    try {
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: singletonClass.getHeaders(),
+      );
 
-      // Prepare data for the check-out API call
-      Map<String, dynamic> data = {
-        "employeeId": singletonClass.getJWTModel()?.employeeId,
-        "employeeName": singletonClass.getJWTModel()?.userName,
-        "checkOutTime": checkOutTime,
-        "type": singletonClass.checkInDataList.first.data?.type,
-        "totalTime": totalHours,
-      };
-      print("Check-out data: $data");
-
-      String body = json.encode(data);
-      var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$id');
       setState(() {
-        isLoading = true;
+        isLoading = false;
       });
+      print(response.body);
 
-      try {
-        final response = await http.patch(
-          uri,
-          body: body,
-          headers: singletonClass.getHeaders(),
+      if (response.statusCode == 201) {
+        setState(() {
+          singletonClass.getClockingData();
+        });
+        await singletonClass.getClockingData();
+        await singletonClass.getClockingData();
+        // Show success alert
+        await QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          title: AppLocalizations.of(context)!.success,
+          text: AppLocalizations.of(context)!.checkOutComplete,
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
         );
-
-        setState(() {
-          isLoading = false;
-        });
-        print("Check-out response: ${response.body}");
-
-        if (response.statusCode == 200) {
-          await Future.delayed(const Duration(seconds: 2));
-          setState(() {
-            isCheckedIn = false;
-          });
-          await QuickAlert.show(
-            context: context,
-            type: QuickAlertType.success,
-            title: AppLocalizations.of(context)!.success,
-            text: AppLocalizations.of(context)!.checkOutComplete,
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-        } else if (response.statusCode == 400) {
-          // Handle validation error
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: 'Error',
-            text: 'Validation failed. Please check your inputs.',
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-        } else {
-          // Handle other server errors
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: 'Error',
-            text: 'An unexpected error occurred. Please try again.',
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-        }
-      } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
-        print('Check-out Error: $e');
-
-        // Handle network errors or exceptions
+        setState(() {});
+      } else if (response.statusCode == 400) {
+        // Show error alert for status code 400
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
           title: 'Error',
-          text: 'An error occurred. Please check your network connection.',
+          text: 'Validation failed. Please check your inputs.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+      } else {
+        // Handle other error statuses
+        print('Error: ${response.statusCode}');
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Error',
+          text: 'An unexpected error occurred. Please try again.',
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
       }
-    } else {
-      // Handle the case where the check-in time is null
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error: $e');
+
+      // Show error alert for exceptions
       QuickAlert.show(
         context: context,
-        type: QuickAlertType.warning,
-        title: 'No Check-In Found',
-        text: 'You must check in before checking out.',
+        type: QuickAlertType.error,
+        title: 'Error',
+        text: 'An error occurred. Please check your network connection.',
         autoCloseDuration: const Duration(seconds: 5),
         showCancelBtn: false,
         showConfirmBtn: false,
       );
     }
+  }
+
+
+  ///get time zone
+  Future<String> _getLocalIpAddress() async {
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        if (addr.type == InternetAddressType.IPv4 &&
+            !addr.isLoopback &&
+            addr.address.startsWith('192.168')) {
+          return addr.address;
+        }
+      }
+    }
+    return 'Unknown';
   }
 }
 
