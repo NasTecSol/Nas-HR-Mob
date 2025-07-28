@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -631,12 +632,28 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                         }),
                                   )
                                 : Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Column(
+                                        children: [
+                                          Center(
+                                            child: SizedBox(
+                                              height: 200,
+                                              width: 200,
+                                              child: Lottie.asset(
+                                                  'images/empty.json'),
+                                            ),
+                                          ),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .noData,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -950,12 +967,28 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                         }),
                                   )
                                 : Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Column(
+                                        children: [
+                                          Center(
+                                            child: SizedBox(
+                                              height: 200,
+                                              width: 200,
+                                              child: Lottie.asset(
+                                                  'images/empty.json'),
+                                            ),
+                                          ),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .noData,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -965,280 +998,449 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
-                  if (widget.attendanceData!.shift =='timeTableShift')...[
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 400,
-                    decoration: BoxDecoration(
-                      color: NasColors.containerGrey,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2), // Shadow color
-                          spreadRadius: 1,
-                          blurRadius: 6,
-                          offset: Offset(0, 3), // Shadow position (x, y)
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    _toggleSlotsExpand();
-                                  },
-                                  icon: Icon(Icons.close_fullscreen_outlined))
-                            ],
+                  if (widget.attendanceData!.shift == 'timeTableShift') ...[
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 400,
+                      decoration: BoxDecoration(
+                        color: NasColors.containerGrey,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            // Shadow color
+                            spreadRadius: 1,
+                            blurRadius: 6,
+                            offset: Offset(0, 3), // Shadow position (x, y)
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'images/slots.png',
-                                fit: BoxFit.contain,
-                                width: 30,
-                                height: 30,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                "${AppLocalizations.of(context)!.slots}",
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.normal,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                              SizedBox(width: 5),
-                              Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                child: Text(
-                                  '${widget.attendanceData!.slots!.isNotEmpty && widget.attendanceData!.slots != null ? widget.attendanceData!.slots!.length : 0}', // Approver List Notification count
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          if (_slotsExpanded) ...[
-                            const SizedBox(height: 10),
-                            widget.attendanceData!.slots!.isNotEmpty
-                                ? SizedBox(
-                                    height: 220,
-                                    child: widget.attendanceData?.slots
-                                                ?.isNotEmpty ==
-                                            true
-                                        ? ListView.builder(
-                                      padding: EdgeInsets.zero,
-                                      itemCount: widget.attendanceData?.slots?.length ?? 0,
-                                      itemBuilder: (context, index) {
-                                        final slots = widget.attendanceData!.slots![index];
-
-                                        DateTime? checkIn = parseTime(slots.checkInTime?.toString() ?? '')?.toLocal();
-                                        DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
-
-                                        return Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.zero,
-                                              color: NasColors.lightGrey,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.4),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 1,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(10.0),
-                                              child: Column(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          const Icon(Icons.exit_to_app_outlined, size: 20, color: Colors.black),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            "${AppLocalizations.of(context)!.clockIn}:",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            checkIn != null ? "$checkIn" : "___",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(width: 20),
-                                                      Row(
-                                                        children: [
-                                                          Icon(Icons.error, size: 20, color: NasColors.pending),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            "${AppLocalizations.of(context)!.late}:",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: NasColors.pending,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            (slots.lateMinutes?.toString().isNotEmpty ?? false)
-                                                                ? "${slots.lateMinutes}"
-                                                                : "___",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                          SizedBox(width: 10),
-                                                          Container(
-                                                            height: 20,
-                                                            width: 75,
-                                                            decoration: BoxDecoration(
-                                                              color: getStatusColor(slots.status ?? ''),
-                                                              borderRadius: BorderRadius.circular(10),
-                                                            ),
-                                                            child: Center(
-                                                              child: Text(
-                                                                _translateStatus(slots.status ?? '', context),
-                                                                textAlign: TextAlign.center,
-                                                                style: GoogleFonts.inter(
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: Colors.white,
-                                                                  fontSize: 10,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(color: Colors.grey.shade400),
-                                                  Row(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Transform(
-                                                            transform: Matrix4.rotationY(math.pi),
-                                                            alignment: Alignment.center,
-                                                            child: const Icon(Icons.exit_to_app_outlined, size: 20, color: Colors.black),
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            "${AppLocalizations.of(context)!.clockOut}:",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            checkOut != null ? "$checkOut" : "___",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(width: 20),
-                                                      Row(
-                                                        children: [
-                                                          Icon(Icons.directions_run_outlined, size: 20, color: NasColors.onTime),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            "${AppLocalizations.of(context)!.earlyLeft}:",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: NasColors.onTime,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            (slots.earlyCheckOut?.toString().isNotEmpty ?? false)
-                                                                ? "${slots.earlyCheckOut}"
-                                                                : "___",
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    )
-                                        : Center(
-                                            child: Text(
-                                              AppLocalizations.of(context)!
-                                                  .noData,
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ),
-                                  )
-                                : Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                            const SizedBox(height: 20),
-                          ],
                         ],
                       ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                    onPressed: () {
+                                      _toggleSlotsExpand();
+                                    },
+                                    icon: Icon(Icons.close_fullscreen_outlined))
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'images/slots.png',
+                                  fit: BoxFit.contain,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  AppLocalizations.of(context)!.slots,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.normal,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                                SizedBox(width: 5),
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Text(
+                                    '${widget.attendanceData!.slots!.isNotEmpty && widget.attendanceData!.slots != null ? widget.attendanceData!.slots!.length : 0}',
+                                    // Approver List Notification count
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            if (_slotsExpanded) ...[
+                              const SizedBox(height: 10),
+                              widget.attendanceData!.slots!.isNotEmpty
+                                  ? SizedBox(
+                                      height: 220,
+                                      child:
+                                          widget.attendanceData?.slots
+                                                      ?.isNotEmpty ==
+                                                  true
+                                              ? ListView.builder(
+                                                  padding: EdgeInsets.zero,
+                                                  itemCount: widget
+                                                          .attendanceData
+                                                          ?.slots
+                                                          ?.length ??
+                                                      0,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final slots = widget
+                                                        .attendanceData!
+                                                        .slots![index];
+
+                                                    DateTime? checkIn =
+                                                        parseTime(slots
+                                                                    .checkInTime
+                                                                    ?.toString() ??
+                                                                '')
+                                                            ?.toLocal();
+                                                    DateTime? checkOut =
+                                                        parseTime(slots
+                                                                    .checkOutTime
+                                                                    ?.toString() ??
+                                                                '')
+                                                            ?.toLocal();
+
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              10),
+                                                      child: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.zero,
+                                                          color: NasColors
+                                                              .lightGrey,
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: Colors.grey
+                                                                  .withOpacity(
+                                                                      0.4),
+                                                              spreadRadius: 1,
+                                                              blurRadius: 1,
+                                                              offset:
+                                                                  const Offset(
+                                                                      0, 3),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(10.0),
+                                                          child: Column(
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      const Icon(
+                                                                          Icons
+                                                                              .exit_to_app_outlined,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              Colors.black),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        "${AppLocalizations.of(context)!.clockIn}:",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        checkIn !=
+                                                                                null
+                                                                            ? "$checkIn"
+                                                                            : "___",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          20),
+                                                                  Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                          Icons
+                                                                              .error,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              NasColors.pending),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        "${AppLocalizations.of(context)!.late}:",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              NasColors.pending,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        (slots.lateMinutes?.toString().isNotEmpty ??
+                                                                                false)
+                                                                            ? "${slots.lateMinutes}"
+                                                                            : "___",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              10),
+                                                                      Container(
+                                                                        height:
+                                                                            20,
+                                                                        width:
+                                                                            75,
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              getStatusColor(slots.status ?? ''),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(10),
+                                                                        ),
+                                                                        child:
+                                                                            Center(
+                                                                          child:
+                                                                              Text(
+                                                                            _translateStatus(slots.status ?? '',
+                                                                                context),
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                GoogleFonts.inter(
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: Colors.white,
+                                                                              fontSize: 10,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Divider(
+                                                                  color: Colors
+                                                                      .grey
+                                                                      .shade400),
+                                                              Row(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Transform(
+                                                                        transform:
+                                                                            Matrix4.rotationY(math.pi),
+                                                                        alignment:
+                                                                            Alignment.center,
+                                                                        child: const Icon(
+                                                                            Icons
+                                                                                .exit_to_app_outlined,
+                                                                            size:
+                                                                                20,
+                                                                            color:
+                                                                                Colors.black),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        "${AppLocalizations.of(context)!.clockOut}:",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        checkOut !=
+                                                                                null
+                                                                            ? "$checkOut"
+                                                                            : "___",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          20),
+                                                                  Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                          Icons
+                                                                              .directions_run_outlined,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              NasColors.onTime),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        "${AppLocalizations.of(context)!.earlyLeft}:",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              NasColors.onTime,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
+                                                                      Text(
+                                                                        (slots.earlyCheckOut?.toString().isNotEmpty ??
+                                                                                false)
+                                                                            ? "${slots.earlyCheckOut}"
+                                                                            : "___",
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                )
+                                              : Center(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            20.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Center(
+                                                          child: SizedBox(
+                                                            height: 200,
+                                                            width: 200,
+                                                            child: Lottie.asset(
+                                                                'images/empty.json'),
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .noData,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: NasColors
+                                                                .darkBlue,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ))
+                                  : Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20.0),
+                                        child: Column(
+                                          children: [
+                                            Center(
+                                              child: SizedBox(
+                                                height: 200,
+                                                width: 200,
+                                                child: Lottie.asset(
+                                                    'images/empty.json'),
+                                              ),
+                                            ),
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .noData,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                                color: NasColors.darkBlue,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                              const SizedBox(height: 20),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20),],
+                    SizedBox(height: 20),
+                  ],
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -1289,7 +1491,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         SizedBox(height: 20),
                         if (_leaveExpanded) ...[
                           Text(
-                            widget.attendanceData?.leaveDetails?.isNotEmpty == true
+                            widget.attendanceData?.leaveDetails?.isNotEmpty ==
+                                    true
                                 ? widget.attendanceData!.leaveDetails!
                                 : '___',
                             style: GoogleFonts.inter(

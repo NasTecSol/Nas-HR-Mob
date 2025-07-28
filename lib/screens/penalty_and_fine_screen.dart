@@ -158,45 +158,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      onPressed: () {
-                       print(singletonClass.penaltiesDataList.first.data!.data!.length);
-                      },
-                      child: SizedBox(
-                        height: 30,
-                        width: 90,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.filter_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              AppLocalizations.of(context)!.filter,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               if (singletonClass.getJWTModel()?.grade == 'L0' ||
@@ -232,16 +193,29 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty
                               ? Center(
-                                  child: Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black,
-                                      fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
                                     ),
                                   ),
-                                )
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: _request!.length,
@@ -338,13 +312,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 );
                         } else {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -407,13 +394,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         } else if (snapshot.hasData) {
                           if (_request!.isEmpty) {
                             return Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -499,13 +499,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -568,16 +581,29 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           } else if (snapshot.hasData) {
                             return  _approver!.isEmpty
                                 ? Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
                                       ),
                                     ),
-                                  )
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     itemCount: _approver!.length,
@@ -1159,13 +1185,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                   );
                           } else {
                             return Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -272,18 +273,29 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     },
                   )
                       : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: NasColors.darkBlue,
-                              ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
                             ),
                           ),
-                        ),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               )
             ],

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -229,96 +230,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             child: const Icon(
                               Icons.settings,
                               color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      if (_selectedOptionIndex2 == 1)
-                        IconButton(
-                          onPressed: () async {},
-                          icon: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      // Display the "Add" button for "Documents" tab (index 2)
-                      if (_selectedOptionIndex2 == 2)
-                        IconButton(
-                          onPressed: () {
-                            // Add your settings action for the "Profile" tab
-                          },
-                          icon: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-
-                      // Display the "Request" button for "Loans" tab (index 3)
-                      if (_selectedOptionIndex2 == 3)
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: NasColors.darkBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          onPressed: () {
-                            // Add your action for "Loans" tab
-                          },
-                          child: SizedBox(
-                            height: 40,
-                            width: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.requests,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
@@ -1119,18 +1030,29 @@ class _ProfileScreenState extends State<ProfileScreen>
                         },
                       )
                           : Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Text(
-                            AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ),
-                      ),
+    child: Padding(
+    padding: const EdgeInsets.all(20.0),
+    child: Column(
+    children: [
+    Center(
+    child: SizedBox(
+    height: 200,
+    width: 200,
+    child: Lottie.asset('images/empty.json'),
+    ),
+    ),
+    Text(
+    AppLocalizations.of(context)!.noData,
+    style: GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: NasColors.darkBlue,
+    ),
+    ),
+    ],
+    ),
+    ),
+    )
                     ],
                   ),
     ]

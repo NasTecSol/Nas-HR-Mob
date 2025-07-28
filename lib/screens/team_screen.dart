@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -240,7 +241,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                     MaterialPageRoute(
                                       builder: (context) => EmployeeProfileScreen(
                                         teamData: team,
-                                        isTeamMate: false,
+                                        isTeamMate: true,
                                       ),
                                     ),
                                   );
@@ -303,13 +304,24 @@ class _TeamScreenState extends State<TeamScreen> {
                         : Center(
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: NasColors.darkBlue,
-                          ),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -411,13 +423,24 @@ class _TeamScreenState extends State<TeamScreen> {
                         : Center(
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: NasColors.darkBlue,
-                          ),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -512,13 +535,24 @@ class _TeamScreenState extends State<TeamScreen> {
                       : Center(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: NasColors.darkBlue,
-                        ),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
+                            ),
+                          ),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
