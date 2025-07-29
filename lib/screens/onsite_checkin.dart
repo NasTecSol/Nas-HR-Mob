@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:locale_plus/locale_plus.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:math' as math;
@@ -12,9 +12,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:nashr/l10n/app_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../request_controller/attendance_model.dart';
-import '../request_controller/check_in_model.dart';
 
 class OnsiteCheckin extends StatefulWidget {
   const OnsiteCheckin({super.key});
@@ -80,17 +78,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
 
     final checkInTime = todayData?.clockInTime;
-    final checkOutTime =
-        todayData?.clockOutTime;
     setState(() {
       isCheckedIn = checkInTime != null && checkInTime.isNotEmpty;
     });
-  }
-
-  // Save the check-in state to shared preferences
-  Future<void> _saveCheckInState() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isCheckInCompleted', isCheckedIn);
   }
 
   // Get current location and update the map with current location and check proximity
@@ -100,12 +90,11 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       _currentLocation = await _location.getLocation();
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
       _addCurrentLocationMarker(_currentLocation!);
-      _addCompanyLocationMarker(); // Add company location marker
-      _checkProximityToCompanyLocation(); // Check if the user is in range
+      _addCompanyLocationMarker();
+      _checkProximityToCompanyLocation();
     }
   }
 
-  // Move the map view to the given coordinates
   void _moveToLocation(double latitude, double longitude) {
     _mapboxMap.easeTo(
       CameraOptions(
@@ -118,7 +107,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     );
   }
 
-  // Add a marker at the current location
   void _addCurrentLocationMarker(LocationData locationData) async {
     final ByteData bytes = await rootBundle.load('images/placeholder.png');
     final Uint8List list = bytes.buffer.asUint8List();
@@ -304,11 +292,12 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   }
 ///check in api call
   Future<void> checkIn(String type) async {
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
-    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
 
     Map<String, dynamic> data = {
@@ -400,11 +389,12 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
 
   ///CHECK OUT API CALL
   Future<void> checkOut() async {
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
-    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
 
     Map<String, dynamic> data = {
