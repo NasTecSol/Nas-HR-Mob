@@ -741,7 +741,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                               color: Colors.black,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      Column(
+                                        children: [
                                           if (attendance.status != null)
                                             Container(
                                               height: attendance.status == "Missing CheckIn/Out" ? 50 : 30,
@@ -784,8 +788,23 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                               ),
                                             ),
                                         ],
+                                      )
+
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        attendance.empId ?? "___",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                      const Spacer(),
+                                      Spacer(),
                                       Builder(builder: (_) {
                                         final int workedMinutes = attendance.totalHoursWorked ?? 0;
                                         final int totalWorkingMinutes = 11 * 60;
@@ -823,21 +842,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       }),
                                     ],
                                   ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        attendance.empId ?? "___",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
+                                  SizedBox(height: 8),
                                   Row(
                                     children: [
                                       Text(date,

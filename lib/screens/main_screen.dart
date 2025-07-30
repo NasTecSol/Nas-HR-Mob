@@ -148,7 +148,9 @@ class _MainScreenState extends State<MainScreen> {
                               height: 70,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
-                                return const Center(child: CircularProgressIndicator());
+                                return  Center(child: CircularProgressIndicator(
+                                  color: NasColors.darkBlue,
+                                ));
                               },
                               errorBuilder: (context, error, stackTrace) {
                                 return Image.asset('images/DP.png', fit: BoxFit.cover);
