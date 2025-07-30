@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -755,7 +756,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                 final newDrawingNode =
                     xml.XmlDocument.parse(imageXml).rootElement;
                 paragraph.children.add(newDrawingNode.copy());
-                print('Signature image URL: $signatureUrl');
+                if (kDebugMode) {
+                  print('Signature image URL: $signatureUrl');
+                }
               }
             }
             if (mounted) {
@@ -763,7 +766,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
             }
           }
         } else {
-          print("❌ Failed to fetch signature image from: $signatureUrl");
+          if (kDebugMode) {
+            print("❌ Failed to fetch signature image from: $signatureUrl");
+          }
         }
       }
 
@@ -783,10 +788,15 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final newDocxBytes = ZipEncoder().encode(updatedArchive);
       _generatedDocxBytes = Uint8List.fromList(newDocxBytes!);
 
-      print("✅ Template parsed and document generated successfully.");
+      if (kDebugMode) {
+        print("✅ Template parsed and document generated successfully.");
+      }
     } catch (e, stack) {
-      print("❌ Error parsing DOCX: $e");
-      print(stack);
+      if (kDebugMode) {
+        print("❌ Error parsing DOCX: $e");
+        print(stack);
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error parsing template: ${e.toString()}")),
