@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +56,9 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     try {
       final uri = Uri.parse('${singletonClass.baseURL}/organization/getOrganizationTenancy?tenantName=$query');
       final response = await http.get(uri);
-      print("tanent response ${response.body}");
+      if (kDebugMode) {
+        print("tanent response ${response.body}");
+      }
       if (response.statusCode == 200) {
         final result = TenantIdModel.fromJson(json.decode(response.body));
         if (result.data != null && result.data!.tenantName != null) {
@@ -134,7 +137,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "${AppLocalizations.of(context)!.currentOrganization}",
+                              AppLocalizations.of(context)!.currentOrganization,
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -169,7 +172,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                         padding: EdgeInsets.zero,
                         children: [
                            Text(
-                              "${AppLocalizations.of(context)!.searchYourCompany}",
+                              AppLocalizations.of(context)!.searchYourCompany,
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -237,12 +240,12 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                                     Text(suggestion.tenantName ?? ''),
                                   ],
                                 ),
-                                value: _selectedTenantId == suggestion.tenantId,
+                                value: _selectedTenantId == suggestion.tenantId.toString(),
                                 onChanged: (bool? selected) async {
                                   if (selected == true) {
                                     final prefs = await SharedPreferences.getInstance();
-                                    await prefs.setString('baseURL', suggestion.tenantId.toString() ?? '');
-                                    await prefs.setString('companyName', suggestion.tenantName.toString() ?? '');
+                                    await prefs.setString('baseURL', suggestion.tenantId.toString());
+                                    await prefs.setString('companyName', suggestion.tenantName.toString());
                                     singletonClass.tenantId = prefs.getString('baseURL') ?? '';
                                     singletonClass.companyName = prefs.getString('companyName') ?? '';
                                     singletonClass.tenantIDDataList.clear();
@@ -255,7 +258,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                                   }
                                 },
                               );
-                            }).toList(),
+                            }),
 
                           const SizedBox(height: 20),
 
@@ -265,7 +268,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.5,
                                 child: NasButton(
-                                  text: "Next",
+                                  text: AppLocalizations.of(context)!.next,
                                   onPressed: () {
                                     Navigator.push(
                                       context,

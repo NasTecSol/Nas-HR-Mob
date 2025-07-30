@@ -35,7 +35,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   String? templateDocUrl;
   String parsedTemplateText = '';
   Uint8List? _generatedDocxBytes;
-  String _characterCount = "0/300";
   bool _isLoading = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
 
@@ -396,7 +395,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                   maxLines: 5,
                   onChanged: (text) {
                     setState(() {
-                      _characterCount = "${text.length}/300";
                     });
                   },
                   decoration: InputDecoration(

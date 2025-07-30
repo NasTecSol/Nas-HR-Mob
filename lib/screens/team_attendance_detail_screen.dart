@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -160,32 +161,54 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ),
                       ),
                       Spacer(),
-                      Container(
-                        height: widget.attendanceData!.status ==
-                                "Missing CheckIn/Out"
-                            ? 60
-                            : 40,
-                        width: widget.attendanceData!.status ==
-                                "Missing CheckIn/Out"
-                            ? 120
-                            : 120,
-                        decoration: BoxDecoration(
-                          color: getStatusColor(widget.attendanceData!.status!),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _translateStatus(
-                                widget.attendanceData!.status, context),
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 13,
+                      Column(
+                        children: [
+                          if (widget.attendanceData!.status != null)
+                            Container(
+                              height: widget.attendanceData!.status == "Missing CheckIn/Out" ? 60 : 40,
+                              width: 120,
+                              decoration: BoxDecoration(
+                                color: getStatusColor(widget.attendanceData!.status!),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _translateStatus(widget.attendanceData!.status!, context),
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
+
+                          SizedBox(height: 5),
+
+                          if (widget.attendanceData!.secondaryStatus != null)
+                            Container(
+                              height: widget.attendanceData!.secondaryStatus == "Missing CheckIn/Out" ? 60 : 40,
+                              width: 120,
+                              decoration: BoxDecoration(
+                                color: getStatusColor(widget.attendanceData!.secondaryStatus!),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _translateStatus(widget.attendanceData!.secondaryStatus!, context),
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      )
+
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -1615,23 +1638,71 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
         return '$remainingMinutes min';
       }
     } catch (e) {
-      print('Error formatting minutes: $e');
+      if (kDebugMode) {
+        print('Error formatting minutes: $e');
+      }
       return '--';
     }
   }
 
   Color getStatusColor(String status) {
-    switch (status) {
-      case "Absent":
-        return NasColors.red;
-      case "Present":
-        return NasColors.completed;
-      case "Quarterly":
-        return NasColors.pending;
-      case "Missing CheckIn/Out":
-        return NasColors.pending;
+    switch (status.toLowerCase()) {
+      case 'present':
+      case 'ontime-in':
+      case 'ontime-out':
+        return NasColors.green;
+
+      case 'absent':
+        return NasColors.reds;
+
+      case 'absent with approval':
+      case 'pending':
+        return NasColors.yellow;
+
+      case 'early checkout':
+        return NasColors.purple;
+
+      case 'late':
+        return NasColors.amber;
+
+      case 'check-in':
+        return NasColors.violet;
+
+      case 'check-out':
+        return NasColors.fuchsia;
+
+      case 'oos-in':
+      case 'oos-out':
+        return NasColors.amber;
+
+      case 'early-in':
+      case 'early-out':
+        return NasColors.rose;
+
+      case 'late-in':
+      case 'late-out':
+        return NasColors.brightRed;
+
+      case 'sm-in':
+      case 'sm-out':
+        return NasColors.indigo;
+
+      case 'break-in':
+      case 'break-out':
+        return NasColors.zinc;
+
+      case 'slot':
+        return NasColors.warmGray;
+
+      case 'no-checkin':
+        return NasColors.darkGray;
+
+      case 'on-leave':
+      case 'casual leave':
+        return NasColors.blue;
+
       default:
-        return NasColors.darkBlue;
+        return NasColors.orange;
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -47,8 +48,10 @@ class _TeamScreenState extends State<TeamScreen> {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    print('Branch Data List length: ${branchDataList.length}');
-    print('Reporting Manager ID: $reportingManagerId');
+    if (kDebugMode) {
+      print('Branch Data List length: ${branchDataList.length}');
+      print('Reporting Manager ID: $reportingManagerId');
+    }
 
     for (BranchData branchData in branchDataList) {
       for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
@@ -57,13 +60,12 @@ class _TeamScreenState extends State<TeamScreen> {
           final teams = department.teams ?? [];
 
           if (["L0", "L1", "L2", "L3"].contains(userGrade)) {
-            // ✅ If user is a supervisor in this department
             bool isUserSupervisorInDepartment = supervisors.any((s) => s.empId == reportingManagerId);
 
             if (isUserSupervisorInDepartment) {
-              print('✅ User is a supervisor in this department');
-
-              // ✅ Add supervisors to ownTeams as fake team wrappers
+              if (kDebugMode) {
+                print('✅ User is a supervisor in this department');
+              }
               for (var supervisor in supervisors) {
                 ownTeams.add(
                   Teams(
@@ -80,19 +82,20 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                 );
               }
-
-              // ✅ Add full teams under this department to underTeams
               for (var team in teams) {
-                print('➡️ Adding team to underTeams: ${team.teamId}');
+                if (kDebugMode) {
+                  print('➡️ Adding team to underTeams: ${team.teamId}');
+                }
                 underTeams.add(team);
               }
             }
           } else if (userGrade == "L4") {
-            // ✅ For non-supervisors: Add only teams the user is a member of
             for (var team in teams) {
               bool isUserInTeam = team.teamData?.any((member) => member.empId == reportingManagerId) ?? false;
               if (isUserInTeam) {
-                print('👤 User is team member of ${team.teamId}, adding to ownTeams');
+                if (kDebugMode) {
+                  print('👤 User is team member of ${team.teamId}, adding to ownTeams');
+                }
                 ownTeams.add(team);
               }
             }
@@ -100,17 +103,11 @@ class _TeamScreenState extends State<TeamScreen> {
         }
       }
     }
-
     return {
       'ownTeams': ownTeams,
       'underTeams': underTeams,
     };
   }
-
-
-
-
-
 
   @override
   @override

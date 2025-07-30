@@ -39,7 +39,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
   int _penalityTotalPages = 1;
   List<DataPenalitiesApprover>? _approver;
   List<Data1>? _request;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -52,7 +51,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       getPenalties();
       getPenaltiesApprover();
     });
-    setState(() {});
   }
 
   void _toggleExpand(int index) {
@@ -67,42 +65,31 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
 
 
   Future<void> _fetchApproverData(int page) async {
-    setState(() {
-      _isLoading = true;
-    });
-
     final data = await getPenaltiesApprover(page: page);
     if (data != null && data.data != null) {
       setState(() {
         _approver = data.data!.data;
         _totalPages = data.data!.totalPages ?? 1;
         _currentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _approver = [];
-        _isLoading = false;
       });
     }
   }
 
   Future<void> _fetchRequestData(int page) async {
-    setState(() {
-      _isLoading = true;
-    });
     final data = await getPenalties(page: page);
     if (data != null && data.data != null) {
       setState(() {
         _request = data.data!.data;
         _penalityTotalPages = data.data!.totalPages ?? 1;
         _penalityCurrentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _request = [];
-        _isLoading = false;
       });
     }
   }
@@ -1407,7 +1394,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       Map<String, dynamic> requestData) async {
     String url = '${singletonClass.baseURL}/request/$requestID';
 
-    // Define the JSON data to send
     Map<String, dynamic> data = {
       "employeeId": requestData['employeeId'],
       "employeeName": requestData['employeeName'],
@@ -1432,57 +1418,43 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       "status": status
     };
 
-    // Convert data to JSON string
-    String jsonData = jsonEncode(data);
-    log("complaint json $jsonData");
-
-    // Make the PATCH request
     setState(() {
       isLoading = true;
     });
+
     try {
       final response = await http.patch(
         Uri.parse(url),
         headers: singletonClass.getHeaders(),
-        body: jsonData,
+        body: jsonEncode(data),
       );
+
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
-      if (response.statusCode == 200) {
-        final decodedResponse = json.decode(response.body);
 
-        if (decodedResponse['statusCode'] == 200) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.success,
-            type: QuickAlertType.success,
-          );
+      final decodedResponse = json.decode(response.body);
 
-        } else if (decodedResponse['statusCode'] == 400) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.internalServerError,
-            type: QuickAlertType.error,
-          );
-        }
-      } else if (response.statusCode == 400 || response.statusCode == 500) {
+      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
           showConfirmBtn: false,
           context: context,
-          title: AppLocalizations.of(context)!.errorFetchData,
+          title: AppLocalizations.of(context)!.success,
+          type: QuickAlertType.success,
+        );
+      } else if (decodedResponse['statusCode'] == 400) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
           type: QuickAlertType.error,
         );
       } else {
-        print('Error: ${response.statusCode}');
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1493,7 +1465,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
         );
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (!mounted) return;
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,

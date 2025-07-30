@@ -15,7 +15,8 @@ import '../request_controller/search_employee_model.dart';
 import 'main_screen.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  final int selectedIndex;
+  const CreateEventScreen({super.key, required this.selectedIndex});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -81,6 +82,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Stack(
@@ -112,8 +114,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       ),
                     ),
                   ),
-                  Text(
-                    AppLocalizations.of(context)!.createAEvent,
+                  Text( widget.selectedIndex == 0
+                      ? AppLocalizations.of(context)!.createAMeeting
+                      : widget.selectedIndex == 1
+                      ? AppLocalizations.of(context)!.createATask
+                      : AppLocalizations.of(context)!.createAEvent ,
                     style: GoogleFonts.inter(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -172,7 +177,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       children: [
                         const SizedBox(height: 20),
                         Text(
-                          AppLocalizations.of(context)!.eventName,
+                          widget.selectedIndex == 0
+                              ? AppLocalizations.of(context)!.meetingName
+                              : widget.selectedIndex == 1
+                              ? AppLocalizations.of(context)!.taskName
+                              : AppLocalizations.of(context)!.eventName,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -198,7 +207,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               borderRadius: BorderRadius.circular(12.0),
                               borderSide: const BorderSide(color: Colors.grey),
                             ),
-                            hintText:  AppLocalizations.of(context)!.typeEventNameHere,
+                            hintText:  widget.selectedIndex == 0
+                                ? AppLocalizations.of(context)!.typeMeetingNameHere
+                                : widget.selectedIndex == 1
+                                ? AppLocalizations.of(context)!.typeTaskNameHere
+                                : AppLocalizations.of(context)!.typeEventNameHere,
                             hintStyle: GoogleFonts.inter(
                               fontSize: 14,
                               color: Colors.grey,
@@ -216,7 +229,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppLocalizations.of(context)!.eventDescription,
+                           widget.selectedIndex == 0
+                             ? AppLocalizations.of(context)!.meetingDescription
+                               : widget.selectedIndex == 1
+                                 ? AppLocalizations.of(context)!.taskDescription
+                                  : AppLocalizations.of(context)!.eventDescription,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -242,7 +259,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               borderRadius: BorderRadius.circular(12.0),
                               borderSide: const BorderSide(color: Colors.grey),
                             ),
-                            hintText:  AppLocalizations.of(context)!.typeEventDescriptionHere,
+                            hintText: widget.selectedIndex == 0
+                                ? AppLocalizations.of(context)!.typeMeetingDescriptionHere
+                                : widget.selectedIndex == 1
+                                ? AppLocalizations.of(context)!.typeTaskDescriptionHere
+                                : AppLocalizations.of(context)!.typeEventDescriptionHere,
                             hintStyle: GoogleFonts.inter(
                               fontSize: 14,
                               color: Colors.grey,
@@ -309,7 +330,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             children: [
                                               Text(
                                                 employee!.employeeName ??
-                                                    "Unknown",
+                                                    "---",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
@@ -319,7 +340,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                                     .ellipsis, // Optional: Handle long text
                                               ),
                                               Text(
-                                                employee.empId ?? "Unknown",
+                                                employee.empId ?? "---",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w500,
@@ -452,14 +473,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            employee.employeeName ?? "Unknown",
+                                            employee.employeeName ?? "---",
                                             style: GoogleFonts.inter(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
                                                 color: NasColors.darkBlue),
                                           ),
                                           Text(
-                                            employee.empId ?? "Unknown",
+                                            employee.empId ?? "---",
                                             style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
@@ -563,7 +584,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppLocalizations.of(context)!.eventCategory,
+                          widget.selectedIndex == 0
+                              ? AppLocalizations.of(context)!.meetingCategory
+                              : widget.selectedIndex == 1
+                              ? AppLocalizations.of(context)!.taskCategory
+                              : AppLocalizations.of(context)!.eventCategory,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -604,7 +629,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppLocalizations.of(context)!.eventType,
+                          widget.selectedIndex == 0
+                            ? AppLocalizations.of(context)!.meetingType
+                            : widget.selectedIndex == 1
+                            ? AppLocalizations.of(context)!.taskType
+                            : AppLocalizations.of(context)!.eventType,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -639,7 +668,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   borderRadius: BorderRadius.circular(12.0),
                                   borderSide: const BorderSide(color: Colors.grey),
                                 ),
-                                hintText:  AppLocalizations.of(context)!.typeEventTypeOrSelectFromList,
+                                hintText:  widget.selectedIndex == 0
+                                    ? AppLocalizations.of(context)!.typeMeetingTypeOrSelectFromList
+                                    : widget.selectedIndex == 1
+                                    ? AppLocalizations.of(context)!.typeTaskTypeOrSelectFromList
+                                    : AppLocalizations.of(context)!.typeEventTypeOrSelectFromList,
                                 hintStyle: GoogleFonts.inter(
                                   fontSize: 14,
                                   color: Colors.grey,

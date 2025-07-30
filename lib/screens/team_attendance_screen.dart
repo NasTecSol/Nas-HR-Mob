@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,8 +33,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   final List<DateTime> _dates = [];
   Set<String> selectedBranchIds = {};
   DateTime? _startDate;
-  String? selectedBranchName;
-  String? selectedBranchId;
   DateTime? _endDate;
   int _selectedOptionIndex = 0;
   bool isSearching = false;
@@ -42,6 +41,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   @override
    void initState() {
     super.initState();
+    _teamCheck();
     setState(() {
       if(singletonClass.getJWTModel()?.grade == 'L4'){
         _isChecked = true;
@@ -59,6 +59,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     _initDates(start: _startDate!, end: _endDate!);
     loadData();
   }
+
+  void _teamCheck(){
+    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
+      _isTeamChecked = false ;
+      extractAllEmployeeIdsForBranch(singletonClass.branchID);
+    }
+  }
+
 
   void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
     List<String> allEmployeeIds = [];
@@ -93,8 +101,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         }
       }
       selectedBranchIds = allEmployeeIds.toSet();
-      print('✅ Total Employee IDs: ${allEmployeeIds.length}');
-      print('🔍 All IDs Set: $selectedBranchIds');
+      if (kDebugMode) {
+        print('✅ Total Employee IDs: ${allEmployeeIds.length}');
+        print('🔍 All IDs Set: $selectedBranchIds');
+      }
     }
   }
 
@@ -178,7 +188,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3") {
         if (selectedBranchIds.isNotEmpty) {
           employeeIds = selectedBranchIds;
-        } else if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+        } else if (singletonClass.branchID == null || singletonClass.branchID!.isEmpty) {
           for (var team in filteredUnderTeams) {
             log("👥 Checking team: ${team.teamId}");
             if (team.teamData != null) {
@@ -435,11 +445,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         onSelected: (value) {
                           setState(() {
                             singletonClass.branchID = value;
-                            selectedBranchId = singletonClass.branchID;
                             final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
                             singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
-                            selectedBranchName = branch?.branchName ?? "Unknown Branch";
-                            print('Selected Branch ID: $value');
+                            if (kDebugMode) {
+                              print('Selected Branch ID: $value');
+                            }
                             extractAllEmployeeIdsForBranch(value);
                             getTeamAttendanceData();
                             loadData();
@@ -515,6 +525,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 _isTeamChecked = value ?? false;
                                 _setDefaultDates();
                                 _initDates(start: _startDate!, end: _endDate!);
+                                singletonClass.branchID = null;
+                                singletonClass.branchName = null;
                                 loadData();
                               });
                             }),
@@ -730,15 +742,47 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             ),
                                           ),
                                           SizedBox(height: 5),
-                                          Text(
-                                            _translateStatus(attendance.status, context),
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: getStatusColor(attendance.status!),
-                                              fontSize: 13,
+                                          if (attendance.status != null)
+                                            Container(
+                                              height: attendance.status == "Missing CheckIn/Out" ? 50 : 30,
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                color: getStatusColor(attendance.status!),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  _translateStatus(attendance.status!, context),
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          SizedBox(height: 5),
+                                          if (attendance.secondaryStatus != null)
+                                            Container(
+                                              height: attendance.secondaryStatus == "Missing CheckIn/Out" ? 50 : 30,
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                color: getStatusColor(attendance.secondaryStatus!),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  _translateStatus(attendance.secondaryStatus!, context),
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                       const Spacer(),
@@ -976,19 +1020,66 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   }
 
   Color getStatusColor(String status) {
-    switch (status) {
-      case "Absent":
-        return NasColors.red;
-      case "Present":
-        return NasColors.completed;
-      case "Quarterly":
-        return NasColors.pending;
-      case "Missing CheckIn/Out":
-        return NasColors.pending;
+    switch (status.toLowerCase()) {
+      case 'present':
+      case 'ontime-in':
+      case 'ontime-out':
+        return NasColors.green;
+
+      case 'absent':
+        return NasColors.reds;
+
+      case 'absent with approval':
+      case 'pending':
+        return NasColors.yellow;
+
+      case 'early checkout':
+        return NasColors.purple;
+
+      case 'late':
+        return NasColors.amber;
+
+      case 'check-in':
+        return NasColors.violet;
+
+      case 'check-out':
+        return NasColors.fuchsia;
+
+      case 'oos-in':
+      case 'oos-out':
+        return NasColors.amber;
+
+      case 'early-in':
+      case 'early-out':
+        return NasColors.rose;
+
+      case 'late-in':
+      case 'late-out':
+        return NasColors.brightRed;
+
+      case 'sm-in':
+      case 'sm-out':
+        return NasColors.indigo;
+
+      case 'break-in':
+      case 'break-out':
+        return NasColors.zinc;
+
+      case 'slot':
+        return NasColors.warmGray;
+
+      case 'no-checkin':
+        return NasColors.darkGray;
+
+      case 'on-leave':
+      case 'casual leave':
+        return NasColors.blue;
+
       default:
-        return NasColors.completed;
+        return NasColors.orange;
     }
   }
+
 
   String formatMinutes(dynamic minutes) {
     if (minutes == null) return '--';

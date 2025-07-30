@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
@@ -39,7 +40,7 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
-import 'package:nashr/request_controller/teamClocking_model.dart';
+import 'package:nashr/request_controller/team_clocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
@@ -351,7 +352,9 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
-    print(uri);
+    if (kDebugMode) {
+      print(uri);
+    }
     var response = await client.get(uri,headers: getHeaders());
     log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
@@ -429,7 +432,9 @@ class SingletonClass {
       final formattedTime = DateFormat('h:mm a').format(localTime);
       return formattedTime;
     } catch (e) {
-      print("Error formatting time: $e");
+      if (kDebugMode) {
+        print("Error formatting time: $e");
+      }
       return 'N/A';
     }
   }
@@ -450,9 +455,11 @@ class SingletonClass {
 
     var response = await client.get(uri,headers: getHeaders());
     log("attendance of user${response.body}");
-    print(employeeId);
-    print(firstDateString);
-    print(currentDateString);
+    if (kDebugMode) {
+      print(employeeId);
+      print(firstDateString);
+      print(currentDateString);
+    }
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
@@ -480,13 +487,19 @@ class SingletonClass {
         headers: getHeaders(),
         body: jsonData,
       );
-      print("<><><><>${response.body}");
+      if (kDebugMode) {
+        print("<><><><>${response.body}");
+      }
       if (response.statusCode == 200) {
-        print("Sexfull send");
+        if (kDebugMode) {
+          print("Sexfull send");
+        }
       } else {
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (kDebugMode) {
+        print('Failed to send data. Error: $error');
+      }
     }
   }
 

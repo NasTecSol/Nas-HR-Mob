@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,11 +25,13 @@ void main() async {
 
   if (kReleaseMode) {
     SingletonClass().baseURL = "https://www.nashrms.com/api";
-    print("Prod Url${SingletonClass().baseURL}");
+    if (kReleaseMode) {
+      log("Prod Url${SingletonClass().baseURL}");
+    }
   }
 
   if (kProfileMode) {
-    print("App is running in Profile mode.");
+    log("App is running in Profile mode.");
   }
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -43,33 +47,35 @@ void main() async {
       badge: true,
       sound: true,
     );
-
-    // Get the FCM token and set it in SingletonClass
     String? fcmToken = await FirebaseMessaging.instance.getToken();
-    print('FCM TOKEN: $fcmToken');
+    if (kDebugMode) {
+      print('FCM TOKEN: $fcmToken');
+    }
     if (fcmToken != null) {
       SingletonClass().setFCMToken(fcmToken);
-      print('FCM TOKEN: $fcmToken');
-      print('FCM TOKEN from Singleton: ${SingletonClass().fcmToken}');
+      if (kDebugMode) {
+        print('FCM TOKEN: $fcmToken');
+        print('FCM TOKEN from Singleton: ${SingletonClass().fcmToken}');
+      }
     }
-
-    // For Apple platforms, ensure the APNS token is available
     final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
     if (apnsToken != null) {
-      print('APNS Token: $apnsToken');
+      if (kDebugMode) {
+        print('APNS Token: $apnsToken');
+      }
     }
-
-    // Automatically initialize messaging on app startup
     await FirebaseMessaging.instance.setAutoInitEnabled(true);
-
-    // Listen for incoming messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        print('Received notification: ${message.notification?.title} - ${message.notification?.body}');
+        if (kDebugMode) {
+          print('Received notification: ${message.notification?.title} - ${message.notification?.body}');
+        }
       }
     });
   } catch (e) {
-    print('Error setting up Firebase Messaging: $e');
+    if (kDebugMode) {
+      print('Error setting up Firebase Messaging: $e');
+    }
   }
 
   LanguageChangeController languageController = LanguageChangeController();
