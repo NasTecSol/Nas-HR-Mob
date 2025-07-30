@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/chat_screen.dart';
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedBranchName;
   String? selectedBranchId;
   bool isLoadingBranches = false;
-  String? _backgroundLocation;
+
 
   @override
   void initState() {
@@ -69,9 +69,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
     setState(() {});
   }
-
-
-
 
   @override
   void dispose() {
@@ -99,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> trackBackgroundLocation() async {
-    _backgroundLocation = await getCurrentLatLong();
     updateRemoteLocation();
   }
 
@@ -1643,8 +1639,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           MediaQuery.of(context).size.width * 0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (checkInTime != null &&
-                                        checkInTime.isNotEmpty &&
+                                    } else if (checkInTime.isNotEmpty &&
                                         (checkOutTime == null || checkOutTime.isEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition <
@@ -1683,8 +1678,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         _overlayEntry = _createOverlayEntry();
                                         Overlay.of(context).insert(_overlayEntry!);
                                       }
-                                    } else if (checkInTime != null &&
-                                        checkInTime.isNotEmpty &&
+                                    } else if (checkInTime.isNotEmpty &&
                                         (checkOutTime == null || checkOutTime.isEmpty)) {
                                       if (_isSliderCompleted &&
                                           details.velocity.pixelsPerSecond.dx < 0) {
@@ -2478,7 +2472,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                                "${singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes} ${AppLocalizations.of(context)!.minutes}",
+                                                                formatMinutesToHoursAndMinutes(context,singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes!.toInt()),
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 15,
                                                                 fontWeight:
@@ -2631,12 +2625,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+   /// Minutes hours method
+  String formatMinutesToHoursAndMinutes(BuildContext context, int totalMinutes) {
+    final int hours = totalMinutes ~/ 60;
+    final int minutes = totalMinutes % 60;
+
+    final String hoursLabel = "h";
+    final String minutesLabel = "m";
+
+    return "$hours $hoursLabel $minutes $minutesLabel";
+  }
   Future<void> checkIn(String type) async {
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
-    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
 
     Map<String, dynamic> data = {
@@ -2727,14 +2732,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-///CHECK OUT API CALL
+   ///CHECK OUT API CALL
   Future<void> checkOut() async {
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
-    String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
 
     Map<String, dynamic> data = {
@@ -2829,7 +2834,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-///get time zone
+   ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
       for (var addr in interface.addresses) {
@@ -2842,8 +2847,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return 'Unknown';
   }
-
-  ///Update CALL
+   ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String url =
@@ -2880,8 +2884,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       print('Failed to send data. Error: $error');
     }
   }
-
-  // Current Location
+   /// Current Location
   Future<String> getCurrentLatLong() async {
     bool serviceEnabled;
     LocationPermission permission;

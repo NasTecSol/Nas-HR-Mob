@@ -1650,4 +1650,57 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get searchYourCompany => 'ابحث عن شركتك';
+
+  @override
+  String get createAMeeting => 'إنشاء الاجتماع';
+
+  @override
+  String get meetingName => 'اسم الاجتماع';
+
+  @override
+  String get typeMeetingNameHere => 'اكتب اسم الاجتماع هنا';
+
+  @override
+  String get meetingDescription => 'وصف الاجتماع';
+
+  @override
+  String get typeMeetingDescriptionHere => 'اكتب وصف الاجتماع هنا';
+
+  @override
+  String get meetingCategory => 'فئة الاجتماع';
+
+  @override
+  String get meetingType => 'نوع الاجتماع';
+
+  @override
+  String get typeMeetingTypeOrSelectFromList =>
+      'اكتب نوع الاجتماع أو اختر من القائمة';
+
+  @override
+  String get createATask => 'إنشاء المهام';
+
+  @override
+  String get taskName => 'اسم المهمة';
+
+  @override
+  String get typeTaskNameHere => 'اكتب اسم المهمة هنا';
+
+  @override
+  String get taskDescription => 'وصف المهمة';
+
+  @override
+  String get typeTaskDescriptionHere => 'اكتب وصف المهمة هنا';
+
+  @override
+  String get taskCategory => 'فئة المهمة';
+
+  @override
+  String get taskType => 'نوع المهمة';
+
+  @override
+  String get typeTaskTypeOrSelectFromList =>
+      'اكتب نوع المهمة أو اختر من القائمة';
+
+  @override
+  String get next => 'التالي';
 }

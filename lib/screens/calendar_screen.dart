@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -82,7 +83,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         size: 30,
                       ),
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const CreateEventScreen()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateEventScreen(selectedIndex: _selectedOptionIndex,)));
                       },
                     ),
                   ),
@@ -766,8 +767,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     String startDateString = startDate.toIso8601String().split('T')[0];
     String endDateString = endDate.toIso8601String().split('T')[0];
 
-    print(startDateString);
-    print(endDateString);
+    if (kDebugMode) {
+      print(startDateString);
+      print(endDateString);
+    }
     var uri = Uri.parse(
         '${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
 

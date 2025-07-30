@@ -1652,4 +1652,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchYourCompany => 'Search your Company';
+
+  @override
+  String get createAMeeting => 'Create a Meeting';
+
+  @override
+  String get meetingName => 'Meeting Name';
+
+  @override
+  String get typeMeetingNameHere => 'Type meeting name here';
+
+  @override
+  String get meetingDescription => 'Meeting Description';
+
+  @override
+  String get typeMeetingDescriptionHere => 'Type meeting description here';
+
+  @override
+  String get meetingCategory => 'Meeting Category';
+
+  @override
+  String get meetingType => 'Meeting Type';
+
+  @override
+  String get typeMeetingTypeOrSelectFromList =>
+      'Type meeting type or select from the list';
+
+  @override
+  String get createATask => 'Create a Task';
+
+  @override
+  String get taskName => 'Task Name';
+
+  @override
+  String get typeTaskNameHere => 'Type task name here';
+
+  @override
+  String get taskDescription => 'Task Description';
+
+  @override
+  String get typeTaskDescriptionHere => 'Type task description here';
+
+  @override
+  String get taskCategory => 'Task Category';
+
+  @override
+  String get taskType => 'Task Type';
+
+  @override
+  String get typeTaskTypeOrSelectFromList =>
+      'Type task type or select from the list';
+
+  @override
+  String get next => 'Next';
 }
