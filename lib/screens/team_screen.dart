@@ -66,7 +66,6 @@ class _TeamScreenState extends State<TeamScreen> {
               if (kDebugMode) {
                 print('✅ User is a supervisor in this department');
               }
-              for (var supervisor in supervisors) {
                 ownTeams.add(
                   Teams(
                     teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
@@ -81,7 +80,6 @@ class _TeamScreenState extends State<TeamScreen> {
                     }).toList(),
                   ),
                 );
-              }
               for (var team in teams) {
                 if (kDebugMode) {
                   print('➡️ Adding team to underTeams: ${team.teamId}');
