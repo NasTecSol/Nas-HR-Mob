@@ -286,14 +286,14 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                             if (child.parameters != null)
                                               ...child.parameters!.entries.map((entry) {
                                                 return Text('${entry.key}: ${entry.value}');
-                                              }).toList(),
+                                              }),
                                             if (child.additionalInfo != null)
                                               ...child.additionalInfo!.entries.map((entry) {
                                                 return Text('${entry.key}: ${entry.value}');
-                                              }).toList(),
+                                              }),
                                           ],
                                         );
-                                      }).toList(),
+                                      }),
                                   ],
                                 ),
                               ),

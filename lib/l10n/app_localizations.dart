@@ -3367,6 +3367,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search your Company'**
   String get searchYourCompany;
+
+  /// No description provided for @createAMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Meeting'**
+  String get createAMeeting;
+
+  /// No description provided for @meetingName.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Name'**
+  String get meetingName;
+
+  /// No description provided for @typeMeetingNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting name here'**
+  String get typeMeetingNameHere;
+
+  /// No description provided for @meetingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Description'**
+  String get meetingDescription;
+
+  /// No description provided for @typeMeetingDescriptionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting description here'**
+  String get typeMeetingDescriptionHere;
+
+  /// No description provided for @meetingCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Category'**
+  String get meetingCategory;
+
+  /// No description provided for @meetingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Type'**
+  String get meetingType;
+
+  /// No description provided for @typeMeetingTypeOrSelectFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting type or select from the list'**
+  String get typeMeetingTypeOrSelectFromList;
+
+  /// No description provided for @createATask.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Task'**
+  String get createATask;
+
+  /// No description provided for @taskName.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Name'**
+  String get taskName;
+
+  /// No description provided for @typeTaskNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task name here'**
+  String get typeTaskNameHere;
+
+  /// No description provided for @taskDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Description'**
+  String get taskDescription;
+
+  /// No description provided for @typeTaskDescriptionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task description here'**
+  String get typeTaskDescriptionHere;
+
+  /// No description provided for @taskCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Category'**
+  String get taskCategory;
+
+  /// No description provided for @taskType.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Type'**
+  String get taskType;
+
+  /// No description provided for @typeTaskTypeOrSelectFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task type or select from the list'**
+  String get typeTaskTypeOrSelectFromList;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
 }
 
 class _AppLocalizationsDelegate

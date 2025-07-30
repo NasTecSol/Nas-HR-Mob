@@ -2472,7 +2472,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                                "${singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes} ${AppLocalizations.of(context)!.minutes}",
+                                                                formatMinutesToHoursAndMinutes(context,singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes!.toInt()),
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 15,
                                                                 fontWeight:
@@ -2625,6 +2625,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+   /// Minutes hours method
+  String formatMinutesToHoursAndMinutes(BuildContext context, int totalMinutes) {
+    final int hours = totalMinutes ~/ 60;
+    final int minutes = totalMinutes % 60;
+
+    final String hoursLabel = "h";
+    final String minutesLabel = "m";
+
+    return "$hours $hoursLabel $minutes $minutesLabel";
+  }
   Future<void> checkIn(String type) async {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
@@ -2722,8 +2732,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-///CHECK OUT API CALL
+   ///CHECK OUT API CALL
   Future<void> checkOut() async {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
@@ -2825,7 +2834,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-///get time zone
+   ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
       for (var addr in interface.addresses) {
@@ -2838,8 +2847,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return 'Unknown';
   }
-
-  ///Update CALL
+   ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String url =
@@ -2876,8 +2884,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       print('Failed to send data. Error: $error');
     }
   }
-
-  // Current Location
+   /// Current Location
   Future<String> getCurrentLatLong() async {
     bool serviceEnabled;
     LocationPermission permission;

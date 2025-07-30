@@ -922,7 +922,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                         showCancelBtn: false,
                                         showConfirmBtn: false,
                                       );
-                                    } else if (_selectedEmployees == null || _selectedEmployees.isEmpty){
+                                    } else if (_selectedEmployees.isEmpty){
                                       QuickAlert.show(
                                         context: context,
                                         type: QuickAlertType.error,

@@ -64,7 +64,6 @@ class _RequestScreenState extends State<RequestScreen> {
   int _requestTotalPages = 1;
   List<DataApprover>? _approver;
   List<Data1>? _request;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -107,7 +106,6 @@ class _RequestScreenState extends State<RequestScreen> {
 
   Future<void> _fetchApproverData(int page) async {
     setState(() {
-      _isLoading = true;
     });
 
     final data = await getApproverData(page: page);
@@ -116,12 +114,10 @@ class _RequestScreenState extends State<RequestScreen> {
         _approver = data.data!.data;
         _totalPages = data.data!.totalPages ?? 1;
         _currentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _approver = [];
-        _isLoading = false;
       });
     }
   }
@@ -130,7 +126,6 @@ class _RequestScreenState extends State<RequestScreen> {
 
   Future<void> _fetchRequestData(int page) async {
     setState(() {
-      _isLoading = true;
     });
     final data = await getRequestData(page: page);
     if (data != null && data.data != null) {
@@ -138,12 +133,10 @@ class _RequestScreenState extends State<RequestScreen> {
         _request = data.data!.data;
         _requestTotalPages = data.data!.totalPages ?? 1;
         _requestCurrentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _request = [];
-        _isLoading = false;
       });
     }
   }

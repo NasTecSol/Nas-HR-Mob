@@ -19,7 +19,6 @@ class SettingScreen extends StatefulWidget {
 class _SettingScreenState extends State<SettingScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool _isToggled = false ;
-  bool _isBiometricEnabled = false;
 
   @override
   void initState() {
@@ -33,7 +32,6 @@ class _SettingScreenState extends State<SettingScreen> {
     bool isBiometricEnabled = preferences.getBool('biometric_enabled') ?? false;
 
     setState(() {
-      _isBiometricEnabled = isBiometricEnabled;
       _isToggled = isBiometricEnabled; // Ensure toggle matches stored value
     });
   }
@@ -161,7 +159,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
                             if (isAuthenticated) {
                               setState(() {
-                                _isBiometricEnabled = value;
                               });
                               await _saveBiometricState(value);
                               ScaffoldMessenger.of(context).showSnackBar(

@@ -8,7 +8,6 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -289,14 +288,14 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                                             if (child.parameters != null)
                                               ...child.parameters!.entries.map((entry) {
                                                 return Text('${entry.key}: ${entry.value}');
-                                              }).toList(),
+                                              }),
                                             if (child.additionalInfo != null)
                                               ...child.additionalInfo!.entries.map((entry) {
                                                 return Text('${entry.key}: ${entry.value}');
-                                              }).toList(),
+                                              }),
                                           ],
                                         );
-                                      }).toList(),
+                                      }),
                                   ],
                                 ),
                               ),

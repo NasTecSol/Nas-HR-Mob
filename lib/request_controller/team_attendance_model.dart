@@ -68,6 +68,7 @@ class TeamAttendanceData {
   dynamic totalHoursWorked;
   dynamic location;
   dynamic status;
+  dynamic secondaryStatus;
   List<dynamic>? breaksTaken;
   dynamic breakTime;
   dynamic lateMinutes;
@@ -82,7 +83,7 @@ class TeamAttendanceData {
   dynamic updatedAt;
   int? v;
 
-  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.slots, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status,this.secondaryStatus ,this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.slots, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 
   TeamAttendanceData.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -97,6 +98,7 @@ class TeamAttendanceData {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
+    secondaryStatus = json["secondaryStatus"];
     breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
@@ -130,6 +132,7 @@ class TeamAttendanceData {
     _data["totalHoursWorked"] = totalHoursWorked;
     _data["location"] = location;
     _data["status"] = status;
+    _data["secondaryStatus"] = secondaryStatus;
     if(breaksTaken != null) {
       _data["breaksTaken"] = breaksTaken;
     }

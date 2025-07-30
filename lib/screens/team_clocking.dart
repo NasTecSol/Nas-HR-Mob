@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -8,7 +9,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:http/http.dart' as http;
 import '../request_controller/branch_model.dart';
-import '../request_controller/teamClocking_model.dart';
+import '../request_controller/team_clocking_model.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'dart:math' as math;
 
@@ -46,32 +47,32 @@ class _TeamClockingState extends State<TeamClocking> {
       List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
-
-    // Debugging: print branch data
-    print('Branch Data List length: ${branchDataList.length}');
+    if (kDebugMode) {
+      print('Branch Data List length: ${branchDataList.length}');
+    }
 
     for (BranchData branchData in branchDataList) {
       for (var departmentDetails in branchData.data!.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
-          // Check if the user is a supervisor in the department
           bool isSupervisor = department.supervisors?.any(
                   (supervisor) => supervisor.empId == reportingManagerId) ??
               false;
-          print(
+          if (kDebugMode) {
+            print(
               'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
+          }
 
           if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
-            // Supervisor with L0 or L1 grade
             for (var team in department.teams ?? []) {
               for (var supervisor in department.supervisors ?? []) {
-                // Check if the supervisor empId matches the reportingManagerId
                 if (supervisor.empId == reportingManagerId) {
-                  // Now check if the supervisor's teamId matches the current team's teamId
                   if (supervisor.teamId == team.teamId) {
-                    print(
+                    if (kDebugMode) {
+                      print(
                         'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                    }
                     underTeams.add(
-                        team); // Add to underTeams if supervisor manages the team
+                        team);
                   }
                 }
               }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -1210,7 +1211,9 @@ class _ComplaintsState extends State<Complaints> {
 //POST CALL
   Future<ComplaintsApproverModel?> getComplaintsApproverData({int page = 0, int limit = 10}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
-    print("vghjk$employeeId");
+    if (kDebugMode) {
+      print("vghjk$employeeId");
+    }
     Map<String, dynamic> requestBody = {
       "requestTypes": ["complaintRequest"],
     };
@@ -1338,7 +1341,9 @@ class _ComplaintsState extends State<Complaints> {
         );
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (kDebugMode) {
+        print('Failed to send data. Error: $error');
+      }
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,
