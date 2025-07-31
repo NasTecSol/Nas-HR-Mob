@@ -646,18 +646,37 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             if (textEditingValue.text.isEmpty) {
                               return _filteredEventTypes;
                             }
-                            return _filteredEventTypes.where((type) =>
-                                type.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                            return _filteredEventTypes.where(
+                                  (type) => type.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+                            );
                           },
                           onSelected: (String selection) {
                             _eventType.text = selection;
+                            // Close keyboard on selection
+                            FocusScope.of(context).unfocus();
                           },
                           fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                            _eventType.text = controller.text; // Keep controller in sync
+                            controller.addListener(() {
+                              // Trigger auto-scroll upward when typing
+                              if (controller.text.isNotEmpty && focusNode.hasFocus) {
+                                // Delay to wait for keyboard and overlay to appear
+                                Future.delayed(const Duration(milliseconds: 100), () {
+                                  Scrollable.ensureVisible(
+                                    focusNode.context!,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                });
+                              }
+                            });
+
                             return TextFormField(
                               controller: controller,
                               focusNode: focusNode,
-                              onEditingComplete: onEditingComplete,
+                              onEditingComplete: () {
+                                FocusScope.of(context).unfocus(); // Close keyboard on Done
+                                onEditingComplete();
+                              },
                               cursorColor: Colors.black,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
@@ -668,7 +687,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                   borderRadius: BorderRadius.circular(12.0),
                                   borderSide: const BorderSide(color: Colors.grey),
                                 ),
-                                hintText:  widget.selectedIndex == 0
+                                hintText: widget.selectedIndex == 0
                                     ? AppLocalizations.of(context)!.typeMeetingTypeOrSelectFromList
                                     : widget.selectedIndex == 1
                                     ? AppLocalizations.of(context)!.typeTaskTypeOrSelectFromList
@@ -683,17 +702,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 fontWeight: FontWeight.normal,
                                 color: Colors.black,
                               ),
+                              textInputAction: TextInputAction.done,
                             );
                           },
                           optionsViewBuilder: (context, onSelected, options) {
                             return Align(
                               alignment: Alignment.topLeft,
                               child: Material(
-                                color: Colors.white, // 🔹 Custom Background Color
+                                color: Colors.white,
                                 elevation: 4,
                                 borderRadius: BorderRadius.circular(12),
                                 child: SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.9, // Adjust width
+                                  width: MediaQuery.of(context).size.width * 0.9,
                                   child: ListView.builder(
                                     padding: EdgeInsets.zero,
                                     shrinkWrap: true,
@@ -701,14 +721,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                     itemBuilder: (context, index) {
                                       final String option = options.elementAt(index);
                                       return ListTile(
-                                        tileColor: Colors.white, // 🔹 Color of each list item
-                                        hoverColor: Colors.grey, // 🔹 Hover effect
+                                        tileColor: Colors.white,
+                                        hoverColor: Colors.grey[200],
                                         title: Text(
                                           option,
-                                          style: GoogleFonts.inter(color: Colors.black), // Text color
+                                          style: GoogleFonts.inter(color: Colors.black),
                                         ),
                                         onTap: () {
                                           onSelected(option);
+                                          FocusScope.of(context).unfocus(); // Close keyboard on tap
                                         },
                                       );
                                     },
@@ -718,11 +739,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             );
                           },
                         ),
+                        const SizedBox(height: 200),
                       ],
                     ),
                   )
                 ],
-              ))
+              )),
+
             ],
           ),
             if (isLoading)

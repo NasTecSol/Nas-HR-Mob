@@ -435,7 +435,7 @@ class SingletonClass {
       if (kDebugMode) {
         print("Error formatting time: $e");
       }
-      return 'N/A';
+      return '--:--';
     }
   }
   //ATTENDANCE API CALL

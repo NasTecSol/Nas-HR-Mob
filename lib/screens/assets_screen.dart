@@ -127,16 +127,16 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                 color: Colors.grey.withOpacity(0.3),
                                 spreadRadius: 2,
                                 blurRadius: 8,
-                                offset: const Offset(0, 0), // changes position of shadow
+                                offset: const Offset(0, 0),
                               ),
                             ],
                           ),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min, // Set the main axis size
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                height: MediaQuery.of(context).size.height * 0.15, // Responsive height
-                                width: MediaQuery.of(context).size.width * 0.25, // Responsive width
+                                height: MediaQuery.of(context).size.height * 0.15,
+                                width: MediaQuery.of(context).size.width * 0.25,
                                 decoration: BoxDecoration(
                                   borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(15),
@@ -145,7 +145,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                   color: NasColors.darkBlue,
                                   image: DecorationImage(
                                     image: AssetImage(
-                                      _getImageForEventType(assets.assetType), // Use a method to get the appropriate image
+                                      _getImageForEventType(assets.assetType),
                                     ),
                                     fit: BoxFit.contain,
                                   ),
@@ -168,7 +168,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
-                                            overflow: TextOverflow.ellipsis, // Handle overflow
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
@@ -285,7 +285,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                    color: Colors.grey.withOpacity(0.3),
                                    spreadRadius: 2,
                                    blurRadius: 8,
-                                   offset: const Offset(0, 0), // changes position of shadow
+                                   offset: const Offset(0, 0),
                                  ),
                                ],
                              ),
@@ -306,7 +306,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                                  fontWeight: FontWeight.bold,
                                                  color: Colors.black,
                                                ),
-                                               overflow: TextOverflow.ellipsis, // Handle overflow
+                                               overflow: TextOverflow.ellipsis,
                                              ),
                                            ),
                                          ],
@@ -324,8 +324,8 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                            ),
                                            Spacer(),
                                            Container(
-                                             height: MediaQuery.of(context).size.height * 0.04, // Responsive height
-                                             width: MediaQuery.of(context).size.width * 0.19, // Responsive width
+                                             height: MediaQuery.of(context).size.height * 0.04,
+                                             width: MediaQuery.of(context).size.width * 0.19,
                                              decoration: BoxDecoration(
                                                shape: BoxShape.rectangle,
                                                color: NasColors.onTime,
@@ -420,16 +420,16 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                    color: Colors.grey.withOpacity(0.3),
                                    spreadRadius: 2,
                                    blurRadius: 8,
-                                   offset: const Offset(0, 0), // changes position of shadow
+                                   offset: const Offset(0, 0),
                                  ),
                                ],
                              ),
                              child: Row(
-                               mainAxisSize: MainAxisSize.min, // Set the main axis size
+                               mainAxisSize: MainAxisSize.min,
                                children: [
                                  Container(
-                                   height: MediaQuery.of(context).size.height * 0.15, // Responsive height
-                                   width: MediaQuery.of(context).size.width * 0.25, // Responsive width
+                                   height: MediaQuery.of(context).size.height * 0.15,
+                                   width: MediaQuery.of(context).size.width * 0.25,
                                    decoration: BoxDecoration(
                                      borderRadius: const BorderRadius.only(
                                        topLeft: Radius.circular(15),
@@ -438,7 +438,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                      color: NasColors.darkBlue,
                                      image: DecorationImage(
                                        image: AssetImage(
-                                         _getImageForEventType(assets.assetType), // Use a method to get the appropriate image
+                                         _getImageForEventType(assets.assetType),
                                        ),
                                        fit: BoxFit.contain,
                                      ),
@@ -453,7 +453,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                        Row(
                                          children: [
                                            Container(
-                                             constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5), // Set max width
+                                             constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
                                              child: Text(
                                                "${assets.assetName}",
                                                style: GoogleFonts.inter(
@@ -461,7 +461,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                                  fontWeight: FontWeight.bold,
                                                  color: Colors.black,
                                                ),
-                                               overflow: TextOverflow.ellipsis, // Handle overflow
+                                               overflow: TextOverflow.ellipsis,
                                              ),
                                            ),
                                          ],
@@ -566,7 +566,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
       case 'car':
         return 'images/Car.png';
       default:
-        return 'images/Vector.png'; // Default image for company or other types
+        return 'images/Vector.png';
     }
   }
 

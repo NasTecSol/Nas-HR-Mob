@@ -519,17 +519,18 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       children: [
                         Checkbox(value: _isTeamChecked,
                             activeColor: NasColors.onTime,
-                            onChanged: (bool? value){
+                            onChanged:(singletonClass.branchID != null) ? (bool? value){
                               setState(() {
                                 _isChecked = false;
                                 _isTeamChecked = value ?? false;
+                                selectedBranchIds.clear();
                                 _setDefaultDates();
                                 _initDates(start: _startDate!, end: _endDate!);
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
                                 loadData();
                               });
-                            }),
+                            } : null ),
                         Text(AppLocalizations.of(context)!.teams,
                           style: GoogleFonts.inter(
                               fontSize: 15,
@@ -549,11 +550,19 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           activeColor: NasColors.onTime,
                           onChanged: (bool? value){
                             setState(() {
-                              _isTeamChecked = false;
                               _isChecked = value ?? false;
-                              _setDefaultDates();
-                              _initDates(start: _startDate!, end: _endDate!);
-                              loadData();
+                              if (_isChecked == false) {
+                                _isTeamChecked = true;
+                                _setDefaultDates();
+                                selectedBranchIds.clear();
+                                _initDates(start: _startDate!, end: _endDate!);
+                                loadData();
+                              } else {
+                                _setDefaultDates();
+                                selectedBranchIds.clear();
+                                _initDates(start: _startDate!, end: _endDate!);
+                                loadData();
+                              }
                             });
                           }),
                       Text(AppLocalizations.of(context)!.onlyMe,
@@ -733,12 +742,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       SizedBox(width: 5),
                                       Column(
                                         children: [
-                                          Text(
-                                            attendance.name ?? "___",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
+                                          SizedBox(
+                                            width: 130,
+                                            child: Text(
+                                              attendance.name ?? "___",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -1087,14 +1099,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
 
   String formatMinutes(dynamic minutes) {
-    if (minutes == null) return '--';
+    if (minutes == null) return '---';
     try {
       double roundedMinutes = (minutes is int)
           ? minutes.toDouble()
           : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString();
     } catch (e) {
-      return '--';
+      return '---';
     }
   }
 

@@ -382,14 +382,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     ),
                                   ),
                                 )),
-                            // Positioned image overlapping the top border of the container
                             Positioned(
                               top: -0,
-                              // Adjust position as needed to overlap with container top border
                               left:
                               (MediaQuery.of(context).size.width - 100) /
                                   2,
-                              // Adjust position as needed horizontally
                               child: Stack(children: [
                                 Container(
                                   height: 100,
@@ -405,14 +402,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   child: ClipOval(
                                     child: Image.network(
                                       employeeProfile?.profilePic ?? '',
-                                      // URL for the network image, empty string if null
                                       fit: BoxFit.cover,
                                       width: 100,
                                       height: 100,
                                       errorBuilder: (BuildContext context,
                                           Object exception,
                                           StackTrace? stackTrace) {
-                                        // Display the default asset image if the network image fails to load
                                         return Image.asset(
                                           'images/DP.png',
                                           fit: BoxFit.cover,
@@ -496,13 +491,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey.withOpacity(0.4),
-                                  // Shadow color with opacity
                                   spreadRadius: 5,
-                                  // Spread radius
                                   blurRadius: 10,
-                                  // Blur radius
                                   offset: const Offset(0,
-                                      3), // Offset in the x and y directions
+                                      3),
                                 ),
                               ],
                             ),
@@ -536,7 +528,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.gender}",
+                                      (employeeProfile?.gender?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.gender!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -560,7 +554,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.nationality}",
+                                      (employeeProfile?.nationality?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.nationality!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -583,7 +579,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.dob}",
+                                      (employeeProfile?.dob?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.dob!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -606,7 +604,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.age}",
+                                      (employeeProfile?.age != null && employeeProfile!.age!.toString().trim().isNotEmpty)
+                                          ? employeeProfile.age!.toString()
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -630,7 +630,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.martialStatus}",
+                                      (employeeProfile?.martialStatus?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.martialStatus!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -653,7 +655,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.phoneNumber?.first.mobileNumber}",
+                                      (employeeProfile?.phoneNumber?.isNotEmpty == true &&
+                                          (employeeProfile?.phoneNumber?.first.mobileNumber?.trim().isNotEmpty ?? false))
+                                          ? employeeProfile!.phoneNumber!.first.mobileNumber!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -676,7 +681,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.address?.city} ${employeeProfile?.address?.streetAddress} ${employeeProfile?.address?.country}",
+                                      [
+                                        employeeProfile?.address?.city,
+                                        employeeProfile?.address?.streetAddress,
+                                        employeeProfile?.address?.country
+                                      ]
+                                          .where((e) => e != null && e.trim().isNotEmpty)
+                                          .join(" ")
+                                          .trim()
+                                          .isNotEmpty
+                                          ? [
+                                        employeeProfile?.address?.city,
+                                        employeeProfile?.address?.streetAddress,
+                                        employeeProfile?.address?.country
+                                      ]
+                                          .where((e) => e != null && e.trim().isNotEmpty)
+                                          .join(" ")
+                                          : "---",
                                       maxLines: 2,
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
@@ -701,7 +722,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.passport?.id}",
+                                      (employeeProfile?.passport?.id?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.passport!.id!
+                                          : "---",
                                       maxLines: 2,
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
@@ -958,7 +981,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             child: GestureDetector(
                               onTap: () async {
                                 if (isImage || isPdf) {
-                                  // Open the document URL using the default viewer (image viewer or PDF viewer)
                                   if (await canLaunch(documents.url)) {
                                     await launch(documents.url);
                                   } else {
@@ -967,7 +989,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     );
                                   }
                                 } else {
-                                  // Handle other file types if needed
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Unsupported file type!')),
                                   );
@@ -1087,13 +1108,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey.withOpacity(0.4),
-                                    // Shadow color with opacity
                                     spreadRadius: 5,
-                                    // Spread radius
                                     blurRadius: 10,
-                                    // Blur radius
                                     offset: const Offset(0,
-                                        3), // Offset in the x and y directions
+                                        3),
                                   ),
                                 ],
                               ),
@@ -1607,19 +1625,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-//Method for Account Number
+///Method for Account Number
   String maskAccountNumber(String accountNumber) {
-    // Check if the account number has at least 2 digits
     if (accountNumber.length >= 2) {
       return '*' * (accountNumber.length - 4) +
           accountNumber.substring(accountNumber.length - 4);
     } else {
-      // If the account number has less than 2 digits, just return it as is
       return accountNumber;
     }
   }
 
-  //Cards
+  ///Cards
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {
@@ -1707,7 +1723,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-// Function to show the confirmation dialog
   void _showConfirmationDialog(PlatformFile file) {
     showDialog(
       context: context,
@@ -1726,7 +1741,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           actions: [
             TextButton(
               onPressed: () {
-                // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
               child:  Text(AppLocalizations.of(context)!.cancel,
@@ -1737,10 +1751,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             TextButton(
               onPressed: () async {
-                // Close the dialog
                 Navigator.of(context).pop();
-
-                // Trigger the API call to upload the file
                 await uploadProfile();
               },
               child:  Text(AppLocalizations.of(context)!.yes,
@@ -1757,30 +1768,22 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
       print("No file selected.");
-      return; // Exit the function if no file is selected
+      return;
     }
-
-    // Check if bytes are available
     if (selectedFile!.bytes == null) {
-      // Load the bytes of the selected file manually
       print("Loading bytes for the selected file...");
       try {
-        final file = File(selectedFile!.path!); // Convert PlatformFile to File
+        final file = File(selectedFile!.path!);
         final fileBytes = await file.readAsBytes();
-
-        // If bytes are still null, return early
         if (fileBytes.isEmpty) {
           print("No bytes available for the selected file.");
-          return; // Exit the function if no valid bytes are available
+          return;
         }
-
-        // Proceed with uploading the file after loading bytes
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
         print('Error reading file: $e');
       }
     } else {
-      // If bytes are already available, upload directly
       _uploadFileWithBytes(selectedFile!.bytes!);
     }
   }
@@ -1793,7 +1796,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
 
     try {
-      // Compress the image if it's larger than 1MB
       if (fileBytes.length > 1000000) {
         final compressed = await FlutterImageCompress.compressWithList(
           fileBytes,
@@ -1873,7 +1875,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
 
-  //Signature CALL
+  ///Signature CALL
   Future<void> _uploadSignatureToApi(Uint8List data) async {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
@@ -1926,12 +1928,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  //PATCH CALL
+  ///PATCH CALL
   void updateEmployeeData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var uri = Uri.parse('${singletonClass.baseURL}/employee/$employeeId');
-
-    // Create the JSON payload
     Map<String, dynamic> employeeData = {
       "userName": singletonClass.employeeDataList.first.data!.userName,
       "password": singletonClass.employeeDataList.first.data!.password,

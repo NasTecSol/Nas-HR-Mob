@@ -1625,7 +1625,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
   }
 
   String formatMinutes(dynamic minutes) {
-    if (minutes == null) return '--';
+    if (minutes == null) return '---';
     try {
       int totalMinutes =
           (minutes is int) ? minutes : int.parse(minutes.toString());
@@ -1641,7 +1641,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
       if (kDebugMode) {
         print('Error formatting minutes: $e');
       }
-      return '--';
+      return '---';
     }
   }
 
