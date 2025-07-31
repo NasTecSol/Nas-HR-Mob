@@ -318,7 +318,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                 ],
                 if (_selectedOptionIndex == 1)...[
                   FutureBuilder<DocumentNotificationModel?>(
-                    future: getDocumentNotificationData(), // Your API call
+                    future: getDocumentNotificationData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
@@ -461,7 +461,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
 
   Future<void> _captureAndShare() async {
     try {
-      // Wait until after the current frame has been rendered
       await Future.delayed(Duration(milliseconds: 100));
       await WidgetsBinding.instance.endOfFrame;
 

@@ -157,15 +157,15 @@ class TeamAttendanceData {
 }
 
 class Slots {
-  String? slotStart;
-  String? slotEnd;
-  String? checkInTime;
-  String? checkOutTime;
-  String? status;
+  dynamic slotStart;
+  dynamic slotEnd;
+  dynamic checkInTime;
+  dynamic checkOutTime;
+  dynamic status;
   bool? isActive;
   List<dynamic>? breaksTaken;
-  int? lateMinutes;
-  int? earlyCheckOut;
+  dynamic lateMinutes;
+  dynamic earlyCheckOut;
 
   Slots({this.slotStart, this.slotEnd, this.checkInTime, this.checkOutTime, this.status, this.isActive, this.breaksTaken, this.lateMinutes, this.earlyCheckOut});
 

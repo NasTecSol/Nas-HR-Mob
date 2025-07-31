@@ -263,10 +263,10 @@ class _TeamClockingState extends State<TeamClocking> {
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredClockingDataList.reversed.toList()[index];
                         final shift = singletonClass.branchDataList.first.data?.branch!.departmentDetails?.first.shifts;
-                        DateTime? checkInTime = parseTime(team.checkInTime ?? '');
-                        DateTime? checkOutTime = parseTime(team.checkOutTime ?? '');
-                        DateTime? shiftFromTime = parseTime(shift!.first.timeFrom ?? '');
-                        DateTime? shiftToTime = parseTime(shift.first.timeTo ?? '');
+                        DateTime? checkInTime = parseTime(team.checkInTime ?? '--:--');
+                        DateTime? checkOutTime = parseTime(team.checkOutTime ?? '--:--');
+                        DateTime? shiftFromTime = parseTime(shift!.first.timeFrom ?? '--:--');
+                        DateTime? shiftToTime = parseTime(shift.first.timeTo ?? '--:--');
                         Duration lateDuration = Duration.zero;
                         if (checkInTime != null && shiftFromTime != null) {
                           var policyData = singletonClass.policyModelDataList.isNotEmpty
@@ -352,7 +352,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                 Row(
                                   children: [
                                     Text( team.checkInTime != null ?
-                                      singletonClass.formatCheckInTime(team.checkInTime!) : 'N/A',
+                                      singletonClass.formatCheckInTime(team.checkInTime!) : '--:--',
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -393,7 +393,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     SizedBox(
                                       width: 70,
                                       child: Text( team.checkOutTime != null ?
-                                        singletonClass.formatCheckInTime(team.checkOutTime!) : 'N/A',
+                                        singletonClass.formatCheckInTime(team.checkOutTime!) : '--:--',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,

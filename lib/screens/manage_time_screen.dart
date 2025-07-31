@@ -208,7 +208,6 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   timeTableShiftEmployees.clear();
                                   singletonClass.branchID = null;
                                   singletonClass.branchName = null;
-                                  /// ✅ UPDATE _shiftFuture
                                   _shiftFuture = fetchAndSetShiftDetails();
                                 }
                               });
@@ -360,7 +359,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                       ),
                                       const SizedBox(width: 5),
                                       Container(
-                                        width: 160,
+                                        width: 110,
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "${employee.userName}",
@@ -376,9 +375,9 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                       ),
                                       const Spacer(),
                                       SizedBox(
-                                        width: 88,
+                                        width: 100,
                                         child: Text(
-                                          "${employee.shiftInfo?.shiftType ?? ''}",
+                                          "${employee.shiftInfo?.shiftType ?? '---'}",
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: true,
@@ -684,7 +683,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                             child: Text(
                                               slot.start != null
                                                   ? formatOnlyTime(slot.start!)
-                                                  : '',
+                                                  : '--:--',
                                               style: GoogleFonts.inter(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
@@ -731,7 +730,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                             child: Text(
                                               slot.end != null
                                                   ? formatOnlyTime(slot.end!)
-                                                  : '',
+                                                  : '--:--',
                                               style: GoogleFonts.inter(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
@@ -954,7 +953,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       final utcTime = DateTime.parse(isoTime).toLocal(); // convert to local
       return DateFormat('hh:mm a').format(utcTime);
     } catch (e) {
-      return '--';
+      return '--:--';
     }
   }
 
@@ -974,7 +973,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       final time = DateTime.parse("1970-01-01T$timeStr"); // use dummy date
       return DateFormat.jm().format(time); // e.g., "8:00 AM"
     } catch (e) {
-      return '';
+      return '--:--';
     }
   }
 }
