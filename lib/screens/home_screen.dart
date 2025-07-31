@@ -1311,7 +1311,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     try {
                                                       final today = DateTime.now();
                                                       final dataList = singletonClass.clockingDataList.first.data;
-                                                      if (dataList == null || dataList.isEmpty) return 'NA';
+                                                      if (dataList == null || dataList.isEmpty) return '--:--';
 
                                                       final todayEntries = dataList.where((entry) {
                                                         final createdAt = DateTime.tryParse(entry.createdAt ?? '');
@@ -1321,14 +1321,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             createdAt.day == today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty) return 'NA';
+                                                      if (todayEntries.isEmpty) return '--:--';
 
                                                       final lastEntry = todayEntries.last;
                                                       return (lastEntry.checkInTime?.isNotEmpty ?? false)
                                                           ? singletonClass.formatCheckInTime(lastEntry.checkInTime!)
-                                                          : 'NA';
+                                                          : '--:--';
                                                     } catch (_) {
-                                                      return 'NA';
+                                                      return '--:--';
                                                     }
                                                   }(),
                                                   style: GoogleFonts.inter(
@@ -1357,7 +1357,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     try {
                                                       final today = DateTime.now();
                                                       final dataList = singletonClass.clockingDataList.first.data;
-                                                      if (dataList == null || dataList.isEmpty) return 'NA';
+                                                      if (dataList == null || dataList.isEmpty) return '--:--';
 
                                                       final todayEntries = dataList.where((entry) {
                                                         final createdAt = DateTime.tryParse(entry.createdAt ?? '');
@@ -1367,14 +1367,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             createdAt.day == today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty) return 'NA';
+                                                      if (todayEntries.isEmpty) return '--:--';
 
                                                       final lastEntry = todayEntries.last;
                                                       return (lastEntry.checkOutTime?.isNotEmpty ?? false)
                                                           ? singletonClass.formatCheckInTime(lastEntry.checkOutTime!)
-                                                          : 'NA';
+                                                          : '--:--';
                                                     } catch (_) {
-                                                      return 'NA';
+                                                      return '--:--';
                                                     }
                                                   }(),
                                                   style: GoogleFonts.inter(
@@ -2614,14 +2614,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   String formatMinutes(dynamic minutes) {
-    if (minutes == null) return '--';
+    if (minutes == null) return '---';
     try {
       double roundedMinutes = (minutes is int)
           ? minutes.toDouble()
           : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString();
     } catch (e) {
-      return '--';
+      return '---';
     }
   }
 

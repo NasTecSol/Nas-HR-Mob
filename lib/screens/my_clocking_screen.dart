@@ -272,7 +272,9 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                     Row(
                                       children: [
                                         Text(
-                                          singletonClass.formatCheckInTime(clock.checkInTime!),
+                                          clock.checkInTime != null
+                                              ? singletonClass.formatCheckInTime(clock.checkInTime!)
+                                              : '--:--',
                                           style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -305,7 +307,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                         Text(
                                           clock.checkOutTime != null
                                               ? singletonClass.formatCheckInTime(clock.checkOutTime!)
-                                              : 'N/A', // or any default text
+                                              : '--:--', // or any default text
                                           style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,

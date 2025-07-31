@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-// ignore: camel_case_types
+
 mixin NasColors {
-  // ignore: non_constant_identifier_names
   static Color blue = const Color(0xff0E538C);
   static Color darkBlue = const Color(0xff444658);
   static Color lightBlue = const Color(0xff575970);
