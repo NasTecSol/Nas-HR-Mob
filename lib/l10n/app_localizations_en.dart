@@ -1705,4 +1705,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'Next';
+
+  @override
+  String get allEmployees => 'All Employees';
 }

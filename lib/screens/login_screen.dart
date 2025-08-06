@@ -347,8 +347,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           login();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(""),
+                             SnackBar(
+                              content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
                               duration: Duration(seconds: 4),
                             ),
                           );

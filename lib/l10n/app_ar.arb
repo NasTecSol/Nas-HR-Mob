@@ -653,6 +653,7 @@
     "taskCategory": "فئة المهمة",
     "taskType": "نوع المهمة",
     "typeTaskTypeOrSelectFromList": "اكتب نوع المهمة أو اختر من القائمة",
-    "next": "التالي"
+    "next": "التالي",
+    "allEmployees":"جميع الموظفين"
 
 }

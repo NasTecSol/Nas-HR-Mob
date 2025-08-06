@@ -368,7 +368,9 @@ class SingletonClass {
 
   //BRANCH DATA
   Future<BranchData?> getBranchData() async {
-    String? branchId = getJWTModel()?.branchId;
+    String? branchId = (branchID != null && branchID!.isNotEmpty)
+        ? branchID
+        : getJWTModel()?.branchId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
     var response = await client.get(uri,headers: getHeaders());

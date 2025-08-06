@@ -3469,6 +3469,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next'**
   String get next;
+
+  /// No description provided for @allEmployees.
+  ///
+  /// In en, this message translates to:
+  /// **'All Employees'**
+  String get allEmployees;
 }
 
 class _AppLocalizationsDelegate
