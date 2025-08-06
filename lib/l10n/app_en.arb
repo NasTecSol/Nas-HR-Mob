@@ -988,6 +988,7 @@
   "taskCategory": "Task Category",
   "taskType": "Task Type",
   "typeTaskTypeOrSelectFromList": "Type task type or select from the list",
-  "next":"Next"
+  "next":"Next",
+  "allEmployees":"All Employees"
 
 }
