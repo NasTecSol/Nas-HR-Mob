@@ -19,7 +19,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _currentIndex = 0;
-  bool _isLoading = true;
+  bool isLoading = false;
   final imageIconList = <String>[
     'images/homeScreen.png',
     'images/projectScreen.png',
@@ -39,38 +39,67 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchEmployeeData();
+    _loadData();
+    setState(() {
+      _loadData();
+    });
   }
 
 
-  void _fetchEmployeeData() async {
-    if (singletonClass.employeeDataList.isNotEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-    } else {
 
-      Future.delayed(const Duration(seconds: 2), () {
-        _fetchEmployeeData();
+
+  Future<void> _loadData() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await _loadInitialData();
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading initial data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
       });
     }
   }
+
+  Future<void> _loadInitialData() async {
+    await Future.wait([
+     singletonClass.getCompaniesData(),
+     singletonClass.getUISettingsData(),
+    singletonClass.getEmployeeData(),
+     singletonClass.getClockingData(),
+     singletonClass.getBranchData(),
+    singletonClass.getCompanyData(),
+    singletonClass.getRemoteAttendanceData(),
+     singletonClass.getEmployeeAttendanceData(),
+    singletonClass.getNotifications(),
+    singletonClass.getBranchesData(),
+    ]);
+  }
+
+
   @override
   Widget build(BuildContext context) {
+
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: NasColors.backGround,
-        body: _isLoading
-            ?  Center(
-          child:SizedBox(
-            height: 200,
-            width: 200,
-            child: Lottie.asset(
-                'images/loader.json'
-            ),
-          ), // Show loader while loading
-        )
+        backgroundColor: Colors.white,
+        body: isLoading
+            ?  Padding(
+              padding: const EdgeInsets.only(top: 45.0),
+              child: Center(
+                        child:SizedBox(
+              child: Lottie.asset(
+                  'images/mainLoader.json'
+              ),
+                        ), // Show loader while loading
+                      ),
+            )
             : _screens[_currentIndex],
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -89,11 +118,13 @@ class _MainScreenState extends State<MainScreen> {
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(20)),
               child: AnimatedBottomNavigationBar.builder(
-                itemCount: imageIconList.length + 1, // Increment the item count by 1
+                itemCount: imageIconList.length + 1,
                 tabBuilder: (int index, bool isActive) {
-                  final color = isActive ? Colors.white : Colors.grey;
-
                   if (index == imageIconList.length) {
+                    final hasProfilePic = singletonClass.employeeDataList.isNotEmpty &&
+                        singletonClass.employeeDataList.first.data?.profilePic != null &&
+                        singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty;
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
@@ -109,7 +140,7 @@ class _MainScreenState extends State<MainScreen> {
                           backgroundColor: Colors.white,
                           radius: 35,
                           child: ClipOval(
-                            child: (singletonClass.employeeDataList.first.data?.profilePic != null && singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            child: hasProfilePic
                                 ? Image.network(
                               singletonClass.employeeDataList.first.data!.profilePic!,
                               fit: BoxFit.cover,
@@ -117,36 +148,21 @@ class _MainScreenState extends State<MainScreen> {
                               height: 70,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
+                                return  Center(child: CircularProgressIndicator(
+                                  color: NasColors.darkBlue,
+                                ));
                               },
                               errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'images/DP.png',
-                                  fit: BoxFit.cover,
-                                  width: 70,
-                                  height: 70,
-                                );
+                                return Image.asset('images/DP.png', fit: BoxFit.cover);
                               },
                             )
-                                : Image.asset(
-                              'images/DP.png', // Default image if profilePic is null/empty
-                              fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
-                            ),
+                                : Image.asset('images/DP.png', fit: BoxFit.cover),
                           ),
                         ),
                       ),
                     );
                   }
-                   return Padding(
+                  return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       width: 70,

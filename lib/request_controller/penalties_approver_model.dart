@@ -165,7 +165,7 @@ class RequestData {
   dynamic loanInstallment;
   dynamic loanDuration;
   dynamic loanType;
-  dynamic fine_penality;
+  dynamic finePenality;
   int? amount;
   dynamic details;
   dynamic dateTime;
@@ -182,7 +182,7 @@ class RequestData {
     this.loanInstallment,
     this.loanDuration,
     this.loanType,
-    this.fine_penality,
+    this.finePenality,
     this.amount,
     this.details,
     this.dateTime,
@@ -200,7 +200,7 @@ class RequestData {
     loanInstallment = json["loanInstallment"];
     loanDuration = json["loanDuration"];
     loanType = json["loanType"];
-    fine_penality = json["fine_penality"];
+    finePenality = json["fine_penality"];
     amount = json["amount"];
     details = json["details"];
     dateTime = json["date"];
@@ -221,7 +221,7 @@ class RequestData {
     _data["loanInstallment"] = loanInstallment;
     _data["loanDuration"] = loanDuration;
     _data["loanType"] = loanType;
-    _data["fine_penality"] = fine_penality;
+    _data["fine_penality"] = finePenality;
     _data["amount"] = amount;
     _data["details"] = details;
     _data["date"] = dateTime;

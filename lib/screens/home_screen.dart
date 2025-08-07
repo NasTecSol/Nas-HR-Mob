@@ -4,13 +4,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
-import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/screens/assets_screen.dart';
-import 'package:nashr/screens/attendance_screen.dart';
 import 'package:nashr/screens/chat_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
+import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
@@ -22,11 +23,12 @@ import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../UTILS/auth_services.dart';
-import '../request_controller/attendance_model.dart';
+import '../request_controller/attendance_model.dart' hide Data;
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'onsite_checkin.dart';
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,17 +49,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isSliderCompleted = false;
   String? _openLocation;
   String? selectedCompanyId;
-  String? _backgroundLocation;
+  String? selectedBranchId;
+  bool isLoadingBranches = false;
+
 
   @override
   void initState() {
     super.initState();
-    singletonClass.getCompanyData();
-    singletonClass.getEmployeeAttendanceData();
-    singletonClass.getClockingData();
-    singletonClass.getRemoteAttendanceData();
-    singletonClass.getPolicyData();
-    singletonClass.getBranchesData();
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -89,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> trackBackgroundLocation() async {
-    _backgroundLocation = await getCurrentLatLong();
     updateRemoteLocation();
   }
 
@@ -558,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                const AttendanceScreen()));
+                                                const TeamAttendanceScreen()));
                                   },
                                   child: Container(
                                     height: 65,
@@ -636,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Center(
                                       child: Image.asset(
-                                        'images/clock.png',
+                                        'images/teamClocking.png',
                                         fit: BoxFit.contain,
                                         width: 30,
                                         height: 30,
@@ -655,7 +652,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                               ],
                             ),
-                            SizedBox(width: 40),
+                            SizedBox(width: 30),
                             Column(
                               children: [
                                 GestureDetector(
@@ -665,7 +662,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                const TeamAttendanceScreen()));
+                                                const ManageTimeScreen()));
                                   },
                                   child: Container(
                                     height: 65,
@@ -686,7 +683,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Center(
                                       child: Image.asset(
-                                        'images/teamClocking.png',
+                                        'images/clock.png',
                                         fit: BoxFit.contain,
                                         width: 30,
                                         height: 30,
@@ -696,7 +693,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  AppLocalizations.of(context)!.teamAttendance,
+                                  AppLocalizations.of(context)!.manageTime,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -1079,71 +1076,122 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ],
                           ),
                           if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" || singletonClass.getJWTModel()?.grade == "L2")
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Container(
-                              alignment: Alignment.topLeft,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(15)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 6,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                                color: Colors.white,
-                              ),
-                              height: 60,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height: 50,
-                                      width: 50,
-                                      child: Image.asset("images/site.png"),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Row(
+                                children: [
+                                  /// Company Dropdown
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<String>(
                                           dropdownColor: Colors.white,
                                           isExpanded: true,
                                           value: selectedCompanyId,
-                                          hint:  Text("${singletonClass.companyDataList.first.data!.name} ~ ${singletonClass.branchDataList.first.data!.branch!.branchName}"),
-                                          items: singletonClass
-                                              .companiesDataList
-                                              .first
-                                              .data!
-                                              .companies!
-                                              .map<DropdownMenuItem<String>>(
-                                                  (company) {
+                                          hint: Row(
+                                            children: [
+                                              Image.asset('images/site.png', width: 15, height: 15),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  (singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)
+                                                      ? singletonClass.companyName!
+                                                      : (singletonClass.companyDataList.first.data?.name ?? "---"),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(fontSize: 15),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          items: singletonClass.companiesDataList.isNotEmpty
+                                              ? singletonClass.companiesDataList.first.data?.companies
+                                              ?.map<DropdownMenuItem<String>>((company) {
                                             return DropdownMenuItem<String>(
-                                              value:
-                                                  company.companyId.toString(),
-                                              // Assuming company.id is non-null
-                                              child: Text(
-                                                  "${company.companyName}"), // Assuming company.name is non-null
+                                              value: company.companyId.toString(),
+                                              child: Text(company.companyName ?? "No Name"),
                                             );
-                                          }).toList(),
-                                          onChanged: (value) {
+                                          }).toList()
+                                              : [],
+                                          onChanged: (value) async {
                                             setState(() {
-                                              singletonClass.branchesDataList.clear();
                                               selectedCompanyId = value;
                                               singletonClass.selectedCompanyId = selectedCompanyId;
-                                              singletonClass.getBranchesData();
+                                              final selectedCompany = singletonClass.companiesDataList.first.data!.companies!
+                                                  .firstWhere((company) => company.companyId.toString() == selectedCompanyId);
+                                              singletonClass.companyName = selectedCompany.companyName ?? '';
+                                              singletonClass.companyDataList.clear();
+                                              selectedBranchId = null;
+                                              isLoadingBranches = true;
+                                              singletonClass.branchID = null;
+                                              singletonClass.branchName = null;
+                                              singletonClass.branchesDataList.clear();
+                                              singletonClass.getCompanyData();
+                                            });
+                                            await singletonClass.getBranchesData();
+                                            setState(() {
+                                              isLoadingBranches = false;
                                             });
                                           },
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+                                  /// Branch Dropdown
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          dropdownColor: Colors.white,
+                                          isExpanded: true,
+                                          value: selectedBranchId,
+                                          hint: Text(
+                                            isLoadingBranches
+                                                ? AppLocalizations.of(context)!.loading
+                                                : (singletonClass.branchName == null || singletonClass.branchName!.isEmpty)
+                                                ? AppLocalizations.of(context)!.selectBranch
+                                                : singletonClass.branchName!,
+                                          ),
+                                          items: !isLoadingBranches &&
+                                              singletonClass.branchesDataList.isNotEmpty
+                                              ? singletonClass.branchesDataList.first.data
+                                              ?.map<DropdownMenuItem<String>>((branch) {
+                                            return DropdownMenuItem<String>(
+                                              value: branch.id.toString(),
+                                              child: Text(branch.branchName ?? "No Name"),
+                                            );
+                                          }).toList()
+                                              : [],
+                                          onChanged: isLoadingBranches
+                                              ? null
+                                              : (value) {
+                                            setState(() {
+                                              selectedBranchId = value;
+                                              singletonClass.branchID = selectedBranchId;
+                                              print(singletonClass.branchID);
+                                              final selectedBranch = singletonClass.branchesDataList.first.data!
+                                                  .firstWhere((branch) => branch.id.toString() == selectedBranchId);
+                                              singletonClass.branchName = selectedBranch.branchName ?? '';
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Row(
@@ -1167,31 +1215,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Column(
                                       children: [
-                                        if (singletonClass.attendanceDataList.isNotEmpty &&
-                                            singletonClass.attendanceDataList.first.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                    .first.data!.data !=
-                                                null &&
-                                            singletonClass.attendanceDataList
-                                                .first.data!.data!.isNotEmpty &&
-                                            singletonClass
-                                                    .attendanceDataList
-                                                    .first
-                                                    .data!
-                                                    .data!
-                                                    .first
-                                                    .clockInTime !=
-                                                null &&
-                                            singletonClass
-                                                .attendanceDataList
-                                                .first
-                                                .data!
-                                                .data!
-                                                .first
-                                                .clockInTime!
-                                                .isNotEmpty)
-                                          Container(
+                                        if (singletonClass.clockingDataList.isNotEmpty &&
+                                            singletonClass.clockingDataList.first.data != null &&
+                                            singletonClass.clockingDataList.first.data!.isNotEmpty &&
+                                            singletonClass.clockingDataList.first.data!.first.checkInTime != null &&
+                                            singletonClass.clockingDataList.first.data!.first.checkInTime!.isNotEmpty)
+                                            Container(
                                               height: 30,
                                               decoration: BoxDecoration(
                                                 borderRadius:
@@ -1205,101 +1234,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  if (singletonClass
-                                                          .attendanceDataList
-                                                          .isNotEmpty &&
-                                                      singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .attendanceDataList
-                                                          .first
-                                                          .data!
-                                                          .data!
-                                                          .isNotEmpty)
+                                                  if (singletonClass.attendanceDataList.isNotEmpty &&
+                                                      singletonClass.attendanceDataList.first.data!.data != null &&
+                                                      singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
                                                     Builder(builder: (context) {
-                                                      final today =
-                                                          DateTime.now();
+                                                      final today = DateTime.now();
                                                       final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data!;
+                                                          singletonClass.attendanceDataList.first.data!.data!;
                                                       Data1? entry;
-                                                      final filteredList =
-                                                          dataList.where((e) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                e.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
+                                                      final filteredList = dataList.where((e) {
+                                                        final createdAt = DateTime.tryParse(e.createdAt ?? '');
+                                                        return createdAt != null && createdAt.year == today.year && createdAt.month ==
+                                                                today.month && createdAt.day == today.day;
                                                       }).toList();
-
                                                       if (filteredList.isNotEmpty) {
                                                         entry = filteredList.first;
                                                       }
                                                       if (entry == null) {
                                                         return SizedBox();
                                                       }
-
-                                                      if ((entry.lateMinutes ?? 0) >
-                                                          0) {
-                                                        return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .lateComings,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .lateComingText,
-                                                          ),
-                                                        );
-                                                      } else if ((entry
-                                                                  .earlyCheckOut ??
-                                                              0) >
-                                                          0) {
-                                                        return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .earlyCheckOut,
-                                                          style:
-                                                              GoogleFonts.inter(
+                                                      if ((entry.lateMinutes ?? 0) > 0) {
+                                                        return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes}",
+                                                          style: GoogleFonts.inter(
                                                             fontSize: 10,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .onTime,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.lateComingText,
                                                           ),
                                                         );
-                                                      } else if (entry
-                                                              .clockInTime
-                                                              ?.isNotEmpty ==
-                                                          true) {
+                                                      } else if ((entry.earlyCheckOut ?? 0) > 0) {
                                                         return Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .onTime,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: NasColors
-                                                                .onTime,
+                                                          "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        );
+                                                      } else if (entry.clockInTime?.isNotEmpty == true) {
+                                                        return Text( AppLocalizations.of(context)!.onTime,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
                                                           ),
                                                         );
                                                       } else {
@@ -1308,84 +1284,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     })
                                                   else
                                                     Text(
-                                                      AppLocalizations.of(
-                                                              context)!
-                                                          .noData,
+                                                      "--:--",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
                                                         fontWeight:
-                                                            FontWeight.normal,
+                                                        FontWeight.normal,
+                                                        color: Colors.white
                                                       ),
                                                     ),
                                                 ],
                                               )),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8.0,
-                                              left: 15,
-                                              right: 8,
-                                              bottom: 8),
+                                          padding: const EdgeInsets.only(top: 8.0, left: 15, right: 8, bottom: 8),
                                           child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
                                               SizedBox(
                                                 height: 25,
                                                 width: 25,
-                                                child: Image.asset(
-                                                  "images/checkIn.png",
-                                                ),
+                                                child: Image.asset("images/checkIn.png"),
                                               ),
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                  () {
+                                                      () {
                                                     try {
-                                                      final today =
-                                                          DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data;
-                                                      if (dataList == null ||
-                                                          dataList.isEmpty) {
-                                                        return 'NA';
-                                                      }
+                                                      final today = DateTime.now();
+                                                      final dataList = singletonClass.clockingDataList.first.data;
+                                                      if (dataList == null || dataList.isEmpty) return '--:--';
 
-                                                      final entry = dataList
-                                                          .firstWhere((entry) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                entry.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
-                                                      });
+                                                      final todayEntries = dataList.where((entry) {
+                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                                        return createdAt != null &&
+                                                            createdAt.year == today.year &&
+                                                            createdAt.month == today.month &&
+                                                            createdAt.day == today.day;
+                                                      }).toList();
 
-                                                      return entry.clockInTime
-                                                                  ?.isNotEmpty ==
-                                                              true
-                                                          ? singletonClass
-                                                              .formatCheckInTime(
-                                                                  entry
-                                                                      .clockInTime!)
-                                                          : 'NA';
+                                                      if (todayEntries.isEmpty) return '--:--';
+
+                                                      final lastEntry = todayEntries.last;
+                                                      return (lastEntry.checkInTime?.isNotEmpty ?? false)
+                                                          ? singletonClass.formatCheckInTime(lastEntry.checkInTime!)
+                                                          : '--:--';
                                                     } catch (_) {
-                                                      return 'NA';
+                                                      return '--:--';
                                                     }
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.normal,
+                                                    fontWeight: FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
@@ -1393,75 +1341,52 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 5.0, left: 15, right: 8),
+                                          padding: const EdgeInsets.only(top: 5.0, left: 15, right: 8),
                                           child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
                                               SizedBox(
                                                 height: 25,
                                                 width: 25,
-                                                child: Image.asset(
-                                                  "images/checkOut.png",
-                                                ),
+                                                child: Image.asset("images/checkOut.png"),
                                               ),
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                  () {
+                                                      () {
                                                     try {
-                                                      final today =
-                                                          DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data;
-                                                      if (dataList == null ||
-                                                          dataList.isEmpty) {
-                                                        return 'NA';
-                                                      }
+                                                      final today = DateTime.now();
+                                                      final dataList = singletonClass.clockingDataList.first.data;
+                                                      if (dataList == null || dataList.isEmpty) return '--:--';
 
-                                                      final entry = dataList
-                                                          .firstWhere((entry) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                entry.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
-                                                      });
+                                                      final todayEntries = dataList.where((entry) {
+                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                                        return createdAt != null &&
+                                                            createdAt.year == today.year &&
+                                                            createdAt.month == today.month &&
+                                                            createdAt.day == today.day;
+                                                      }).toList();
 
-                                                      return entry.clockOutTime
-                                                                  ?.isNotEmpty ==
-                                                              true
-                                                          ? singletonClass
-                                                              .formatCheckInTime(
-                                                                  entry
-                                                                      .clockOutTime!)
-                                                          : 'NA';
+                                                      if (todayEntries.isEmpty) return '--:--';
+
+                                                      final lastEntry = todayEntries.last;
+                                                      return (lastEntry.checkOutTime?.isNotEmpty ?? false)
+                                                          ? singletonClass.formatCheckInTime(lastEntry.checkOutTime!)
+                                                          : '--:--';
                                                     } catch (_) {
-                                                      return 'NA';
+                                                      return '--:--';
                                                     }
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.normal,
+                                                    fontWeight: FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
+
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 8.0,
@@ -1491,7 +1416,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             .data!
                                                             .isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
-                                                    : 'NA',
+                                                    : '--:--',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.normal,
@@ -1511,9 +1436,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       onTap: () {
                                         Navigator.push(
                                             context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ChatScreen()));
+                                            MaterialPageRoute(builder: (context) => ChatScreen()));
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -1644,18 +1567,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass
-                                                                .attendanceDataList
-                                                                .isNotEmpty &&
-                                                            singletonClass
-                                                                .attendanceDataList
-                                                                .first
-                                                                .data!
-                                                                .data!
-                                                                .isNotEmpty
+                                                    singletonClass.attendanceDataList.isNotEmpty &&
+                                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
                                                         ? '${AppLocalizations.of(context)!.worked} '
                                                             '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0)}'
-                                                        : '${AppLocalizations.of(context)!.worked} NA',
+                                                        : '${AppLocalizations.of(context)!.worked} --:--',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
@@ -1688,48 +1604,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
                                     final today = DateTime.now();
-                                    final dataList = singletonClass
-                                            .attendanceDataList
-                                            .first
-                                            .data
-                                            ?.data ??
-                                        [];
+                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
 
-                                    Data1? todayData;
-                                    for (var entry in dataList) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
-                                      if (createdAt != null &&
+                                    final todayEntries = dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                      return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
-                                          createdAt.day == today.day) {
-                                        todayData = entry;
-                                        break;
-                                      }
-                                    }
+                                          createdAt.day == today.day;
+                                    }).toList();
 
-                                    final checkInTime = todayData?.clockInTime;
-                                    final checkOutTime =
-                                        todayData?.clockOutTime;
+                                    final todayData = todayEntries.isNotEmpty
+                                        ? todayEntries.length >= 2
+                                        ? todayEntries.last
+                                        : todayEntries.first
+                                        : null;
 
-                                    if ((checkInTime == null ||
-                                            checkInTime.isEmpty) ||
-                                        (checkOutTime != null &&
-                                            checkOutTime.isNotEmpty)) {
+                                    final checkInTime = todayData?.checkInTime;
+                                    final checkOutTime = todayData?.checkOutTime;
+
+                                    if ((checkInTime == null || checkInTime.isEmpty) ||
+                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition >
-                                          MediaQuery.of(context).size.width *
-                                              0.7) {
+                                          MediaQuery.of(context).size.width * 0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (checkInTime != null &&
-                                        checkInTime.isNotEmpty &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
+                                    } else if (checkInTime.isNotEmpty &&
+                                        (checkOutTime == null || checkOutTime.isEmpty)) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition <
-                                          -MediaQuery.of(context).size.width *
-                                              0.7) {
+                                          -MediaQuery.of(context).size.width * 0.7) {
                                         _isSliderCompleted = true;
                                       }
                                     }
@@ -1738,54 +1643,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
                                     final today = DateTime.now();
-                                    final dataList = singletonClass
-                                            .attendanceDataList
-                                            .first
-                                            .data
-                                            ?.data ??
-                                        [];
+                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
 
-                                    Data1? todayData;
-                                    for (var entry in dataList) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
-                                      if (createdAt != null &&
+                                    final todayEntries = dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                      return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
-                                          createdAt.day == today.day) {
-                                        todayData = entry;
-                                        break;
+                                          createdAt.day == today.day;
+                                    }).toList();
+
+                                    final todayData = todayEntries.isNotEmpty
+                                        ? todayEntries.length >= 2
+                                        ? todayEntries.last
+                                        : todayEntries.first
+                                        : null;
+
+                                    final checkInTime = todayData?.checkInTime;
+                                    final checkOutTime = todayData?.checkOutTime;
+
+                                    if ((checkInTime == null || checkInTime.isEmpty) ||
+                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                      if (_isSliderCompleted &&
+                                          details.velocity.pixelsPerSecond.dx > 0) {
+                                        _overlayEntry = _createOverlayEntry();
+                                        Overlay.of(context).insert(_overlayEntry!);
+                                      }
+                                    } else if (checkInTime.isNotEmpty &&
+                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                      if (_isSliderCompleted &&
+                                          details.velocity.pixelsPerSecond.dx < 0) {
+                                        _overlayEntry = _createOverlayEntry();
+                                        Overlay.of(context).insert(_overlayEntry!);
                                       }
                                     }
-
-                                    final checkInTime = todayData?.clockInTime;
-                                    final checkOutTime =
-                                        todayData?.clockOutTime;
-
-                                    if ((checkInTime == null ||
-                                            checkInTime.isEmpty) ||
-                                        (checkOutTime != null &&
-                                            checkOutTime.isNotEmpty)) {
-                                      if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx >
-                                              0) {
-                                        _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context)
-                                            .insert(_overlayEntry!);
-                                      }
-                                    } else if (checkInTime != null &&
-                                        checkInTime.isNotEmpty &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx <
-                                              0) {
-                                        _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context)
-                                            .insert(_overlayEntry!);
-                                      }
-                                    }
-
                                     _dragPosition = 0;
                                     _isSliderCompleted = false;
                                   });
@@ -1793,8 +1684,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Container(
                                   alignment: Alignment.topLeft,
                                   decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15)),
+                                    borderRadius: BorderRadius.all(Radius.circular(15)),
                                     gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF444658),
@@ -1810,65 +1700,46 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   height: 60,
                                   child: (() {
                                     final today = DateTime.now();
-                                    final dataList = singletonClass
-                                            .attendanceDataList
-                                            .first
-                                            .data
-                                            ?.data ??
-                                        [];
+                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
 
-                                    Data1? todayData;
-                                    for (var entry in dataList) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
-                                      if (createdAt != null &&
+                                    final todayEntries = dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                      return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
-                                          createdAt.day == today.day) {
-                                        todayData = entry;
-                                        break;
-                                      }
-                                    }
+                                          createdAt.day == today.day;
+                                    }).toList();
 
-                                    final checkInTime = todayData?.clockInTime;
-                                    final checkOutTime =
-                                        todayData?.clockOutTime;
+                                    final todayData = todayEntries.isNotEmpty
+                                        ? todayEntries.length >= 2
+                                        ? todayEntries.last
+                                        : todayEntries.first
+                                        : null;
 
-                                    if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      // Show Check-Out Button
+                                    final checkInTime = todayData?.checkInTime;
+                                    final checkOutTime = todayData?.checkOutTime;
+
+                                    if ((checkInTime != null && checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null || checkOutTime.isEmpty)) {
                                       return Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 5.0, left: 30),
+                                        padding: const EdgeInsets.only(top: 5.0, left: 30),
                                         child: Row(
                                           children: [
                                             IconButton(
                                               onPressed: () async {
                                                 showDialog(
                                                   context: context,
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          AlertDialog(
+                                                  builder: (BuildContext context) => AlertDialog(
+                                                    backgroundColor: Colors.white,
                                                     title: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceEvenly,
+                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                       children: [
-                                                        const Icon(
-                                                            Icons.warning,
-                                                            color:
-                                                                Colors.yellow),
+                                                        const Icon(Icons.warning, color: Colors.yellow),
                                                         Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .areYouSure,
-                                                          style:
-                                                              GoogleFonts.inter(
+                                                          AppLocalizations.of(context)!.areYouSure,
+                                                          style: GoogleFonts.inter(
                                                             fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.w600,
+                                                            fontWeight: FontWeight.w600,
                                                             color: Colors.black,
                                                           ),
                                                         ),
@@ -1876,74 +1747,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                     actions: [
                                                       Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                         children: [
                                                           InkWell(
-                                                            onTap: () =>
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(),
+                                                            onTap: () => Navigator.of(context).pop(),
                                                             child: Row(
                                                               children: [
-                                                                const Icon(
-                                                                    Icons
-                                                                        .cancel,
-                                                                    color: Colors
-                                                                        .red),
-                                                                const SizedBox(
-                                                                    width: 5),
+                                                                const Icon(Icons.cancel, color: Colors.red),
+                                                                const SizedBox(width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(
-                                                                          context)!
-                                                                      .cancel,
-                                                                  style:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Colors
-                                                                        .red,
+                                                                  AppLocalizations.of(context)!.cancel,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.red,
                                                                   ),
                                                                 ),
                                                               ],
                                                             ),
                                                           ),
-                                                          const SizedBox(
-                                                              width: 8),
+                                                          const SizedBox(width: 8),
                                                           InkWell(
                                                             onTap: () async {
-                                                              Navigator.pop(
-                                                                  context);
+                                                              Navigator.pop(context);
                                                               await checkOut();
                                                             },
                                                             child: Row(
                                                               children: [
-                                                                const Icon(
-                                                                    Icons
-                                                                        .logout,
-                                                                    color: Colors
-                                                                        .black),
-                                                                const SizedBox(
-                                                                    width: 5),
+                                                                const Icon(Icons.logout, color: Colors.black),
+                                                                const SizedBox(width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(
-                                                                          context)!
-                                                                      .yes,
-                                                                  style:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Colors
-                                                                        .black,
+                                                                  AppLocalizations.of(context)!.yes,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w600,
+                                                                    color: Colors.black,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1958,16 +1796,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               icon: SizedBox(
                                                 width: 35,
                                                 height: 35,
-                                                child: Image.asset(
-                                                    'images/exit.png'),
+                                                child: Image.asset('images/exit.png'),
                                               ),
                                             ),
                                             const SizedBox(width: 20),
                                             Align(
                                               alignment: Alignment.center,
                                               child: Text(
-                                                AppLocalizations.of(context)!
-                                                    .pressButtonToCheckOut,
+                                                AppLocalizations.of(context)!.pressButtonToCheckOut,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -1979,7 +1815,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       );
                                     } else {
-                                      // Show Swipe to Check-In UI
                                       return Transform.translate(
                                         offset: Offset(_dragPosition, -1),
                                         child: Padding(
@@ -1990,20 +1825,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 width: 60,
                                                 height: 50,
                                                 decoration: const BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(15)),
+                                                  borderRadius: BorderRadius.all(Radius.circular(15)),
                                                   color: Colors.white,
                                                 ),
-                                                child: Lottie.asset(
-                                                    'images/swiper.json'),
+                                                child: Lottie.asset('images/swiper.json'),
                                               ),
                                               const SizedBox(width: 50),
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .swipeToCheckIn,
+                                                  AppLocalizations.of(context)!.swipeToCheckIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w600,
@@ -2397,25 +2228,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 decoration: BoxDecoration(
                                                   border: Border(
                                                     left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          4.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 4.0, // Set the border width
                                                     ),
                                                     right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 2.0, // Set the border width
                                                     ),
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
+                                                  borderRadius: BorderRadius.all(Radius.circular(12)),
                                                 ),
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
+                                                  padding: const EdgeInsets.all(5.0),
                                                   child: Column(
                                                     children: [
                                                       Row(
@@ -2423,15 +2247,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                               width: 110,
                                                               child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .leaveThisMonth,
+                                                                AppLocalizations.of(context)!.annualLeave,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontSize: 13),
                                                               )),
                                                           SizedBox(
                                                             height: 50,
@@ -2442,12 +2261,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         ],
                                                       ),
                                                       Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
+                                                        mainAxisAlignment: MainAxisAlignment.center,
                                                         children: [
                                                           Text(
-                                                            "1/6",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(2)}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:
@@ -2544,6 +2361,136 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       color:
                                                           NasColors.lightBlue,
                                                       width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .casualLeave,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/thisMonth.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement}",
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 18,
+                                                                fontWeight: FontWeight.bold),
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 95,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(
+                                                              width: 110,
+                                                              child: Text( AppLocalizations.of(context)!.shortLeaves,
+                                                                style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontSize: 12),
+                                                              )),
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Image.asset(
+                                                                "images/remoteIcon.png"),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                                formatMinutesToHoursAndMinutes(context,singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes!.toInt()),
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 90,
+                                                width: 180,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
+                                                          2.0, // Set the border width
+                                                    ),
+                                                    right: BorderSide(
+                                                      color:
+                                                          NasColors.lightBlue,
+                                                      width:
                                                           4.0, // Set the border width
                                                     ),
                                                   ),
@@ -2585,7 +2532,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                            "0/6",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:
@@ -2658,30 +2605,50 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   String formatMinutes(dynamic minutes) {
-    if (minutes == null) return '--';
+    if (minutes == null) return '---';
     try {
       double roundedMinutes = (minutes is int)
           ? minutes.toDouble()
           : double.parse(minutes.toString());
       return roundedMinutes.ceil().toString();
     } catch (e) {
-      return '--';
+      return '---';
     }
   }
 
+   /// Minutes hours method
+  String formatMinutesToHoursAndMinutes(BuildContext context, int totalMinutes) {
+    final int hours = totalMinutes ~/ 60;
+    final int minutes = totalMinutes % 60;
+
+    final String hoursLabel = "h";
+    final String minutesLabel = "m";
+
+    return "$hours $hoursLabel $minutes $minutesLabel";
+  }
   Future<void> checkIn(String type) async {
-    String currentTime = DateTime.now().toUtc().toIso8601String();
-    String checkInTime = '${currentTime.split('.')[0]}.000Z';
-    print(checkInTime);
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
+    String? empId = singletonClass.getJWTModel()?.empId;
+    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String deviceIp = await _getLocalIpAddress();
+    String? timeZoneName = timeZoneIdentifier;
+    print(currentTime);
 
     Map<String, dynamic> data = {
-      "employeeId": singletonClass.getJWTModel()?.employeeId,
-      "employeeName": singletonClass.getJWTModel()?.userName,
-      "checkInTime": checkInTime,
-      "type": type,
+      "deviceUserId": "$empId",
+      "sn": sn,
+      "timestamp": currentTime,
+      "status": 1,
+      "verify_type": 0,
+      "deviceIp": deviceIp,
+      "deviceName": "Remote",
+      "captureTime": currentTime,
+      "timeZone" : timeZoneName
     };
     String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/create');
+    print("body of check in $body");
+    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
     });
@@ -2696,14 +2663,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         isLoading = false;
       });
-      if (response.statusCode == 200) {
-        final decodedResponse = json.decode(response.body);
-        var checkInData = CheckInData.fromJson(decodedResponse);
-        singletonClass.setCheckInData([checkInData]);
-        print(singletonClass.checkInDataList.first.data?.id);
+      if (response.statusCode == 201) {
         setState(() {
-          _dragPosition = 0; // Reset drag position
-          _isSliderCompleted = true; // Reset slider completion flag
+          _dragPosition = 0;
+          _isSliderCompleted = true;
           singletonClass.getClockingData();
         });
         await singletonClass.getClockingData();
@@ -2760,38 +2723,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-//CHECK OUT API CALL
+   ///CHECK OUT API CALL
   Future<void> checkOut() async {
-    String currentTime = DateTime.now().toUtc().toIso8601String();
-    String checkOutTime = '${currentTime.split('.')[0]}.000Z';
-    String? checkInTime =
-        singletonClass.clockingDataList.first.data?.last.checkInTime;
-    DateTime checkInDateTime = DateTime.parse(checkInTime!);
-    DateTime checkOutDateTime = DateTime.parse(checkOutTime);
-    Duration difference = checkOutDateTime.difference(checkInDateTime);
-    String totalHours =
-        "${difference.inHours}h ${difference.inMinutes.remainder(60)}m";
-    print(totalHours);
-    String? id = singletonClass.clockingDataList.first.data?.last.id;
+    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
+    String? empId = singletonClass.getJWTModel()?.empId;
+    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String deviceIp = await _getLocalIpAddress();
+    String? timeZoneName = timeZoneIdentifier;
+    print(currentTime);
+
     Map<String, dynamic> data = {
-      "employeeId": singletonClass.getJWTModel()?.employeeId,
-      "employeeName": singletonClass.getJWTModel()?.userName,
-      "checkOutTime": checkOutTime,
-      "type": singletonClass.clockingDataList.first.data?.last.type,
-      "totalTime": totalHours,
-      // Adjust this if needed for total time calculation
+      "deviceUserId": "$empId",
+      "sn": sn,
+      "timestamp": currentTime,
+      "status": 1,
+      "verify_type": 0,
+      "deviceIp": deviceIp,
+      "deviceName": "Remote",
+      "captureTime": currentTime,
+      "timeZone" : timeZoneName
     };
     print(data);
 
     String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/$id');
+    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
     });
 
     try {
-      final response = await http.patch(
+      final response = await http.post(
         uri,
         body: body,
         headers: singletonClass.getHeaders(),
@@ -2802,7 +2764,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
       print(response.body);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         setState(() {
           _dragPosition = 0; // Reset drag position
           _isSliderCompleted = false; // Reset slider completion flag
@@ -2863,8 +2825,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-  //Update CALL
+   ///get time zone
+  Future<String> _getLocalIpAddress() async {
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        if (addr.type == InternetAddressType.IPv4 &&
+            !addr.isLoopback &&
+            addr.address.startsWith('192.168')) {
+          return addr.address;
+        }
+      }
+    }
+    return 'Unknown';
+  }
+   ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String url =
@@ -2901,8 +2875,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       print('Failed to send data. Error: $error');
     }
   }
-
-  // Current Location
+   /// Current Location
   Future<String> getCurrentLatLong() async {
     bool serviceEnabled;
     LocationPermission permission;

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +11,6 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../widgets/buttons.dart';
 
 class CompanySelectionScreen extends StatefulWidget {
@@ -25,12 +24,19 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   SingletonClass singletonClass = SingletonClass();
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _hasBaseUrl = false;
+
+  List<Data> _suggestions = [];
+  String? _selectedTenantId;
+
   @override
   void initState() {
     super.initState();
     _checkForSavedBaseUrl();
+    _searchController.addListener(() {
+      getTenantSuggestions(_searchController.text);
+    });
   }
 
   void _checkForSavedBaseUrl() async {
@@ -41,198 +47,255 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
     });
   }
 
+  Future<void> getTenantSuggestions(String query) async {
+    if (query.isEmpty) {
+      setState(() => _suggestions.clear());
+      return;
+    }
+
+    try {
+      final uri = Uri.parse('${singletonClass.baseURL}/organization/getOrganizationTenancy?tenantName=$query');
+      final response = await http.get(uri);
+      if (kDebugMode) {
+        print("tanent response ${response.body}");
+      }
+      if (response.statusCode == 200) {
+        final result = TenantIdModel.fromJson(json.decode(response.body));
+        if (result.data != null && result.data!.tenantName != null) {
+          setState(() {
+            _suggestions = [result.data!];
+          });
+        } else {
+          setState(() => _suggestions.clear());
+        }
+      }
+    } catch (e) {
+      log('Suggestion fetch error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Form(
         key: _formKey,
-        child: Stack(children: [
-          ListView(
-            padding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Column(
               children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 20, top: 55),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      if (_hasBaseUrl)
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.2,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        spreadRadius: 4,
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 55),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        if (_hasBaseUrl)
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.4),
+                                    spreadRadius: 5,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_ios_new_outlined,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 10),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.currentOrganization,
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              singletonClass.companyName ?? "None",
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15),
+                Expanded(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 30, top: 25 , right: 30),
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                           Text(
+                              AppLocalizations.of(context)!.searchYourCompany,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return AppLocalizations.of(context)!.pleaseFillAllFields;
+                                    }
+                                    return null;
+                                  },
+                                  cursorColor: Colors.grey,
+                                  controller: _searchController,
+                                  decoration: InputDecoration(
+                                    hintText: '${AppLocalizations.of(context)!.search}...',
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      borderSide: const BorderSide(color: Colors.grey),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      borderSide: const BorderSide(color: Colors.grey),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      borderSide: const BorderSide(color: Colors.grey),
+                                    ),
+                                  ),
                                 ),
-                              ]),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_outlined,
-                            color: Colors.black,
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    getTenantSuggestions(_searchController.text);
+                                  }
+                                },
+                                icon: Icon(
+                                  Icons.search,
+                                  size: 25,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        child: Image.asset("images/site.png"),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Search your Company",
-                        style: GoogleFonts.inter(
-                            fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return AppLocalizations.of(context)!
-                                  .pleaseFillAllFields;
-                            }
-                            return null;
-                          },
-                          cursorColor: Colors.grey,
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText:
-                                '${AppLocalizations.of(context)!.search}...',
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 15.0, horizontal: 15.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(color: Colors.grey),
+
+                          const SizedBox(height: 10),
+
+                          // Suggestion List
+                          if (_suggestions.isNotEmpty)
+                            ..._suggestions.map((suggestion) {
+                              return CheckboxListTile(
+                                title: Row(
+                                  children: [
+                                    SizedBox(
+                                      height:40,
+                                        width: 40,
+                                        child: Image.network("${suggestion.tenantLogo}")),
+                                    SizedBox(width: 10),
+                                    Text(suggestion.tenantName ?? ''),
+                                  ],
+                                ),
+                                value: _selectedTenantId == suggestion.tenantId.toString(),
+                                onChanged: (bool? selected) async {
+                                  if (selected == true) {
+                                    final prefs = await SharedPreferences.getInstance();
+                                    await prefs.setString('baseURL', suggestion.tenantId.toString());
+                                    await prefs.setString('companyName', suggestion.tenantName.toString());
+                                    singletonClass.tenantId = prefs.getString('baseURL') ?? '';
+                                    singletonClass.companyName = prefs.getString('companyName') ?? '';
+                                    singletonClass.tenantIDDataList.clear();
+                                    singletonClass.tenantIDDataList.add(
+                                        TenantIdModel(data: suggestion));
+                                    setState(() {
+                                      _selectedTenantId = suggestion.tenantId.toString();
+                                      _suggestions.clear();
+                                    });
+                                  }
+                                },
+                              );
+                            }),
+
+                          const SizedBox(height: 20),
+
+                          // Next Button
+                          if (_selectedTenantId != null)
+                            Center(
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: NasButton(
+                                  text: AppLocalizations.of(context)!.next,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
-                      IconButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            await getTenantID();
-                          } else {}
-                        },
-                        icon: Icon(
-                          Icons.search,
-                          size: 25,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  if(singletonClass.tenantIDDataList.isNotEmpty && singletonClass.tenantIDDataList.first.data != null && singletonClass.tenantIDDataList.first.data!.tenantName!.isNotEmpty)...[
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.5, // Or a fixed width
-                        child: NasButton(
-                          text: "Next",
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => LoginScreen()),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-    ]
-                ],
-              ),
+                ),
+              ],
             ),
-          ]),
-          if ( _isLoading )
-            Center(child:  SizedBox(
-              height: 200,
-              width: 200,
-              child: Lottie.asset(
-                  'images/loader.json'
+            if (_isLoading)
+              Center(
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Lottie.asset('images/loader.json'),
+                ),
               ),
-            ),)
-        ]),
+          ],
+        ),
       ),
     );
-  }
-
-  //API CALL
-  Future<TenantIdModel?> getTenantID() async {
-    String? companyCode = _searchController.text;
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-
-      var client = http.Client();
-      var uri = Uri.parse('https://www.nashrms.com/api/organization/getOrganizationTenancy?tenantName=$companyCode');
-      var response = await client.get(uri);
-      log("Tenant ID Data: ${response.body}");
-
-      if (response.statusCode == 200) {
-        var responseBody = json.decode(response.body);
-        var tenantID = TenantIdModel.fromJson(responseBody);
-
-        if (tenantID.data == null || tenantID.data!.tenantName!.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('No company found with that code.'))
-          );
-          return null;
-        }
-        singletonClass.tenantIDDataList.clear();
-        singletonClass.tenantIDDataList.addAll([tenantID]);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('baseURL', tenantID.data!.tenantId.toString());
-        return tenantID;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.statusCode}'))
-        );
-      }
-    } catch (e) {
-      log('Error fetching BASE URL: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Something went wrong.'))
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-    return null;
   }
 }

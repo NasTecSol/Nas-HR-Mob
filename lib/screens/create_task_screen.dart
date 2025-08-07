@@ -8,10 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
+import 'package:open_file/open_file.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/projects_data_model.dart';
@@ -66,489 +68,536 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.4),
-                            spreadRadius: 5,
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_outlined,
-                      color: Colors.black,
+        child: Stack(
+          children: [ Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.4),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_outlined,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  "Create an issue",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
-                const Spacer(),
-                TextButton(
-                  child: Text("Create",
+                  Text(
+                    "Create an issue",
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      fontSize: 15,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: NasColors.darkBlue,
                     ),
                   ),
-                  onPressed: () {
-                    if(_formKey.currentState!.validate()){
-                      if( fromDate == null || toDate == null) {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: AppLocalizations.of(context)!
-                              .enterToAndFromDate,
-                          autoCloseDuration:
-                          const Duration(seconds: 5),
-                          showCancelBtn: false,
-                          showConfirmBtn: false,
-                        );
-                      } else if(_selectedType == null || _selectedOption == null){
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: "Select Assignee and type",
-                          autoCloseDuration:
-                          const Duration(seconds: 5),
-                          showCancelBtn: false,
-                          showConfirmBtn: false,
-                        );
-                      } else {
-                        createTask();
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Please fill all fields"),
-                          duration: Duration(seconds: 4),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [ Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        "Subject",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
+                  const Spacer(),
+                  TextButton(
+                    child: Text("Create",
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
                       ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please Enter subject";
-                          }
-                          return null;
-                        },
-                        controller: _subject,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          hintText: "Type subject here!",
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                          counterStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Description",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please Enter your description";
-                          }
-                          return null;
-                        },
-                        controller: _description,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          hintText: "Type your description here!",
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                          counterStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Text(
-                        "Select Assignee",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: DropdownButton<ProjectMembers?>(
-                          elevation: 8,
-                          items: _options!.map((option) {
-                            return DropdownMenuItem<ProjectMembers>(
-                              value: option, // Pass the entire object as the value
-                              child: Text(
-                                option.name ?? 'N/A', // Display the employee name
-                                style: const TextStyle(
-                                    color: Colors.black), // Adjust text style
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedOption =
-                                  value; // Update the selected option with the whole object
-                            });
-                          },
-                          hint: const Text(
-                            'Select Assignee', // Hint text when no option is selected
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          value: _selectedOption,
-                          // Display the current selected value
-                          isExpanded: true,
-                          iconEnabledColor: Colors.black,
-                          // Icon color
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          borderRadius: BorderRadius.circular(15),
-                          dropdownColor: Colors.white, // Background color of the dropdown
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Select Type",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: DropdownButton<String>(
-                          elevation: 8,
-                          items: _typeList
-                              ?.map((type) => DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(
-                              type,
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedType =
-                                  value; // Update the selected option with the whole object
-                            });
-                          },
-                          hint: const Text(
-                            'Select Type', // Hint text when no option is selected
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          value: _selectedType,
-                          // Display the current selected value
-                          isExpanded: true,
-                          iconEnabledColor: Colors.black,
-                          // Icon color
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          borderRadius: BorderRadius.circular(15),
-                          dropdownColor: Colors.white, // Background color of the dropdown
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Select Duration",
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () async {
-                              DateTime? date = await showDatePicker(
-                                context: context,
-                                initialDate: fromDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
-                                builder: (BuildContext context,
-                                    Widget? child) {
-                                  return Theme(
-                                    data: ThemeData.light().copyWith(
-                                      colorScheme: ColorScheme.light(
-                                        surface: NasColors.lightBlue,
-                                        primary: Colors.white,
-                                        onPrimary: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                      textButtonTheme:
-                                      TextButtonThemeData(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (date != null) {
-                                setState(() {
-                                  fromDate = date;
-                                });
-                              }
-                            },
-                            child: Text(
-                              fromDate == null
-                                  ? AppLocalizations.of(context)!.fromDate
-                                  : DateFormat('yyyy-MM-dd')
-                                  .format(fromDate!),
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.calendar_month_outlined,
-                            size: 30,
-                            color: NasColors.darkBlue,
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              DateTime? date = await showDatePicker(
-                                context: context,
-                                initialDate: toDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
-                                builder: (BuildContext context,
-                                    Widget? child) {
-                                  return Theme(
-                                    data: ThemeData.light().copyWith(
-                                      colorScheme: ColorScheme.light(
-                                        surface: NasColors.lightBlue,
-                                        primary: Colors.white,
-                                        onPrimary: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                      textButtonTheme:
-                                      TextButtonThemeData(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (date != null) {
-                                setState(() {
-                                  toDate = date;
-                                  if (fromDate != null) {
-                                    totalDays = toDate!
-                                        .difference(fromDate!)
-                                        .inDays +
-                                        1; // Calculate totalDays
-                                  } else {
-                                    totalDays =
-                                    null; // Handle case where fromDate is null
-                                  }
-                                });
-                              }
-                            },
-                            child: Text(
-                              toDate == null
-                                  ? AppLocalizations.of(context)!.toDate
-                                  : DateFormat('yyyy-MM-dd')
-                                  .format(toDate!),
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.calendar_month_outlined,
-                            size: 30,
-                            color: NasColors.darkBlue,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.of(context)!.days,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        totalDays == null ? "0" : "$totalDays",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      GestureDetector(
-                        onTap: () async {
-                          FilePickerResult? result = await FilePicker.platform.pickFiles(
-                            type: FileType.any, // Ensures only image files are allowed
+                    ),
+                    onPressed: () {
+                      if(_formKey.currentState!.validate()){
+                        if( fromDate == null || toDate == null) {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.error,
+                            title: AppLocalizations.of(context)!
+                                .enterToAndFromDate,
+                            autoCloseDuration:
+                            const Duration(seconds: 5),
+                            showCancelBtn: false,
+                            showConfirmBtn: false,
                           );
-
-                          if (result != null && result.files.single.path != null) {
-                            PlatformFile file = result.files.single;
-
-                            // Save the file data for sending in the API call
-                            setState(() {
-                              selectedFile = file;
-                            });
-
-                            print('Selected file: ${file.name}');
-
-                            // Show confirmation dialog before uploading
-                            _showConfirmationDialog(
-                                file); // Upload the selected file to the API
-                          } else {
-                            // User canceled the file picker
-                            print('File selection canceled.');
-                          }
-                        },
-                        child: Row(
+                        } else if(_selectedType == null || _selectedOption == null){
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.error,
+                            title: "Select Assignee and type",
+                            autoCloseDuration:
+                            const Duration(seconds: 5),
+                            showCancelBtn: false,
+                            showConfirmBtn: false,
+                          );
+                        } else {
+                          createTask();
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please fill all fields"),
+                            duration: Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [ Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          "Subject",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return "Please Enter subject";
+                            }
+                            return null;
+                          },
+                          controller: _subject,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            hintText: "Type subject here!",
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            counterStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Description",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return "Please Enter your description";
+                            }
+                            return null;
+                          },
+                          controller: _description,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            hintText: "Type your description here!",
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            counterStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          AppLocalizations.of(context)!.selectAssignee,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<ProjectMembers?>(
+                            elevation: 8,
+                            items: _options!.map((option) {
+                              return DropdownMenuItem<ProjectMembers>(
+                                value: option, // Pass the entire object as the value
+                                child: Text(
+                                  option.name ?? 'N/A', // Display the employee name
+                                  style: const TextStyle(
+                                      color: Colors.black), // Adjust text style
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedOption =
+                                    value; // Update the selected option with the whole object
+                              });
+                            },
+                            hint: const Text(
+                              'Select Assignee', // Hint text when no option is selected
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            value: _selectedOption,
+                            // Display the current selected value
+                            isExpanded: true,
+                            iconEnabledColor: Colors.black,
+                            // Icon color
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            borderRadius: BorderRadius.circular(15),
+                            dropdownColor: Colors.white, // Background color of the dropdown
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Select Type",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<String>(
+                            elevation: 8,
+                            items: _typeList.map((type) => DropdownMenuItem<String>(
+                              value: type,
+                              child: Text(
+                                type,
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                            ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedType =
+                                    value;
+                              });
+                            },
+                            hint: const Text(
+                              'Select Type',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            value: _selectedType,
+                            isExpanded: true,
+                            iconEnabledColor: Colors.black,
+                            // Icon color
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            borderRadius: BorderRadius.circular(15),
+                            dropdownColor: Colors.white, // Background color of the dropdown
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Select Duration",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            TextButton(
+                              onPressed: () async {
+                                DateTime? date = await showDatePicker(
+                                  context: context,
+                                  initialDate: fromDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  builder: (BuildContext context,
+                                      Widget? child) {
+                                    return Theme(
+                                      data: ThemeData.light().copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          surface: NasColors.lightBlue,
+                                          primary: Colors.white,
+                                          onPrimary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                        textButtonTheme:
+                                        TextButtonThemeData(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (date != null) {
+                                  setState(() {
+                                    fromDate = date;
+                                  });
+                                }
+                              },
+                              child: Text(
+                                fromDate == null
+                                    ? AppLocalizations.of(context)!.fromDate
+                                    : DateFormat('yyyy-MM-dd')
+                                    .format(fromDate!),
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
                             Icon(
-                              Icons.link,
+                              Icons.calendar_month_outlined,
                               size: 30,
                               color: NasColors.darkBlue,
                             ),
-                            const SizedBox(width: 5),
-                            Text(
-                              "Add Attachments",
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
+                            TextButton(
+                              onPressed: () async {
+                                DateTime? date = await showDatePicker(
+                                  context: context,
+                                  initialDate: toDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  builder: (BuildContext context,
+                                      Widget? child) {
+                                    return Theme(
+                                      data: ThemeData.light().copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          surface: NasColors.lightBlue,
+                                          primary: Colors.white,
+                                          onPrimary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                        textButtonTheme:
+                                        TextButtonThemeData(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (date != null) {
+                                  setState(() {
+                                    toDate = date;
+                                    if (fromDate != null) {
+                                      totalDays = toDate!
+                                          .difference(fromDate!)
+                                          .inDays +
+                                          1; // Calculate totalDays
+                                    } else {
+                                      totalDays =
+                                      null; // Handle case where fromDate is null
+                                    }
+                                  });
+                                }
+                              },
+                              child: Text(
+                                toDate == null
+                                    ? AppLocalizations.of(context)!.toDate
+                                    : DateFormat('yyyy-MM-dd')
+                                    .format(toDate!),
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 5),
-                            if (selectedFile != null &&
-                                selectedFile!.path!.isNotEmpty &&
-                                selectedFile!.path!.isNotEmpty == true) ...[
-                              Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Image.file(
-                                    File(selectedFile!.path!),
-                                    height: 50,
-                                    width: 50,
-                                    fit: BoxFit.cover,
-                                  )),
-                            ]
+                            Icon(
+                              Icons.calendar_month_outlined,
+                              size: 30,
+                              color: NasColors.darkBlue,
+                            ),
                           ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        Text(
+                          AppLocalizations.of(context)!.days,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          totalDays == null ? "0" : "$totalDays",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () async {
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              type: FileType.any, // Ensures only image files are allowed
+                            );
+
+                            if (result != null && result.files.single.path != null) {
+                              PlatformFile file = result.files.single;
+
+                              // Save the file data for sending in the API call
+                              setState(() {
+                                selectedFile = file;
+                              });
+
+                              print('Selected file: ${file.name}');
+
+                              // Show confirmation dialog before uploading
+                              _showConfirmationDialog(
+                                  file); // Upload the selected file to the API
+                            } else {
+                              // User canceled the file picker
+                              print('File selection canceled.');
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.link,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                "Add Attachments",
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              if (selectedFile != null &&
+                                  selectedFile!.path != null &&
+                                  selectedFile!.path!.isNotEmpty) ...[
+                                Stack(
+                                  children: [GestureDetector(
+                                    onTap: () async {
+                                      await OpenFile.open(selectedFile!.path);
+                                    },
+                                    child: Container(
+                                      height: 50,
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.rectangle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: () {
+                                        final extension = selectedFile!.path!.split('.').last.toLowerCase();
+
+                                        if (['png', 'jpg', 'jpeg', 'gif', 'webp'].contains(extension)) {
+                                          return Image.file(
+                                            File("${selectedFile!.path}"),
+                                            height: 50,
+                                            width: 50,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const Icon(Icons.broken_image, size: 30);
+                                            },
+                                          );
+                                        } else if (extension == 'pdf') {
+                                          return const Icon(Icons.picture_as_pdf, color: Colors.red, size: 30);
+                                        } else if (extension == 'docx' || extension == 'doc') {
+                                          return const Icon(Icons.description, color: Colors.blue, size: 30);
+                                        } else {
+                                          return const Icon(Icons.insert_drive_file, color: Colors.grey, size: 30);
+                                        }
+                                      }(),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: -16,
+                                    right: -16,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.cancel, size: 18, color: Colors.red),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedFile = null;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  ],
+                                ),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                    ]
                 ),
-                  ]
-              ),
-            )
-          ],
+              )
+            ],
+          ),
+            if (isLoading)
+              Center(
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Lottie.asset('images/loader.json'),
+                ),
+              )
+          ]
         ),
       ),
     );
@@ -560,26 +609,24 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Confirm Upload'),
           content:
-              Text('Are you sure you want to upload this file: ${file.name}?'),
+              Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile}: ${file.name}?'),
           actions: [
             TextButton(
               onPressed: () {
                 // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child:  Text(AppLocalizations.of(context)!.cancel,style: GoogleFonts.inter(color: Colors.red)),
             ),
             TextButton(
               onPressed: () async {
-                // Close the dialog
                 Navigator.of(context).pop();
-
-                // Trigger the API call to upload the file
                 await uploadProfile();
               },
-              child: const Text('Yes'),
+              child:  Text(AppLocalizations.of(context)!.yes,style: GoogleFonts.inter(color: Colors.black),),
             ),
           ],
         );
@@ -590,30 +637,23 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
       print("No file selected.");
-      return; // Exit the function if no file is selected
+      return;
     }
 
-    // Check if bytes are available
     if (selectedFile!.bytes == null) {
-      // Load the bytes of the selected file manually
       print("Loading bytes for the selected file...");
       try {
-        final file = File(selectedFile!.path!); // Convert PlatformFile to File
+        final file = File(selectedFile!.path!);
         final fileBytes = await file.readAsBytes();
-
-        // If bytes are still null, return early
         if (fileBytes.isEmpty) {
           print("No bytes available for the selected file.");
-          return; // Exit the function if no valid bytes are available
+          return;
         }
-
-        // Proceed with uploading the file after loading bytes
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
         print('Error reading file: $e');
       }
     } else {
-      // If bytes are already available, upload directly
       _uploadFileWithBytes(selectedFile!.bytes!);
     }
   }
@@ -622,7 +662,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
     setState(() {
-      isLoading = true; // Corrected to set isLoading to true
+      isLoading = true;
     });
 
     try {
@@ -632,27 +672,19 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
           'application/octet-stream';
 
-      // Add the file to the request as bytes
+      request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile(
-        'file', // Field name in the API
-        http.ByteStream.fromBytes(fileBytes), // Convert bytes to ByteStream
-        fileBytes.length, // File size (in bytes)
-        filename: selectedFile!.name, // Filename
-        contentType: MediaType.parse(mimeType), // MIME type
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: selectedFile!.name,
+        contentType: MediaType.parse(mimeType),
       ));
-
-      // Add additional fields to the request if necessary
-      request.fields['attachmentName'] =
-          selectedFile!.name; // Safe unwrapping of nullable name
-      request.fields['attachmentType'] = selectedFile!.extension ??
-          ''; // Safe unwrapping of nullable extension
-
-      // Send the request
+      request.fields['attachmentName'] = selectedFile!.name;
+      request.fields['attachmentType'] = selectedFile!.extension ?? '';
       var response = await request.send();
 
       final responseBody = await response.stream.bytesToString();
-
-      // Log the response body for debugging
       print("API Response Body: $responseBody");
       setState(() {
         isLoading = false; // Corrected to set isLoading to true
@@ -710,6 +742,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     String jsonData = jsonEncode(data);
     // print(data);
     log(jsonData);
+    setState(() {
+      isLoading = true;
+    });
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -717,6 +752,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         body: jsonData,
       );
       print(response.body);
+      setState(() {
+        isLoading = false;
+      });
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
         if (decodedResponse['statusCode'] == 200) {

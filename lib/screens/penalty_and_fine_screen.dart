@@ -39,7 +39,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
   int _penalityTotalPages = 1;
   List<DataPenalitiesApprover>? _approver;
   List<Data1>? _request;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -52,7 +51,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       getPenalties();
       getPenaltiesApprover();
     });
-    setState(() {});
   }
 
   void _toggleExpand(int index) {
@@ -67,42 +65,31 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
 
 
   Future<void> _fetchApproverData(int page) async {
-    setState(() {
-      _isLoading = true;
-    });
-
     final data = await getPenaltiesApprover(page: page);
     if (data != null && data.data != null) {
       setState(() {
         _approver = data.data!.data;
         _totalPages = data.data!.totalPages ?? 1;
         _currentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _approver = [];
-        _isLoading = false;
       });
     }
   }
 
   Future<void> _fetchRequestData(int page) async {
-    setState(() {
-      _isLoading = true;
-    });
     final data = await getPenalties(page: page);
     if (data != null && data.data != null) {
       setState(() {
         _request = data.data!.data;
         _penalityTotalPages = data.data!.totalPages ?? 1;
         _penalityCurrentPage = page;
-        _isLoading = false;
       });
     } else {
       setState(() {
         _request = [];
-        _isLoading = false;
       });
     }
   }
@@ -158,45 +145,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      onPressed: () {
-                       print(singletonClass.penaltiesDataList.first.data!.data!.length);
-                      },
-                      child: SizedBox(
-                        height: 30,
-                        width: 90,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.filter_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              AppLocalizations.of(context)!.filter,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               if (singletonClass.getJWTModel()?.grade == 'L0' ||
@@ -232,16 +180,29 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty
                               ? Center(
-                                  child: Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black,
-                                      fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
                                     ),
                                   ),
-                                )
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: _request!.length,
@@ -338,13 +299,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                 );
                         } else {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -407,13 +381,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         } else if (snapshot.hasData) {
                           if (_request!.isEmpty) {
                             return Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -499,13 +486,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -568,16 +568,29 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           } else if (snapshot.hasData) {
                             return  _approver!.isEmpty
                                 ? Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                        fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
                                       ),
                                     ),
-                                  )
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                                 : ListView.builder(
                                     padding: const EdgeInsets.all(5),
                                     itemCount: _approver!.length,
@@ -1159,13 +1172,26 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                   );
                           } else {
                             return Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -1368,7 +1394,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       Map<String, dynamic> requestData) async {
     String url = '${singletonClass.baseURL}/request/$requestID';
 
-    // Define the JSON data to send
     Map<String, dynamic> data = {
       "employeeId": requestData['employeeId'],
       "employeeName": requestData['employeeName'],
@@ -1393,57 +1418,43 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       "status": status
     };
 
-    // Convert data to JSON string
-    String jsonData = jsonEncode(data);
-    log("complaint json $jsonData");
-
-    // Make the PATCH request
     setState(() {
       isLoading = true;
     });
+
     try {
       final response = await http.patch(
         Uri.parse(url),
         headers: singletonClass.getHeaders(),
-        body: jsonData,
+        body: jsonEncode(data),
       );
+
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
-      if (response.statusCode == 200) {
-        final decodedResponse = json.decode(response.body);
 
-        if (decodedResponse['statusCode'] == 200) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.success,
-            type: QuickAlertType.success,
-          );
+      final decodedResponse = json.decode(response.body);
 
-        } else if (decodedResponse['statusCode'] == 400) {
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 2),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.internalServerError,
-            type: QuickAlertType.error,
-          );
-        }
-      } else if (response.statusCode == 400 || response.statusCode == 500) {
+      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
           showConfirmBtn: false,
           context: context,
-          title: AppLocalizations.of(context)!.errorFetchData,
+          title: AppLocalizations.of(context)!.success,
+          type: QuickAlertType.success,
+        );
+      } else if (decodedResponse['statusCode'] == 400) {
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 2),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
           type: QuickAlertType.error,
         );
       } else {
-        print('Error: ${response.statusCode}');
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -1454,7 +1465,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
         );
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (!mounted) return;
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,

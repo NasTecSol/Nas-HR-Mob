@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -79,25 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       _isEditing = true;
     });
   }
-
-
-  final List<Document> documentInfoDummy = [
-    // Example data, replace with your actual document data
-    Document(
-        imageUrl: 'images/cnic.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-    Document(
-        imageUrl: 'images/iqama.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-  ];
 
   bool isLoading = false;
   PlatformFile? selectedFile;
@@ -251,96 +233,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ),
-                      if (_selectedOptionIndex2 == 1)
-                        IconButton(
-                          onPressed: () async {},
-                          icon: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      // Display the "Add" button for "Documents" tab (index 2)
-                      if (_selectedOptionIndex2 == 2)
-                        IconButton(
-                          onPressed: () {
-                            // Add your settings action for the "Profile" tab
-                          },
-                          icon: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-
-                      // Display the "Request" button for "Loans" tab (index 3)
-                      if (_selectedOptionIndex2 == 3)
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: NasColors.darkBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          onPressed: () {
-                            // Add your action for "Loans" tab
-                          },
-                          child: SizedBox(
-                            height: 40,
-                            width: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.requests,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -490,14 +382,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     ),
                                   ),
                                 )),
-                            // Positioned image overlapping the top border of the container
                             Positioned(
                               top: -0,
-                              // Adjust position as needed to overlap with container top border
                               left:
                               (MediaQuery.of(context).size.width - 100) /
                                   2,
-                              // Adjust position as needed horizontally
                               child: Stack(children: [
                                 Container(
                                   height: 100,
@@ -513,14 +402,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   child: ClipOval(
                                     child: Image.network(
                                       employeeProfile?.profilePic ?? '',
-                                      // URL for the network image, empty string if null
                                       fit: BoxFit.cover,
                                       width: 100,
                                       height: 100,
                                       errorBuilder: (BuildContext context,
                                           Object exception,
                                           StackTrace? stackTrace) {
-                                        // Display the default asset image if the network image fails to load
                                         return Image.asset(
                                           'images/DP.png',
                                           fit: BoxFit.cover,
@@ -604,13 +491,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey.withOpacity(0.4),
-                                  // Shadow color with opacity
                                   spreadRadius: 5,
-                                  // Spread radius
                                   blurRadius: 10,
-                                  // Blur radius
                                   offset: const Offset(0,
-                                      3), // Offset in the x and y directions
+                                      3),
                                 ),
                               ],
                             ),
@@ -644,7 +528,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.gender}",
+                                      (employeeProfile?.gender?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.gender!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -668,7 +554,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.nationality}",
+                                      (employeeProfile?.nationality?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.nationality!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -691,7 +579,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.dob}",
+                                      (employeeProfile?.dob?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.dob!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -714,7 +604,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.age}",
+                                      (employeeProfile?.age != null && employeeProfile!.age!.toString().trim().isNotEmpty)
+                                          ? employeeProfile.age!.toString()
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -738,7 +630,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.martialStatus}",
+                                      (employeeProfile?.martialStatus?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.martialStatus!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -761,7 +655,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.phoneNumber?.first.mobileNumber}",
+                                      (employeeProfile?.phoneNumber?.isNotEmpty == true &&
+                                          (employeeProfile?.phoneNumber?.first.mobileNumber?.trim().isNotEmpty ?? false))
+                                          ? employeeProfile!.phoneNumber!.first.mobileNumber!
+                                          : "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
@@ -784,7 +681,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.address?.city} ${employeeProfile?.address?.streetAddress} ${employeeProfile?.address?.country}",
+                                      [
+                                        employeeProfile?.address?.city,
+                                        employeeProfile?.address?.streetAddress,
+                                        employeeProfile?.address?.country
+                                      ]
+                                          .where((e) => e != null && e.trim().isNotEmpty)
+                                          .join(" ")
+                                          .trim()
+                                          .isNotEmpty
+                                          ? [
+                                        employeeProfile?.address?.city,
+                                        employeeProfile?.address?.streetAddress,
+                                        employeeProfile?.address?.country
+                                      ]
+                                          .where((e) => e != null && e.trim().isNotEmpty)
+                                          .join(" ")
+                                          : "---",
                                       maxLines: 2,
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
@@ -809,7 +722,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      "${employeeProfile?.passport?.id}",
+                                      (employeeProfile?.passport?.id?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile!.passport!.id!
+                                          : "---",
                                       maxLines: 2,
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
@@ -1066,7 +981,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             child: GestureDetector(
                               onTap: () async {
                                 if (isImage || isPdf) {
-                                  // Open the document URL using the default viewer (image viewer or PDF viewer)
                                   if (await canLaunch(documents.url)) {
                                     await launch(documents.url);
                                   } else {
@@ -1075,7 +989,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     );
                                   }
                                 } else {
-                                  // Handle other file types if needed
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Unsupported file type!')),
                                   );
@@ -1138,18 +1051,29 @@ class _ProfileScreenState extends State<ProfileScreen>
                         },
                       )
                           : Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Text(
-                            AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ),
-                      ),
+    child: Padding(
+    padding: const EdgeInsets.all(20.0),
+    child: Column(
+    children: [
+    Center(
+    child: SizedBox(
+    height: 200,
+    width: 200,
+    child: Lottie.asset('images/empty.json'),
+    ),
+    ),
+    Text(
+    AppLocalizations.of(context)!.noData,
+    style: GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: NasColors.darkBlue,
+    ),
+    ),
+    ],
+    ),
+    ),
+    )
                     ],
                   ),
     ]
@@ -1184,13 +1108,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey.withOpacity(0.4),
-                                    // Shadow color with opacity
                                     spreadRadius: 5,
-                                    // Spread radius
                                     blurRadius: 10,
-                                    // Blur radius
                                     offset: const Offset(0,
-                                        3), // Offset in the x and y directions
+                                        3),
                                   ),
                                 ],
                               ),
@@ -1704,19 +1625,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-//Method for Account Number
+///Method for Account Number
   String maskAccountNumber(String accountNumber) {
-    // Check if the account number has at least 2 digits
     if (accountNumber.length >= 2) {
       return '*' * (accountNumber.length - 4) +
           accountNumber.substring(accountNumber.length - 4);
     } else {
-      // If the account number has less than 2 digits, just return it as is
       return accountNumber;
     }
   }
 
-  //Cards
+  ///Cards
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {
@@ -1804,7 +1723,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-// Function to show the confirmation dialog
   void _showConfirmationDialog(PlatformFile file) {
     showDialog(
       context: context,
@@ -1823,7 +1741,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           actions: [
             TextButton(
               onPressed: () {
-                // Close the dialog and do nothing
                 Navigator.of(context).pop();
               },
               child:  Text(AppLocalizations.of(context)!.cancel,
@@ -1834,10 +1751,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             TextButton(
               onPressed: () async {
-                // Close the dialog
                 Navigator.of(context).pop();
-
-                // Trigger the API call to upload the file
                 await uploadProfile();
               },
               child:  Text(AppLocalizations.of(context)!.yes,
@@ -1854,30 +1768,22 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
       print("No file selected.");
-      return; // Exit the function if no file is selected
+      return;
     }
-
-    // Check if bytes are available
     if (selectedFile!.bytes == null) {
-      // Load the bytes of the selected file manually
       print("Loading bytes for the selected file...");
       try {
-        final file = File(selectedFile!.path!); // Convert PlatformFile to File
+        final file = File(selectedFile!.path!);
         final fileBytes = await file.readAsBytes();
-
-        // If bytes are still null, return early
         if (fileBytes.isEmpty) {
           print("No bytes available for the selected file.");
-          return; // Exit the function if no valid bytes are available
+          return;
         }
-
-        // Proceed with uploading the file after loading bytes
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
         print('Error reading file: $e');
       }
     } else {
-      // If bytes are already available, upload directly
       _uploadFileWithBytes(selectedFile!.bytes!);
     }
   }
@@ -1890,7 +1796,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
 
     try {
-      // Compress the image if it's larger than 1MB
       if (fileBytes.length > 1000000) {
         final compressed = await FlutterImageCompress.compressWithList(
           fileBytes,
@@ -1970,7 +1875,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
 
-  //Signature CALL
+  ///Signature CALL
   Future<void> _uploadSignatureToApi(Uint8List data) async {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
 
@@ -2023,12 +1928,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  //PATCH CALL
+  ///PATCH CALL
   void updateEmployeeData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var uri = Uri.parse('${singletonClass.baseURL}/employee/$employeeId');
-
-    // Create the JSON payload
     Map<String, dynamic> employeeData = {
       "userName": singletonClass.employeeDataList.first.data!.userName,
       "password": singletonClass.employeeDataList.first.data!.password,
@@ -2042,7 +1945,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       "NIC": singletonClass.employeeDataList.first.data!.nic,
       "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
       "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus": singletonClass.employeeDataList.first.data!.imigrationSatus,
+      "imigrationSatus": singletonClass.employeeDataList.first.data!..imigrationSatus,
       "DOB": singletonClass.employeeDataList.first.data!.dob,
       "age": singletonClass.employeeDataList.first.data!.age,
       "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,
@@ -2070,14 +1973,12 @@ class _ProfileScreenState extends State<ProfileScreen>
     };
 
     try {
-      // Send the PATCH request
       var response = await http.patch(
         uri,
         headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
-
-      // Check the response status
+      print("DATA ><><>< $employeeData");
       if (response.statusCode == 200) {
         print('Employee data updated successfully');
       } else {
@@ -2091,17 +1992,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   void updateSignature() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String url = '${singletonClass.baseURL}/employee/updateEMPSignature/$employeeID';
-
-    // Define the JSON data to send
     Map<String, dynamic> data = {
       "empSignature": "${singletonClass.signatureModelList.first.data!.url}",
     };
-
-    // Convert data to JSON string
     String jsonData = jsonEncode(data);
     log("Signature Json$jsonData");
-
-    // Make the PATCH request
     setState(() {
       isLoading = true;
     });
@@ -2170,20 +2065,3 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 }
 
-class Document {
-  final String imageUrl;
-  final String name;
-  final String cardNumber;
-  final String dateOfBirthInHijri;
-  final String expiryDateInHijri;
-  final String placeOfBirth;
-
-  Document({
-    required this.imageUrl,
-    required this.name,
-    required this.cardNumber,
-    required this.dateOfBirthInHijri,
-    required this.expiryDateInHijri,
-    required this.placeOfBirth,
-  });
-}

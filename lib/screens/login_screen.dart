@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +11,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -37,14 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   bool _isTokenSaved = false;
-  bool _isBiometricEnabled = false; // State variable for biometric toggle
+  bool _isBiometricEnabled = false;
   final LocalAuthentication _localAuth = LocalAuthentication();
+  String version = '';
 
   @override
   void initState() {
     super.initState();
     _checkToken();
     _checkBiometricStatus();
+    loadVersion();
+  }
+
+  void loadVersion() async {
+    if(Platform.isAndroid || Platform.isIOS){
+      final info = await PackageInfo.fromPlatform();
+      setState(() {
+        version = 'v${info.version}';
+      });
+    }
+
   }
 
   Future<void> _checkToken() async {
@@ -93,17 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
           final SharedPreferences preferences = await SharedPreferences.getInstance();
           String? token = preferences.getString('token');
           decodeJwt(token!.trim());
-          await singletonClass.getEmployeeData();
-          await singletonClass.getCompaniesData();
-          await singletonClass.getUISettingsData();
-          singletonClass.getEmployeeData();
-          await singletonClass.getClockingData();
-          await singletonClass.getBranchData();
-          singletonClass.getCompanyData();
-          singletonClass.getRemoteAttendanceData();
-          await singletonClass.getEmployeeAttendanceData();
-          singletonClass.getNotifications();
-          singletonClass.sendFCMToken();
           setState(() {
             isLoading = false ;
           });
@@ -154,6 +158,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (kDebugMode)
+                          Text("You're in Debug mode"),
                         IconButton(onPressed: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
                         }, icon: Icon(Icons.apartment_outlined,
@@ -267,44 +273,55 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: NasColors.lightGrey,
-                      ),
-                      child: TextFormField(
-                        controller: _password,
-                        obscureText: _obscurePassword,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return AppLocalizations.of(context)!.pleaseEnterPassword;
-                          }
-                          return null;
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: NasColors.lightGrey,
+                  ),
+                  child: TextFormField(
+                    controller: _password,
+                    obscureText: _obscurePassword,
+                    obscuringCharacter: '*',
+                    cursorColor: Colors.grey,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return AppLocalizations.of(context)!.pleaseEnterPassword;
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
-                        obscuringCharacter: '*',
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context)!.password,
-                          hintStyle: GoogleFonts.inter(color: Colors.grey),
-                          prefixIcon: Icon(
-                            Icons.lock_outline,
-                            color: NasColors.icons,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          color: NasColors.icons,
                         ),
                       ),
+                      hintText: AppLocalizations.of(context)!.password,
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: NasColors.icons,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.transparent),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.transparent),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
                     ),
+                  ),
+                ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -321,21 +338,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          child: Text(
-                            _obscurePassword ? AppLocalizations.of(context)!.showPassword : AppLocalizations.of(context)!.hidePassword,
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     NasButton(
@@ -345,8 +347,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           login();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(""),
+                             SnackBar(
+                              content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
                               duration: Duration(seconds: 4),
                             ),
                           );
@@ -362,6 +364,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: NasColors.darkBlue,
                         ),
                       ),
+                    Text(
+                      version.isEmpty ? 'Loading version...' : version,
+                      style: GoogleFonts.inter(fontSize: 14, color: Colors.grey),
+                    ),
                   ],
                 ),
                   if (isLoading)
@@ -392,7 +398,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);
-    print("///???${singletonClass.tenantIDDataList.first.data!.tenantId}");
+    print("shared preference id ${singletonClass.tenantId}");
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
@@ -418,15 +424,6 @@ class _LoginScreenState extends State<LoginScreen> {
           if (data != null && data.data != null) {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
-            await singletonClass.getCompaniesData();
-            await singletonClass.getUISettingsData();
-            singletonClass.getEmployeeData();
-            await singletonClass.getClockingData();
-            await singletonClass.getBranchData();
-            singletonClass.getCompanyData();
-            singletonClass.getRemoteAttendanceData();
-            await singletonClass.getEmployeeAttendanceData();
-            singletonClass.getNotifications();
             singletonClass.sendFCMToken();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
@@ -446,6 +443,9 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else if (loginResponse.statusCode == 400) {
+          setState(() {
+            isLoading = false;
+          });
           QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 5),
             showCancelBtn: false,
@@ -457,8 +457,10 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           print('Error: ${loginResponse.statusCode}');
         }
-      } else if (response.statusCode == 405) {
-        // Handle 405 Not Allowed error
+      } else if (response.statusCode == 405 || response.statusCode == 502) {
+        setState(() {
+          isLoading = false;
+        });
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
@@ -473,6 +475,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       print('Error: $e');
+      setState(() {
+        isLoading = false;
+      });
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 5),
         showCancelBtn: false,
@@ -482,9 +487,6 @@ class _LoginScreenState extends State<LoginScreen> {
         text:  AppLocalizations.of(context)!.tryAgain,
         type: QuickAlertType.error,
       );
-      setState(() {
-        isLoading = false;
-      });
     }
   }
   // Decoding Token Data Here

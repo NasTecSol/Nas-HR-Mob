@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   String? templateDocUrl;
   String parsedTemplateText = '';
   Uint8List? _generatedDocxBytes;
-  String _characterCount = "0/300";
   bool _isLoading = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
 
@@ -56,428 +56,430 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
           key: _formKey,
           child: Stack(
               children: [
-            Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
-                                spreadRadius: 5,
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ]),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_outlined,
+            ListView(
+              padding: EdgeInsets.zero,
+              children: [ Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.4),
+                                  spreadRadius: 5,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ]),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_outlined,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.createLetter,
+                        style: GoogleFonts.inter(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.createLetter,
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.searchEmployee,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                if (_selectedEmployees.isNotEmpty) ...[
-                  SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _selectedEmployees.length,
-                      itemBuilder: (context, index) {
-                        var employee = _selectedEmployees[index];
-                        return Stack(
-                          children: [
-                            // Main container for the employee tile
-                            Container(
-                              margin: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(15)),
-                                color: NasColors.lightBlue,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withValues(alpha: 0.3),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 0),
-                                  ),
-                                ],
-                              ),
-                              width: 150,
-                              // Set a fixed width for each employee tile
-                              child: Row(
-                                children: [
-                                  Container(
-                                    height: 30,
-                                    width: 40,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        image: AssetImage("images/DP.png"),
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        employee!.employeeName ?? "Unknown",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                        overflow: TextOverflow
-                                            .ellipsis, // Optional: Handle long text
-                                      ),
-                                      Text(
-                                        employee.empId ?? "Unknown",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedEmployees.remove(employee);
-                                  });
-                                },
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.red,
-                                  ),
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-                Row(
-                  children: [
-                    Container(
-                      height: 50,
-                      width: MediaQuery.of(context).size.width - 100,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: TextFormField(
-                        cursorColor: Colors.grey,
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: '${AppLocalizations.of(context)!.search}...',
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          getSearchEmployeeData();
-                        });
-                      },
-                      icon: Icon(
-                        Icons.search,
-                        size: 25,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
-                  ],
-                ),
-                if (_showSearchResult == true) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _employeeSearchResults.clear();
-                            });
-                          },
-                          child: Text(
-                            AppLocalizations.of(context)!.clearAll,
-                            style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red),
-                          )),
                     ],
                   ),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: _employeeSearchResults.length,
-                      itemBuilder: (context, index) {
-                        var employee = _employeeSearchResults[index];
-                        return ListTile(
-                          title: Row(
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.searchEmployee,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (_selectedEmployees.isNotEmpty) ...[
+                    SizedBox(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _selectedEmployees.length,
+                        itemBuilder: (context, index) {
+                          var employee = _selectedEmployees[index];
+                          return Stack(
                             children: [
+                              // Main container for the employee tile
                               Container(
-                                height: 50,
-                                width: 60,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: AssetImage("images/DP.png"),
-                                    fit: BoxFit.fill,
+                                margin: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(15)),
+                                  color: NasColors.lightBlue,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withValues(alpha: 0.3),
+                                      spreadRadius: 1,
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 0),
+                                    ),
+                                  ],
+                                ),
+                                width: 150,
+                                // Set a fixed width for each employee tile
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 30,
+                                      width: 40,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: AssetImage("images/DP.png"),
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          employee!.employeeName ?? "Unknown",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          overflow: TextOverflow
+                                              .ellipsis, // Optional: Handle long text
+                                        ),
+                                        Text(
+                                          employee.empId ?? "Unknown",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedEmployees.remove(employee);
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.red,
+                                    ),
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    employee.employeeName ?? "Unknown",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.darkBlue),
-                                  ),
-                                  Text(
-                                    employee.empId ?? "Unknown",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey),
-                                  ),
-                                ],
-                              ),
                             ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  Row(
+                    children: [
+                      Container(
+                        height: 50,
+                        width: MediaQuery.of(context).size.width - 100,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: TextFormField(
+                          cursorColor: Colors.grey,
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: '${AppLocalizations.of(context)!.search}...',
+                            border: InputBorder.none,
                           ),
-                          trailing: GestureDetector(
-                            onTap: () {
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            getSearchEmployeeData();
+                          });
+                        },
+                        icon: Icon(
+                          Icons.search,
+                          size: 25,
+                          color: NasColors.darkBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_showSearchResult == true) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                            onPressed: () {
                               setState(() {
-                                if (_selectedEmployees.contains(employee)) {
-                                  _selectedEmployees.remove(employee);
-                                } else {
-                                  _selectedEmployees.add(employee);
-                                }
+                                _employeeSearchResults.clear();
                               });
                             },
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.green,
-                              ),
-                              padding: const EdgeInsets.all(8.0),
-                              // Space around the icon
-                              child: const Icon(
-                                Icons.add,
-                                color: Colors.white,
+                            child: Text(
+                              AppLocalizations.of(context)!.clearAll,
+                              style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red),
+                            )),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: _employeeSearchResults.length,
+                        itemBuilder: (context, index) {
+                          var employee = _employeeSearchResults[index];
+                          return ListTile(
+                            title: Row(
+                              children: [
+                                Container(
+                                  height: 50,
+                                  width: 60,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: AssetImage("images/DP.png"),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      employee.employeeName ?? "Unknown",
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: NasColors.darkBlue),
+                                    ),
+                                    Text(
+                                      employee.empId ?? "Unknown",
+                                      style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  if (_selectedEmployees.contains(employee)) {
+                                    _selectedEmployees.remove(employee);
+                                  } else {
+                                    _selectedEmployees.add(employee);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.green,
+                                ),
+                                padding: const EdgeInsets.all(8.0),
+                                // Space around the icon
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.subject,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return AppLocalizations.of(context)!.pleaseEnterLetterSubject;
-                    }
-                    return null;
-                  },
-                  cursorColor: Colors.grey,
-                  controller: _letterSubject,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.enterLetterSubjectHere,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                    hintStyle: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.letterBody,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return AppLocalizations.of(context)!.pleaseEnterLetterBody;
-                    }
-                    return null;
-                  },
-                  cursorColor: Colors.grey,
-                  controller: _letterBody,
-                  maxLength: 300,
-                  maxLines: 5,
-                  onChanged: (text) {
-                    setState(() {
-                      _characterCount = "${text.length}/300";
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.enterLetterBodyHere,
-                    hintStyle: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: NasColors.lightBlue, // background color
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      // rounded corners
-                      side: BorderSide(
-                          color: Colors.transparent,
-                          width: 2), // border color and width
-                    ),
-                  ),
-                  onPressed: () async {
-                    if(_formKey.currentState!.validate()){
-                      if(_selectedEmployees.isNotEmpty){
-                        await downloadAndSaveDocx(templateDocUrl!);
-                        if (_generatedDocxBytes == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Document is not ready.")),
                           );
-                          return;
-                        }
+                        },
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.subject,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return AppLocalizations.of(context)!.pleaseEnterLetterSubject;
+                      }
+                      return null;
+                    },
+                    cursorColor: Colors.grey,
+                    controller: _letterSubject,
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.enterLetterSubjectHere,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.letterBody,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return AppLocalizations.of(context)!.pleaseEnterLetterBody;
+                      }
+                      return null;
+                    },
+                    cursorColor: Colors.grey,
+                    controller: _letterBody,
+                    maxLength: 300,
+                    maxLines: 5,
+                    onChanged: (text) {
+                      setState(() {
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.enterLetterBodyHere,
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: NasColors.lightBlue, // background color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        // rounded corners
+                        side: BorderSide(
+                            color: Colors.transparent,
+                            width: 2), // border color and width
+                      ),
+                    ),
+                    onPressed: () async {
+                      if(_formKey.currentState!.validate()){
+                        if(_selectedEmployees.isNotEmpty){
+                          await downloadAndSaveDocx(templateDocUrl!);
+                          if (_generatedDocxBytes == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Document is not ready.")),
+                            );
+                            return;
+                          }
 
-                        final tempDir = await getTemporaryDirectory();
-                        final filePath = '${tempDir.path}/generated_hr_letter.docx';
-                        final file = File(filePath);
-                        await file.writeAsBytes(_generatedDocxBytes!);
+                          final tempDir = await getTemporaryDirectory();
+                          final filePath = '${tempDir.path}/generated_hr_letter.docx';
+                          final file = File(filePath);
+                          await file.writeAsBytes(_generatedDocxBytes!);
 
-                        print("File path to open: $filePath");
-                        print(templateDocUrl);
+                          print("File path to open: $filePath");
+                          print(templateDocUrl);
 
-                        // Ensure the file exists before trying to open
-                        if (await file.exists()) {
-                          final result = await OpenFile.open(filePath);
-                          print("OpenFile result: ${result.message}");
+                          // Ensure the file exists before trying to open
+                          if (await file.exists()) {
+                            final result = await OpenFile.open(filePath);
+                            print("OpenFile result: ${result.message}");
+                          } else {
+                            print("File does not exist: $filePath");
+                          }
                         } else {
-                          print("File does not exist: $filePath");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(AppLocalizations.of(context)!.selectAssignee),
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(AppLocalizations.of(context)!.selectAssignee),
+                           SnackBar(
+                            content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
                             duration: Duration(seconds: 4),
                           ),
                         );
                       }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                         SnackBar(
-                          content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
-                          duration: Duration(seconds: 4),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.previewLetter,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      color: Colors.white,
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.previewLetter,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),]
             ),
                 if(_isLoading == true)...[
                   Center(child:  SizedBox(
@@ -757,7 +759,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                 final newDrawingNode =
                     xml.XmlDocument.parse(imageXml).rootElement;
                 paragraph.children.add(newDrawingNode.copy());
-                print('Signature image URL: $signatureUrl');
+                if (kDebugMode) {
+                  print('Signature image URL: $signatureUrl');
+                }
               }
             }
             if (mounted) {
@@ -765,7 +769,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
             }
           }
         } else {
-          print("❌ Failed to fetch signature image from: $signatureUrl");
+          if (kDebugMode) {
+            print("❌ Failed to fetch signature image from: $signatureUrl");
+          }
         }
       }
 
@@ -785,10 +791,15 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final newDocxBytes = ZipEncoder().encode(updatedArchive);
       _generatedDocxBytes = Uint8List.fromList(newDocxBytes!);
 
-      print("✅ Template parsed and document generated successfully.");
+      if (kDebugMode) {
+        print("✅ Template parsed and document generated successfully.");
+      }
     } catch (e, stack) {
-      print("❌ Error parsing DOCX: $e");
-      print(stack);
+      if (kDebugMode) {
+        print("❌ Error parsing DOCX: $e");
+        print(stack);
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error parsing template: ${e.toString()}")),

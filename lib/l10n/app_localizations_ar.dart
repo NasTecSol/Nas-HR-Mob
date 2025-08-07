@@ -1572,4 +1572,138 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get attendanceDetail => 'تفاصيل الحضور';
+
+  @override
+  String get attendanceHistory => 'سجل الحضور';
+
+  @override
+  String get onlyMe => 'فقط أنا';
+
+  @override
+  String get assetsDetails => 'تفاصيل الأصل';
+
+  @override
+  String get documentNotification => 'إشعار المستند';
+
+  @override
+  String get shifts => 'الورديات';
+
+  @override
+  String get timeTable => 'الجدول الزمني';
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get shortLeaves => 'إجازات قصيرة';
+
+  @override
+  String get loading => 'جارٍ التحميل';
+
+  @override
+  String get assignedAt => 'تم التعيين في';
+
+  @override
+  String get id => 'المعرف';
+
+  @override
+  String get specialLeaveRequest => 'طلب إجازة خاصة';
+
+  @override
+  String get specialLeaveRequestBottom => 'نوع طلب إجازة خاصة';
+
+  @override
+  String get approvalDocumentRequestBottom => 'نوع الموافقة على طلب المستند';
+
+  @override
+  String get approvalDocumentRequest => 'الموافقة على طلب المستند';
+
+  @override
+  String get assignedTo => 'مُعين إلى';
+
+  @override
+  String get assigned => 'مُعين';
+
+  @override
+  String get deactive => 'غير نشط';
+
+  @override
+  String get unAssigned => 'غير معين';
+
+  @override
+  String get marriageLeave => 'إجازة زواج';
+
+  @override
+  String get examLeave => 'إجازة امتحان';
+
+  @override
+  String get deathLeave => 'إجازة وفاة';
+
+  @override
+  String get specialDocument => 'مستند خاص';
+
+  @override
+  String get slots => 'الفترات';
+
+  @override
+  String get currentOrganization => 'المؤسسة الحالية';
+
+  @override
+  String get searchYourCompany => 'ابحث عن شركتك';
+
+  @override
+  String get createAMeeting => 'إنشاء الاجتماع';
+
+  @override
+  String get meetingName => 'اسم الاجتماع';
+
+  @override
+  String get typeMeetingNameHere => 'اكتب اسم الاجتماع هنا';
+
+  @override
+  String get meetingDescription => 'وصف الاجتماع';
+
+  @override
+  String get typeMeetingDescriptionHere => 'اكتب وصف الاجتماع هنا';
+
+  @override
+  String get meetingCategory => 'فئة الاجتماع';
+
+  @override
+  String get meetingType => 'نوع الاجتماع';
+
+  @override
+  String get typeMeetingTypeOrSelectFromList =>
+      'اكتب نوع الاجتماع أو اختر من القائمة';
+
+  @override
+  String get createATask => 'إنشاء المهام';
+
+  @override
+  String get taskName => 'اسم المهمة';
+
+  @override
+  String get typeTaskNameHere => 'اكتب اسم المهمة هنا';
+
+  @override
+  String get taskDescription => 'وصف المهمة';
+
+  @override
+  String get typeTaskDescriptionHere => 'اكتب وصف المهمة هنا';
+
+  @override
+  String get taskCategory => 'فئة المهمة';
+
+  @override
+  String get taskType => 'نوع المهمة';
+
+  @override
+  String get typeTaskTypeOrSelectFromList =>
+      'اكتب نوع المهمة أو اختر من القائمة';
+
+  @override
+  String get next => 'التالي';
+
+  @override
+  String get allEmployees => 'جميع الموظفين';
 }

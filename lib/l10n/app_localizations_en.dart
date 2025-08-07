@@ -626,7 +626,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get from => 'From';
 
   @override
-  String get to => 'To';
+  String get to => 'to';
 
   @override
   String get reason => 'Reason';
@@ -1243,7 +1243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get description => 'Description';
 
   @override
-  String get type => 'type';
+  String get type => 'Type';
 
   @override
   String get comments => 'Comments';
@@ -1574,4 +1574,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attendanceDetail => 'Attendance Detail';
+
+  @override
+  String get attendanceHistory => 'Attendance History';
+
+  @override
+  String get onlyMe => 'Only me';
+
+  @override
+  String get assetsDetails => 'Asset Detail';
+
+  @override
+  String get documentNotification => 'Document Notification';
+
+  @override
+  String get shifts => 'Shifts';
+
+  @override
+  String get timeTable => 'Time Table';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get shortLeaves => 'Short Leaves';
+
+  @override
+  String get loading => 'Loading';
+
+  @override
+  String get assignedAt => 'Assigned at';
+
+  @override
+  String get id => 'ID';
+
+  @override
+  String get specialLeaveRequest => 'Special Leave Request';
+
+  @override
+  String get specialLeaveRequestBottom => 'Special Leave Request';
+
+  @override
+  String get approvalDocumentRequestBottom => 'Approve Document Request';
+
+  @override
+  String get approvalDocumentRequest => 'Approve Document Request';
+
+  @override
+  String get assignedTo => 'Assigned to';
+
+  @override
+  String get assigned => 'Assigned';
+
+  @override
+  String get deactive => 'Deactive';
+
+  @override
+  String get unAssigned => 'unassigned';
+
+  @override
+  String get marriageLeave => 'Marriage Leave';
+
+  @override
+  String get examLeave => 'Exam Leave';
+
+  @override
+  String get deathLeave => 'Death Leave';
+
+  @override
+  String get specialDocument => 'Special Document';
+
+  @override
+  String get slots => 'Slots';
+
+  @override
+  String get currentOrganization => 'Current Organization';
+
+  @override
+  String get searchYourCompany => 'Search your Company';
+
+  @override
+  String get createAMeeting => 'Create a Meeting';
+
+  @override
+  String get meetingName => 'Meeting Name';
+
+  @override
+  String get typeMeetingNameHere => 'Type meeting name here';
+
+  @override
+  String get meetingDescription => 'Meeting Description';
+
+  @override
+  String get typeMeetingDescriptionHere => 'Type meeting description here';
+
+  @override
+  String get meetingCategory => 'Meeting Category';
+
+  @override
+  String get meetingType => 'Meeting Type';
+
+  @override
+  String get typeMeetingTypeOrSelectFromList =>
+      'Type meeting type or select from the list';
+
+  @override
+  String get createATask => 'Create a Task';
+
+  @override
+  String get taskName => 'Task Name';
+
+  @override
+  String get typeTaskNameHere => 'Type task name here';
+
+  @override
+  String get taskDescription => 'Task Description';
+
+  @override
+  String get typeTaskDescriptionHere => 'Type task description here';
+
+  @override
+  String get taskCategory => 'Task Category';
+
+  @override
+  String get taskType => 'Task Type';
+
+  @override
+  String get typeTaskTypeOrSelectFromList =>
+      'Type task type or select from the list';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get allEmployees => 'All Employees';
 }

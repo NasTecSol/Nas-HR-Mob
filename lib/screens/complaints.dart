@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -124,44 +125,7 @@ class _ComplaintsState extends State<Complaints> {
                     singletonClass.getJWTModel()?.grade == 'L1') ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 0.0),
-                    child: _selectedOptionIndex == 0
-                        ? TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: NasColors.darkBlue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            onPressed: () {
-                              // Add your onPressed functionality here
-                            },
-                            child: SizedBox(
-                              height: 30,
-                              width: 90,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.filter_alt,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    AppLocalizations.of(context)!.filter,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : TextButton(
+                    child: _selectedOptionIndex == 1 ? TextButton(
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
                               backgroundColor: Colors.red,
@@ -200,7 +164,7 @@ class _ComplaintsState extends State<Complaints> {
                                 ],
                               ),
                             ),
-                          ),
+                          ) : SizedBox.shrink()
                   ),
                 ],
                 if (singletonClass.getJWTModel()?.grade == 'L2' ||
@@ -216,9 +180,7 @@ class _ComplaintsState extends State<Complaints> {
                     onPressed: () {
                       Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const FileComplaintsScreen()));
+                          MaterialPageRoute(builder: (context) => const FileComplaintsScreen()));
                     },
                     child: SizedBox(
                       height: 30,
@@ -399,13 +361,26 @@ class _ComplaintsState extends State<Complaints> {
                           );
                         } else {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -468,13 +443,26 @@ class _ComplaintsState extends State<Complaints> {
                           } else if (snapshot.hasData) {
                             return _request!.isEmpty
                                 ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             )
@@ -570,13 +558,26 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else {
                             return Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -637,13 +638,26 @@ class _ComplaintsState extends State<Complaints> {
                           } else {
                             return _approver!.isEmpty
                                 ? Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.noData,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                  fontSize: 15,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             )
@@ -1197,7 +1211,9 @@ class _ComplaintsState extends State<Complaints> {
 //POST CALL
   Future<ComplaintsApproverModel?> getComplaintsApproverData({int page = 0, int limit = 10}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
-    print("vghjk$employeeId");
+    if (kDebugMode) {
+      print("vghjk$employeeId");
+    }
     Map<String, dynamic> requestBody = {
       "requestTypes": ["complaintRequest"],
     };
@@ -1325,7 +1341,9 @@ class _ComplaintsState extends State<Complaints> {
         );
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (kDebugMode) {
+        print('Failed to send data. Error: $error');
+      }
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,

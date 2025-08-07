@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -95,7 +97,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       if (_recordedFilePath != null) {
         final file = File(_recordedFilePath!);
-        print('Recording size: ${await file.length()} bytes');
+        if (kDebugMode) {
+          print('Recording size: ${await file.length()} bytes');
+        }
         await _player.startPlayer(
           fromURI: _recordedFilePath,
           codec: Codec.aacMP4,
@@ -191,10 +195,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       controller: _scrollController,
-                      itemCount: _messages.length + (isBotTyping ? 1 : 0), // Add 1 if bot is typing
+                      itemCount: _messages.length + (isBotTyping ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (isBotTyping && index == _messages.length) {
-                          // Display the typing indicator if it's the last item in the list
                           return Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -364,7 +367,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             width: 24,
                             color: Colors.grey,
                           ),
-                          onPressed: null, // disables the button
+                          onPressed: null,
                         )
                             : IconButton(
                           icon: Image.asset(
@@ -395,14 +398,18 @@ class _ChatScreenState extends State<ChatScreen> {
   void _handleMicPress() async {
     var systemLocale = await _speech.systemLocale();
     var currentLocaleId = systemLocale?.localeId ?? '';
-    print(currentLocaleId);
+    if (kDebugMode) {
+      print(currentLocaleId);
+    }
     if (_isListening) {
       setState(() => _isListening = false);
       await _speech.stop();
     } else {
       bool available = await _speech.initialize(
         onStatus: (val) {
-          print('Speech status: $val');
+          if (kDebugMode) {
+            print('Speech status: $val');
+          }
           if ((val == 'done' || val == 'notListening') && _isListening) {
             _speech.listen(
               localeId: currentLocaleId,
@@ -414,7 +421,7 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           }
         },
-        onError: (val) => print('Speech error: $val'),
+        onError: (val) => log('Speech error: $val'),
       );
       if (available) {
         setState(() => _isListening = true);
@@ -431,15 +438,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-
-
-
-
-  //CHAT API CALL
+  ///CHAT API CALL
   Future<void> postMessages(String text) async {
     String userMessage = text.trim();
   if (userMessage.isNotEmpty) {
-    _addUserMessage(userMessage); // Only add if not empty
+    _addUserMessage(userMessage);
     _messageController.clear();
   }
 
@@ -508,8 +511,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
-
-      // Handle headings starting with ###
       if (line.startsWith('###')) {
         final headingText = line.replaceFirst('###', '').trim();
         spans.add(TextSpan(
@@ -546,12 +547,10 @@ class _ChatScreenState extends State<ChatScreen> {
           spans.add(TextSpan(text: line.substring(lastIndex)));
         }
 
-        spans.add(const TextSpan(text: '\n')); // Ensure line break after bold line
+        spans.add(const TextSpan(text: '\n'));
       }
     }
 
     return spans;
   }
-
-
 }
