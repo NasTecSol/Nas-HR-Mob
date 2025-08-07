@@ -927,7 +927,7 @@
   "cnic":"CNIC",
   "iqama":"Iqama",
   "passport":"Passport",
-  "employmentContract":"Employment Contract",
+  "employmentContract":"Employee ID Card",
   "done":"Done",
   "name":"Name",
   "cardNumber":"Card Number",
@@ -988,6 +988,8 @@
   "taskCategory": "Task Category",
   "taskType": "Task Type",
   "typeTaskTypeOrSelectFromList": "Type task type or select from the list",
-  "next":"Next"
+  "next":"Next",
+  "allEmployees":"All Employees",
+  "designation":"Designation"
 
 }

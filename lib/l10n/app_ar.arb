@@ -148,7 +148,6 @@
   "martialStatus": "الحالة الاجتماعية",
   "phoneNo": "رقم الهاتف",
   "address": "العنوان",
-  "passportNo": "رقم الجواز",
   "paymentMethods": "طرق الدفع",
   "salary": "الراتب",
   "fatherName": "اسم الأب",
@@ -597,10 +596,10 @@
     "myDepartment": "قسم عملي",
     "whoIsDeveloper": "من هو المطور",
     "card": "بطاقات",
-    "cnic": "رقم الهوية الوطنية",
-    "iqama": "الإقامة",
+    "cnic":"معلومات الهوية الوطنية",
+    "iqama": "معلومات هوية مقيم",
     "passport": "جواز السفر",
-    "employmentContract": "عقد العمل",
+    "employmentContract":  "بطاقة العمل",
     "done": "تم",
     "name": "الاسم",
     "cardNumber": "رقم البطاقة",
@@ -653,6 +652,9 @@
     "taskCategory": "فئة المهمة",
     "taskType": "نوع المهمة",
     "typeTaskTypeOrSelectFromList": "اكتب نوع المهمة أو اختر من القائمة",
-    "next": "التالي"
+    "next": "التالي",
+    "allEmployees":"جميع الموظفين",
+    "designation": "المسمى الوظيفي"
+
 
 }

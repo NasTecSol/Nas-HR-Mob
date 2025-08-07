@@ -49,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isSliderCompleted = false;
   String? _openLocation;
   String? selectedCompanyId;
-  String? selectedBranchName;
   String? selectedBranchId;
   bool isLoadingBranches = false;
 
@@ -57,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _companyID();
+
     _draggableScrollableController.addListener(() {
       setState(() {
         isExpanded = _draggableScrollableController.size > 0.3;
@@ -80,13 +79,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       trackBackgroundLocation();
-    }
-  }
-
-  void _companyID() {
-    if (selectedCompanyId == null || selectedCompanyId!.isEmpty) {
-      selectedCompanyId = singletonClass.getJWTModel()?.companyId;
-      singletonClass.selectedCompanyId = selectedCompanyId;
     }
   }
 
@@ -908,7 +900,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        const NotificationsScreen()));
+                                         NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -1106,12 +1098,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             children: [
                                               Image.asset('images/site.png', width: 15, height: 15),
                                               const SizedBox(width: 8),
-                                              Text(
-                                                singletonClass.companyDataList.isNotEmpty &&
-                                                    singletonClass.companyDataList.first.data?.name != null
-                                                    ? "${singletonClass.companyDataList.first.data!.name}"
-                                                    : AppLocalizations.of(context)!.select,
-                                                overflow: TextOverflow.ellipsis,
+                                              Flexible(
+                                                child: Text(
+                                                  (singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)
+                                                      ? singletonClass.companyName!
+                                                      : (singletonClass.companyDataList.first.data?.name ?? "---"),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(fontSize: 15),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -1128,14 +1122,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             setState(() {
                                               selectedCompanyId = value;
                                               singletonClass.selectedCompanyId = selectedCompanyId;
+                                              final selectedCompany = singletonClass.companiesDataList.first.data!.companies!
+                                                  .firstWhere((company) => company.companyId.toString() == selectedCompanyId);
+                                              singletonClass.companyName = selectedCompany.companyName ?? '';
+                                              singletonClass.companyDataList.clear();
                                               selectedBranchId = null;
                                               isLoadingBranches = true;
                                               singletonClass.branchID = null;
+                                              singletonClass.branchName = null;
                                               singletonClass.branchesDataList.clear();
+                                              singletonClass.getCompanyData();
                                             });
-
                                             await singletonClass.getBranchesData();
-
                                             setState(() {
                                               isLoadingBranches = false;
                                             });
@@ -1162,7 +1160,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           hint: Text(
                                             isLoadingBranches
                                                 ? AppLocalizations.of(context)!.loading
-                                                : AppLocalizations.of(context)!.selectBranch,
+                                                : (singletonClass.branchName == null || singletonClass.branchName!.isEmpty)
+                                                ? AppLocalizations.of(context)!.selectBranch
+                                                : singletonClass.branchName!,
                                           ),
                                           items: !isLoadingBranches &&
                                               singletonClass.branchesDataList.isNotEmpty
@@ -1285,11 +1285,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     })
                                                   else
                                                     Text(
-                                                      AppLocalizations.of(context)!.noData,
+                                                      "--:--",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
                                                         fontWeight:
                                                         FontWeight.normal,
+                                                        color: Colors.white
                                                       ),
                                                     ),
                                                 ],
@@ -1416,7 +1417,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             .data!
                                                             .isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
-                                                    : 'NA',
+                                                    : '--:--',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.normal,
@@ -1436,9 +1437,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       onTap: () {
                                         Navigator.push(
                                             context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ChatScreen()));
+                                            MaterialPageRoute(builder: (context) => ChatScreen()));
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -1569,18 +1568,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass
-                                                                .attendanceDataList
-                                                                .isNotEmpty &&
-                                                            singletonClass
-                                                                .attendanceDataList
-                                                                .first
-                                                                .data!
-                                                                .data!
-                                                                .isNotEmpty
+                                                    singletonClass.attendanceDataList.isNotEmpty &&
+                                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
                                                         ? '${AppLocalizations.of(context)!.worked} '
                                                             '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0)}'
-                                                        : '${AppLocalizations.of(context)!.worked} NA',
+                                                        : '${AppLocalizations.of(context)!.worked} --:--',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:

@@ -35,19 +35,20 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+	<!-- ✅ Push Notifications Permissions -->
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
-	<key>LSApplicationQueriesSchemes</key>
+	<key>UIBackgroundModes</key>
 	<array>
-		<string>tel</string>
-		<string>mailto</string>
-		<string>http</string>
-		<string>https</string>
-		<string>sms</string>
-		<string>file</string>
+		<string>remote-notification</string>
 	</array>
-	<key>LSRequiresIPhoneOS</key>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<key>UNUserNotificationCenter</key>
 	<true/>
+
+	<!-- ✅ Usage Descriptions -->
 	<key>NSCameraUsageDescription</key>
 	<string>We need camera access to take pictures</string>
 	<key>NSFaceIDUsageDescription</key>
@@ -66,14 +67,21 @@
 	<string>We need photo library access to select images</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>We need access to speech recognition for voice features.</string>
-	<key>NSUserNotificationAlertStyle</key>
-	<string>alert</string>
+
+	<!-- Other App Settings -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>http</string>
+		<string>https</string>
+		<string>sms</string>
+		<string>file</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

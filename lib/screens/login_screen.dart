@@ -347,8 +347,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           login();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(""),
+                             SnackBar(
+                              content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
                               duration: Duration(seconds: 4),
                             ),
                           );
@@ -394,7 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
     var uuid = const Uuid();
     var v1 = uuid.v1();
     print(v1);
-    String email = _email.text;
+    String email = _email.text.trim().toUpperCase();
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);

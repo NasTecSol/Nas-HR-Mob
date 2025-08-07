@@ -1516,16 +1516,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get card => 'بطاقات';
 
   @override
-  String get cnic => 'رقم الهوية الوطنية';
+  String get cnic => 'معلومات الهوية الوطنية';
 
   @override
-  String get iqama => 'الإقامة';
+  String get iqama => 'معلومات هوية مقيم';
 
   @override
   String get passport => 'جواز السفر';
 
   @override
-  String get employmentContract => 'عقد العمل';
+  String get employmentContract => 'بطاقة العمل';
 
   @override
   String get done => 'تم';
@@ -1703,4 +1703,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get next => 'التالي';
+
+  @override
+  String get allEmployees => 'جميع الموظفين';
+
+  @override
+  String get designation => 'المسمى الوظيفي';
 }

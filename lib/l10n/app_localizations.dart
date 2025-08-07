@@ -3119,7 +3119,7 @@ abstract class AppLocalizations {
   /// No description provided for @employmentContract.
   ///
   /// In en, this message translates to:
-  /// **'Employment Contract'**
+  /// **'Employee ID Card'**
   String get employmentContract;
 
   /// No description provided for @done.
@@ -3469,6 +3469,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next'**
   String get next;
+
+  /// No description provided for @allEmployees.
+  ///
+  /// In en, this message translates to:
+  /// **'All Employees'**
+  String get allEmployees;
+
+  /// No description provided for @designation.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation'**
+  String get designation;
 }
 
 class _AppLocalizationsDelegate
