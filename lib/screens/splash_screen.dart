@@ -4,7 +4,6 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'company_selection_screen.dart';
 import 'login_screen.dart';
 

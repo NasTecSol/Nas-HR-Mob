@@ -38,6 +38,7 @@ import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
+import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/team_clocking_model.dart';
@@ -103,6 +104,7 @@ class SingletonClass {
   List<TimeTableShiftModel> timeTableShiftsDataList = [];
   List<BranchesModel> branchesModelDataList = [];
   List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
+  List<SocketModel> socketDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
@@ -504,8 +506,6 @@ class SingletonClass {
       }
     }
   }
-
-
 
   String formatTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);

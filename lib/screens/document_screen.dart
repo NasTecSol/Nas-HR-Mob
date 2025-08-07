@@ -2080,8 +2080,31 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         children: [
                                           SizedBox(height: 10),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 8.0),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.zero,
+                                                  child:Image.network(
+                                                    singletonClass.companyDataList.first.data?.logo ?? '',
+                                                    fit: BoxFit.fill,
+                                                    width: 40,
+                                                    height: 40,
+                                                    errorBuilder: (BuildContext context,
+                                                        Object exception,
+                                                        StackTrace? stackTrace) {
+                                                      return Image.asset(
+                                                        'images/site.png',
+                                                        fit: BoxFit.fill,
+                                                        width: 40,
+                                                        height: 40,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 100),
                                               Text("${singletonClass.companyDataList.first.data!.name}",
                                                 style: GoogleFonts.inter(
                                                   fontWeight: FontWeight.w500,
@@ -2124,17 +2147,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
                                                     SizedBox(
                                                       width:170,
                                                       child: Text(
@@ -2150,7 +2162,36 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
+                                                      "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation : '---'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    Text(
                                                       "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : '---'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 200,
+                                                      child: Divider(
+                                                        color: Colors.black,
+                                                        thickness: 1,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2329,7 +2370,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     singletonClass.employeeDataList.isNotEmpty &&
                                                         singletonClass.employeeDataList.first.data != null
                                                         ? "${singletonClass.employeeDataList.first.data!.firstName}"
-                                                        : "N/A",
+                                                        : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2348,7 +2389,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       text: singletonClass.employeeDataList.isNotEmpty &&
                                                           singletonClass.employeeDataList.first.data != null
                                                           ? "${singletonClass.employeeDataList.first.data!.firstName}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },

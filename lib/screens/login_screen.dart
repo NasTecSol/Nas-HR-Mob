@@ -394,7 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
     var uuid = const Uuid();
     var v1 = uuid.v1();
     print(v1);
-    String email = _email.text;
+    String email = _email.text.trim().toUpperCase();
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
     print(data);
