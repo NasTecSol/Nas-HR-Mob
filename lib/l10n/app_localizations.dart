@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @to.
   ///
   /// In en, this message translates to:
-  /// **'To'**
+  /// **'to'**
   String get to;
 
   /// No description provided for @reason.
@@ -2555,7 +2555,7 @@ abstract class AppLocalizations {
   /// No description provided for @type.
   ///
   /// In en, this message translates to:
-  /// **'type'**
+  /// **'Type'**
   String get type;
 
   /// No description provided for @comments.
@@ -3211,6 +3211,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attendance Detail'**
   String get attendanceDetail;
+
+  /// No description provided for @attendanceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance History'**
+  String get attendanceHistory;
+
+  /// No description provided for @onlyMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Only me'**
+  String get onlyMe;
+
+  /// No description provided for @assetsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset Detail'**
+  String get assetsDetails;
+
+  /// No description provided for @documentNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Document Notification'**
+  String get documentNotification;
+
+  /// No description provided for @shifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifts'**
+  String get shifts;
+
+  /// No description provided for @timeTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Table'**
+  String get timeTable;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @shortLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Leaves'**
+  String get shortLeaves;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
+
+  /// No description provided for @assignedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned at'**
+  String get assignedAt;
+
+  /// No description provided for @id.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get id;
+
+  /// No description provided for @specialLeaveRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Leave Request'**
+  String get specialLeaveRequest;
+
+  /// No description provided for @specialLeaveRequestBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Leave Request'**
+  String get specialLeaveRequestBottom;
+
+  /// No description provided for @approvalDocumentRequestBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Document Request'**
+  String get approvalDocumentRequestBottom;
+
+  /// No description provided for @approvalDocumentRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Document Request'**
+  String get approvalDocumentRequest;
+
+  /// No description provided for @assignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to'**
+  String get assignedTo;
+
+  /// No description provided for @assigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assigned;
+
+  /// No description provided for @deactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactive'**
+  String get deactive;
+
+  /// No description provided for @unAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'unassigned'**
+  String get unAssigned;
+
+  /// No description provided for @marriageLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Marriage Leave'**
+  String get marriageLeave;
+
+  /// No description provided for @examLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam Leave'**
+  String get examLeave;
+
+  /// No description provided for @deathLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Death Leave'**
+  String get deathLeave;
+
+  /// No description provided for @specialDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Document'**
+  String get specialDocument;
+
+  /// No description provided for @slots.
+  ///
+  /// In en, this message translates to:
+  /// **'Slots'**
+  String get slots;
+
+  /// No description provided for @currentOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Organization'**
+  String get currentOrganization;
+
+  /// No description provided for @searchYourCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your Company'**
+  String get searchYourCompany;
+
+  /// No description provided for @createAMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Meeting'**
+  String get createAMeeting;
+
+  /// No description provided for @meetingName.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Name'**
+  String get meetingName;
+
+  /// No description provided for @typeMeetingNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting name here'**
+  String get typeMeetingNameHere;
+
+  /// No description provided for @meetingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Description'**
+  String get meetingDescription;
+
+  /// No description provided for @typeMeetingDescriptionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting description here'**
+  String get typeMeetingDescriptionHere;
+
+  /// No description provided for @meetingCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Category'**
+  String get meetingCategory;
+
+  /// No description provided for @meetingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Type'**
+  String get meetingType;
+
+  /// No description provided for @typeMeetingTypeOrSelectFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Type meeting type or select from the list'**
+  String get typeMeetingTypeOrSelectFromList;
+
+  /// No description provided for @createATask.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Task'**
+  String get createATask;
+
+  /// No description provided for @taskName.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Name'**
+  String get taskName;
+
+  /// No description provided for @typeTaskNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task name here'**
+  String get typeTaskNameHere;
+
+  /// No description provided for @taskDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Description'**
+  String get taskDescription;
+
+  /// No description provided for @typeTaskDescriptionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task description here'**
+  String get typeTaskDescriptionHere;
+
+  /// No description provided for @taskCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Category'**
+  String get taskCategory;
+
+  /// No description provided for @taskType.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Type'**
+  String get taskType;
+
+  /// No description provided for @typeTaskTypeOrSelectFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Type task type or select from the list'**
+  String get typeTaskTypeOrSelectFromList;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @allEmployees.
+  ///
+  /// In en, this message translates to:
+  /// **'All Employees'**
+  String get allEmployees;
 }
 
 class _AppLocalizationsDelegate

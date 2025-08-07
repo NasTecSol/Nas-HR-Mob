@@ -2,12 +2,12 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/create_hr_letter_screen.dart';
-import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,24 +24,8 @@ class DocumentScreen extends StatefulWidget {
 class _DocumentScreenState extends State<DocumentScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
-  final List<Document> documentInfoDummy = [
-    // Example data, replace with your actual document data
-    Document(
-        imageUrl: 'images/cnic.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-    Document(
-        imageUrl: 'images/iqama.png',
-        name: 'العمراني، نصار ابراهيم',
-        cardNumber: '1027195021',
-        dateOfBirthInHijri: '1404/04/05',
-        expiryDateInHijri: '1450/11/29',
-        placeOfBirth: 'Alqaan'),
-  ];
-
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
   final GlobalKey _containerKey = GlobalKey();
   final GlobalKey _iqamaContainerKey = GlobalKey();
   final GlobalKey _passportContainerKey = GlobalKey();
@@ -166,6 +150,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           children: [
                             Expanded(
                               child: TextField(
+                                controller: searchController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isSearching = true;
+                                  });
+                                },
+                                cursorColor: Colors.grey,
                                 decoration: InputDecoration(
                                   hintText:
                                       '${AppLocalizations.of(context)!.search}...',
@@ -191,120 +182,126 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 children: [
                   documentInfo!.isNotEmpty
                       ? ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: documentInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final documents = documentInfo[index];
-                            final fileType = documents.format
-                                ?.split('.')
-                                .last
-                                .toLowerCase(); // Null check for documents.type
-                            final isImage = fileType != null &&
-                                ['png', 'jpg', 'jpeg', 'gif']
-                                    .contains(fileType);
-                            final isPdf = fileType == 'pdf';
-
-                            return Transform.translate(
-                              offset: Offset(0, index == 0 ? 0 : -10),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (isImage || isPdf) {
-                                    if (await canLaunch(documents.url)) {
-                                      await launch(documents.url);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Could not open the document!')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('Unsupported file type!')),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.only(
-                                      top: 10.0, left: 30, right: 30),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      if (index != 0)
-                                        const BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          spreadRadius: 10,
-                                          offset: Offset(0, -6),
-                                        ),
-                                      const BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
+                    shrinkWrap: true,
+                    itemCount: documentInfo.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final documents = documentInfo[index];
+                      final url = documents.remarks ?? '';
+                      final fileType = url.split('.').last.toLowerCase();
+                      final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+                      final isPdf = fileType == 'pdf';
+                      final searchText = searchController.text.toLowerCase();
+                      if (isSearching &&
+                          !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Transform.translate(
+                        offset: Offset(0, index == 0 ? 0 : -10),
+                        child: GestureDetector(
+                          onTap: () async {
+                            if (isImage || isPdf || url.isNotEmpty) {
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not open the document!')),
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Unsupported file type!')),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                if (index != 0)
+                                  const BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    spreadRadius: 10,
+                                    offset: Offset(0, -6),
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${documents.type}",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: isImage
-                                            ? Image.network(
-                                                documents.url,
-                                                height: 60,
-                                                width: double.infinity,
-                                                fit: BoxFit.cover,
-                                                alignment: Alignment.topCenter,
-                                              )
-                                            : Icon(
-                                                isPdf
-                                                    ? Icons.picture_as_pdf
-                                                    : Icons.insert_drive_file,
-                                                size: 60,
-                                                color: NasColors.darkBlue,
-                                              ),
-                                      ),
-                                    ],
+                                const BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  documents.type == "Doc_Contract_Emp"
+                                      ? AppLocalizations.of(context)!.employmentContract
+                                      : documents.type ?? '',
+                                  maxLines: 2,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: NasColors.darkBlue,
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        )
-                      : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: NasColors.darkBlue,
-                              ),
+                                const SizedBox(height: 10),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: isImage
+                                      ? Image.network(
+                                    url,
+                                    height: 60,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  )
+                                      : Icon(
+                                    isPdf
+                                        ? Icons.picture_as_pdf
+                                        : Icons.insert_drive_file,
+                                    size: 60,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                      );
+                    },
+                  )
+                      : Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
+                            ),
+                          ),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               )
             ],
             if (_selectedOptionIndex == 1) ...[
               SizedBox(height: 30),
+              if(singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia")
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -379,8 +376,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           // Logos Row
                                           ClipRRect(
                                             borderRadius: BorderRadius.zero,
-                                            child: Expanded(
-                                              child: Image.asset(
+                                            child: Image.asset(
                                                 "images/cnicLogo.png",
                                                 height: 50,
                                                 width: double.infinity,
@@ -388,7 +384,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 alignment: Alignment.topCenter,
                                               ),
                                             ),
-                                          ),
                                           SizedBox(height: 20),
                                           Row(
                                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -419,14 +414,35 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 20),
+                                              const SizedBox(width: 10),
                                               SizedBox(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? '---' : '---'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2.5),
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -435,7 +451,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -444,25 +460,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -587,7 +585,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -637,7 +635,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.nic}",)); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.nic}",));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -689,7 +687,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.dob}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -721,7 +719,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Text(
-                                                      "N/A",
+                                                      "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -738,7 +736,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "N/A")); // Text to be copied
+                                                      text: "---")); // Text to be copied
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -821,13 +819,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               blurRadius: 10,
                               spreadRadius: 10,
                               offset: Offset(0,
-                                  -6), // Top shadow added only for items after the first one
+                                  -6),
                             ),
                           const BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
                             offset: Offset(0,
-                                5), // Bottom shadow to enhance overlap effect
+                                5),
                           ),
                         ],
                       ),
@@ -859,6 +857,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Iqama
+              (singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia") ? const SizedBox.shrink() :
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -875,7 +875,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         ),
                         context: context,
                         builder: (BuildContext context) {
-                          // Pass the document data to the bottom sheet
                           return Container(
                             height: MediaQuery.of(context).size.height * 0.9,
                             width: double.infinity,
@@ -907,7 +906,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               fontWeight: FontWeight.w500,
                                               color: Colors.white,
                                             ),
-                                          ))
+                                          )),
                                     ],
                                   ),
                                   RepaintBoundary(
@@ -961,14 +960,35 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(width: 60),
+                                              SizedBox(width: 10),
                                               SizedBox(
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? '---' : '---'}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2.5),
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2.5),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -977,7 +997,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -986,7 +1006,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -995,7 +1015,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -1004,25 +1024,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     ),
                                                     SizedBox(height: 2.5),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? 'N/A' : 'N/A'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? 'N/A' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? '---' : '---'}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight: FontWeight.w500,
@@ -1077,9 +1079,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ),
                                         child: IconButton(
                                           onPressed: () {
-                                            // Copy the image URL or any text to the clipboard
                                             Clipboard.setData(ClipboardData(
-                                                text: "images/iqama.png")); // Text to be copied
+                                                text: "images/iqama.png"));
                                           },
                                           icon: const Icon(Icons.copy,
                                               color: Colors.white),
@@ -1147,7 +1148,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1197,7 +1198,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                    text: "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",)); // Text to be copied
+                                                    text: "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1249,7 +1250,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.dob}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1381,13 +1382,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                             blurRadius: 10,
                             spreadRadius: 10,
                             offset: Offset(0,
-                                -6), // Top shadow added only for items after the first one
+                                -6),
                           ),
                           const BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
                             offset: Offset(0,
-                                5), // Bottom shadow to enhance overlap effect
+                                5),
                           ),
                         ],
                       ),
@@ -1419,6 +1420,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Passport
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -1505,15 +1507,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.zero,
                                                   child:Image.network(
-                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '',
-                                                    // URL for the network image, empty string if null
+                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '---',
                                                     fit: BoxFit.cover,
                                                     width: 110,
                                                     height: 130,
                                                     errorBuilder: (BuildContext context,
                                                         Object exception,
                                                         StackTrace? stackTrace) {
-                                                      // Display the default asset image if the network image fails to load
                                                       return Image.asset(
                                                         'images/DP.png',
                                                         fit: BoxFit.cover,
@@ -1531,7 +1531,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
                                                         maxLines: 4,
                                                         softWrap: true,
                                                         textAlign: TextAlign.left,
@@ -1542,7 +1542,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1553,7 +1553,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1564,7 +1564,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1575,7 +1575,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1586,7 +1586,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : 'N/A'}",
+                                                        "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1597,7 +1597,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : 'N/A'}",
+                                                        "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1608,7 +1608,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : 'N/A'}",
+                                                        "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -1737,7 +1737,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}")); // Text to be copied
+                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1787,7 +1787,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                    text: "${singletonClass.employeeDataList.first.data!.passport!.id}",)); // Text to be copied
+                                                    text: "${singletonClass.employeeDataList.first.data!.passport!.id}",));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -2009,6 +2009,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
+              //Employee Contract
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -2107,7 +2108,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     errorBuilder: (BuildContext context,
                                                         Object exception,
                                                         StackTrace? stackTrace) {
-                                                      // Display the default asset image if the network image fails to load
                                                       return Image.asset(
                                                         'images/DP.png',
                                                         fit: BoxFit.cover,
@@ -2125,56 +2125,59 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width:170,
+                                                      child: Text(
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                        maxLines: 4,
+                                                        softWrap: true,
+                                                        textAlign: TextAlign.left,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : '---'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? ''} ${singletonClass.employeeDataList.first.data?.middleName ?? ''} ${singletonClass.employeeDataList.first.data?.lastName ?? ''}' : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : '---'}",
                                                       maxLines: 4,
-                                                      softWrap: true,
                                                       textAlign: TextAlign.left,
+                                                      softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : 'N/A'}",
+                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : 'N/A'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
+                                                        fontSize: 12,
                                                         fontWeight: FontWeight.w500,
                                                         color: NasColors.darkBlue,
                                                       ),
@@ -2200,7 +2203,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   child: ClipRRect(
                                                     borderRadius: BorderRadius.zero,
                                                     child: Image.network(
-                                                      singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '',
+                                                      singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '---',
                                                       fit: BoxFit.contain,
                                                       errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
                                                         return  Icon(
@@ -2378,7 +2381,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass.employeeDataList.first.data!.employeeInfo != null &&
                                                         singletonClass.employeeDataList.first.data!.employeeInfo!.isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
-                                                        : "N/A",
+                                                        : "---",
                                                     textAlign: TextAlign.left,
                                                     maxLines: 4,
                                                     softWrap: true,
@@ -2400,7 +2403,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                           singletonClass.employeeDataList.first.data!.employeeInfo != null &&
                                                           singletonClass.employeeDataList.first.data!.employeeInfo!.isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },
@@ -2434,7 +2437,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                         singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
-                                                        : "N/A",
+                                                        : "---",
                                                     textAlign: TextAlign.left,
                                                     maxLines: 4,
                                                     softWrap: true,
@@ -2456,7 +2459,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                           singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                           singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },
@@ -2489,7 +2492,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                         singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
-                                                        : "N/A",
+                                                        : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2510,7 +2513,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                           singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                           singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },
@@ -2543,7 +2546,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                         singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
-                                                        : "N/A",
+                                                        : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
@@ -2564,7 +2567,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                           singletonClass.employeeDataList.first.data!.contractInfo != null &&
                                                           singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },

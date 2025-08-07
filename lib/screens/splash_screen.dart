@@ -30,6 +30,8 @@ class _SplashscreenState extends State<SplashScreen>
     _animationController.forward().then((value) async {
       final preferences = await SharedPreferences.getInstance();
       final String? url =preferences.getString('baseURL');
+      singletonClass.tenantId = preferences.getString('baseURL');
+      singletonClass.companyName = preferences.getString('companyName');
       if (url != null && url.isNotEmpty){
         await Navigator.pushReplacement(
           context,
@@ -68,19 +70,15 @@ class _SplashscreenState extends State<SplashScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 300, // Adjust the height as needed
-                width: 300, // Adjust the width as needed
+                height: 300,
+                width: 300,
                 child: Lottie.asset('images/splash4.json'),
-                // Provide path to your Lottie animation
               ),
-
               SizedBox(
-                    height: 280, // Adjust the height as needed
-                    width: 280, // Adjust the width as needed
+                    height: 280,
+                    width: 280,
                     child: Image.asset('images/N.png'),
-                    // Provide path to your Lottie animation
-                  ),
-
+              ),
               Text.rich(
                 TextSpan(
                   children: [

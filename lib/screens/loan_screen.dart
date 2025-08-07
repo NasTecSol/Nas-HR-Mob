@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -82,8 +83,32 @@ class _LoanScreenState extends State<LoanScreen> {
         employeeDataList.first.data == null ||
         employeeDataList.first.data!.loanInfo == null ||
         employeeDataList.first.data!.loanInfo!.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text('No loan information available')),
+      return  Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Padding(
+            padding:  EdgeInsets.only(top: 80.0),
+            child: Column(
+              children: [
+                Center(
+                  child: SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Lottie.asset('images/empty.json'),
+                  ),
+                ),
+                Text(
+                  AppLocalizations.of(context)!.noData,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: NasColors.darkBlue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -109,7 +134,7 @@ class _LoanScreenState extends State<LoanScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 10.0, left: 20.0, right: 20.0),
         child: Column(

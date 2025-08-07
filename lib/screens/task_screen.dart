@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/request_controller/task_model.dart';
@@ -37,7 +38,9 @@ class _TaskScreenState extends State<TaskScreen> {
   }
   void filterTasks() {
     if (filteredTaskList.isNotEmpty) {
-      print('Filtered tasks already populated');
+      if (kDebugMode) {
+        print('Filtered tasks already populated');
+      }
       return;
     }
 
@@ -65,9 +68,9 @@ class _TaskScreenState extends State<TaskScreen> {
       setState(() {
         filteredTaskList = newFilteredTaskList;
       });
-
-      // Optionally, log the number of filtered tasks
-      print('Filtered tasks: ${filteredTaskList.length}');
+      if (kDebugMode) {
+        print('Filtered tasks: ${filteredTaskList.length}');
+      }
     }
   }
 
@@ -83,8 +86,6 @@ class _TaskScreenState extends State<TaskScreen> {
     int totalToDoTasks = toDoTasks.length;
     int totalInProgressTasks = inProgressTask.length;
     int totalCompletedTasks = completedTask.length;
-
-// Initialize variables for assignees and tags
     int totalToDoAssignees = 0;
     int totalInProgressAssignees = 0;
     int totalCompletedAssignees = 0;
@@ -220,7 +221,7 @@ class _TaskScreenState extends State<TaskScreen> {
                           child: Column(
                             children: [
                               //To Do Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(toDoTasks: toDoTasks,projectData: widget.projectData,)));
                                 },
@@ -365,7 +366,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                 ),
                               ),
                               //In Progress Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(inProgressTasks: inProgressTask,projectData: widget.projectData,)));
                                 },
@@ -524,7 +525,7 @@ class _TaskScreenState extends State<TaskScreen> {
                               ),
                               const SizedBox(height: 10),
                               // Completed Code
-                              GestureDetector(
+                              InkWell(
                                 onTap: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>TaskDetailScreen(completedTask: completedTask,projectData: widget.projectData,)));
                                 },

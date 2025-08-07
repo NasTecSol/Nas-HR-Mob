@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/create_event_screen.dart';
-import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../request_controller/event_model.dart';
 import '../widgets/colors.dart';
@@ -22,30 +22,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   int _selectedOptionIndex = 0;
   SingletonClass singletonClass = SingletonClass();
 
-  final List<MeetingModel> meetings = [
-    MeetingModel("Scrum Meeting", "10:00 AM", "B201-With Danial + 5 People"),
-    MeetingModel(
-        "Design Nas-HR Meeting", "12:00 PM", "C105-With Ammar + 5 People"),
-    MeetingModel("N-Collect Development Meeting", "1:00 PM",
-        "CT200-With Annas + 5 People"),
-  ];
-  final List<TaskModel> tasks = [
-    TaskModel("New Design For Nas Hr Mobile", "Pending", "July 6 12:00",
-        "Nas-Hr Project"),
-    TaskModel("Color change on Nas Hr Web", "Completed", "July 7 11:00",
-        "Nas-Hr Project"),
-    TaskModel(
-        "N-Sabak Design Remap", "InProgress", "July 8 01:00", "Nas-Hr Project"),
-  ];
-
-  final List<EventModels> events = [
-    EventModels("Upcoming Birthdays", "Suleman Azeem Khan #082", "July 6 12:00",
-        "Nas-Hr Project"),
-    EventModels("Company Outing", "Visit to NasTecSol Company", "July 7 11:00",
-        "Danial Rana & 6 others"),
-    EventModels("Holiday", "Eid-Ul-Fitr Holiday", "July 8 01:00", "Happy Eid!"),
-  ];
-
   String _getDayOfWeek(DateTime date) {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
   }
@@ -53,7 +29,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedDate = DateTime.now();
   int? _selectedDateIndex;
 
-  // Sample list of dates
   final List<DateTime> _dates = List.generate(30, (index) {
     return DateTime.now().add(Duration(days: index));
   });
@@ -91,7 +66,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         size: 30,
                       ),
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const CreateEventScreen()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateEventScreen(selectedIndex: _selectedOptionIndex,)));
                       },
                     ),
                   ),
@@ -120,7 +95,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 80, // Adjust as needed
+              height: 80,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: _dates.length,
@@ -131,12 +106,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     onTap: () {
                       setState(() {
                         _selectedDateIndex = index;
-                        _selectedDate = date; // Store selected date
+                        _selectedDate = date;
                       });
-                      fetchEvents();
                     },
                     child: Container(
-                      width: 55, // Adjust the width as needed
+                      width: 55,
                       margin: const EdgeInsets.symmetric(horizontal: 5),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -172,7 +146,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 20),
             if (_selectedOptionIndex == 0) ...[
               FutureBuilder<EventModel?>(
-                future: getEventData(), // Fetch event data
+                future: getEventData(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -194,18 +168,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     );
                   } else if (snapshot.hasData && snapshot.data != null) {
-                    // Filter meetings where category is "General Meeting" or "Work Meeting"
-                    final meetingList = snapshot.data!.data!
-                        .where((event) =>
-                    event.category == "General Meeting" ||
-                        event.category == "Work Meeting")
-                        .toList();
-
+                    final meetingList = snapshot.data!.data!.where((event) =>
+                    event.category == "General Meeting" || event.category == "Work Meeting").toList();
                     if (meetingList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black , fontWeight: FontWeight.w500),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -316,9 +303,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   } else {
                     return Center(
-                      child: Text(
-                       AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -349,16 +354,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     );
                   } else if (snapshot.hasData && snapshot.data != null) {
-                    // Extract event list & filter by category "Task Deadlines"
                     final eventList = snapshot.data!.data!
                         .where((event) => event.category == "Task Deadlines")
                         .toList();
 
                     if (eventList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black,fontWeight: FontWeight.w500),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -515,12 +537,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         .toList();
                     if (eventList.isEmpty) {
                       return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -648,12 +684,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   } else {
                     return Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                          fontSize: 15,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -668,11 +718,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void fetchEvents() {
-    setState(() {}); // Trigger rebuild to update FutureBuilder
-  }
-
-  //API CALL
+  ///API CALL
   Future<EventModel?> getEventData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var client = http.Client();
@@ -680,21 +726,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
     DateTime startDate, endDate;
 
     if (_selectedDateIndex == null) {
-      // Default: Send first & last date of the year
       startDate = DateTime(DateTime.now().year, 1, 1);
       endDate = DateTime(DateTime.now().year, 12, 31, 23, 59, 59, 999);
     } else {
-      // If user selects a date, send the same date as start & end
       startDate = _selectedDate;
       endDate = _selectedDate;
     }
-
-    // Format dates as 'yyyy-MM-dd'
     String startDateString = startDate.toIso8601String().split('T')[0];
     String endDateString = endDate.toIso8601String().split('T')[0];
-
-    print(startDateString);
-    print(endDateString);
+    if (kDebugMode) {
+      print(startDateString);
+      print(endDateString);
+    }
     var uri = Uri.parse(
         '${singletonClass.baseURL}/events/getByEmployee/$employeeId?startDate=$startDateString&endDate=$endDateString');
 
@@ -780,21 +823,4 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return 'images/Vector.png'; // Default image for company or other types
     }
   }
-}
-
-class MeetingModel {
-  String? meetingName;
-  String? time;
-  String? members;
-
-  MeetingModel(this.meetingName, this.time, this.members);
-}
-
-class EventModels {
-  String? eventType;
-  String? eventTile;
-  String? duration;
-  String? remarks;
-
-  EventModels(this.eventType, this.eventTile, this.duration, this.remarks);
 }

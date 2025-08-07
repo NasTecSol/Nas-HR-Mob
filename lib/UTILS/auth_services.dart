@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,19 +12,18 @@ class AuthService {
     return canCheckBiometrics && isBiometricSupported;
   }
 
-  // Method to authenticate with biometrics
+  /// Method to authenticate with biometrics
   Future<bool> authenticateWithBiometrics(BuildContext context) async {
     bool isAuthenticated = false;
     try {
       if (!(await checkBiometricAvailability())) {
-        // Show a message asking the user to set up biometric credentials
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please set up biometrics in your device settings')),
-        );
-        return false; // Skip the authentication attempt if biometrics aren't set up
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please set up biometrics in your device settings')),
+          );
+        });
+        return false;
       }
-
-      // Proceed with authentication
       isAuthenticated = await _localAuth.authenticate(
         localizedReason: 'Please authenticate to access this feature',
         options: const AuthenticationOptions(
@@ -32,7 +32,9 @@ class AuthService {
         ),
       );
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
     return isAuthenticated;
   }

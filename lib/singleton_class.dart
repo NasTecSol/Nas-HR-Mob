@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
@@ -7,13 +8,17 @@ import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
+import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/branches_data_model.dart';
+import 'package:nashr/request_controller/branches_model.dart';
 import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/companies_data_model.dart';
+import 'package:nashr/request_controller/company_assets_details_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
+import 'package:nashr/request_controller/document_notification_model.dart';
 import 'package:nashr/request_controller/employee_details_assets_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
@@ -35,8 +40,9 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
-import 'package:nashr/request_controller/teamClocking_model.dart';
+import 'package:nashr/request_controller/team_clocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
+import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
 
 class SingletonClass {
@@ -54,12 +60,13 @@ class SingletonClass {
 
 
   bool initialized = false;
-  String? baseURL = "https://www.nashrms.com/api";
+  String? baseURL;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
+  List<DocumentNotificationModel> documentNotificationDataList = [];
   List<TenantIdModel> tenantIDDataList = [];
   List<ComplaintsApproverModel> complaintsApproverDataList = [];
   List<PenaltiesApproverModel> penaltiesApproverDataList = [];
@@ -92,10 +99,18 @@ class SingletonClass {
   List<EventModel> eventDataList = [];
   List<PolicyModel> policyModelDataList = [];
   List<UiSettingsModel> uiSettingsModelDataList = [];
+  List<BranchShiftModel> branchShiftsDataList = [];
+  List<TimeTableShiftModel> timeTableShiftsDataList = [];
+  List<BranchesModel> branchesModelDataList = [];
+  List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
   String? fcmToken;
+  String? tenantId;
+  String? companyName;
+  String? branchID;
+  String? branchName;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -292,16 +307,15 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = getJWTModel()?.companyId;
-    print(getJWTModel()?.companyId);
-    print(getJWTModel()?.employeeId);
-    print(getJWTModel()?.empId);
-    print(getJWTModel()?.tenantId);
-    print(getJWTModel()?.organizationId);
-    if (companyId == null) {
-      log("❌ companyId is null!");
+    String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
+        ? selectedCompanyId
+        : getJWTModel()?.companyId;
+
+    if (companyId == null || companyId.isEmpty) {
+      log("❌ No companyId available from selectedCompanyId or JWT!");
       return null;
     }
+
 
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
@@ -338,6 +352,9 @@ class SingletonClass {
     String currentDateString = '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse('$baseURL/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
+    if (kDebugMode) {
+      print(uri);
+    }
     var response = await client.get(uri,headers: getHeaders());
     log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
@@ -351,7 +368,9 @@ class SingletonClass {
 
   //BRANCH DATA
   Future<BranchData?> getBranchData() async {
-    String? branchId = getJWTModel()?.branchId;
+    String? branchId = (branchID != null && branchID!.isNotEmpty)
+        ? branchID
+        : getJWTModel()?.branchId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
     var response = await client.get(uri,headers: getHeaders());
@@ -365,7 +384,6 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
-  //Multiple branches data
   Future<BranchesDataModel?> getBranchesData() async {
     String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
         ? selectedCompanyId
@@ -416,8 +434,10 @@ class SingletonClass {
       final formattedTime = DateFormat('h:mm a').format(localTime);
       return formattedTime;
     } catch (e) {
-      print("Error formatting time: $e");
-      return 'N/A';
+      if (kDebugMode) {
+        print("Error formatting time: $e");
+      }
+      return '--:--';
     }
   }
   //ATTENDANCE API CALL
@@ -437,9 +457,11 @@ class SingletonClass {
 
     var response = await client.get(uri,headers: getHeaders());
     log("attendance of user${response.body}");
-    print(employeeId);
-    print(firstDateString);
-    print(currentDateString);
+    if (kDebugMode) {
+      print(employeeId);
+      print(firstDateString);
+      print(currentDateString);
+    }
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
@@ -467,29 +489,23 @@ class SingletonClass {
         headers: getHeaders(),
         body: jsonData,
       );
-      print("<><><><>${response.body}");
+      if (kDebugMode) {
+        print("<><><><>${response.body}");
+      }
       if (response.statusCode == 200) {
-        print("Sexfull send");
+        if (kDebugMode) {
+          print("Sexfull send");
+        }
       } else {
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (kDebugMode) {
+        print('Failed to send data. Error: $error');
+      }
     }
   }
 
-  Future<TaskModel?> getTasks() async {
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/kanban-task');
-    var response = await client.get(uri,headers: getHeaders());
-    log("Task Data Log ${response.body}");
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var taskData = TaskModel.fromJson(responseBody);
-      taskModelList.addAll([taskData]);
-      return taskData;
-    }
-    return null ; // Print the response body
-  }
+
 
   String formatTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);
@@ -529,7 +545,7 @@ class SingletonClass {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" :tenantIDDataList.first.data!.tenantId.toString()
+      "x-tenant-id" : tenantId.toString()
     };
   }
 }

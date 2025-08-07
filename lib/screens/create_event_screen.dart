@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -14,7 +15,8 @@ import '../request_controller/search_employee_model.dart';
 import 'main_screen.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  final int selectedIndex;
+  const CreateEventScreen({super.key, required this.selectedIndex});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -33,6 +35,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final List<EventSearchedResults?> _selectedEmployees = [];
   String? _selectedCategory;
   List<String> _filteredEventTypes = [];
+  bool isLoading = false;
   final Map<String, List<String>> _eventData = {
     'Work Meeting': [
       'Team Sync',
@@ -79,614 +82,680 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.4),
-                            spreadRadius: 5,
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_outlined,
-                      color: Colors.black,
+        child: Stack(
+          children: [ Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.4),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_outlined,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  AppLocalizations.of(context)!.createAEvent,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
+                  Text( widget.selectedIndex == 0
+                      ? AppLocalizations.of(context)!.createAMeeting
+                      : widget.selectedIndex == 1
+                      ? AppLocalizations.of(context)!.createATask
+                      : AppLocalizations.of(context)!.createAEvent ,
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: NasColors.darkBlue,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.check,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      if (_selectedDate == null) {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: AppLocalizations.of(context)!.selectDate,
-                          autoCloseDuration: const Duration(seconds: 5),
-                          showCancelBtn: false,
-                          showConfirmBtn: false,
-                        );
-                      } else if (_selectedEmployees.isEmpty) {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: "Select members",
-                          autoCloseDuration: const Duration(seconds: 5),
-                          showCancelBtn: false,
-                          showConfirmBtn: false,
-                        );
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.check,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (_selectedDate == null) {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.error,
+                            title: AppLocalizations.of(context)!.selectDate,
+                            autoCloseDuration: const Duration(seconds: 5),
+                            showCancelBtn: false,
+                            showConfirmBtn: false,
+                          );
+                        } else if (_selectedEmployees.isEmpty) {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.error,
+                            title: "Select members",
+                            autoCloseDuration: const Duration(seconds: 5),
+                            showCancelBtn: false,
+                            showConfirmBtn: false,
+                          );
+                        } else {
+                          createEvent();
+                        }
                       } else {
-                        createEvent();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(
+                            content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
                       }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                         SnackBar(
-                          content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-                child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        AppLocalizations.of(context)!.eventName,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return  AppLocalizations.of(context)!.pleaseFillAllFields;
-                          }
-                          return null;
-                        },
-                        controller: _eventName,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          hintText:  AppLocalizations.of(context)!.typeEventNameHere,
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                          counterStyle: GoogleFonts.inter(
-                            fontSize: 12,
+                    },
+                  ),
+                ],
+              ),
+              Expanded(
+                  child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          widget.selectedIndex == 0
+                              ? AppLocalizations.of(context)!.meetingName
+                              : widget.selectedIndex == 1
+                              ? AppLocalizations.of(context)!.taskName
+                              : AppLocalizations.of(context)!.eventName,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                             color: Colors.grey,
                           ),
                         ),
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.of(context)!.eventDescription,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return  AppLocalizations.of(context)!.pleaseFillAllFields;
-                          }
-                          return null;
-                        },
-                        controller: _eventDiscription,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return  AppLocalizations.of(context)!.pleaseFillAllFields;
+                            }
+                            return null;
+                          },
+                          controller: _eventName,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            hintText:  widget.selectedIndex == 0
+                                ? AppLocalizations.of(context)!.typeMeetingNameHere
+                                : widget.selectedIndex == 1
+                                ? AppLocalizations.of(context)!.typeTaskNameHere
+                                : AppLocalizations.of(context)!.typeEventNameHere,
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            counterStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            borderSide: const BorderSide(color: Colors.grey),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
                           ),
-                          hintText:  AppLocalizations.of(context)!.typeEventDescriptionHere,
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 14,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                           widget.selectedIndex == 0
+                             ? AppLocalizations.of(context)!.meetingDescription
+                               : widget.selectedIndex == 1
+                                 ? AppLocalizations.of(context)!.taskDescription
+                                  : AppLocalizations.of(context)!.eventDescription,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                             color: Colors.grey,
                           ),
-                          counterStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.grey,
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return  AppLocalizations.of(context)!.pleaseFillAllFields;
+                            }
+                            return null;
+                          },
+                          controller: _eventDiscription,
+                          cursorColor: Colors.black,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            hintText: widget.selectedIndex == 0
+                                ? AppLocalizations.of(context)!.typeMeetingDescriptionHere
+                                : widget.selectedIndex == 1
+                                ? AppLocalizations.of(context)!.typeTaskDescriptionHere
+                                : AppLocalizations.of(context)!.typeEventDescriptionHere,
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            counterStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
                           ),
                         ),
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      if (_selectedEmployees.isNotEmpty) ...[
-                        SizedBox(
-                          height: 60,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _selectedEmployees.length,
-                            itemBuilder: (context, index) {
-                              var employee = _selectedEmployees[index];
-                              return Stack(
-                                children: [
-                                  // Main container for the employee tile
-                                  Container(
-                                    margin: const EdgeInsets.all(3),
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: NasColors.lightBlue,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.3),
-                                          spreadRadius: 1,
-                                          blurRadius: 5,
-                                          offset: const Offset(0, 0),
-                                        ),
-                                      ],
-                                    ),
-                                    width: 150,
-                                    // Set a fixed width for each employee tile
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          height: 30,
-                                          width: 40,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            image: DecorationImage(
-                                              image:
-                                                  AssetImage("images/DP.png"),
-                                              fit: BoxFit.fill,
+                        const SizedBox(height: 15),
+                        if (_selectedEmployees.isNotEmpty) ...[
+                          SizedBox(
+                            height: 60,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _selectedEmployees.length,
+                              itemBuilder: (context, index) {
+                                var employee = _selectedEmployees[index];
+                                return Stack(
+                                  children: [
+                                    // Main container for the employee tile
+                                    Container(
+                                      margin: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(15)),
+                                        color: NasColors.lightBlue,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey
+                                                .withValues(alpha: 0.3),
+                                            spreadRadius: 1,
+                                            blurRadius: 5,
+                                            offset: const Offset(0, 0),
+                                          ),
+                                        ],
+                                      ),
+                                      width: 150,
+                                      // Set a fixed width for each employee tile
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            height: 30,
+                                            width: 40,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              image: DecorationImage(
+                                                image:
+                                                    AssetImage("images/DP.png"),
+                                                fit: BoxFit.fill,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              employee!.employeeName ??
-                                                  "Unknown",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
+                                          const SizedBox(width: 5),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                employee!.employeeName ??
+                                                    "---",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                                overflow: TextOverflow
+                                                    .ellipsis, // Optional: Handle long text
                                               ),
-                                              overflow: TextOverflow
-                                                  .ellipsis, // Optional: Handle long text
-                                            ),
-                                            Text(
-                                              employee.empId ?? "Unknown",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white,
+                                              Text(
+                                                employee.empId ?? "---",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Small remove button on top-right
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedEmployees.remove(employee);
-                                        });
-                                      },
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.red,
-                                        ),
-                                        padding: const EdgeInsets.all(4.0),
-                                        // Adjust padding for icon size
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: Colors.white,
-                                          size: 16, // Adjust icon size
-                                        ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                      Text(
-                        AppLocalizations.of(context)!.searchEmployee,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Container(
-                            height: 50,
-                            width: MediaQuery.of(context).size.width - 100,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: TextFormField(
-                              cursorColor: Colors.grey,
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText:
-                                    '${AppLocalizations.of(context)!.search}...',
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                getSearchEmployeeData();
-                              });
-                            },
-                            icon: Icon(
-                              Icons.search,
-                              size: 25,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_showSearchResult == true) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _employeeSearchResults.clear();
-                                  });
-                                },
-                                child: Text(
-                                  AppLocalizations.of(context)!.clearAll,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red),
-                                )),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 200, // Adjust as needed
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            itemCount: _employeeSearchResults.length,
-                            itemBuilder: (context, index) {
-                              var employee = _employeeSearchResults[index];
-                              return ListTile(
-                                title: Row(
-                                  children: [
-                                    Container(
-                                      height: 50,
-                                      width: 60,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: AssetImage("images/DP.png"),
-                                          fit: BoxFit.fill,
+                                    // Small remove button on top-right
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedEmployees.remove(employee);
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.red,
+                                          ),
+                                          padding: const EdgeInsets.all(4.0),
+                                          // Adjust padding for icon size
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 16, // Adjust icon size
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          employee.employeeName ?? "Unknown",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: NasColors.darkBlue),
-                                        ),
-                                        Text(
-                                          employee.empId ?? "Unknown",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
                                     ),
                                   ],
-                                ),
-                                trailing: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (_selectedEmployees
-                                          .contains(employee)) {
-                                        _selectedEmployees.remove(employee);
-                                      } else {
-                                        _selectedEmployees.add(employee);
-                                      }
-                                    });
-                                  },
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.green,
-                                    ),
-                                    padding: const EdgeInsets.all(8.0),
-                                    // Space around the icon
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.of(context)!.selectDate,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: () async {
-                              DateTime? date = await showDatePicker(
-                                context: context,
-                                initialDate: _selectedDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
-                                builder: (BuildContext context, Widget? child) {
-                                  return Theme(
-                                    data: ThemeData.light().copyWith(
-                                      colorScheme: ColorScheme.light(
-                                        surface: NasColors.lightBlue,
-                                        primary: Colors.white,
-                                        onPrimary: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                      textButtonTheme: TextButtonThemeData(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (date != null) {
-                                setState(() {
-                                  _selectedDate = date;
-                                });
-                              }
-                            },
-                            child: Text(
-                              _selectedDate == null
-                                  ? AppLocalizations.of(context)!.select
-                                  : DateFormat('yyyy-MM-dd')
-                                      .format(_selectedDate!),
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                                color: Colors.black,
-                              ),
+                                );
+                              },
                             ),
-                          ),
-                          Icon(
-                            Icons.calendar_month_outlined,
-                            size: 30,
-                            color: NasColors.darkBlue,
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.of(context)!.eventCategory,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: DropdownButton<String>(
-                          elevation: 8,
-                          items: _eventCategories.map((category) {
-                            return DropdownMenuItem<String>(
-                              value: category,
-                              child: Text(
-                                category,
-                                style: const TextStyle(color: Colors.black),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCategory = value;
-                              _filteredEventTypes = _eventData[value!]!;
-                              _eventType.clear();
-                            });
-                          },
-                          hint:  Text(
-                            AppLocalizations.of(context)!.selectCategory,
-                            style: const TextStyle(color: Colors.grey),
+                        Text(
+                          AppLocalizations.of(context)!.searchEmployee,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
                           ),
-                          value: _selectedCategory,
-                          isExpanded: true,
-                          iconEnabledColor: Colors.black,
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          borderRadius: BorderRadius.circular(15),
-                          dropdownColor: Colors.white,
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppLocalizations.of(context)!.eventType,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text.isEmpty) {
-                            return _filteredEventTypes;
-                          }
-                          return _filteredEventTypes.where((type) =>
-                              type.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                        },
-                        onSelected: (String selection) {
-                          _eventType.text = selection;
-                        },
-                        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                          _eventType.text = controller.text; // Keep controller in sync
-                          return TextFormField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            onEditingComplete: onEditingComplete,
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Container(
+                              height: 50,
+                              width: MediaQuery.of(context).size.width - 100,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: const BorderSide(color: Colors.grey),
-                              ),
-                              hintText:  AppLocalizations.of(context)!.typeEventTypeOrSelectFromList,
-                              hintStyle: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black,
-                            ),
-                          );
-                        },
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return Align(
-                            alignment: Alignment.topLeft,
-                            child: Material(
-                              color: Colors.white, // 🔹 Custom Background Color
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(12),
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.9, // Adjust width
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  itemCount: options.length,
-                                  itemBuilder: (context, index) {
-                                    final String option = options.elementAt(index);
-                                    return ListTile(
-                                      tileColor: Colors.white, // 🔹 Color of each list item
-                                      hoverColor: Colors.grey, // 🔹 Hover effect
-                                      title: Text(
-                                        option,
-                                        style: GoogleFonts.inter(color: Colors.black), // Text color
-                                      ),
-                                      onTap: () {
-                                        onSelected(option);
-                                      },
-                                    );
-                                  },
+                              child: TextFormField(
+                                cursorColor: Colors.grey,
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      '${AppLocalizations.of(context)!.search}...',
+                                  border: InputBorder.none,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ))
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  getSearchEmployeeData();
+                                });
+                              },
+                              icon: Icon(
+                                Icons.search,
+                                size: 25,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_showSearchResult == true) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _employeeSearchResults.clear();
+                                    });
+                                  },
+                                  child: Text(
+                                    AppLocalizations.of(context)!.clearAll,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red),
+                                  )),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 200, // Adjust as needed
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: _employeeSearchResults.length,
+                              itemBuilder: (context, index) {
+                                var employee = _employeeSearchResults[index];
+                                return ListTile(
+                                  title: Row(
+                                    children: [
+                                      Container(
+                                        height: 50,
+                                        width: 60,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: AssetImage("images/DP.png"),
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            employee.employeeName ?? "---",
+                                            style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: NasColors.darkBlue),
+                                          ),
+                                          Text(
+                                            employee.empId ?? "---",
+                                            style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        if (_selectedEmployees
+                                            .contains(employee)) {
+                                          _selectedEmployees.remove(employee);
+                                        } else {
+                                          _selectedEmployees.add(employee);
+                                        }
+                                      });
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.green,
+                                      ),
+                                      padding: const EdgeInsets.all(8.0),
+                                      // Space around the icon
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 10),
+                        Text(
+                          AppLocalizations.of(context)!.selectDate,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            TextButton(
+                              onPressed: () async {
+                                DateTime? date = await showDatePicker(
+                                  context: context,
+                                  initialDate: _selectedDate ?? DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2101),
+                                  builder: (BuildContext context, Widget? child) {
+                                    return Theme(
+                                      data: ThemeData.light().copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          surface: NasColors.lightBlue,
+                                          primary: Colors.white,
+                                          onPrimary: Colors.black,
+                                          onSurface: Colors.white,
+                                        ),
+                                        textButtonTheme: TextButtonThemeData(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (date != null) {
+                                  setState(() {
+                                    _selectedDate = date;
+                                  });
+                                }
+                              },
+                              child: Text(
+                                _selectedDate == null
+                                    ? AppLocalizations.of(context)!.select
+                                    : DateFormat('yyyy-MM-dd')
+                                        .format(_selectedDate!),
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.calendar_month_outlined,
+                              size: 30,
+                              color: NasColors.darkBlue,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.selectedIndex == 0
+                              ? AppLocalizations.of(context)!.meetingCategory
+                              : widget.selectedIndex == 1
+                              ? AppLocalizations.of(context)!.taskCategory
+                              : AppLocalizations.of(context)!.eventCategory,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<String>(
+                            elevation: 8,
+                            items: _eventCategories.map((category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(
+                                  category,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCategory = value;
+                                _filteredEventTypes = _eventData[value!]!;
+                                _eventType.clear();
+                              });
+                            },
+                            hint:  Text(
+                              AppLocalizations.of(context)!.selectCategory,
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                            value: _selectedCategory,
+                            isExpanded: true,
+                            iconEnabledColor: Colors.black,
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            borderRadius: BorderRadius.circular(15),
+                            dropdownColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.selectedIndex == 0
+                            ? AppLocalizations.of(context)!.meetingType
+                            : widget.selectedIndex == 1
+                            ? AppLocalizations.of(context)!.taskType
+                            : AppLocalizations.of(context)!.eventType,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return _filteredEventTypes;
+                            }
+                            return _filteredEventTypes.where(
+                                  (type) => type.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+                            );
+                          },
+                          onSelected: (String selection) {
+                            _eventType.text = selection;
+                            // Close keyboard on selection
+                            FocusScope.of(context).unfocus();
+                          },
+                          fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                            controller.addListener(() {
+                              // Trigger auto-scroll upward when typing
+                              if (controller.text.isNotEmpty && focusNode.hasFocus) {
+                                // Delay to wait for keyboard and overlay to appear
+                                Future.delayed(const Duration(milliseconds: 100), () {
+                                  Scrollable.ensureVisible(
+                                    focusNode.context!,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                });
+                              }
+                            });
+
+                            return TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onEditingComplete: () {
+                                FocusScope.of(context).unfocus(); // Close keyboard on Done
+                                onEditingComplete();
+                              },
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  borderSide: const BorderSide(color: Colors.grey),
+                                ),
+                                hintText: widget.selectedIndex == 0
+                                    ? AppLocalizations.of(context)!.typeMeetingTypeOrSelectFromList
+                                    : widget.selectedIndex == 1
+                                    ? AppLocalizations.of(context)!.typeTaskTypeOrSelectFromList
+                                    : AppLocalizations.of(context)!.typeEventTypeOrSelectFromList,
+                                hintStyle: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                              textInputAction: TextInputAction.done,
+                            );
+                          },
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                color: Colors.white,
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.9,
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder: (context, index) {
+                                      final String option = options.elementAt(index);
+                                      return ListTile(
+                                        tileColor: Colors.white,
+                                        hoverColor: Colors.grey[200],
+                                        title: Text(
+                                          option,
+                                          style: GoogleFonts.inter(color: Colors.black),
+                                        ),
+                                        onTap: () {
+                                          onSelected(option);
+                                          FocusScope.of(context).unfocus(); // Close keyboard on tap
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 200),
+                      ],
+                    ),
+                  )
+                ],
+              )),
+
+            ],
+          ),
+            if (isLoading)
+              Center(
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Lottie.asset('images/loader.json'),
+                ),
+              )
           ],
         ),
       ),
@@ -747,7 +816,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     String jsonData = jsonEncode(data);
     log("JSON OF EVENT : $jsonData");
-
+    setState(() {
+      isLoading = true;
+    });
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -755,6 +826,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         body: jsonData,
       );
       print("EVENT RESPONSE ${response.body}");
+      setState(() {
+        isLoading = false;
+      });
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
         if (decodedResponse['statusCode'] == 200) {
@@ -792,6 +866,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         );
       }
     } catch (error) {
+      setState(() {
+        isLoading = true;
+      });
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,
@@ -807,17 +884,21 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Future<void> getSearchEmployeeData() async {
     String employeeId = _searchController.text.trim();
     if (employeeId.isEmpty) return;
-
+    setState(() {
+      isLoading = true;
+    });
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
 
-    var response = await client.get(uri);
+    var response = await client.get(uri , headers: singletonClass.getHeaders());
+    setState(() {
+      isLoading = false;
+    });
+    print("employee search ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);
-
-      // Create a SearchedResult instance
       EventSearchedResults result = EventSearchedResults(
         empId: employeeData.data?.first.employeeInfo?.first.empId,
         employeeName: employeeData.data?.first.firstName,

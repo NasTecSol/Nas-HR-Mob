@@ -1,11 +1,9 @@
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
-import 'package:nashr/request_controller/employee_model.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -15,32 +13,32 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/rendering.dart';
+import '../request_controller/company_assets_details_model.dart';
+import '../request_controller/company_model.dart';
 
 
-class AssetsDetailsScreen extends StatefulWidget {
-  final AssetsInfo? assetsInfo;
-
-  const AssetsDetailsScreen({super.key, this.assetsInfo});
+class CompanyAssetsDetailsScreen extends StatefulWidget {
+  final Assets? assetsInfo;
+  const CompanyAssetsDetailsScreen({super.key, this.assetsInfo});
 
   @override
-  State<AssetsDetailsScreen> createState() => _AssetsDetailsScreenState();
+  State<CompanyAssetsDetailsScreen> createState() => _CompanyAssetsDetailsScreenState();
 }
 
-class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
+class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen> {
   SingletonClass singletonClass = SingletonClass();
-  int _selectedOptionIndex = 0;
   final GlobalKey _captureKey = GlobalKey();
-  
+  int _selectedOptionIndex = 0;
+
   @override
   void initState() {
     super.initState();
     getAssetsDetailsData();
     getDocumentNotificationData();
   }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: ListView(
         padding: EdgeInsets.zero,
@@ -96,8 +94,8 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                   ),
                 ),
                 if(_selectedOptionIndex == 0)...[
-                  FutureBuilder<AssetDetailsModel?>(
-                    future: getAssetsDetailsData(),
+                  FutureBuilder<CompanyAssetsDetailsModel?>(
+                    future: getAssetsDetailsData(), // Your API call
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
@@ -113,41 +111,39 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         var assetDetails = snapshot.data!;
                         var objectDetails = assetDetails.data?.first.objectDetails;
 
-                        if (objectDetails == null) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
-                                    ),
+                        return objectDetails == null
+                            ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
                                   ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
-                                    ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          );
-                        }
-
-                        return Padding(
+                          ),
+                        )
+                            : Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: RepaintBoundary(
                             key: _captureKey,
                             child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 15),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
+                                borderRadius: const BorderRadius.all(Radius.circular(15)),
                                 color: NasColors.containerColor,
                                 boxShadow: [
                                   BoxShadow(
@@ -176,7 +172,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                       IconButton(
+                                        IconButton(
                                           onPressed: () => _captureAndShare(),
                                           icon: const Icon(Icons.print , color:  Colors.black, size: 30,),
                                         ),
@@ -195,11 +191,11 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                           color: Colors.white,
                                           fontSize: 14,
                                         ),
-                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                       ))
                                           .toList(),
                                     ),
-
                                     const SizedBox(height: 10),
                                     GestureDetector(
                                       onTap: () {
@@ -209,25 +205,31 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                             return Dialog(
                                               backgroundColor: Colors.transparent,
                                               child: Container(
-                                                width: MediaQuery.of(context).size.width * 0.8,
-                                                height: MediaQuery.of(context).size.height * 0.3,
+                                                width:
+                                                MediaQuery.of(context).size.width * 0.8,
+                                                height:
+                                                MediaQuery.of(context).size.height * 0.3,
                                                 decoration: BoxDecoration(
                                                   color: Colors.black,
                                                   borderRadius: BorderRadius.circular(12.0),
                                                 ),
                                                 child: objectDetails.img != null &&
                                                     objectDetails.img!.isNotEmpty
-                                                    ? (objectDetails.img!.startsWith('http')
+                                                    ? (objectDetails.img!
+                                                    .startsWith('http')
                                                     ? Image.network(
                                                   objectDetails.img!,
                                                   fit: BoxFit.contain,
-                                                  errorBuilder: (context, error, stackTrace) =>
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) =>
                                                   const Icon(Icons.error),
                                                 )
                                                     : Image.memory(
-                                                  base64Decode(objectDetails.img!),
+                                                  base64Decode(
+                                                      objectDetails.img!),
                                                   fit: BoxFit.contain,
-                                                  errorBuilder: (context, error, stackTrace) =>
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) =>
                                                   const Icon(Icons.error),
                                                 ))
                                                     : const Icon(Icons.image_not_supported,
@@ -237,14 +239,16 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                           },
                                         );
                                       },
-                                      child: objectDetails.img != null && objectDetails.img!.isNotEmpty
+                                      child: objectDetails.img != null &&
+                                          objectDetails.img!.isNotEmpty
                                           ? (objectDetails.img!.startsWith('http')
                                           ? Image.network(
                                         objectDetails.img!,
                                         height: 150,
                                         width: 150,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
                                         const Icon(Icons.error),
                                       )
                                           : Image.memory(
@@ -252,22 +256,22 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                         height: 150,
                                         width: 150,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
                                         const Icon(Icons.error),
                                       ))
                                           : const Icon(Icons.image_not_supported,
                                           size: 50, color: Colors.grey),
                                     ),
-
                                     const SizedBox(height: 10),
-
-                                    /// Parameters
                                     if (objectDetails.parameters != null)
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: objectDetails.parameters!.entries.map((entry) {
+                                        children:
+                                        objectDetails.parameters!.entries.map((entry) {
                                           return Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            padding:
+                                            const EdgeInsets.symmetric(vertical: 4.0),
                                             child: Text(
                                               '${entry.key}: ${entry.value}',
                                               style: GoogleFonts.inter(fontSize: 16),
@@ -275,8 +279,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                           );
                                         }).toList(),
                                       ),
-
-                                    /// Child Objects
                                     if (objectDetails.childObjs != null)
                                       ...objectDetails.childObjs!.map((child) {
                                         return Column(
@@ -302,13 +304,26 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         );
                       } else {
                         return Center(
-                          child: Text(
-                            AppLocalizations.of(context)!.noData,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                              fontSize: 15,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -332,7 +347,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
                         final documentNotificationDetails = snapshot.data!;
-                        final assetIds = singletonClass.assetsDetailsModel
+                        final assetIds = singletonClass.companyAssetsDataList
                             .expand((assetDetail) => assetDetail.data ?? [])
                             .map((e) => e.id.toString())
                             .toSet(); // Unique asset IDs
@@ -396,11 +411,8 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                   Text(AppLocalizations.of(context)!.name,
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  SizedBox(
-                                    width:40,
-                                    child: Text(AppLocalizations.of(context)!.expiryDate,
-                                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  ),
+                                  Text(AppLocalizations.of(context)!.expiryDate,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                   Text(AppLocalizations.of(context)!.status,
                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
@@ -459,38 +471,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     );
   }
 
-  Future<void> _captureAndShare() async {
-    try {
-      await Future.delayed(Duration(milliseconds: 100));
-      await WidgetsBinding.instance.endOfFrame;
-
-      final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) {
-        debugPrint("Capture boundary is null");
-        return;
-      }
-
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) {
-        debugPrint("ByteData is null");
-        return;
-      }
-
-      final pngBytes = byteData.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/asset_capture.png').create();
-      await file.writeAsBytes(pngBytes);
-
-      await Share.shareXFiles([XFile(file.path)], text: 'Captured Asset Screenshot');
-    } catch (e) {
-      debugPrint('Error capturing image: $e');
-    }
-  }
-
-
-
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {
@@ -537,16 +517,16 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
 
 
 
-  Future<AssetDetailsModel?> getAssetsDetailsData() async {
-    int? assetId = widget.assetsInfo?.assetId;
+  Future<CompanyAssetsDetailsModel?> getAssetsDetailsData() async {
+    int? assetId = widget.assetsInfo?.randomId;
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     log("ASSETS DETAILS RESPONSE: ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
-      var assetData = AssetDetailsModel.fromJson(responseBody);
-      singletonClass.assetsDetailsModel.add(assetData);
+      var assetData = CompanyAssetsDetailsModel.fromJson(responseBody);
+      singletonClass.companyAssetsDataList.add(assetData);
       return assetData;
     }
     return null;
@@ -566,5 +546,35 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     }
     return null;
   }
-}
 
+  Future<void> _captureAndShare() async {
+    try {
+      await Future.delayed(Duration(milliseconds: 100));
+      await WidgetsBinding.instance.endOfFrame;
+
+      final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        debugPrint("Capture boundary is null");
+        return;
+      }
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        debugPrint("ByteData is null");
+        return;
+      }
+
+      final pngBytes = byteData.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/asset_capture.png').create();
+      await file.writeAsBytes(pngBytes);
+
+      await Share.shareXFiles([XFile(file.path)], text: 'Captured Asset Screenshot');
+    } catch (e) {
+      debugPrint('Error capturing image: $e');
+    }
+  }
+
+  }
