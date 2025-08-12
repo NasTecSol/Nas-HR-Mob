@@ -42,6 +42,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   void _checkForSavedBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
     String? savedUrl = prefs.getString('baseURL');
+    singletonClass.tenantLogo = prefs.getString('organizationLogo');
     setState(() {
       _hasBaseUrl = savedUrl != null && savedUrl.isNotEmpty;
     });
@@ -85,7 +86,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
             Column(
               children: [
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.2,
+                  height: MediaQuery.of(context).size.height * 0.25,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(
@@ -102,57 +103,73 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                     ],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 55),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                    padding: const EdgeInsets.only(left: 20, top: 50 , right: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         if (_hasBaseUrl)
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.arrow_back_ios_new_outlined,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 10),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(
-                              AppLocalizations.of(context)!.currentOrganization,
-                              style: GoogleFonts.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                icon: Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.4),
+                                        spreadRadius: 5,
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_back_ios_new_outlined,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                            ),
-                            Text(
-                              singletonClass.companyName ?? "None",
-                              style: GoogleFonts.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           ],
                         ),
-                      ],
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.currentOrganization,
+                          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: (singletonClass.tenantLogo != null && singletonClass.tenantLogo!.isNotEmpty)
+                                  ? Image.network(
+                                singletonClass.tenantLogo.toString(),
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset('images/site.png');
+                                },
+                              )
+                                  : Image.asset('images/site.png'),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              singletonClass.companyName ?? "None",
+                              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),]))
+                    ],
                     ),
                   ),
                 ),
@@ -246,8 +263,10 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                                     final prefs = await SharedPreferences.getInstance();
                                     await prefs.setString('baseURL', suggestion.tenantId.toString());
                                     await prefs.setString('companyName', suggestion.tenantName.toString());
+                                    await prefs.setString('organizationLogo', suggestion.tenantLogo.toString());
                                     singletonClass.tenantId = prefs.getString('baseURL') ?? '';
                                     singletonClass.companyName = prefs.getString('companyName') ?? '';
+                                    singletonClass.tenantLogo = prefs.getString('organizationLogo') ?? '';
                                     singletonClass.tenantIDDataList.clear();
                                     singletonClass.tenantIDDataList.add(
                                         TenantIdModel(data: suggestion));

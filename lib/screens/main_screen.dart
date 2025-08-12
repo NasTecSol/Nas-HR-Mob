@@ -70,24 +70,28 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadInitialData() async {
     await Future.wait([
-      loadSocket(),
      singletonClass.getCompaniesData(),
      singletonClass.getUISettingsData(),
-    singletonClass.getEmployeeData(),
+     singletonClass.getEmployeeData(),
      singletonClass.getClockingData(),
      singletonClass.getBranchData(),
-    singletonClass.getCompanyData(),
-    singletonClass.getRemoteAttendanceData(),
+     singletonClass.getCompanyData(),
+     singletonClass.getRemoteAttendanceData(),
      singletonClass.getEmployeeAttendanceData(),
-    singletonClass.getNotifications(),
-    singletonClass.getBranchesData(),
+     singletonClass.getNotifications(),
+     singletonClass.getBranchesData(),
+      loadSocket(),
     ]);
   }
 
   Future<void> loadSocket() async {
-    await NotificationService.init();
-    final locale = Localizations.localeOf(context).languageCode;
-    SocketService().initializeSocket('${singletonClass.tenantId}', locale);
+    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    if (hasSocket){
+      await NotificationService.init();
+      final locale = Localizations.localeOf(context).languageCode;
+      SocketService().initializeSocket('${singletonClass.tenantId}', locale);
+    }
   }
 
   @override
@@ -104,9 +108,8 @@ class _MainScreenState extends State<MainScreen> {
                         child:SizedBox(
               child: Lottie.asset(
                   'images/mainLoader.json'
+              ),),
               ),
-                        ), // Show loader while loading
-                      ),
             )
             : _screens[_currentIndex],
         bottomNavigationBar: Padding(
@@ -195,7 +198,7 @@ class _MainScreenState extends State<MainScreen> {
                                   : (index == 0 || index == 2 ? Colors.black : null),
                             ),
                           ),
-                          if (index == 2) // Add badge only for the RequestScreen icon (index 2)
+                          if (index == 2)
                             Positioned(
                               right: 0,
                               top: 0,
@@ -215,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
                                       ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length +
                                       singletonClass.approverDataList.first.data!.data!.where((request) => request.status == 'pending').length
-                                      : 0}', // Request List Notification count
+                                      : 0}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -224,7 +227,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ) : Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null && singletonClass.requestDataList.first.data!.data != null
                                       ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length
-                                      : 0}', // Approver List Notification count
+                                      : 0}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,

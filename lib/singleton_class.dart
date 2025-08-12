@@ -110,6 +110,7 @@ class SingletonClass {
   String? checkOutStatus ;
   String? fcmToken;
   String? tenantId;
+  String? tenantLogo;
   String? companyName;
   String? branchID;
   String? branchName;
@@ -273,7 +274,7 @@ class SingletonClass {
       setEmployeeData([employeeData]);
       return employeeData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
   //Remote Attendance Data
@@ -289,7 +290,7 @@ class SingletonClass {
       remoteAttendanceModelList.addAll([remoteData]);
       return remoteData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
   //NOTIFICATION API CALL

@@ -26,9 +26,6 @@ void main() async {
 
   if (kReleaseMode) {
     SingletonClass().baseURL = "https://www.nashrms.com/api";
-    if (kReleaseMode) {
-      log("Prod Url${SingletonClass().baseURL}");
-    }
   }
 
   if (kProfileMode) {

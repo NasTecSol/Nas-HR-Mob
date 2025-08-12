@@ -990,6 +990,7 @@
   "typeTaskTypeOrSelectFromList": "Type task type or select from the list",
   "next":"Next",
   "allEmployees":"All Employees",
-  "designation":"Designation"
+  "designation":"Designation",
+  "maternityLeave":"Maternity Leave"
 
 }

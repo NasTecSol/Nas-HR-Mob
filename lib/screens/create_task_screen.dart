@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +100,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     ),
                   ),
                   Text(
-                    "Create an issue",
+                    AppLocalizations.of(context)!.createAnIssue,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 22,
@@ -109,7 +110,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   ),
                   const Spacer(),
                   TextButton(
-                    child: Text("Create",
+                    child: Text(AppLocalizations.of(context)!.create,
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -133,7 +134,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           QuickAlert.show(
                             context: context,
                             type: QuickAlertType.error,
-                            title: "Select Assignee and type",
+                            title: AppLocalizations.of(context)!.selectAssignee,
                             autoCloseDuration:
                             const Duration(seconds: 5),
                             showCancelBtn: false,
@@ -144,8 +145,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please fill all fields"),
+                           SnackBar(
+                            content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
                             duration: Duration(seconds: 4),
                           ),
                         );
@@ -165,7 +166,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       children: [
                         const SizedBox(height: 20),
                         Text(
-                          "Subject",
+                          AppLocalizations.of(context)!.subject,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -176,7 +177,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         TextFormField(
                           validator: (value) {
                             if (value!.isEmpty) {
-                              return "Please Enter subject";
+                              return AppLocalizations.of(context)!.typeTaskNameHere;
                             }
                             return null;
                           },
@@ -191,7 +192,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                               borderRadius: BorderRadius.circular(12.0),
                               borderSide: const BorderSide(color: Colors.grey),
                             ),
-                            hintText: "Type subject here!",
+                            hintText: AppLocalizations.of(context)!.typeYourSubject,
                             hintStyle: GoogleFonts.inter(
                               fontSize: 14,
                               color: Colors.grey,
@@ -209,7 +210,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "Description",
+                          AppLocalizations.of(context)!.description,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -220,7 +221,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         TextFormField(
                           validator: (value) {
                             if (value!.isEmpty) {
-                              return "Please Enter your description";
+                              return AppLocalizations.of(context)!.typeYourDescription;
                             }
                             return null;
                           },
@@ -235,7 +236,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                               borderRadius: BorderRadius.circular(12.0),
                               borderSide: const BorderSide(color: Colors.grey),
                             ),
-                            hintText: "Type your description here!",
+                            hintText: AppLocalizations.of(context)!.typeYourDescription,
                             hintStyle: GoogleFonts.inter(
                               fontSize: 14,
                               color: Colors.grey,
@@ -277,27 +278,23 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
-                                _selectedOption =
-                                    value; // Update the selected option with the whole object
+                                _selectedOption = value;
                               });
                             },
-                            hint: const Text(
-                              'Select Assignee', // Hint text when no option is selected
+                            hint:  Text( AppLocalizations.of(context)!.selectAssignee,
                               style: TextStyle(color: Colors.grey),
                             ),
                             value: _selectedOption,
-                            // Display the current selected value
                             isExpanded: true,
                             iconEnabledColor: Colors.black,
-                            // Icon color
                             icon: const Icon(Icons.keyboard_arrow_down_rounded),
                             borderRadius: BorderRadius.circular(15),
-                            dropdownColor: Colors.white, // Background color of the dropdown
+                            dropdownColor: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "Select Type",
+                          AppLocalizations.of(context)!.selectType,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -323,22 +320,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                     value;
                               });
                             },
-                            hint: const Text(
-                              'Select Type',
+                            hint:  Text(
+                              AppLocalizations.of(context)!.selectType,
                               style: TextStyle(color: Colors.grey),
                             ),
                             value: _selectedType,
                             isExpanded: true,
                             iconEnabledColor: Colors.black,
-                            // Icon color
                             icon: const Icon(Icons.keyboard_arrow_down_rounded),
                             borderRadius: BorderRadius.circular(15),
-                            dropdownColor: Colors.white, // Background color of the dropdown
+                            dropdownColor: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "Select Duration",
+                          AppLocalizations.of(context)!.selectDuration,
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -482,25 +478,23 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         GestureDetector(
                           onTap: () async {
                             FilePickerResult? result = await FilePicker.platform.pickFiles(
-                              type: FileType.any, // Ensures only image files are allowed
+                              type: FileType.any,
                             );
 
                             if (result != null && result.files.single.path != null) {
                               PlatformFile file = result.files.single;
-
-                              // Save the file data for sending in the API call
                               setState(() {
                                 selectedFile = file;
                               });
-
-                              print('Selected file: ${file.name}');
-
-                              // Show confirmation dialog before uploading
+                              if (kDebugMode) {
+                                print('Selected file: ${file.name}');
+                              }
                               _showConfirmationDialog(
-                                  file); // Upload the selected file to the API
+                                  file);
                             } else {
-                              // User canceled the file picker
-                              print('File selection canceled.');
+                              if (kDebugMode) {
+                                print('File selection canceled.');
+                              }
                             }
                           },
                           child: Row(
@@ -512,7 +506,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                "Add Attachments",
+                                AppLocalizations.of(context)!.addAttachments,
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,

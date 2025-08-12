@@ -655,23 +655,23 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             alignment: Alignment
                                                                 .topLeft,
                                                             child: Text(
-                                                              request.subType !=
-                                                                      null
-                                                                  ? request
-                                                                      .subType!
-                                                                      .replaceAllMapped(
-                                                                        RegExp(
-                                                                            r'([a-z])([A-Z])'),
-                                                                        (Match match) =>
-                                                                            '${match.group(1)} ${match.group(2)}',
-                                                                      )
-                                                                      .replaceFirst(
-                                                                          request.subType![
-                                                                              0],
-                                                                          request
-                                                                              .subType![0]
-                                                                              .toUpperCase())
-                                                                  : '',
+                                                             _translateRequestSubtype2( request.subType !=
+                                                                 null
+                                                                 ? request
+                                                                 .subType!
+                                                                 .replaceAllMapped(
+                                                               RegExp(
+                                                                   r'([a-z])([A-Z])'),
+                                                                   (Match match) =>
+                                                               '${match.group(1)} ${match.group(2)}',
+                                                             )
+                                                                 .replaceFirst(
+                                                                 request.subType![
+                                                                 0],
+                                                                 request
+                                                                     .subType![0]
+                                                                     .toUpperCase())
+                                                                 : '', context),
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontSize: 15,
@@ -790,7 +790,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   request
                                                                       .requestData!
                                                                       .isNotEmpty
-                                                              ? "Duration: ${request.requestData!.first.duration}"
+                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
                                                               : AppLocalizations
                                                                       .of(context)!
                                                                   .noData,
@@ -1050,13 +1050,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 5),
                                                           Text(
-                                                            "Req",
+                                                            "➡️",
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.w500,
                                                               color: Colors.black,
-                                                              fontSize: 12,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
@@ -1100,7 +1099,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 const SizedBox(height: 5),
                                                                 Text(
-                                                                  request.approvers![i].approverName ?? 'N/A',
+                                                                  request.approvers![i].approverName ?? '---',
                                                                   style: GoogleFonts.inter(
                                                                     fontSize: 12,
                                                                     fontWeight: FontWeight.w500,
@@ -1120,7 +1119,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ]
                                                         else
                                                           Text(
-                                                            'N/A',
+                                                            '---',
                                                             style: GoogleFonts.inter(
                                                               fontSize: 15,
                                                               color: Colors.grey,
@@ -1161,13 +1160,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 5),
                                                           Text(
-                                                            "CEO",
+                                                            allApproved ? "✅" : "⏳",
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.w500,
                                                               color: Colors.black,
-                                                              fontSize: 12,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
@@ -1382,24 +1380,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                             Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .topLeft,
+                                                              alignment: Alignment.topLeft,
                                                               child: Text(
-                                                                request.subType !=
-                                                                        null
-                                                                    ? request
-                                                                        .subType!
-                                                                        .replaceAllMapped(
-                                                                          RegExp(
-                                                                              r'([a-z])([A-Z])'),
-                                                                          (Match match) =>
-                                                                              '${match.group(1)} ${match.group(2)}',
-                                                                        )
-                                                                        .replaceFirst(
-                                                                            request.subType![0],
-                                                                            request.subType![0].toUpperCase())
-                                                                    : '',
+                                                                _translateRequestSubtype2(request.subType != null ? request.subType!.replaceAllMapped(RegExp(r'([a-z])([A-Z])'),
+                                                                      (Match match) => '${match.group(1)} ${match.group(2)}',
+                                                                ).replaceFirst(request.subType![0], request.subType![0].toUpperCase()) : '', context),
                                                                 style:
                                                                     GoogleFonts
                                                                         .inter(
@@ -1569,8 +1554,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'leaveRequest') ...[
+                                                    if (request.requestType == 'leaveRequest') ...[
                                                       const SizedBox(
                                                           height: 10),
                                                       Align(
@@ -1641,8 +1625,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           height: 10),
                                                     ],
                                                     const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'loanRequest') ...[
+                                                    if (request.requestType == 'loanRequest') ...[
                                                       const SizedBox(
                                                           height: 10),
                                                       Align(
@@ -1786,7 +1769,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: NasColors.onTime,
+                                                                    color: NasColors.completed,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1799,13 +1782,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ],
                                                             ),
-                                                            const SizedBox(height: 5),
                                                             Text(
-                                                              "Req",
+                                                              "➡️",
                                                               style: GoogleFonts.inter(
                                                                 fontWeight: FontWeight.w500,
                                                                 color: Colors.black,
-                                                                fontSize: 12,
+                                                                fontSize: 15,
                                                               ),
                                                             ),
                                                           ],
@@ -1849,7 +1831,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   ),
                                                                   const SizedBox(height: 5),
                                                                   Text(
-                                                                    request.approvers![i].approverName ?? 'N/A',
+                                                                    request.approvers![i].approverName ?? '---',
                                                                     style: GoogleFonts.inter(
                                                                       fontSize: 12,
                                                                       fontWeight: FontWeight.w500,
@@ -1869,7 +1851,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ]
                                                           else
                                                             Text(
-                                                              'N/A',
+                                                              '---',
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 15,
                                                                 color: Colors.grey,
@@ -1897,7 +1879,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: allApproved ? NasColors.onTime : NasColors.pending,
+                                                                    color: allApproved ? NasColors.completed : NasColors.pending,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1910,13 +1892,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ],
                                                             ),
-                                                            const SizedBox(height: 5),
                                                             Text(
-                                                              "CEO",
+                                                              allApproved ? "✅" : "⏳",
                                                               style: GoogleFonts.inter(
                                                                 fontWeight: FontWeight.w500,
                                                                 color: Colors.black,
-                                                                fontSize: 12,
+                                                                fontSize: 15,
                                                               ),
                                                             ),
                                                           ],
@@ -2126,20 +2107,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   Alignment
                                                                       .topLeft,
                                                               child: Text(
-                                                                request.subType !=
-                                                                        null
-                                                                    ? request
-                                                                        .subType!
-                                                                        .replaceAllMapped(
-                                                                          RegExp(
-                                                                              r'([a-z])([A-Z])'),
-                                                                          (Match match) =>
-                                                                              '${match.group(1)} ${match.group(2)}',
-                                                                        )
-                                                                        .replaceFirst(
-                                                                            request.subType![0],
-                                                                            request.subType![0].toUpperCase())
-                                                                    : '',
+                                                               _translateRequestSubtype2( request.subType !=
+                                                                   null
+                                                                   ? request
+                                                                   .subType!
+                                                                   .replaceAllMapped(
+                                                                 RegExp(
+                                                                     r'([a-z])([A-Z])'),
+                                                                     (Match match) =>
+                                                                 '${match.group(1)} ${match.group(2)}',
+                                                               )
+                                                                   .replaceFirst(
+                                                                   request.subType![0],
+                                                                   request.subType![0].toUpperCase())
+                                                                   : '', context),
                                                                 style:
                                                                     GoogleFonts
                                                                         .inter(
@@ -3005,7 +2986,7 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateRequest(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
-      case 'leave Request':
+      case 'Leave Request':
         return localizations.leaveRequests;
       case 'Loan Request':
         return localizations.loanRequest;
@@ -3035,7 +3016,7 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateBottomText(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
-      case 'leave Request':
+      case 'Leave Request':
         return localizations.leaveRequestBottom;
       case 'Loan Request':
         return localizations.loanRequestBottom;
@@ -3065,6 +3046,8 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateRequestSubtype(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
+      case 'leave Request':
+        return localizations.leaveRequests;
       case 'Sick Leave':
         return localizations.sickLeave;
       case 'Annual Leave':
@@ -3103,7 +3086,7 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.moon;
       case "Bad Behaviour":
         return localizations.badBehaviour;
-      case "Marraige Leave":
+      case "Marriage Leave":
         return localizations.marriageLeave;
       case "Exam Leave":
         return localizations.examLeave;
@@ -3111,11 +3094,68 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.deathLeave;
       case "Special Document":
         return localizations.specialDocument;
+      case "Maternity Leave":
+        return localizations.maternityLeave;
       default:
         return status!;
     }
   }
-
+  ///Request subtype on get method
+  String _translateRequestSubtype2(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Sick Leave':
+        return localizations.sickLeave;
+      case 'Annual Leave':
+        return localizations.annualLeave;
+      case 'Casual Leave':
+        return localizations.casualLeave;
+      case 'Advancesalaryrequest':
+        return localizations.advanceSalaryRequest;
+      case 'LongTermloanrequest':
+        return localizations.longTermLoanRequest;
+      case "Housingallowance":
+        return localizations.housingAllowance;
+      case "Travelingallowance":
+        return localizations.travellingAllowance;
+      case 'Salaryincrementalallowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salaryslip":
+        return localizations.salarySlip;
+      case "Promotionalletter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advanceexpense":
+        return localizations.advanceExpense;
+      case "Businessexpense":
+        return localizations.businessExpense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Badbehaviour":
+        return localizations.badBehaviour;
+      case "Marraigeleave":
+        return localizations.marriageLeave;
+      case "Exams Leave":
+        return localizations.examLeave;
+      case "Exam Leave":
+        return localizations.examLeave;
+      case "Death Leave":
+        return localizations.deathLeave;
+      case "Specialdocument":
+        return localizations.specialDocument;
+      default:
+        return status!;
+    }
+  }
   //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
