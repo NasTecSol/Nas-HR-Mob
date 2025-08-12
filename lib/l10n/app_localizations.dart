@@ -3481,6 +3481,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Designation'**
   String get designation;
+
+  /// No description provided for @maternityLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Maternity Leave'**
+  String get maternityLeave;
 }
 
 class _AppLocalizationsDelegate

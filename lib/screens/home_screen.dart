@@ -1114,7 +1114,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ?.map<DropdownMenuItem<String>>((company) {
                                             return DropdownMenuItem<String>(
                                               value: company.companyId.toString(),
-                                              child: Text(company.companyName ?? "No Name"),
+                                              child: Text(company.companyName ?? "---"),
                                             );
                                           }).toList()
                                               : [],
@@ -1170,7 +1170,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ?.map<DropdownMenuItem<String>>((branch) {
                                             return DropdownMenuItem<String>(
                                               value: branch.id.toString(),
-                                              child: Text(branch.branchName ?? "No Name"),
+                                              child: Text(branch.branchName ?? "---"),
                                             );
                                           }).toList()
                                               : [],
@@ -1875,7 +1875,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: SingleChildScrollView(
-                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,

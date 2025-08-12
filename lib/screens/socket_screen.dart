@@ -18,7 +18,7 @@ class SocketService {
     if (_socket != null && _socket!.connected) return;
 
     _socket = IO.io(
-      'https://dev.nashrms.com',
+      '${singletonClass.baseURL}',
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .enableAutoConnect()
@@ -47,17 +47,46 @@ class SocketService {
 
   Future<void> _handleBroadcastEvent(dynamic data, String languageCode) async {
     try {
-      final isArabic = languageCode == 'ar';
-      final message = data?['message']?[isArabic ? 'ar' : 'en'] ?? 'New Broadcast Event';
+      if (data == null) return;
 
-      NotificationService.showNotification(
-        title: 'NAS HR',
-        body: message,
-      );
-    } catch (e) {
-      print('❌ Error in _handleBroadcastEvent: $e');
+      final isArabic = languageCode == 'ar';
+      final message = data['message']?[isArabic ? 'ar' : 'en'] ?? 'New Broadcast Event';
+
+      final log = data['data']?['log'];
+      final targetAudience = data['targetAudience'];
+
+      final String? grade = singletonClass.getJWTModel()?.grade;
+      final String? empId = singletonClass.getJWTModel()?.employeeId;
+      final String? branchId = singletonClass.getJWTModel()?.branchId;
+
+      bool shouldNotify = false;
+
+      if (grade == "L4") {
+        final String? logEmpId = log?['employeeId'];
+        if (logEmpId != null && empId != null && logEmpId == empId) {
+          shouldNotify = true;
+        }
+      } else if (["L0", "L1", "L2", "L3"].contains(grade)) {
+        final String? supervisorId = targetAudience?['supervisors']?.toString();
+        final String? targetBranchId = targetAudience?['branchId']?.toString();
+        if (supervisorId != null && targetBranchId != null && empId != null && branchId != null) {
+          if (supervisorId == empId && targetBranchId == branchId) {
+            shouldNotify = true;
+          }
+        }
+      }
+
+      if (shouldNotify) {
+        NotificationService.showNotification(
+          title: 'NAS HR',
+          body: message,
+        );
+      }
+    } catch (e, st) {
+      print('❌ Error in _handleBroadcastEvent: $e\n$st');
     }
   }
+
 
 
   IO.Socket? get socket => _socket;

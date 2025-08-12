@@ -450,7 +450,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             if (kDebugMode) {
                               print('Selected Branch ID: $value');
                             }
-                            extractAllEmployeeIdsForBranch(value);
                             getTeamAttendanceData();
                             loadData();
                             _isTeamChecked = false ;
