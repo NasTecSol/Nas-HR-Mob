@@ -1709,4 +1709,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get designation => 'المسمى الوظيفي';
+
+  @override
+  String get maternityLeave => 'إجازة الأمومة';
 }

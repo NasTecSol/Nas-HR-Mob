@@ -43,8 +43,9 @@ class _TeamScreenState extends State<TeamScreen> {
   }
 
    void teamCheck(){
-    if (singletonClass.branchID!.isNotEmpty || singletonClass.branchID != null){
+    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty  ){
       _isTeamChecked = false;
+      _selectedOptionIndex = 2;
     }
    }
   Future<void> initData() async {
@@ -922,7 +923,7 @@ class _TeamScreenState extends State<TeamScreen> {
       },
       child: SizedBox(
         height: 65,
-        width: 140,
+        width: 160,
         child: Card(
           color:
               _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
@@ -935,9 +936,8 @@ class _TeamScreenState extends State<TeamScreen> {
               width: 0,
             ),
           ),
-          child: Column(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 title,
@@ -950,6 +950,67 @@ class _TeamScreenState extends State<TeamScreen> {
                       : NasColors.darkBlue,
                 ),
               ),
+              SizedBox(width: 10),
+              if(index == 0)
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 18,
+                  minHeight: 18,
+                ),
+                child: Text(
+                  '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if(index == 1)
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${filteredUnderTeams.isNotEmpty && filteredUnderTeams.first.teamData != null ? filteredUnderTeams.first.teamData!.length: 0}', // Request List Notification count
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              if(index == 2)
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
             ],
           ),
         ),

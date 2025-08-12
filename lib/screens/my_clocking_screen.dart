@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/singleton_class.dart';
@@ -26,18 +26,19 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchClockingData(); // Fetch data once during initialization
+    _fetchClockingData();
   }
 
   Future<void> _fetchClockingData() async {
     try {
       getClockingData();
     } catch (e) {
-      // Handle errors if needed
-      print('Error fetching data: $e');
+      if (kDebugMode) {
+        print('Error fetching data: $e');
+      }
     } finally {
       setState(() {
-        isLoading = false; // Stop loading once data is fetched
+        isLoading = false;
       });
     }
   }
@@ -222,121 +223,124 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                           .format(DateTime.parse(clock.createdAt ??
                           DateTime.now().toString()));
 
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 15),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                          const BorderRadius.all(Radius.circular(15)),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.4),
-                              spreadRadius: 2,
-                              blurRadius: 8,
-                              offset: const Offset(
-                                  0, 3), // changes position of shadow
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              height: 120,
-                              width:
-                              20, // Adjusted the width for visibility
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(15),
-                                  bottomLeft: Radius.circular(15),
-                                ),
-                                color: NasColors.darkBlue,
+                      return Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                            borderRadius:
+                            const BorderRadius.all(Radius.circular(15)),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withValues(alpha: 0.4),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(
+                                    0, 3), // changes position of shadow
                               ),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      formattedDate,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 30),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          clock.checkInTime != null
-                                              ? singletonClass.formatCheckInTime(clock.checkInTime!)
-                                              : '--:--',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                          ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 120,
+                                width:
+                                20, // Adjusted the width for visibility
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(15),
+                                    bottomLeft: Radius.circular(15),
+                                  ),
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        formattedDate,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
-                                        const SizedBox(width: 5),
-                                        Container(
-                                          height: 32,
-                                          width: 32,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                            const BorderRadius.all(
-                                                Radius.circular(8)),
-                                            color: NasColors.darkBlue,
+                                      ),
+                                      const SizedBox(height: 30),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            clock.checkInTime != null
+                                                ? singletonClass.formatCheckInTime(clock.checkInTime!)
+                                                : '--:--',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                            ),
                                           ),
-                                          child: Transform(
-                                            transform:
-                                            Matrix4.rotationY(math.pi),
-                                            // Flip horizontally
-                                            alignment: Alignment.center,
+                                          const SizedBox(width: 5),
+                                          Container(
+                                            height: 32,
+                                            width: 32,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                              const BorderRadius.all(
+                                                  Radius.circular(8)),
+                                              color: NasColors.darkBlue,
+                                            ),
+                                            child: Transform(
+                                              transform:
+                                              Matrix4.rotationY(math.pi),
+                                              // Flip horizontally
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.exit_to_app_outlined,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            clock.checkOutTime != null
+                                                ? singletonClass.formatCheckInTime(clock.checkOutTime!)
+                                                : '--:--', // or any default text
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Container(
+                                            height: 32,
+                                            width: 32,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                              const BorderRadius.all(
+                                                  Radius.circular(8)),
+                                              color: NasColors.darkBlue,
+                                            ),
                                             child: const Icon(
                                               Icons.exit_to_app_outlined,
                                               size: 25,
                                               color: Colors.white,
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          clock.checkOutTime != null
-                                              ? singletonClass.formatCheckInTime(clock.checkOutTime!)
-                                              : '--:--', // or any default text
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Container(
-                                          height: 32,
-                                          width: 32,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                            const BorderRadius.all(
-                                                Radius.circular(8)),
-                                            color: NasColors.darkBlue,
-                                          ),
-                                          child: const Icon(
-                                            Icons.exit_to_app_outlined,
-                                            size: 25,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -380,7 +384,9 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
 
     var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$fromDateString&endDate=$toDateString');
     var response = await client.get(uri,headers: singletonClass.getHeaders());
-    print(uri);
+    if (kDebugMode) {
+      print(uri);
+    }
     log("ClockingData my clocking:${response.body}");
     log(fromDateString);
     log(toDateString);
@@ -390,6 +396,6 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
       singletonClass.setClockingData([clockingData]);
       return clockingData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 }

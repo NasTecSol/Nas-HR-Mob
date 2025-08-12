@@ -654,7 +654,9 @@
     "typeTaskTypeOrSelectFromList": "اكتب نوع المهمة أو اختر من القائمة",
     "next": "التالي",
     "allEmployees":"جميع الموظفين",
-    "designation": "المسمى الوظيفي"
+    "designation": "المسمى الوظيفي",
+    "maternityLeave": "إجازة الأمومة"
+
 
 
 }
