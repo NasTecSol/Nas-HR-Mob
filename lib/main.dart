@@ -18,6 +18,8 @@ import 'Controller/language_change_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SingletonClass().init();
+  await NotificationService.init();
+
   if (kDebugMode) {
     print("App is running in Debug mode.");
     SingletonClass().baseURL = "https://dev.nashrms.com/api";

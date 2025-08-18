@@ -2,7 +2,7 @@ class SocketModel {
   final String messageEn;
   final String messageAr;
   final String module;
-  final AttendanceLog data;
+  final AttendanceLog? data;
   final Map<String, dynamic> targetAudience;
   final DateTime timestamp;
 
@@ -17,14 +17,19 @@ class SocketModel {
 
   factory SocketModel.fromJson(Map<String, dynamic> json) {
     return SocketModel(
-      messageEn: json['message']['en'],
-      messageAr: json['message']['ar'],
-      module: json['module'],
-      data: AttendanceLog.fromJson(json['data']['log']),
-      targetAudience: json['targetAudience'],
-      timestamp: DateTime.parse(json['timestamp']),
+      messageEn: json['message'] != null ? json['message']['en'] ?? '' : '',
+      messageAr: json['message'] != null ? json['message']['ar'] ?? '' : '',
+      module: json['module'] ?? '',
+      data: (json['data'] != null && json['data']['log'] != null)
+          ? AttendanceLog.fromJson(json['data']['log'])
+          : null,
+      targetAudience: json['targetAudience'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
+
 }
 class RawBiometric {
   final DateTime timestamp;

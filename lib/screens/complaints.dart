@@ -211,7 +211,9 @@ class _ComplaintsState extends State<Complaints> {
               ],
             ),
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1') ...[
+                singletonClass.getJWTModel()?.grade == 'L1'  ||
+                singletonClass.getJWTModel()?.grade == 'L2' ||
+                singletonClass.getJWTModel()?.grade == 'L3') ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -223,22 +225,8 @@ class _ComplaintsState extends State<Complaints> {
                 ],
               ),
             ],
-            if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                singletonClass.getJWTModel()?.grade == 'L3') ...[
-              Row(
-                children: [
-                  Text(
-                    "Urgent",
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
+            if (singletonClass.getJWTModel()?.grade == 'L4') ...[
               Expanded(
-                // Wrap ListView with Expanded
                   child: FutureBuilder(
                       future: getComplaintsData(),
                       builder: (context, snapshot) {
@@ -256,24 +244,36 @@ class _ComplaintsState extends State<Complaints> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         } else if (snapshot.hasData) {
-                          return _request!.isEmpty
-                              ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.noData,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                                fontSize: 15,
+                          return _request!.isEmpty ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                              : ListView.builder(
+                          ) : ListView.builder(
                             padding: const EdgeInsets.all(5),
                             itemCount: _request!.length,
                             itemBuilder:
                                 (BuildContext context, int index) {
-                              final request = _request![index];
+                              final request = _request!.reversed.toList()[index];
+                              final locale = Localizations.localeOf(context).languageCode;
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 10),
@@ -293,67 +293,122 @@ class _ComplaintsState extends State<Complaints> {
                                     ),
                                   ],
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${request.employeeName}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                        height: 140,
+                                        width:
+                                        20,
+                                        decoration: locale == "ar" ? BoxDecoration(
+                                          borderRadius: const BorderRadius.only(
+                                            topRight: Radius.circular(15),
+                                            bottomRight: Radius.circular(15),
                                           ),
-                                          const Spacer(),
-                                          Container(
-                                            height: 20,
-                                            width: 75,
-                                            decoration: BoxDecoration(
-                                              shape:
-                                              BoxShape.rectangle,
-                                              color:
-                                              _getColorForVerificationStatus("${request.status}"),
-                                              borderRadius:
-                                              BorderRadius
-                                                  .circular(10),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                "${request.status}",
-                                                textAlign:
-                                                TextAlign.center,
-                                                style:
-                                                GoogleFonts.inter(
-                                                  fontWeight:
-                                                  FontWeight.bold,
-                                                  color: Colors.white,
-                                                  fontSize: 10,
+                                          color: Colors.red,
+                                        ) : BoxDecoration(
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(15),
+                                            bottomLeft: Radius.circular(15),
+                                          ),
+                                          color: Colors.red
+                                        )
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  singletonClass.formatDate2(request.createdAt!),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
                                                 ),
-                                              ),
+                                                Spacer(),
+                                                if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                    DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                    DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                  Align(
+                                                    alignment: Alignment.topRight,
+                                                    child: Container(
+                                                      width: 10,
+                                                      height: 10,
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.blue,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                ],
+                                              ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${request.reason}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 12,
-                                              fontWeight:
-                                              FontWeight.bold,
-                                              color: Colors.black,
+                                            SizedBox(height: 5),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "${request.employeeName}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                                Container(
+                                                  height: 20,
+                                                  width: 75,
+                                                  decoration: BoxDecoration(
+                                                    shape:
+                                                    BoxShape.rectangle,
+                                                    color:
+                                                    _getColorForVerificationStatus("${request.status}"),
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(10),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      "${request.status}",
+                                                      textAlign:
+                                                      TextAlign.center,
+                                                      style:
+                                                      GoogleFonts.inter(
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 20),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "${request.reason}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
 
                               );
@@ -421,7 +476,9 @@ class _ComplaintsState extends State<Complaints> {
               SizedBox(height: 20),
             ],
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1') ...[
+                singletonClass.getJWTModel()?.grade == 'L1'  ||
+                singletonClass.getJWTModel()?.grade == 'L2'  ||
+                singletonClass.getJWTModel()?.grade == 'L3') ...[
               if (_selectedOptionIndex == 0)...[
                 Expanded(
                     child: FutureBuilder(
@@ -441,8 +498,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else if (snapshot.hasData) {
-                            return _request!.isEmpty
-                                ? Center(
+                            return  _request!.isEmpty ? Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Column(
@@ -465,13 +521,13 @@ class _ComplaintsState extends State<Complaints> {
                                   ],
                                 ),
                               ),
-                            )
-                                : ListView.builder(
+                            ) : ListView.builder(
                               padding: const EdgeInsets.all(5),
                               itemCount: _request!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = _request![index];
+                                final request = _request!.reversed.toList()[index];
+                                final locale = Localizations.localeOf(context).languageCode;
                                 return Container(
                                       margin: const EdgeInsets.symmetric(
                                           vertical: 10),
@@ -491,67 +547,137 @@ class _ComplaintsState extends State<Complaints> {
                                           ),
                                         ],
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "${request.employeeName}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                              height: 140,
+                                              width:
+                                              20, // Adjusted the width for visibility
+                                              decoration: locale == "ar" ? BoxDecoration(
+                                                borderRadius: const BorderRadius.only(
+                                                  topRight: Radius.circular(15),
+                                                  bottomRight: Radius.circular(15),
                                                 ),
-                                                const Spacer(),
-                                                Container(
-                                                  height: 20,
-                                                  width: 75,
-                                                  decoration: BoxDecoration(
-                                                    shape:
-                                                    BoxShape.rectangle,
-                                                    color:
-                                                    _getColorForVerificationStatus("${request.status}"),
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(10),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      "${request.status}",
-                                                      textAlign:
-                                                      TextAlign.center,
-                                                      style:
-                                                      GoogleFonts.inter(
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                        color: Colors.white,
-                                                        fontSize: 10,
+                                                color: Colors.red,
+                                              ) : BoxDecoration(
+                                                borderRadius: const BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  bottomLeft: Radius.circular(15),
+                                                ),
+                                                color: Colors.red,
+                                              )
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
                                                       ),
-                                                    ),
+                                                      Spacer(),
+                                                      if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                          DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                          DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Container(
+                                                            width: 10,
+                                                            height: 10,
+                                                            decoration: const BoxDecoration(
+                                                              color: Colors.blue,
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 5),
+                                                      ],
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 20),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "${request.reason}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                    color: Colors.black,
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        "${request.employeeName}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                      Container(
+                                                        height: 20,
+                                                        width: 75,
+                                                        decoration: BoxDecoration(
+                                                          shape:
+                                                          BoxShape.rectangle,
+                                                          color:
+                                                          _getColorForVerificationStatus("${request.status}"),
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(10),
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            "${request.status}",
+                                                            textAlign:
+                                                            TextAlign.center,
+                                                            style:
+                                                            GoogleFonts.inter(
+                                                              fontWeight:
+                                                              FontWeight.bold,
+                                                              color: Colors.white,
+                                                              fontSize: 10,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
+                                                  const SizedBox(height: 20),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        "${request.subType}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        "${request.reason}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                ],
+                                              ),
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     );
                               },
@@ -636,8 +762,7 @@ class _ComplaintsState extends State<Complaints> {
                               child: Text('Error: ${snapshot.error}'),
                             );
                           } else {
-                            return _approver!.isEmpty
-                                ? Center(
+                            return _approver!.isEmpty ? Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Column(
@@ -660,13 +785,13 @@ class _ComplaintsState extends State<Complaints> {
                                   ],
                                 ),
                               ),
-                            )
-                                : ListView.builder(
+                            ) : ListView.builder(
                               padding: const EdgeInsets.all(5),
                               itemCount: _approver!.length,
                               itemBuilder:
                                   (BuildContext context, int index) {
-                                final request = _approver![index];
+                                final request = _approver!.reversed.toList()[index];
+                                final locale = Localizations.localeOf(context).languageCode;
                                 return Container(
                                       margin: const EdgeInsets.symmetric(vertical: 10),
                                       decoration: BoxDecoration(
@@ -683,381 +808,436 @@ class _ComplaintsState extends State<Complaints> {
                                           ),
                                         ],
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "${request.employeeName}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                              height: 225,
+                                              width:
+                                              20, // Adjusted the width for visibility
+                                              decoration: locale == "ar" ? BoxDecoration(
+                                                borderRadius: const BorderRadius.only(
+                                                  topRight: Radius.circular(15),
+                                                  bottomRight: Radius.circular(15),
                                                 ),
-                                                const Spacer(),
-                                                Container(
-                                                  height: 20,
-                                                  width: 75,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.rectangle,
-                                                    color: _getColorForVerificationStatus("${request.status}"),
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      "${request.status}",
-                                                      textAlign: TextAlign.center,
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.white,
-                                                        fontSize: 10,
+                                                color: Colors.red,
+                                              ) : BoxDecoration(
+                                                borderRadius: const BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  bottomLeft: Radius.circular(15),
+                                                ),
+                                                color: Colors.red,
+                                              )
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
                                                       ),
-                                                    ),
+                                                      Spacer(),
+                                                      if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                          DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                          DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Container(
+                                                            width: 10,
+                                                            height: 10,
+                                                            decoration: const BoxDecoration(
+                                                              color: Colors.blue,
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 5),
+                                                      ],
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  height: 40,
-                                                  width: 200,
-                                                  child: Text(
-                                                    "${request.requestData!.first.title}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black,
-                                                    ),
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        "${request.employeeName}",
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                      Container(
+                                                        height: 20,
+                                                        width: 75,
+                                                        decoration: BoxDecoration(
+                                                          shape: BoxShape.rectangle,
+                                                          color: _getColorForVerificationStatus("${request.status}"),
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            "${request.status}",
+                                                            textAlign: TextAlign.center,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.white,
+                                                              fontSize: 10,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  height: 40,
-                                                  width: 200,
-                                                  child: Text(
-                                                    "${request.reason}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black,
-                                                    ),
+                                                  const SizedBox(height: 10),
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        height: 40,
+                                                        width: 200,
+                                                        child: Text(
+                                                          "${request.requestData!.first.title}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                                const Spacer(),
-                                                Text(
-                                                  singletonClass.formatDate2(request.createdAt!),
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
+                                                  const SizedBox(height: 10),
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        height: 40,
+                                                        width: 200,
+                                                        child: Text(
+                                                          "${request.reason}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                      Text(
+                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            if (request.status ==
-                                                'pending') ...[
-                                              Padding(
-                                                padding:
-                                                const EdgeInsets
-                                                    .all(10.0),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .center,
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        showDialog(
-                                                            context:
-                                                            context,
-                                                            builder:
-                                                                (BuildContext
-                                                            context) {
-                                                              return AlertDialog(
-                                                                backgroundColor:
-                                                                Colors.white,
-                                                                title:
-                                                                Text(
-                                                                  AppLocalizations.of(context)!
-                                                                      .comment,
-                                                                  style:
-                                                                  GoogleFonts.poppins(
-                                                                    fontWeight:
-                                                                    FontWeight.w500,
-                                                                    color:
-                                                                    NasColors.darkBlue,
-                                                                    fontSize:
-                                                                    23,
-                                                                  ),
-                                                                ),
-                                                                content:
-                                                                SingleChildScrollView(
-                                                                  // 🔧 Fixes overflow
-                                                                  child:
-                                                                  Container(
-                                                                    decoration:
-                                                                    BoxDecoration(
-                                                                      color: Colors.white,
-                                                                      borderRadius: BorderRadius.circular(10.0),
-                                                                      border: Border.all(
-                                                                        color: NasColors.darkBlue,
-                                                                        width: 1.0,
+                                                  if (request.status ==
+                                                      'pending') ...[
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets
+                                                          .all(10.0),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                        children: [
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                  context:
+                                                                  context,
+                                                                  builder:
+                                                                      (BuildContext
+                                                                  context) {
+                                                                    return AlertDialog(
+                                                                      backgroundColor:
+                                                                      Colors.white,
+                                                                      title:
+                                                                      Text(
+                                                                        AppLocalizations.of(context)!
+                                                                            .comment,
+                                                                        style:
+                                                                        GoogleFonts.poppins(
+                                                                          fontWeight:
+                                                                          FontWeight.w500,
+                                                                          color:
+                                                                          NasColors.darkBlue,
+                                                                          fontSize:
+                                                                          23,
+                                                                        ),
                                                                       ),
-                                                                      boxShadow: const [
-                                                                        BoxShadow(
-                                                                          color: Colors.white,
-                                                                          blurRadius: 15,
-                                                                          offset: Offset(0.10, 10.0),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                    child:
-                                                                    TextField(
-                                                                      textAlign: TextAlign.center,
-                                                                      controller: _comment,
-                                                                      minLines: 1,
-                                                                      maxLines: null,
-                                                                      decoration: InputDecoration(
-                                                                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                                                        focusedBorder: OutlineInputBorder(
-                                                                          borderSide: BorderSide(color: NasColors.darkBlue),
-                                                                        ),
-                                                                        enabledBorder: OutlineInputBorder(
-                                                                          borderSide: BorderSide(color: NasColors.darkBlue),
-                                                                        ),
-                                                                      ),
-                                                                      style: const TextStyle(
-                                                                        color: Colors.black,
-                                                                        fontWeight: FontWeight.w500,
-                                                                        fontSize: 12,
-                                                                      ),
-                                                                      autofocus: false,
-                                                                      textInputAction: TextInputAction.done,
-                                                                      cursorColor: Colors.black,
-                                                                      onTapOutside: (event) {
-                                                                        FocusManager.instance.primaryFocus?.unfocus();
-                                                                      },
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                actions: [
-                                                                  Row(
-                                                                    mainAxisAlignment:
-                                                                    MainAxisAlignment.center,
-                                                                    children: [
-                                                                      Container(
-                                                                        decoration: BoxDecoration(
-                                                                          color: Colors.red,
-                                                                          borderRadius: BorderRadius.circular(10),
-                                                                        ),
-                                                                        child: TextButton(
-                                                                          onPressed: () {
-                                                                            Navigator.pop(context);
-                                                                            patchRequestData(request.id, 'rejected', request.toJson());
-                                                                            _comment.clear();
-                                                                          },
-                                                                          child: Text(
-                                                                            AppLocalizations.of(context)!.rejected,
-                                                                            style: GoogleFonts.poppins(
+                                                                      content:
+                                                                      SingleChildScrollView(
+                                                                        // 🔧 Fixes overflow
+                                                                        child:
+                                                                        Container(
+                                                                          decoration:
+                                                                          BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                            border: Border.all(
+                                                                              color: NasColors.darkBlue,
+                                                                              width: 1.0,
+                                                                            ),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(
+                                                                                color: Colors.white,
+                                                                                blurRadius: 15,
+                                                                                offset: Offset(0.10, 10.0),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          child:
+                                                                          TextField(
+                                                                            textAlign: TextAlign.center,
+                                                                            controller: _comment,
+                                                                            minLines: 1,
+                                                                            maxLines: null,
+                                                                            decoration: InputDecoration(
+                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                              focusedBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                              enabledBorder: OutlineInputBorder(
+                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                              ),
+                                                                            ),
+                                                                            style: const TextStyle(
+                                                                              color: Colors.black,
                                                                               fontWeight: FontWeight.w500,
-                                                                              color: Colors.white,
                                                                               fontSize: 12,
                                                                             ),
+                                                                            autofocus: false,
+                                                                            textInputAction: TextInputAction.done,
+                                                                            cursorColor: Colors.black,
+                                                                            onTapOutside: (event) {
+                                                                              FocusManager.instance.primaryFocus?.unfocus();
+                                                                            },
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                    ],
+                                                                      actions: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                          MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: Colors.red,
+                                                                                borderRadius: BorderRadius.circular(10),
+                                                                              ),
+                                                                              child: TextButton(
+                                                                                onPressed: () {
+                                                                                  Navigator.pop(context);
+                                                                                  patchRequestData(request.id, 'rejected', request.toJson());
+                                                                                  _comment.clear();
+                                                                                },
+                                                                                child: Text(
+                                                                                  AppLocalizations.of(context)!.rejected,
+                                                                                  style: GoogleFonts.poppins(
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 12,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              width: 120,
+                                                              height: 40,
+                                                              decoration:
+                                                              const BoxDecoration(
+                                                                borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        10)),
+                                                                gradient:
+                                                                LinearGradient(
+                                                                  colors: [
+                                                                    Color(
+                                                                        0xFF4D4D4D),
+                                                                    Color(
+                                                                        0xFFE64545),
+                                                                    Color(
+                                                                        0xFFCF3E3E),
+                                                                    Color(
+                                                                        0xFFC13A3A),
+                                                                    Color(
+                                                                        0xFF992E2E),
+                                                                  ],
+                                                                  begin: Alignment
+                                                                      .topRight,
+                                                                  end: Alignment
+                                                                      .bottomLeft,
+                                                                ),
+                                                              ),
+                                                              child: Align(
+                                                                alignment:
+                                                                Alignment
+                                                                    .center,
+                                                                child: Text(
+                                                                  AppLocalizations.of(
+                                                                      context)!
+                                                                      .cancel,
+                                                                  style: GoogleFonts
+                                                                      .inter(
+                                                                    fontSize:
+                                                                    15,
+                                                                    color: Colors
+                                                                        .white,
                                                                   ),
-                                                                ],
-                                                              );
-                                                            });
-                                                      },
-                                                      child: Container(
-                                                        width: 120,
-                                                        height: 40,
-                                                        decoration:
-                                                        const BoxDecoration(
-                                                          borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  10)),
-                                                          gradient:
-                                                          LinearGradient(
-                                                            colors: [
-                                                              Color(
-                                                                  0xFF4D4D4D),
-                                                              Color(
-                                                                  0xFFE64545),
-                                                              Color(
-                                                                  0xFFCF3E3E),
-                                                              Color(
-                                                                  0xFFC13A3A),
-                                                              Color(
-                                                                  0xFF992E2E),
-                                                            ],
-                                                            begin: Alignment
-                                                                .topRight,
-                                                            end: Alignment
-                                                                .bottomLeft,
-                                                          ),
-                                                        ),
-                                                        child: Align(
-                                                          alignment:
-                                                          Alignment
-                                                              .center,
-                                                          child: Text(
-                                                            AppLocalizations.of(
-                                                                context)!
-                                                                .cancel,
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize:
-                                                              15,
-                                                              color: Colors
-                                                                  .white,
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                        width: 5),
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (BuildContext context) {
-                                                            return AlertDialog(
-                                                              backgroundColor: Colors.white,
-                                                              title: Text(
-                                                                AppLocalizations.of(context)!.comment,
-                                                                style: GoogleFonts.poppins(
-                                                                  fontWeight: FontWeight.w500,
-                                                                  color: NasColors.darkBlue,
-                                                                  fontSize: 23,
-                                                                ),
-                                                              ),
-                                                              content: SingleChildScrollView(
-                                                                child: Container(
-                                                                  decoration: BoxDecoration(
-                                                                    color: Colors.white,
-                                                                    borderRadius: BorderRadius.circular(10.0),
-                                                                    border: Border.all(
-                                                                      color: NasColors.darkBlue,
-                                                                      width: 1.0,
-                                                                    ),
-                                                                    boxShadow: const [
-                                                                      BoxShadow(
-                                                                        color: Colors.white,
-                                                                        blurRadius: 15,
-                                                                        offset: Offset(0.10, 10.0),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                  child: TextField(
-                                                                    textAlign: TextAlign.center,
-                                                                    controller: _comment,
-                                                                    minLines: 1,
-                                                                    maxLines: null,
-                                                                    decoration: InputDecoration(
-                                                                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                                                      focusedBorder: OutlineInputBorder(
-                                                                        borderSide: BorderSide(color: NasColors.darkBlue),
-                                                                      ),
-                                                                      enabledBorder: OutlineInputBorder(
-                                                                        borderSide: BorderSide(color: NasColors.darkBlue),
+                                                          const SizedBox(
+                                                              width: 5),
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              showDialog(
+                                                                context: context,
+                                                                builder: (BuildContext context) {
+                                                                  return AlertDialog(
+                                                                    backgroundColor: Colors.white,
+                                                                    title: Text(
+                                                                      AppLocalizations.of(context)!.comment,
+                                                                      style: GoogleFonts.poppins(
+                                                                        fontWeight: FontWeight.w500,
+                                                                        color: NasColors.darkBlue,
+                                                                        fontSize: 23,
                                                                       ),
                                                                     ),
-                                                                    style: const TextStyle(
-                                                                      color: Colors.black,
-                                                                      fontWeight: FontWeight.w500,
-                                                                      fontSize: 12,
-                                                                    ),
-                                                                    autofocus: false,
-                                                                    textInputAction: TextInputAction.done,
-                                                                    cursorColor: Colors.black,
-                                                                    onTapOutside: (event) {
-                                                                      FocusManager.instance.primaryFocus?.unfocus();
-                                                                    },
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              actions: [
-                                                                Row(
-                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                  children: [
-                                                                    Container(
-                                                                      decoration: BoxDecoration(
-                                                                        color: NasColors.completed,
-                                                                        borderRadius: BorderRadius.circular(10),
-                                                                      ),
-                                                                      child: TextButton(
-                                                                        onPressed: () {
-                                                                          Navigator.pop(context);
-                                                                          patchRequestData(request.id, 'approved', request.toJson());
-                                                                          _comment.clear();
-                                                                        },
-                                                                        child: Text(
-                                                                          AppLocalizations.of(context)!.accept,
-                                                                          style: GoogleFonts.poppins(
+                                                                    content: SingleChildScrollView(
+                                                                      child: Container(
+                                                                        decoration: BoxDecoration(
+                                                                          color: Colors.white,
+                                                                          borderRadius: BorderRadius.circular(10.0),
+                                                                          border: Border.all(
+                                                                            color: NasColors.darkBlue,
+                                                                            width: 1.0,
+                                                                          ),
+                                                                          boxShadow: const [
+                                                                            BoxShadow(
+                                                                              color: Colors.white,
+                                                                              blurRadius: 15,
+                                                                              offset: Offset(0.10, 10.0),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                        child: TextField(
+                                                                          textAlign: TextAlign.center,
+                                                                          controller: _comment,
+                                                                          minLines: 1,
+                                                                          maxLines: null,
+                                                                          decoration: InputDecoration(
+                                                                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                            focusedBorder: OutlineInputBorder(
+                                                                              borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                            ),
+                                                                            enabledBorder: OutlineInputBorder(
+                                                                              borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                            ),
+                                                                          ),
+                                                                          style: const TextStyle(
+                                                                            color: Colors.black,
                                                                             fontWeight: FontWeight.w500,
-                                                                            color: Colors.white,
                                                                             fontSize: 12,
                                                                           ),
+                                                                          autofocus: false,
+                                                                          textInputAction: TextInputAction.done,
+                                                                          cursorColor: Colors.black,
+                                                                          onTapOutside: (event) {
+                                                                            FocusManager.instance.primaryFocus?.unfocus();
+                                                                          },
                                                                         ),
                                                                       ),
                                                                     ),
+                                                                    actions: [
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            decoration: BoxDecoration(
+                                                                              color: NasColors.completed,
+                                                                              borderRadius: BorderRadius.circular(10),
+                                                                            ),
+                                                                            child: TextButton(
+                                                                              onPressed: () {
+                                                                                Navigator.pop(context);
+                                                                                patchRequestData(request.id, 'approved', request.toJson());
+                                                                                _comment.clear();
+                                                                              },
+                                                                              child: Text(
+                                                                                AppLocalizations.of(context)!.accept,
+                                                                                style: GoogleFonts.poppins(
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                  color: Colors.white,
+                                                                                  fontSize: 12,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                                },
+                                                              );
+                                                            },
+                                                            child: Container(
+                                                              width: 120,
+                                                              height: 40,
+                                                              decoration: const BoxDecoration(
+                                                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                                gradient: LinearGradient(
+                                                                  colors: [
+                                                                    Color(0xFF47734D),
+                                                                    Color(0xFF5B9362),
+                                                                    Color(0xFF66A56E),
+                                                                    Color(0xFF76BE7F),
+                                                                    Color(0xFF86D991),
                                                                   ],
+                                                                  begin: Alignment.topRight,
+                                                                  end: Alignment.bottomLeft,
                                                                 ),
-                                                              ],
-                                                            );
-                                                          },
-                                                        );
-                                                      },
-                                                      child: Container(
-                                                        width: 120,
-                                                        height: 40,
-                                                        decoration: const BoxDecoration(
-                                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                          gradient: LinearGradient(
-                                                            colors: [
-                                                              Color(0xFF47734D),
-                                                              Color(0xFF5B9362),
-                                                              Color(0xFF66A56E),
-                                                              Color(0xFF76BE7F),
-                                                              Color(0xFF86D991),
-                                                            ],
-                                                            begin: Alignment.topRight,
-                                                            end: Alignment.bottomLeft,
-                                                          ),
-                                                        ),
-                                                        child: Align(
-                                                          alignment: Alignment.center,
-                                                          child: Text(
-                                                            AppLocalizations.of(context)!.acceptRequest,
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 15,
-                                                              color: Colors.white,
+                                                              ),
+                                                              child: Align(
+                                                                alignment: Alignment.center,
+                                                                child: Text(
+                                                                  AppLocalizations.of(context)!.acceptRequest,
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    color: Colors.white,
+                                                                  ),
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
+                                                        ],
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
+                                                  ]
+                                                ],
                                               ),
-                                            ]
-                                          ],
-                                        ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                 );
                               },

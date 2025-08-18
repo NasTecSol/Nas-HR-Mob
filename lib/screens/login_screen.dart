@@ -413,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen> {
         headers: singletonClass.getHeaders(),
       );
       print(singletonClass.getHeaders());
-      print(response.body);
+      print(response.statusCode);
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
         LoginModel loginModel = LoginModel.fromJson(decodedResponse);
@@ -442,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(builder: (context) => const MainScreen()),
             );
           }
-        } else if (loginResponse.statusCode == 400) {
+        } else if (loginResponse.statusCode == 400 || loginResponse.statusCode == 500) {
           setState(() {
             isLoading = false;
           });
@@ -455,6 +455,18 @@ class _LoginScreenState extends State<LoginScreen> {
             type: QuickAlertType.error,
           );
         } else {
+          setState(() {
+            isLoading = false;
+          });
+          await QuickAlert.show(
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+            context: context,
+            title: AppLocalizations.of(context)!.internalServerError,
+            text: AppLocalizations.of(context)!.tryAgain,
+            type: QuickAlertType.error,
+          );
           print('Error: ${loginResponse.statusCode}');
         }
       } else if (response.statusCode == 405 || response.statusCode == 502) {
@@ -471,6 +483,18 @@ class _LoginScreenState extends State<LoginScreen> {
           type: QuickAlertType.error,
         );
       } else {
+        setState(() {
+          isLoading = false;
+        });
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
+          text: AppLocalizations.of(context)!.tryAgain,
+          type: QuickAlertType.error,
+        );
         print('Error: ${response.statusCode}');
       }
     } catch (e) {
