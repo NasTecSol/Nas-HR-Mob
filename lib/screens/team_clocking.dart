@@ -59,7 +59,14 @@ class _TeamClockingState extends State<TeamClocking> {
     }
   }
 
-
+ void _extractTeams(){
+   reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+   log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+   List<BranchData> branchDataList = singletonClass.branchDataList;
+   var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+   filteredUnderTeams = filteredData['underTeams']!;
+   log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+}
   void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
     List<String> allEmployeeIds = [];
 
@@ -410,6 +417,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                 singletonClass.branchName = null;
                                 singletonClass.getBranchData();
                                 selectedBranchIds.clear();
+                                _extractTeams();
                                 loadData();
                               });
                             } : null ),
@@ -595,7 +603,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                 Row(
                                   children: [
                                     Text( team.checkInTime != null ?
-                                      singletonClass.formatCheckInTime(team.checkInTime!) : '--:--',
+                                      singletonClass.formatCheckInTime(team.checkInTime! , context) : '--:--',
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -615,7 +623,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     ),
                                     const Spacer(),
                                     Text(
-                                      "${lateDuration.inMinutes} Mins",
+                                      "${lateDuration.inMinutes ~/ 60}h ${lateDuration.inMinutes % 60}m",
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -636,7 +644,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     SizedBox(
                                       width: 70,
                                       child: Text( team.checkOutTime != null ?
-                                        singletonClass.formatCheckInTime(team.checkOutTime!) : '--:--',
+                                        singletonClass.formatCheckInTime(team.checkOutTime! ,context) : '--:--',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -652,7 +660,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     const Spacer(),
                                     SizedBox(
                                       child: Text(
-                                        "${earlyDuration.inMinutes} Mins",
+                                        "${earlyDuration.inMinutes ~/ 60}h ${earlyDuration.inMinutes % 60}m",
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,

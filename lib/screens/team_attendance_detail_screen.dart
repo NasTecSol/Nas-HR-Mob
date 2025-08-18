@@ -252,7 +252,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               SizedBox(width: 20),
                               Text(
                                 singletonClass.formatCheckInTime(
-                                    widget.attendanceData!.clockInTime),
+                                    widget.attendanceData!.clockInTime , context),
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -303,7 +303,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               SizedBox(width: 20),
                               Text(
                                 singletonClass.formatCheckInTime(
-                                    widget.attendanceData!.clockOutTime),
+                                    widget.attendanceData!.clockOutTime , context),
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,

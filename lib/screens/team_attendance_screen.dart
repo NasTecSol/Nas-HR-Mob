@@ -61,7 +61,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   }
 
   void _teamCheck(){
-    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
+    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty && _isChecked == false){
       _isTeamChecked = false ;
       extractAllEmployeeIdsForBranch(singletonClass.branchID);
     }
@@ -184,31 +184,32 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     Set<String> employeeIds = {};
 
     final grade = singletonClass.getJWTModel()?.grade;
-    if(_isChecked == false || _isTeamChecked == true){
-      if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3") {
-        if (selectedBranchIds.isNotEmpty) {
-          employeeIds = selectedBranchIds;
-        } else if (singletonClass.branchID == null || singletonClass.branchID!.isEmpty) {
-          for (var team in filteredUnderTeams) {
-            log("👥 Checking team: ${team.teamId}");
-            if (team.teamData != null) {
-              for (var member in team.teamData!) {
-                if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-                  employeeIds.add(member.employeeId!);
-                  log(" - Found Employee ID: ${member.employeeId}");
-                } else {
-                  log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
-                }
+
+    if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3"){
+      if(_isChecked == false && _isTeamChecked == true &&  singletonClass.branchID == null){
+        for (var team in filteredUnderTeams) {
+          log("👥 Checking team: ${team.teamId}");
+          if (team.teamData != null) {
+            for (var member in team.teamData!) {
+              if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+                employeeIds.add(member.employeeId!);
+                log(" - Found Employee ID: ${member.employeeId}");
+              } else {
+                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
               }
-            } else {
-              log(" - ⚠️ teamData is null for team: ${team.teamId}");
             }
+          } else {
+            log(" - ⚠️ teamData is null for team: ${team.teamId}");
           }
         }
+      } else if (_isChecked == false && _isTeamChecked == false && singletonClass.branchID!.isNotEmpty && singletonClass.branchID != null){
+        if (selectedBranchIds.isNotEmpty) {
+          employeeIds = selectedBranchIds;
+        }
       } else {
-      String? userID = singletonClass.getJWTModel()?.employeeId;
-      employeeIds.add(userID!);
-     }
+        String? userID = singletonClass.getJWTModel()?.employeeId;
+        employeeIds.add(userID!);
+      }
     } else {
       String? userID = singletonClass.getJWTModel()?.employeeId;
       employeeIds.add(userID!);
@@ -444,13 +445,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         ),
                         onSelected: (value) {
                           setState(() {
+                            singletonClass.teamAttendanceDataList.clear();
+                            extractAllEmployeeIdsForBranch(value);
                             singletonClass.branchID = value;
                             final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
                             singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
                             if (kDebugMode) {
                               print('Selected Branch ID: $value');
                             }
-                            getTeamAttendanceData();
                             loadData();
                             _isTeamChecked = false ;
                             _isChecked = false ;
@@ -520,6 +522,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             activeColor: NasColors.onTime,
                             onChanged:(singletonClass.branchID != null) ? (bool? value){
                               setState(() {
+                                singletonClass.teamAttendanceDataList.clear();
                                 _isChecked = false;
                                 _isTeamChecked = value ?? false;
                                 selectedBranchIds.clear();
@@ -551,14 +554,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             setState(() {
                               _isChecked = value ?? false;
                               if (_isChecked == false) {
+                                singletonClass.teamAttendanceDataList.clear();
                                 _isTeamChecked = true;
                                 _setDefaultDates();
                                 selectedBranchIds.clear();
+                                singletonClass.branchID = null;
+                                singletonClass.branchName = null;
                                 _initDates(start: _startDate!, end: _endDate!);
                                 loadData();
                               } else {
+                                singletonClass.teamAttendanceDataList.clear();
                                 _setDefaultDates();
                                 selectedBranchIds.clear();
+                                singletonClass.branchID = null;
+                                singletonClass.branchName = null;
                                 _initDates(start: _startDate!, end: _endDate!);
                                 loadData();
                               }
@@ -695,8 +704,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                           }
                           String date = formatDate(attendance.updatedAt!);
-                          int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
-                          int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
+                          int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
+                          int? earlyCheckOut = int.tryParse(attendance.lateMinutes.toString());
                           String breakTime = formatMinutes(attendance.breakTime);
                           return GestureDetector(
                             onTap: () {
@@ -901,7 +910,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                            SizedBox(height: 5),
                                            Text(
                                              singletonClass.formatCheckInTime(
-                                                 attendance.clockInTime),
+                                                 attendance.clockInTime , context),
                                              style: GoogleFonts.inter(
                                                fontSize: 13,
                                                fontWeight: FontWeight.bold,
@@ -924,7 +933,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             SizedBox(height: 5),
                                             Text(
                                               singletonClass.formatCheckInTime(
-                                                  attendance.clockOutTime),
+                                                  attendance.clockOutTime , context),
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
@@ -946,7 +955,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             ),
                                             SizedBox(height: 5),
                                             Text(
-                                              "$lateMinutes ${AppLocalizations.of(context)!.minutes}",
+                                              "${lateMinutes! ~/ 60}h ${lateMinutes % 60}m",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
@@ -968,7 +977,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             ),
                                             SizedBox(height: 5),
                                             Text(
-                                              "$earlyCheckOut ${AppLocalizations.of(context)!.minutes}",
+                                              "${earlyCheckOut! ~/ 60}h ${earlyCheckOut % 60}m",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
@@ -1108,6 +1117,22 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       return '---';
     }
   }
+
+  String minutesToHoursMinutes(int? totalMinutes) {
+    if (totalMinutes == null || totalMinutes <= 0) return '---';
+
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
+
+    if (hours > 0 && minutes > 0) {
+      return '${hours.toString().padLeft(2, '0')}h ${minutes.toString().padLeft(2, '0')}m';
+    } else if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}h';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}m';
+    }
+  }
+
 
   Widget buildOptionsCard(int index, String title) {
     Color getTextColor() {

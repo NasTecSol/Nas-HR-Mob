@@ -15,12 +15,15 @@ import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../request_controller/team_model.dart';
+
 class EmployeeProfileScreen extends StatefulWidget {
   final TeamData? teamData;
+  final Employees? employees;
   final bool isTeamMate;
 
   const EmployeeProfileScreen(
-      {super.key, this.teamData, required this.isTeamMate});
+      {super.key, this.teamData,this.employees ,required this.isTeamMate});
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -1137,7 +1140,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                                   .formatCheckInTime(
                                                                       attendance
                                                                               .clockInTime ??
-                                                                          ""),
+                                                                          "" , context),
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontSize: 13,
@@ -1180,7 +1183,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                                   .formatCheckInTime(
                                                                       attendance
                                                                               .clockOutTime ??
-                                                                          ""),
+                                                                          "" , context),
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontSize: 13,

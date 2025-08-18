@@ -68,6 +68,7 @@ class Data1 {
   int? totalHoursWorked;
   String? location;
   String? status;
+  dynamic secondaryStatus;
   List<dynamic>? breaksTaken;
   int? breakTime;
   int? lateMinutes;
@@ -81,7 +82,7 @@ class Data1 {
   String? updatedAt;
   int? v;
 
-  Data1({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+  Data1({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.secondaryStatus ,this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 
   Data1.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -96,6 +97,7 @@ class Data1 {
     totalHoursWorked = json["totalHoursWorked"];
     location = json["location"];
     status = json["status"];
+    secondaryStatus = json["secondaryStatus"];
     breaksTaken = json["breaksTaken"] ?? [];
     breakTime = json["breakTime"];
     lateMinutes = json["lateMinutes"];
@@ -126,6 +128,7 @@ class Data1 {
     _data["totalHoursWorked"] = totalHoursWorked;
     _data["location"] = location;
     _data["status"] = status;
+    _data["secondaryStatus"] = secondaryStatus;
     if(breaksTaken != null) {
       _data["breaksTaken"] = breaksTaken;
     }

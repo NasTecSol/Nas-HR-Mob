@@ -975,8 +975,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
 
   String formatOnlyTime(String timeStr) {
     try {
-      final time = DateTime.parse("1970-01-01T$timeStr"); // use dummy date
-      return DateFormat.jm().format(time); // e.g., "8:00 AM"
+      final time = DateTime.parse("1970-01-01T$timeStr");
+      return DateFormat.jm().format(time);
     } catch (e) {
       return '--:--';
     }

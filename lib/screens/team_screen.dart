@@ -6,7 +6,6 @@ import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
-
 import '../request_controller/branch_model.dart';
 
 class TeamScreen extends StatefulWidget {
@@ -54,6 +53,7 @@ class _TeamScreenState extends State<TeamScreen> {
     });
 
     await singletonClass.getBranchData();
+    await singletonClass.getTeamBranchData();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
 
     final branchDataList = singletonClass.branchDataList;
@@ -76,42 +76,43 @@ class _TeamScreenState extends State<TeamScreen> {
       print('Branch Data List length: ${branchDataList.length}');
       print('Reporting Manager ID: $reportingManagerId');
     }
-    if (_isTeamChecked == false && singletonClass.branchID != null){
-      for (BranchData branchData in branchDataList) {
-        for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
-          for (var department in departmentDetails.departments ?? []) {
-            List<TeamData> allEmployees = [];
-            for (var supervisor in department.supervisors ?? []) {
-              allEmployees.add(TeamData(
-                empId: supervisor.empId,
-                employeeId: supervisor.employeeId,
-                userName: supervisor.userName,
-                designation: supervisor.designation,
-                grade: supervisor.grade,
-              ));
-            }
+    if (_isTeamChecked == false && singletonClass.branchID != null) {
+      List<TeamData> allEmployees = [];
 
-            // Add team members
-            for (var team in department.teams ?? []) {
-              for (var member in team.teamData ?? []) {
-                allEmployees.add(member);
-              }
-            }
+      final teamBranchData = singletonClass.teamBranchDataList.isNotEmpty
+          ? singletonClass.teamBranchDataList.first.data
+          : null;
 
-            if (allEmployees.isNotEmpty) {
-              ownTeams.add(Teams(
-                teamId: 'Department_${department.departmentId}',
-                teamData: allEmployees,
-              ));
-            }
-          }
+      if (teamBranchData != null) {
+        for (var emp in teamBranchData.employees ?? []) {
+          allEmployees.add(TeamData(
+            empId: emp.employeeInfo?.isNotEmpty == true
+                ? emp.employeeInfo!.first.empId ?? ''
+                : '',
+            employeeId: emp.id ?? '',
+            userName: emp.userName ?? '',
+            designation: emp.employeeInfo?.isNotEmpty == true
+                ? emp.employeeInfo!.first.designation ?? ''
+                : '',
+            grade: emp.employeeInfo?.isNotEmpty == true
+                ? emp.employeeInfo!.first.grade ?? ''
+                : '',
+          ));
         }
       }
+
+      if (allEmployees.isNotEmpty) {
+        ownTeams.add(Teams(
+          teamId: 'All_Employees',
+          teamData: allEmployees,
+        ));
+      }
+
       return {
         'ownTeams': ownTeams,
         'underTeams': [],
       };
-    }else{
+    } else{
       for (BranchData branchData in branchDataList) {
         for (var departmentDetails
         in branchData.data?.branch?.departmentDetails ?? []) {
@@ -121,7 +122,6 @@ class _TeamScreenState extends State<TeamScreen> {
             if (["L0", "L1", "L2", "L3"].contains(userGrade)) {
               bool isUserSupervisorInDepartment =
               supervisors.any((s) => s.empId == reportingManagerId);
-
               if (isUserSupervisorInDepartment) {
                 if (kDebugMode) {
                   print('✅ User is a supervisor in this department');
@@ -141,11 +141,17 @@ class _TeamScreenState extends State<TeamScreen> {
                     }).toList(),
                   ),
                 );
-                for (var team in teams) {
-                  if (kDebugMode) {
-                    print('➡️ Adding team to underTeams: ${team.teamId}');
+                for (var supervisor in department.supervisors ?? []) {
+                  if (supervisor.empId == reportingManagerId) {
+                    for (var team in teams) {
+                      if (supervisor.teamId == team.teamId) {
+                        if (kDebugMode) {
+                          print('Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                        }
+                        underTeams.add(team);
+                      }
+                    }
                   }
-                  underTeams.add(team);
                 }
               }
             } else if (userGrade == "L4") {
@@ -284,18 +290,20 @@ class _TeamScreenState extends State<TeamScreen> {
                       onSelected: (value) async {
                         setState(() {
                           setState(() => isLoading = true);
+                          filteredTeams.clear();
+                          singletonClass.teamBranchDataList.clear();
                           singletonClass.branchID = value;
                           final branch = singletonClass
                               .branchesDataList.first.data
                               ?.firstWhere(
                                   (branch) => branch.branchCompanyId == value);
-                          singletonClass.branchName =
-                              branch?.branchName ?? "Unknown Branch";
+                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
                           if (kDebugMode) {
                             print('Selected Branch ID: $value');
                           }
                           _isTeamChecked = false;
                           _selectedOptionIndex = 2;
+                          singletonClass.getBranchData();
                         });
                         await initData();
                       },
@@ -458,12 +466,15 @@ class _TeamScreenState extends State<TeamScreen> {
                                                     color: NasColors.darkBlue,
                                                   ),
                                                 ),
-                                                Text(
-                                                  "${team.designation}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.grey,
+                                                SizedBox(
+                                                  width:270,
+                                                  child: Text(
+                                                    "${team.designation}",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
                                                   ),
                                                 ),
                                               ],
@@ -596,17 +607,20 @@ class _TeamScreenState extends State<TeamScreen> {
                                                       color: NasColors.darkBlue,
                                                     ),
                                                   ),
-                                                  Text(
-                                                    "${team.designation}",
-                                                    maxLines: 2,
-                                                    softWrap: true,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.grey,
+                                                  SizedBox(
+                                                    width:270,
+                                                    child: Text(
+                                                      "${team.designation}",
+                                                      maxLines: 2,
+                                                      softWrap: true,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.grey,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
@@ -726,12 +740,15 @@ class _TeamScreenState extends State<TeamScreen> {
                                               color: NasColors.darkBlue,
                                             ),
                                           ),
-                                          Text(
-                                            "${team.designation}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey,
+                                          SizedBox(
+                                            width: 270,
+                                            child: Text(
+                                              "${team.designation}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -857,12 +874,15 @@ class _TeamScreenState extends State<TeamScreen> {
                                                   color: NasColors.darkBlue,
                                                 ),
                                               ),
-                                              Text(
-                                                "${team.designation}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
+                                              SizedBox(
+                                                width:270,
+                                                child: Text(
+                                                  "${team.designation}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.grey,
+                                                  ),
                                                 ),
                                               ),
                                             ],

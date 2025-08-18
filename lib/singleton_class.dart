@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
@@ -43,6 +44,7 @@ import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/team_clocking_model.dart';
 import 'package:nashr/request_controller/team_attendance_model.dart';
+import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
 
@@ -97,6 +99,7 @@ class SingletonClass {
   List<ClockingData> clockingDataList = [];
   List<TeamClockingModel> teamClockingDataList = [];
   List<BranchData> branchDataList = [];
+  List<TeamModel> teamBranchDataList = [];
   List<EventModel> eventDataList = [];
   List<PolicyModel> policyModelDataList = [];
   List<UiSettingsModel> uiSettingsModelDataList = [];
@@ -216,7 +219,6 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/organization/$organizationId');
     var response = await client.get(uri , headers: getHeaders());
-    log("organization Companies Data ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var companiesData = CompaniesDataModel.fromJson(responseBody);
@@ -236,7 +238,6 @@ class SingletonClass {
         uri,
         headers: getHeaders()
     );
-    log("UI SETTINGS DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var uiSettingsData = UiSettingsModel.fromJson(responseBody);
@@ -267,7 +268,6 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/$employeeId');
     var response = await client.get(uri,headers: getHeaders());
-    log("EMPLOYEE DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeData.fromJson(responseBody);
@@ -283,7 +283,6 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/getEMPRemoteLocation/$employeeId');
     var response = await client.get(uri,headers: getHeaders());
-    log("Remote Attendance Data : ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var remoteData = RemoteAttendanceModel.fromJson(responseBody);
@@ -299,7 +298,6 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/notification-data/getNotificationData/$employeeId');
     var response = await client.get(uri,headers: getHeaders());
-    log(response.body);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var notificationData = NotificationModel.fromJson(responseBody);
@@ -359,7 +357,6 @@ class SingletonClass {
       print(uri);
     }
     var response = await client.get(uri,headers: getHeaders());
-    log("ClockingData singleton:${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var clockingData = ClockingData.fromJson(responseBody);
@@ -377,15 +374,31 @@ class SingletonClass {
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
     var response = await client.get(uri,headers: getHeaders());
-    log("Branch Data List ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var branch = BranchData.fromJson(responseBody);
       setBranchData([branch]);
       return branch;
     }
-    return null ; // Print the response body
+    return null ;
   }
+
+  Future<TeamModel?> getTeamBranchData() async {
+    String? branchId = (branchID != null && branchID!.isNotEmpty)
+        ? branchID
+        : getJWTModel()?.branchId;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/branches/branchEmplyeesInfo/$branchId');
+    var response = await client.get(uri,headers: getHeaders());
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var branch = TeamModel.fromJson(responseBody);
+      teamBranchDataList.add(branch);
+      return branch;
+    }
+    return null ;
+  }
+
 
   Future<BranchesDataModel?> getBranchesData() async {
     String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
@@ -423,19 +436,18 @@ class SingletonClass {
   }
 
 
-  //formated date method
-  String formatDate(DateTime date) {
-    final formattedDate = DateFormat('yyyy-MM-dd').format(date); // Format: YYYY-MM-DD
-    final dayOfWeek = DateFormat('EEEE').format(date); // Day of the week (e.g., Monday)
-    return '$dayOfWeek $formattedDate'; // Combine date and day of the week
-  }
-
-  String formatCheckInTime(String dateTimeString) {
+  ///formated date method
+  String formatCheckInTime(String dateTimeString , context) {
     try {
       DateTime localTime = DateTime.parse(dateTimeString).toLocal();
-
-      final formattedTime = DateFormat('h:mm a').format(localTime);
-      return formattedTime;
+      final locale = Localizations.localeOf(context).languageCode;
+      if (locale == 'ar') {
+        final arabicFormatter = DateFormat('h:mm a', 'ar');
+        return arabicFormatter.format(localTime);
+      } else {
+        final formattedTime = DateFormat('h:mm a').format(localTime);
+        return formattedTime;
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error formatting time: $e");
@@ -443,7 +455,7 @@ class SingletonClass {
       return '--:--';
     }
   }
-  //ATTENDANCE API CALL
+  ///ATTENDANCE API CALL
   Future<AttendanceData?> getEmployeeAttendanceData({
     int limit = 31,
     int page = 0,
@@ -459,7 +471,6 @@ class SingletonClass {
         '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri,headers: getHeaders());
-    log("attendance of user${response.body}");
     if (kDebugMode) {
       print(employeeId);
       print(firstDateString);
@@ -483,7 +494,7 @@ class SingletonClass {
       "pushNotificationId": "$fcmToken",
     };
 
-    // Convert data to JSON string
+    /// Convert data to JSON string
     String jsonData = jsonEncode(data);
     log("///$jsonData");
     try {
@@ -497,7 +508,7 @@ class SingletonClass {
       }
       if (response.statusCode == 200) {
         if (kDebugMode) {
-          print("Sexfull send");
+          print("send");
         }
       } else {
       }
@@ -528,9 +539,9 @@ class SingletonClass {
   }
 
   String formatMinutes(int totalMinutes) {
-    int hours = totalMinutes ~/ 60;  // Get hours
-    int minutes = totalMinutes % 60; // Get remaining minutes
-    return "$hours h $minutes min";  // Return formatted string
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
+    return "$hours h $minutes min";
   }
 
   bool isToday(String? datetimeString) {
@@ -539,9 +550,18 @@ class SingletonClass {
     return datetimeString.startsWith(today);
   }
 
+  String formatWithDateTime(String? dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty) return '--';
 
-  //Header for api call
-
+    try {
+      DateTime parsed = DateTime.parse(dateTimeString).toLocal();
+      return DateFormat('dd MMM yyyy, h:mm a').format(parsed);
+      // Example output: "24 Jul 2025, 1:21 PM"
+    } catch (e) {
+      return '--';
+    }
+  }
+  ///Header for api call
   Map<String, String> getHeaders() {
     return {
       "Content-Type": "application/json",
