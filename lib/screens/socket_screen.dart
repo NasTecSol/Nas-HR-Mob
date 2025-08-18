@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/singleton_class.dart';
@@ -15,10 +17,14 @@ class SocketService {
   IO.Socket? _socket;
 
   void initializeSocket(String tenantId, String languageCode) {
+    String? socketBaseUrl = singletonClass.baseURL;
+    if (socketBaseUrl!.endsWith('/api')) {
+      socketBaseUrl = socketBaseUrl.substring(0, socketBaseUrl.length - 3);
+    }
     if (_socket != null && _socket!.connected) return;
 
     _socket = IO.io(
-      '${singletonClass.baseURL}',
+      socketBaseUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .enableAutoConnect()
@@ -32,12 +38,15 @@ class SocketService {
     _socket!.onConnect((_) => print('✅ Socket connected'));
     _socket!.onDisconnect((_) => print('❌ Socket disconnected'));
     _socket!.onReconnect((_) => print('🔁 Socket reconnecting'));
+    _socket!.onConnectError((err) => print('❌ Connection error: $err'));
+    _socket!.onError((err) => print('❌ Socket error: $err'));
+
 
     _socket!.on('broadcast-event', (data) {
       final socketData = SocketModel.fromJson(data);
       singletonClass.socketDataList.add(socketData);
 
-      print("📢 Broadcast-event received: $data");
+      log("📢 Broadcast-event received: $data");
 
       _handleBroadcastEvent(data, languageCode);
     });

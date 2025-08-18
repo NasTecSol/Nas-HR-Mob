@@ -217,15 +217,23 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                     itemCount: singletonClass.clockingDataList.first.data!.length,
                     itemBuilder: (BuildContext context, int index) {
                       final clock = singletonClass.clockingDataList.first.data!.reversed.toList()[index];
-
+                      String? formattedDate;
                       // Format date
-                      String formattedDate = DateFormat('MMMM dd, yyyy')
-                          .format(DateTime.parse(clock.createdAt ??
-                          DateTime.now().toString()));
+                      final locale = Localizations.localeOf(context).languageCode;
+                      if (locale == 'ar'){
+                        String formattedDatee = DateFormat('MMMM dd, yyyy' ,'ar')
+                            .format(DateTime.parse(clock.createdAt ??
+                            DateTime.now().toString()));
+                        formattedDate = formattedDatee;
+                      }else{
+                        String formattedDatee = DateFormat('MMMM dd, yyyy')
+                            .format(DateTime.parse(clock.createdAt ??
+                            DateTime.now().toString()));
+                        formattedDate = formattedDatee;
+                      }
 
-                      return Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: Container(
+
+                      return  Container(
                           margin: const EdgeInsets.symmetric(vertical: 15),
                           decoration: BoxDecoration(
                             borderRadius:
@@ -236,8 +244,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 color: Colors.grey.withValues(alpha: 0.4),
                                 spreadRadius: 2,
                                 blurRadius: 8,
-                                offset: const Offset(
-                                    0, 3), // changes position of shadow
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
@@ -248,13 +255,19 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 height: 120,
                                 width:
                                 20, // Adjusted the width for visibility
-                                decoration: BoxDecoration(
+                                decoration: locale == "ar" ? BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(15),
+                                    bottomRight: Radius.circular(15),
+                                  ),
+                                  color: NasColors.darkBlue,
+                                ) : BoxDecoration(
                                   borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(15),
                                     bottomLeft: Radius.circular(15),
                                   ),
                                   color: NasColors.darkBlue,
-                                ),
+                                )
                               ),
                               Expanded(
                                 child: Padding(
@@ -276,7 +289,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                         children: [
                                           Text(
                                             clock.checkInTime != null
-                                                ? singletonClass.formatCheckInTime(clock.checkInTime!)
+                                                ? singletonClass.formatCheckInTime(clock.checkInTime! , context)
                                                 : '--:--',
                                             style: GoogleFonts.inter(
                                               fontSize: 16,
@@ -309,7 +322,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                           const SizedBox(width: 10),
                                           Text(
                                             clock.checkOutTime != null
-                                                ? singletonClass.formatCheckInTime(clock.checkOutTime!)
+                                                ? singletonClass.formatCheckInTime(clock.checkOutTime! , context)
                                                 : '--:--', // or any default text
                                             style: GoogleFonts.inter(
                                               fontSize: 16,
@@ -341,7 +354,6 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                               ),
                             ],
                           ),
-                        ),
                       );
                     },
                   );

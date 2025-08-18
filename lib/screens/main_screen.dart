@@ -5,9 +5,7 @@ import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
 import 'package:nashr/screens/project_screen.dart';
-import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/singleton_class.dart';
-import '../main.dart';
 import '../widgets/colors.dart';
 import 'home_screen.dart';
 
@@ -80,23 +78,11 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getEmployeeAttendanceData(),
      singletonClass.getNotifications(),
      singletonClass.getBranchesData(),
-      loadSocket(),
     ]);
-  }
-
-  Future<void> loadSocket() async {
-    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
-    if (hasSocket){
-      await NotificationService.init();
-      final locale = Localizations.localeOf(context).languageCode;
-      SocketService().initializeSocket('${singletonClass.tenantId}', locale);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return PopScope(
       canPop: false,
       child: Scaffold(

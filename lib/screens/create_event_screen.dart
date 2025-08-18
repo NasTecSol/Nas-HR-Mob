@@ -434,7 +434,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      _employeeSearchResults.clear();
+                                      _showSearchResult = false;
                                     });
                                   },
                                   child: Text(
@@ -490,15 +490,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                       ),
                                     ],
                                   ),
-                                  trailing: GestureDetector(
+                                  trailing:(_selectedEmployees.contains(employee) && _employeeSearchResults.contains(employee)) ? GestureDetector(
                                     onTap: () {
-                                      setState(() {
-                                        if (_selectedEmployees
-                                            .contains(employee)) {
+                                      setState((){
+                                        if (_selectedEmployees.contains(employee)) {
                                           _selectedEmployees.remove(employee);
-                                        } else {
-                                          _selectedEmployees.add(employee);
                                         }
+                                      });
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.red,
+                                      ),
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: const Icon(
+                                        Icons.remove,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ) : GestureDetector(
+                                    onTap: () {
+                                      setState((){
+                                        _selectedEmployees.add(employee);
                                       });
                                     },
                                     child: Container(
@@ -507,13 +521,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                         color: Colors.green,
                                       ),
                                       padding: const EdgeInsets.all(8.0),
-                                      // Space around the icon
                                       child: const Icon(
                                         Icons.add,
                                         color: Colors.white,
                                       ),
                                     ),
-                                  ),
+                                  )
                                 );
                               },
                             ),
@@ -608,13 +621,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 ),
                               );
                             }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedCategory = value;
-                                _filteredEventTypes = _eventData[value!]!;
-                                _eventType.clear();
-                              });
-                            },
+    onChanged: (value) {
+    if (value != null && _eventData.containsKey(value)) {
+    setState(() {
+    _selectedCategory = value;
+    _filteredEventTypes = _eventData[value] ?? []; // fallback to []
+    _eventType.clear();
+    });
+    }
+    },
                             hint:  Text(
                               AppLocalizations.of(context)!.selectCategory,
                               style: const TextStyle(color: Colors.grey),
@@ -739,7 +754,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             );
                           },
                         ),
-                        const SizedBox(height: 200),
+                        const SizedBox(height: 500),
                       ],
                     ),
                   )
@@ -867,7 +882,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       }
     } catch (error) {
       setState(() {
-        isLoading = true;
+        isLoading = false;
       });
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
@@ -882,7 +897,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
 
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim();
+    String employeeId = _searchController.text.trim().toUpperCase();;
     if (employeeId.isEmpty) return;
     setState(() {
       isLoading = true;
@@ -908,11 +923,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
       print(">>>>$result");
       setState(() {
-        // Remove existing entry with the same empId first
-        _employeeSearchResults.removeWhere((e) => e.empId == result.empId);
+        // Only add if not already in the list
+        final exists = _employeeSearchResults.any((e) => e.empId == result.empId);
 
-        // Then add the new result
-        _employeeSearchResults.add(result);
+        if (!exists) {
+          _employeeSearchResults.add(result);
+        }
 
         _showSearchResult = true;
       });
