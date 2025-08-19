@@ -1527,7 +1527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passport => 'Passport';
 
   @override
-  String get employmentContract => 'Employment Contract';
+  String get employmentContract => 'Employee ID Card';
 
   @override
   String get done => 'Done';
@@ -1708,4 +1708,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allEmployees => 'All Employees';
+
+  @override
+  String get designation => 'Designation';
+
+  @override
+  String get maternityLeave => 'Maternity Leave';
 }

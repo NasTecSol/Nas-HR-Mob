@@ -26,106 +26,179 @@ class _TeamClockingState extends State<TeamClocking> {
   late List<Teams> filteredUnderTeams;
   List<TeamClockingData> filteredClockingDataList = [];
   String? selectedEmployeeId;
-
+  bool _isTeamChecked = true;
+  Set<String> selectedBranchIds = {};
+  DateTime? _startDate;
+  DateTime? _endDate;
+  DateTime? _selectedDate;
+  int? _selectedDateIndex;
+  final List<DateTime> _dates = [];
+  TextEditingController searchController = TextEditingController();
+  bool isSearching = false;
   @override
   void initState() {
     super.initState();
+    _teamCheck();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
     List<BranchData> branchDataList = singletonClass.branchDataList;
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
+    log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+
+    _setDefaultDates();
+    _initDates(start: _startDate!, end: _endDate!);
     loadData();
   }
 
-  Future<void> loadData() async {
-    await getTeamClockingAPI();
-    filterClockingData();
-    setState(() {});
+  void _teamCheck(){
+    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
+      _isTeamChecked = false ;
+      extractAllEmployeeIdsForBranch(singletonClass.branchID);
+      loadData();
+    }
   }
 
-  Map<String, List<Teams>> getFilteredTeams(
-      List<BranchData> branchDataList, String reportingManagerId) {
-    List<Teams> underTeams = [];
-    String? userGrade = singletonClass.getJWTModel()?.grade;
-    if (kDebugMode) {
-      print('Branch Data List length: ${branchDataList.length}');
-    }
+ void _extractTeams(){
+   reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+   log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+   List<BranchData> branchDataList = singletonClass.branchDataList;
+   var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+   filteredUnderTeams = filteredData['underTeams']!;
+   log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+}
+  void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
+    List<String> allEmployeeIds = [];
 
-    for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data!.branch!.departmentDetails ?? []) {
-        for (var department in departmentDetails.departments ?? []) {
-          bool isSupervisor = department.supervisors?.any(
-                  (supervisor) => supervisor.empId == reportingManagerId) ??
-              false;
-          if (kDebugMode) {
-            print(
-              'Is Supervisor: $isSupervisor, Reporting Manager ID: $reportingManagerId');
-          }
+    if ((selectedBranchId != null && selectedBranchId.isNotEmpty)){
+      final branches = singletonClass.branchesDataList.first.data;
+      final branchList = branches?.where((branch) => branch.branchCompanyId == selectedBranchId).toList();
 
-          if (userGrade == "L0" || userGrade == "L1" || userGrade == "L2" || userGrade == "L3") {
-            for (var team in department.teams ?? []) {
-              for (var supervisor in department.supervisors ?? []) {
-                if (supervisor.empId == reportingManagerId) {
-                  if (supervisor.teamId == team.teamId) {
-                    if (kDebugMode) {
-                      print(
-                        'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
-                    }
-                    underTeams.add(
-                        team);
+      if (branchList != null && branchList.isNotEmpty) {
+        for (var branch in branchList) {
+          final departments = branch.departmentDetails ?? [];
+
+          for (var department in departments) {
+            final departmentList = department.departments ?? [];
+
+            for (var dept in departmentList) {
+              final teams = dept.teams ?? [];
+
+              for (var team in teams) {
+                final teamData = team['teamData'] ?? [];
+
+                for (var employee in teamData) {
+                  final employeeId = employee['employeeId'];
+                  if (employeeId != null) {
+                    allEmployeeIds.add(employeeId);
+                    selectedBranchIds.clear();
                   }
                 }
               }
             }
-          } else if (userGrade == "L4") {}
+          }
+        }
+      }
+      selectedBranchIds = allEmployeeIds.toSet();
+      if (kDebugMode) {
+        print('✅ Total Employee IDs: ${allEmployeeIds.length}');
+        print('🔍 All IDs Set: $selectedBranchIds');
+      }
+    }
+  }
+
+
+
+
+
+
+  void _setDefaultDates() {
+    final now = DateTime.now();
+    _startDate = DateTime(now.year, now.month, 1);
+    _endDate = now;
+    log("📆 Default Date Range: $_startDate to $_endDate");
+  }
+
+
+  void _initDates({required DateTime start, required DateTime end}) {
+    _dates.clear();
+    final now = DateTime.now();
+
+    for (var date = start; !date.isAfter(end) && !date.isAfter(now); date = date.add(Duration(days: 1))) {
+      _dates.add(date);
+    }
+
+    _selectedDateIndex = null;
+    _selectedDate = null;
+
+    log("📅 Generated ${_dates.length} dates from $start to $end");
+  }
+
+
+  Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
+    List<Teams> underTeams = [];
+    String? userGrade = singletonClass.getJWTModel()?.grade;
+    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+    log("🔍 User grade: $userGrade");
+
+    for (BranchData branchData in branchDataList) {
+      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
+        for (var department in departmentDetails.departments ?? []) {
+          log("🏢 Department: ${department.departmentName}");
+          for (var supervisor in department.supervisors ?? []) {
+            log("👨‍💼 Supervisor: ${supervisor.empId}, Team ID: ${supervisor.teamId}");
+          }
+          for (var team in department.teams ?? []) {
+            log("🧑‍🤝‍🧑 Team: ${team.teamId}");
+            for (var supervisor in department.supervisors ?? []) {
+              if (supervisor.empId == reportingManagerId && supervisor.teamId == team.teamId) {
+                log("✅ Match found — Supervisor: ${supervisor.empId}, Team: ${team.teamId}");
+                underTeams.add(team);
+              }
+            }
+          }
         }
       }
     }
-    // Return both lists in a map
-    return {
-      'underTeams': underTeams,
-    };
+    log("🔍 Filtered ${underTeams.length} underTeams");
+    return {'underTeams': underTeams};
   }
 
-  void filterClockingData() {
-    String loggedInEmployeeId = singletonClass.getJWTModel()?.employeeId ?? '';
-    log("Logged-in Employee ID: $loggedInEmployeeId");
 
-    List<TeamClockingData> filteredClockingData = [];
 
-    // Filter based on team membership
-    for (var team in filteredUnderTeams) {
-      var teamClocking = singletonClass.teamClockingDataList.first.data
-          ?.where((clocking) =>
-              team.teamData
-                  ?.any((member) => member.employeeId == clocking.employeeId) ??
-              false)
-          .toList();
+  Future<void> loadData() async {
+    log("📥 Starting data load...");
+    await getTeamClockingAPI(startDate: _startDate!, endDate: _endDate!);
+    filterAttendanceData();
+  }
 
-      if (teamClocking != null) {
-        filteredClockingData.addAll(teamClocking);
-      }
+  void filterAttendanceData() {
+    List<TeamClockingData> allClockingData = singletonClass.teamClockingDataList.first.data!;
+
+    List<TeamClockingData> filtered = allClockingData;
+
+    if (selectedEmployeeId != null) {
+      filtered = filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
     }
 
-    // If an employee is selected, refine the filtered data
-    if (selectedEmployeeId != null && selectedEmployeeId!.isNotEmpty) {
-      filteredClockingData = filteredClockingData
-          .where((clocking) => clocking.employeeId == selectedEmployeeId)
-          .toList();
+    if (_selectedDate != null) {
+      filtered = filtered.where((attendance) {
+        DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
+        return updatedAt.year == _selectedDate!.year &&
+            updatedAt.month == _selectedDate!.month &&
+            updatedAt.day == _selectedDate!.day;
+      }).toList();
     }
 
     setState(() {
-      filteredClockingDataList = filteredClockingData;
+      filteredClockingDataList = filtered;
     });
-
-    // Log the filtered clocking data
-    log("Filtered Clocking Data: ${jsonEncode(filteredClockingDataList.map((data) => {
-          "employeeId": data.employeeId,
-          "employeeName": data.employeeName,
-          "checkInTime": data.checkInTime
-        }).toList())}");
   }
 
+
+  String _getDayOfWeek(DateTime date) {
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,100 +241,271 @@ class _TeamClockingState extends State<TeamClocking> {
                     ),
                   ),
                   const Spacer(),
-                  PopupMenuButton<String>(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  IconButton(
+                    onPressed: () async {
+                      final DateTime now = DateTime.now();
+                      final DateTime lastSelectableDate = now;
+                      final DateTimeRange? picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(now.year - 2),
+                        lastDate: lastSelectableDate,
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData.light().copyWith(
+                              scaffoldBackgroundColor: Colors.white,
+                              textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: NasColors.darkBlue, // Button color
+                                ),
+                              ),
+                              colorScheme: ColorScheme.light(
+                                primary: NasColors.darkBlue, // Selection color
+                                onPrimary: Colors.white, // Default text color
+                                secondaryContainer: NasColors.icons,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                        initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+                      );
+                      if (picked != null) {
+                        singletonClass.teamClockingDataList.clear();
+                        _startDate = picked.start;
+                        _endDate = picked.end;
+                        _initDates(start: picked.start, end: picked.end);
+                        await getTeamClockingAPI(startDate: _startDate!, endDate: _endDate!);
+                        filterAttendanceData();
+                      }
+                    },
+                    icon:  Icon(Icons.date_range,color: NasColors.darkBlue,size: 30,),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width - 50,
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withValues(alpha: 0.5),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                    onSelected: (value) {
-                      setState(() {
-                        selectedEmployeeId = value;
-                        filterClockingData(); // Call function to filter data
-                      });
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return filteredUnderTeams.first.teamData!
-                          .map((data) => PopupMenuItem<String>(
-                        value: data.employeeId, // Employee ID for filtering
-                        child: Text(data.userName ?? "Unknown"), // Display employee name
-                      ))
-                          .toList();
-                    },
-                    child: Container(
-                      height: 30,
-                      width: 90,
-                      decoration: BoxDecoration(
-                        color: NasColors.darkBlue,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            isSearching = true;
+                          });
+                        },
+                        cursorColor: Colors.black,
+                        decoration: InputDecoration(
+                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Icon(
+                      Icons.search,
+                      color: NasColors.darkBlue,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0, right: 10),
+                    child: PopupMenuButton<String>(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.filter_alt,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            AppLocalizations.of(context)!.filter,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 15,
+                      onSelected: (value) {
+                        setState(() {
+                          singletonClass.branchID = value;
+                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
+                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
+                          if (kDebugMode) {
+                            print('Selected Branch ID: $value');
+                          }
+                          extractAllEmployeeIdsForBranch(value);
+                           singletonClass.getBranchData();
+                          loadData();
+                          _isTeamChecked = false ;
+                        });
+                      },
+                      itemBuilder: (BuildContext context) {
+                        final branchList = singletonClass.branchesDataList.first.data;
+                        if (branchList == null || branchList.isEmpty) {
+                          return [];
+                        }
+
+                        return branchList.map((branch) => PopupMenuItem<String>(
+                          value: branch.branchCompanyId,
+                          child: Text(branch.branchName ?? "Unknown Branch"),
+                        )).toList();
+                      },
+                      child: Container(
+                        height: 60,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(45),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 4),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(width: 8),
+                            Image.asset(
+                              'images/site.png', // <-- Replace with your actual image path
+                              height: 14,
+                              width: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                singletonClass.branchName != null && singletonClass.branchName!.isNotEmpty
+                                    ? singletonClass.branchName!
+                                    : AppLocalizations.of(context)!.selectBranch,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                          ],
+                        ),
                       ),
+                    ),
+                  ),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: Column(
+                      children: [
+                        Checkbox(value: _isTeamChecked,
+                            activeColor: NasColors.onTime,
+                            onChanged:(singletonClass.branchID != null) ? (bool? value){
+                              setState(() {
+                                _isTeamChecked = value ?? false;
+                                singletonClass.branchID = null;
+                                singletonClass.branchName = null;
+                                singletonClass.getBranchData();
+                                selectedBranchIds.clear();
+                                _extractTeams();
+                                loadData();
+                              });
+                            } : null ),
+                        Text(AppLocalizations.of(context)!.teams,
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _dates.length,
+                  itemBuilder: (ctx, i) {
+                    final date = _dates[i];
+                    final selected = _selectedDateIndex == i;
+                    return GestureDetector(
+                      onTap: () {
+                        _selectedDateIndex = i;
+                        _selectedDate = date;
+                        filterAttendanceData();
+                      },
+                      child: Container(
+                        width: 55,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: selected ? NasColors.darkBlue : Colors.transparent,
+                          borderRadius: BorderRadius.circular(35),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("${date.day}",
+                                style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: selected ? Colors.white : Colors.grey)),
+                            Text(_getDayOfWeek(date),
+                                style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: selected ? Colors.white : Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               FutureBuilder(
-                  future: getTeamClockingAPI(),
+                  future: getTeamClockingAPI(startDate: _startDate, endDate: _endDate),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: Lottie.asset('images/loader.json', height: 200, width: 200));
+                    }
+                    if (singletonClass.teamClockingDataList.isEmpty ||
+                        singletonClass.teamClockingDataList.first.data == null ||
+                        singletonClass.teamClockingDataList.first.data!.isEmpty) {
                       return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      );
-                    } else if (filteredClockingDataList.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Center(
-                                child: SizedBox(
-                                  height: 200,
-                                  width: 200,
-                                  child: Lottie.asset('images/empty.json'),
-                                ),
+                        child: Column(
+                          children: [
+                            Lottie.asset('images/empty.json', height: 200, width: 200),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
                               ),
-                              Text(
-                                AppLocalizations.of(context)!.noData,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       );
                     }
-
+                    final dataList = singletonClass.teamClockingDataList.first.data!;
                     return Expanded(
                         child: ListView.builder(
                       padding: EdgeInsets.zero,
-                      itemCount: filteredClockingDataList.length,
+                      itemCount: dataList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final team = filteredClockingDataList.reversed.toList()[index];
+                        final team =dataList[index];
                         final shift = singletonClass.branchDataList.first.data?.branch!.departmentDetails?.first.shifts;
                         DateTime? checkInTime = parseTime(team.checkInTime ?? '--:--');
                         DateTime? checkOutTime = parseTime(team.checkOutTime ?? '--:--');
@@ -288,9 +532,16 @@ class _TeamClockingState extends State<TeamClocking> {
                                 checkOutTime.isBefore(shiftToTime)
                             ? shiftToTime.difference(checkOutTime)
                             : Duration.zero;
-                        // Get user status
                         String status = getStatus(lateDuration, earlyDuration);
-
+                        final searchText =
+                        searchController.text.toLowerCase();
+                        if (isSearching &&
+                            !(team.employeeName
+                                ?.toLowerCase()
+                                .contains(searchText) ??
+                                false)) {
+                          return const SizedBox.shrink();
+                        }
 
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 10),
@@ -352,7 +603,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                 Row(
                                   children: [
                                     Text( team.checkInTime != null ?
-                                      singletonClass.formatCheckInTime(team.checkInTime!) : '--:--',
+                                      singletonClass.formatCheckInTime(team.checkInTime! , context) : '--:--',
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -372,7 +623,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     ),
                                     const Spacer(),
                                     Text(
-                                      "${lateDuration.inMinutes} Mins",
+                                      "${lateDuration.inMinutes ~/ 60}h ${lateDuration.inMinutes % 60}m",
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -393,7 +644,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     SizedBox(
                                       width: 70,
                                       child: Text( team.checkOutTime != null ?
-                                        singletonClass.formatCheckInTime(team.checkOutTime!) : '--:--',
+                                        singletonClass.formatCheckInTime(team.checkOutTime! ,context) : '--:--',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -409,7 +660,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                     const Spacer(),
                                     SizedBox(
                                       child: Text(
-                                        "${earlyDuration.inMinutes} Mins",
+                                        "${earlyDuration.inMinutes ~/ 60}h ${earlyDuration.inMinutes % 60}m",
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -473,18 +724,53 @@ class _TeamClockingState extends State<TeamClocking> {
     }
   }
 
-  //API CALL
-  Future<TeamClockingModel?> getTeamClockingAPI() async {
-    var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/c-emp-check-in-out/all');
-    var response = await client.get(uri,headers: singletonClass.getHeaders());
-    log("Team ClockingData:${response.body}");
+  ///API CALL
+  Future<TeamClockingModel?> getTeamClockingAPI({DateTime? startDate, DateTime? endDate}) async {
+    singletonClass.teamClockingDataList.clear();
+
+    Set<String> employeeIds = {};
+
+    if (!_isTeamChecked && selectedBranchIds.isNotEmpty) {
+      employeeIds = selectedBranchIds;
+    } else {
+      for (var team in filteredUnderTeams) {
+        if (team.teamData != null) {
+          for (var member in team.teamData!) {
+            if (member.employeeId != null && member.employeeId!.isNotEmpty) {
+              employeeIds.add(member.employeeId!);
+            }
+          }
+        }
+      }
+    }
+
+    if (employeeIds.isEmpty) {
+      log("⚠️ No employee IDs found to fetch clocking data");
+      return null;
+    }
+
+    final ids = employeeIds.join(',');
+    final now = DateTime.now();
+    String startDateStr = startDate != null
+        ? DateFormat('MM-dd-yyyy').format(startDate)
+        : DateFormat('MM-01-yyyy').format(now);
+    String endDateStr = endDate != null
+        ? DateFormat('MM-dd-yyyy').format(endDate)
+        : DateFormat('MM-dd-yyyy').format(now);
+
+    var uri = Uri.parse(
+        '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$ids&startDate=$startDateStr&endDate=$endDateStr');
+    log("📡 Fetching Team Clocking: $uri");
+
+    var response = await http.get(uri, headers: singletonClass.getHeaders());
+    log("Team Clocking Response: ${response.body}");
+
     if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var teamClocking = TeamClockingModel.fromJson(responseBody);
-      singletonClass.teamClockingDataList.addAll([teamClocking]);
+      var teamClocking = TeamClockingModel.fromJson(json.decode(response.body));
+      singletonClass.teamClockingDataList.add(teamClocking);
       return teamClocking;
     }
-    return null; // Print the response body
+    return null;
   }
+
 }

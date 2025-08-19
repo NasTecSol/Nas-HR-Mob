@@ -16,6 +16,7 @@ import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
+import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
@@ -65,7 +66,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       trackOpenLocation();
     });
-    setState(() {});
+    setState(() {
+    });
   }
 
   @override
@@ -759,6 +761,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasNotChatBot =
         uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
+    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    if (hasSocket){
+      final locale = Localizations.localeOf(context).languageCode;
+      print("socket");
+      SocketService().initializeSocket('${singletonClass.tenantId}', locale);}
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -899,7 +906,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        const NotificationsScreen()));
+                                         NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -1113,7 +1120,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ?.map<DropdownMenuItem<String>>((company) {
                                             return DropdownMenuItem<String>(
                                               value: company.companyId.toString(),
-                                              child: Text(company.companyName ?? "No Name"),
+                                              child: Text(company.companyName ?? "---"),
                                             );
                                           }).toList()
                                               : [],
@@ -1169,7 +1176,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ?.map<DropdownMenuItem<String>>((branch) {
                                             return DropdownMenuItem<String>(
                                               value: branch.id.toString(),
-                                              child: Text(branch.branchName ?? "No Name"),
+                                              child: Text(branch.branchName ?? "---"),
                                             );
                                           }).toList()
                                               : [],
@@ -1253,7 +1260,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       if (entry == null) {
                                                         return SizedBox();
                                                       }
-                                                      if ((entry.lateMinutes ?? 0) > 0) {
+                                                      if (entry.secondaryStatus == "Late") {
                                                         return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes}",
                                                           style: GoogleFonts.inter(
                                                             fontSize: 10,
@@ -1261,7 +1268,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             color: NasColors.lateComingText,
                                                           ),
                                                         );
-                                                      } else if ((entry.earlyCheckOut ?? 0) > 0) {
+                                                      } else if (entry.secondaryStatus == "Early-Out") {
                                                         return Text(
                                                           "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}",
                                                           style: GoogleFonts.inter(
@@ -1270,7 +1277,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             color: NasColors.onTime,
                                                           ),
                                                         );
-                                                      } else if (entry.clockInTime?.isNotEmpty == true) {
+                                                      } else if (entry.secondaryStatus == "OnTime-In") {
                                                         return Text( AppLocalizations.of(context)!.onTime,
                                                           style: GoogleFonts.inter(
                                                             fontSize: 10,
@@ -1325,7 +1332,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                                                       final lastEntry = todayEntries.last;
                                                       return (lastEntry.checkInTime?.isNotEmpty ?? false)
-                                                          ? singletonClass.formatCheckInTime(lastEntry.checkInTime!)
+                                                          ? singletonClass.formatCheckInTime(lastEntry.checkInTime! , context)
                                                           : '--:--';
                                                     } catch (_) {
                                                       return '--:--';
@@ -1371,7 +1378,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                                                       final lastEntry = todayEntries.last;
                                                       return (lastEntry.checkOutTime?.isNotEmpty ?? false)
-                                                          ? singletonClass.formatCheckInTime(lastEntry.checkOutTime!)
+                                                          ? singletonClass.formatCheckInTime(lastEntry.checkOutTime! , context)
                                                           : '--:--';
                                                     } catch (_) {
                                                       return '--:--';
@@ -1874,7 +1881,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: SingleChildScrollView(
-                              physics: const NeverScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -2591,11 +2597,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         },
       );
 
-      if ((entry.lateMinutes ?? 0) > 0) {
+      if (entry.secondaryStatus == 'Late') {
         return NasColors.pending.withOpacity(0.25);
-      } else if ((entry.earlyCheckOut ?? 0) > 0) {
+      } else if (entry.secondaryStatus == 'Early-Out') {
         return NasColors.onTime;
-      } else if (entry.clockInTime?.isNotEmpty == true) {
+      } else if (entry.secondaryStatus == 'OnTime-In') {
         return NasColors.onTime.withOpacity(0.25);
       }
     } catch (_) {

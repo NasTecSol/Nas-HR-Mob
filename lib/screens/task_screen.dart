@@ -77,12 +77,12 @@ class _TaskScreenState extends State<TaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter tasks by status
+    /// Filter tasks by status
     List<Dattaa> toDoTasks = filteredTaskList.where((task) => task.status == "TODO").toList();
     List<Dattaa> inProgressTask = filteredTaskList.where((task) => task.status == "InProgress").toList();
     List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "completed").toList();
 
-// Get the total number of tasks for each status
+    /// Get the total number of tasks for each status
     int totalToDoTasks = toDoTasks.length;
     int totalInProgressTasks = inProgressTask.length;
     int totalCompletedTasks = completedTask.length;
@@ -93,41 +93,31 @@ class _TaskScreenState extends State<TaskScreen> {
     String inProgressTags = "";
     String completedTags = "";
 
-// Accumulate data for "to-do" tasks
     for (var task in toDoTasks) {
       totalToDoAssignees += task.assignTo!.length;
       if (task.tag != null) {
-        toDoTags += ("${task.tag!}, "); // Append tags (comma separated)
+        toDoTags += ("${task.tag!}, ");
       }
     }
 
-// Remove trailing comma and space from "to-do" tags string
     if (toDoTags.isNotEmpty) {
       toDoTags = toDoTags.substring(0, toDoTags.length - 2);
     }
-
-// Accumulate data for "in-progress" tasks
     for (var task in inProgressTask) {
       totalInProgressAssignees += task.assignTo!.length;
       if (task.tag != null) {
-        inProgressTags += ("${task.tag!}, "); // Append tags (comma separated)
+        inProgressTags += ("${task.tag!}, ");
       }
     }
-
-// Remove trailing comma and space from "in-progress" tags string
     if (inProgressTags.isNotEmpty) {
       inProgressTags = inProgressTags.substring(0, inProgressTags.length - 2);
     }
-
-// Accumulate data for "completed" tasks
     for (var task in completedTask) {
       totalCompletedAssignees += task.assignTo!.length;
       if (task.tag != null) {
-        completedTags += ("${task.tag!}, "); // Append tags (comma separated)
+        completedTags += ("${task.tag!}, ");
       }
     }
-
-// Remove trailing comma and space from "completed" tags string
     if (completedTags.isNotEmpty) {
       completedTags = completedTags.substring(0, completedTags.length - 2);
     }
@@ -176,7 +166,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ),
                   const Spacer(),
-                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1')
+                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2' || singletonClass.getJWTModel()?.grade == 'L3')
                    TextButton(
                       child: Text(AppLocalizations.of(context)!.createAnIssue,
                         style: GoogleFonts.inter(

@@ -12,7 +12,6 @@ class LanguageChangeController with ChangeNotifier {
     if (languageCode != null) {
       _appLocale = Locale(languageCode);
     } else {
-      // Default to English if no language is saved in SharedPreferences
       _appLocale = const Locale('en');
     }
 
