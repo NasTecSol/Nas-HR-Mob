@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -29,6 +30,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
   @override
   void initState() {
     super.initState();
+    singletonClass.getCompanyData();
     _filterComplaintRequests();
   }
 
@@ -52,205 +54,222 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
+          children: [ ListView(
+            padding: EdgeInsets.zero,
+            children: [ Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.4),
-                          spreadRadius: 5,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  AppLocalizations.of(context)!.complaints,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
-                const Spacer(),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    backgroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  onPressed: () {
-                    postRequest();
-                  },
-                  child: SizedBox(
-                    height: 30,
-                    width: 90,
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.submit,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
                           color: Colors.white,
-                          fontSize: 15,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.4),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_outlined,
+                          color: Colors.black,
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    Text(
+                      AppLocalizations.of(context)!.complaints,
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        postRequest();
+                      },
+                      child: SizedBox(
+                        height: 30,
+                        width: 90,
+                        child: Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.submit,
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.of(context)!.complaints,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<SubTypes>(
+                    value: _selectedSubType,
+                    hint: Text(
+                      AppLocalizations.of(context)!.selectComplaintType,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    dropdownColor: Colors.white,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_outlined,
+                      color: Colors.black,
+                    ),
+                    iconSize: 24,
+                    isExpanded: true,
+                    items: subTypeList.map((SubTypes subType) {
+                      return DropdownMenuItem<SubTypes>(
+                        value: subType,
+                        child: Text(
+                          _translateRequestSubtype(subType.requestName , context),
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (SubTypes? newValue) {
+                      setState(() {
+                        _selectedSubType = newValue;
+                      });
+                    },
+                  ),
+                ),
+               const Divider(
+                 color: Colors.grey,
+               ),
+                const SizedBox(height:10),
+                Text(
+                  AppLocalizations.of(context)!.title,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height:20),
+                TextFormField(
+                  controller: _titleController,
+                  cursorColor: Colors.grey,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder:  OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    hintText: AppLocalizations.of(context)!.typeYourTitleHere,
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height:10),
+                TextFormField(
+                  controller: _complaintController,
+                  maxLength: 300,
+                  maxLines: 5,
+                  onChanged: (text) {
+                    setState(() {
+                      _characterCount = "${text.length}/300";
+                    });
+                  },
+                  cursorColor: Colors.grey,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder:  OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    hintText: AppLocalizations.of(context)!.typeYourComplainHere,
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                    counterText: _characterCount,
+                    counterStyle: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  AppLocalizations.of(context)!.maximum300,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              AppLocalizations.of(context)!.complaints,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<SubTypes>(
-                value: _selectedSubType,
-                hint: Text(
-                  AppLocalizations.of(context)!.selectComplaintType,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+
+              SizedBox(height: 500),
+            ]
+          ),
+            if (isLoading)
+              Center(
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Lottie.asset('images/loader.json'),
                 ),
-                dropdownColor: Colors.white,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_outlined,
-                  color: Colors.black,
-                ),
-                iconSize: 24,
-                isExpanded: true,
-                items: subTypeList.map((SubTypes subType) {
-                  return DropdownMenuItem<SubTypes>(
-                    value: subType,
-                    child: Text(
-                      _translateRequestSubtype(subType.requestName , context),
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (SubTypes? newValue) {
-                  setState(() {
-                    _selectedSubType = newValue;
-                  });
-                },
-              ),
-            ),
-           const Divider(
-             color: Colors.grey,
-           ),
-            const SizedBox(height:10),
-            Text(
-              AppLocalizations.of(context)!.title,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height:20),
-            TextFormField(
-              controller: _titleController,
-              cursorColor: Colors.grey,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder:  OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                hintText: AppLocalizations.of(context)!.typeYourTitleHere,
-                hintStyle: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height:10),
-            TextFormField(
-              controller: _complaintController,
-              maxLength: 300,
-              maxLines: 5,
-              onChanged: (text) {
-                setState(() {
-                  _characterCount = "${text.length}/300";
-                });
-              },
-              cursorColor: Colors.grey,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder:  OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                hintText: AppLocalizations.of(context)!.typeYourComplainHere,
-                hintStyle: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-                counterText: _characterCount,
-                counterStyle: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              AppLocalizations.of(context)!.maximum300,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+              )
+          ]
         ),
       ),
     );
@@ -344,7 +363,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       "empId": singletonClass.getJWTModel()?.empId,
       "employeeName": employeeName,
       "branchId": branchId,
-      "policyId": "123",
+      "policyId": "${singletonClass.companyDataList.first.data!.policies!.first.policyId}",
       "requestType": selectedRequestType,
       "subType": selectedSubType,
       "requestData": requestData,
@@ -356,7 +375,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
     String body = json.encode(data);
     print(body);
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
-
+    print(uri);
     setState(() {
       isLoading = true;
     });

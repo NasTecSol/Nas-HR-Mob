@@ -125,55 +125,55 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if(_selectedOptionIndex == 0)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 50,
-                        width: MediaQuery.of(context).size.width - 50,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: searchController,
-                                onChanged: (value) {
-                                  setState(() {
-                                    isSearching = true;
-                                  });
-                                },
-                                cursorColor: Colors.grey,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      '${AppLocalizations.of(context)!.search}...',
-                                  border: InputBorder.none,
+                  if (_selectedOptionIndex == 0)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 50,
+                          width: MediaQuery.of(context).size.width - 50,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: searchController,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isSearching = true;
+                                    });
+                                  },
+                                  cursorColor: Colors.grey,
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        '${AppLocalizations.of(context)!.search}...',
+                                    border: InputBorder.none,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Icon(
-                              Icons.search,
-                              color: NasColors.darkBlue,
-                            ),
-                          ],
+                              const SizedBox(width: 10),
+                              Icon(
+                                Icons.search,
+                                color: NasColors.darkBlue,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -182,49 +182,1445 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 children: [
                   documentInfo!.isNotEmpty
                       ? ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: documentInfo.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final documents = documentInfo[index];
-                      final url = documents.remarks ?? '';
-                      final fileType = url.split('.').last.toLowerCase();
-                      final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-                      final isPdf = fileType == 'pdf';
-                      final searchText = searchController.text.toLowerCase();
-                      if (isSearching &&
-                          !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
-                        return const SizedBox.shrink();
-                      }
-                      return Transform.translate(
-                        offset: Offset(0, index == 0 ? 0 : -10),
-                        child: GestureDetector(
-                          onTap: () async {
-                            if (isImage || isPdf || url.isNotEmpty) {
-                              if (await canLaunchUrl(Uri.parse(url))) {
-                                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Could not open the document!')),
-                                );
-                              }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Unsupported file type!')),
-                              );
+                          shrinkWrap: true,
+                          itemCount: documentInfo.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final documents = documentInfo[index];
+                            final url = documents.remarks ?? '';
+                            final fileType = url.split('.').last.toLowerCase();
+                            final isImage = ['png', 'jpg', 'jpeg', 'gif']
+                                .contains(fileType);
+                            final isPdf = fileType == 'pdf';
+                            final searchText =
+                                searchController.text.toLowerCase();
+                            if (isSearching &&
+                                !(documents.type
+                                        ?.toLowerCase()
+                                        .contains(searchText) ??
+                                    false)) {
+                              return const SizedBox.shrink();
                             }
+                            return Transform.translate(
+                              offset: Offset(0, index == 0 ? 0 : -10),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  if (isImage || isPdf || url.isNotEmpty) {
+                                    if (await canLaunchUrl(Uri.parse(url))) {
+                                      await launchUrl(Uri.parse(url),
+                                          mode: LaunchMode.externalApplication);
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Could not open the document!')),
+                                      );
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Unsupported file type!')),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.only(
+                                      top: 10.0, left: 30, right: 30),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      if (index != 0)
+                                        const BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 10,
+                                          spreadRadius: 10,
+                                          offset: Offset(0, -6),
+                                        ),
+                                      const BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 10,
+                                        offset: Offset(0, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        documents.type == "Doc_Contract_Emp"
+                                            ? AppLocalizations.of(context)!
+                                                .employmentContract
+                                            : documents.type ?? '',
+                                        maxLines: 2,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: NasColors.darkBlue,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: isImage
+                                            ? Image.network(
+                                                url,
+                                                height: 60,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                                alignment: Alignment.topCenter,
+                                              )
+                                            : Icon(
+                                                isPdf
+                                                    ? Icons.picture_as_pdf
+                                                    : Icons.insert_drive_file,
+                                                size: 60,
+                                                color: NasColors.darkBlue,
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                ],
+              )
+            ],
+            if (_selectedOptionIndex == 1) ...[
+              SizedBox(height: 30),
+              if (singletonClass.employeeDataList.first.data!.nationality ==
+                  "Saudi Arabia")
+                Column(children: [
+                  GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet<void>(
+                          backgroundColor: NasColors.darkBlue,
+                          enableDrag: true,
+                          isDismissible: true,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(20),
+                              topLeft: Radius.circular(20),
+                            ),
+                          ),
+                          context: context,
+                          builder: (BuildContext context) {
+                            // Pass the document data to the bottom sheet
+                            return Container(
+                              height: MediaQuery.of(context).size.height * 0.9,
+                              width: double.infinity,
+                              color: Colors.transparent,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: ListView(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          AppLocalizations.of(context)!.cnic,
+                                          maxLines: 2,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text(
+                                              AppLocalizations.of(context)!
+                                                  .done,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.white,
+                                              ),
+                                            ))
+                                      ],
+                                    ),
+                                    RepaintBoundary(
+                                      key: _containerKey,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: NasColors.lightGrey,
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Color(0xFFC3DBCB), // Start color
+                                              Color(0xFFDBDBCF), // Middle color
+                                              Color(0xFFC3DBCB), // End color
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // Logos Row
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.zero,
+                                              child: Image.asset(
+                                                "images/cnicLogo.png",
+                                                height: 50,
+                                                width: double.infinity,
+                                                fit: BoxFit.fitWidth,
+                                                alignment: Alignment.topCenter,
+                                              ),
+                                            ),
+                                            SizedBox(height: 20),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                // Profile Image
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 18.0),
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.zero,
+                                                    child: (singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data
+                                                                ?.profilePic
+                                                                ?.isNotEmpty ??
+                                                            false)
+                                                        ? Image.network(
+                                                            singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data!
+                                                                .profilePic!,
+                                                            fit: BoxFit.cover,
+                                                            width: 110,
+                                                            height: 110,
+                                                            errorBuilder: (context,
+                                                                    error,
+                                                                    stackTrace) =>
+                                                                Image.asset(
+                                                              'images/DP.png',
+                                                              fit: BoxFit.cover,
+                                                              width: 110,
+                                                              height: 110,
+                                                            ),
+                                                          )
+                                                        : Image.asset(
+                                                            'images/DP.png',
+                                                            fit: BoxFit.cover,
+                                                            width: 110,
+                                                            height: 110,
+                                                          ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                SizedBox(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? '---' : '---'}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: NasColors
+                                                              .darkBlue,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 2.5),
+                                                      SizedBox(
+                                                        width: 170,
+                                                        child: Text(
+                                                          "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: NasColors
+                                                                .darkBlue,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 2.5),
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: NasColors
+                                                              .darkBlue,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 2.5),
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: NasColors
+                                                              .darkBlue,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 2.5),
+                                                      Text(
+                                                        "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: NasColors
+                                                              .darkBlue,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 20),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: NasColors.lightBlue,
+                                          ),
+                                          child: IconButton(
+                                            onPressed: () async {
+                                              try {
+                                                RenderRepaintBoundary boundary =
+                                                    _containerKey
+                                                            .currentContext!
+                                                            .findRenderObject()
+                                                        as RenderRepaintBoundary;
+                                                var image = await boundary
+                                                    .toImage(pixelRatio: 3.0);
+                                                ByteData? byteData =
+                                                    await image.toByteData(
+                                                        format: ImageByteFormat
+                                                            .png);
+                                                Uint8List pngBytes = byteData!
+                                                    .buffer
+                                                    .asUint8List();
+                                                final tempDir =
+                                                    await getTemporaryDirectory();
+                                                final file = await File(
+                                                        '${tempDir.path}/container_image.png')
+                                                    .create();
+                                                await file
+                                                    .writeAsBytes(pngBytes);
+                                                await Share.shareXFiles(
+                                                    [XFile(file.path)],
+                                                    text:
+                                                        'Check out this container image!');
+                                              } catch (e) {
+                                                debugPrint(
+                                                    'Error sharing container image: $e');
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                      content: Text(
+                                                          'Failed to share container: $e')),
+                                                );
+                                              }
+                                            },
+                                            icon: const Icon(Icons.ios_share,
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: NasColors.lightBlue,
+                                          ),
+                                          child: IconButton(
+                                            onPressed: () {
+                                              // Copy the image URL or any text to the clipboard
+                                              Clipboard.setData(ClipboardData(
+                                                  text:
+                                                      "images/cnic.png")); // Text to be copied
+                                            },
+                                            icon: const Icon(Icons.copy,
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: NasColors.lightBlue,
+                                          ),
+                                          child: IconButton(
+                                            onPressed: () {
+                                              // Action for the favorite button
+                                            },
+                                            icon: const Icon(Icons.star,
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(15)),
+                                        color: NasColors.lightBlue,
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .name,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${singletonClass.employeeDataList.first.data!.firstName}",
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    // Copy the image URL or any text to the clipboard
+                                                    Clipboard.setData(ClipboardData(
+                                                        text:
+                                                            "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                  },
+                                                  icon: const Icon(Icons.copy,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .cardNumber,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      "${singletonClass.employeeDataList.first.data!.nic}",
+                                                      textAlign: TextAlign.left,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    // Copy the image URL or any text to the clipboard
+                                                    Clipboard.setData(
+                                                        ClipboardData(
+                                                      text:
+                                                          "${singletonClass.employeeDataList.first.data!.nic}",
+                                                    ));
+                                                  },
+                                                  icon: const Icon(Icons.copy,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .dateOfBirthInHijri,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      "${singletonClass.employeeDataList.first.data!.dob}",
+                                                      textAlign: TextAlign.left,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    // Copy the image URL or any text to the clipboard
+                                                    Clipboard.setData(ClipboardData(
+                                                        text:
+                                                            "${singletonClass.employeeDataList.first.data!.dob}"));
+                                                  },
+                                                  icon: const Icon(Icons.copy,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .expiryDateInHijri,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      "---",
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    // Copy the image URL or any text to the clipboard
+                                                    Clipboard.setData(ClipboardData(
+                                                        text:
+                                                            "---")); // Text to be copied
+                                                  },
+                                                  icon: const Icon(Icons.copy,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .placeOfBirth,
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 5),
+                                                    Text(
+                                                      "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                      maxLines: 4,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    // Copy the image URL or any text to the clipboard
+                                                    Clipboard.setData(
+                                                        ClipboardData(
+                                                      text:
+                                                          "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                    )); // Text to be copied
+                                                  },
+                                                  icon: const Icon(Icons.copy,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.white,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.only(
+                            top: 10.0, left: 30, right: 30),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            const BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              spreadRadius: 10,
+                              offset: Offset(0, -6),
+                            ),
+                            const BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.cnic,
+                              maxLines: 2,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.asset(
+                                "images/cnic.png",
+                                height: 60,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))
+                ]),
+
+              ///Iqama
+              (singletonClass.employeeDataList.first.data!.nationality ==
+                      "Saudi Arabia")
+                  ? const SizedBox.shrink()
+                  : Column(children: [
+                      GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet<void>(
+                              backgroundColor: NasColors.darkBlue,
+                              enableDrag: true,
+                              isDismissible: true,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(20),
+                                  topLeft: Radius.circular(20),
+                                ),
+                              ),
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.9,
+                                  width: double.infinity,
+                                  color: Colors.transparent,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: ListView(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .iqama,
+                                              maxLines: 2,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .done,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                  ),
+                                                )),
+                                          ],
+                                        ),
+                                        RepaintBoundary(
+                                          key: _iqamaContainerKey,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: NasColors.lightGrey,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      child: Image.asset(
+                                                        "images/iqamaLogoLeft.png",
+                                                        width: 100,
+                                                        fit: BoxFit.contain,
+                                                        alignment:
+                                                            Alignment.topCenter,
+                                                      ),
+                                                    ),
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      child: Image.asset(
+                                                        "images/iqamaLogo.png",
+                                                        width: 100,
+                                                        fit: BoxFit.contain,
+                                                        alignment:
+                                                            Alignment.topCenter,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 20),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    ClipRRect(
+                                                      child: Image.network(
+                                                        singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data
+                                                                ?.profilePic ??
+                                                            '',
+                                                        fit: BoxFit.cover,
+                                                        width: 110,
+                                                        height: 130,
+                                                        errorBuilder: (context,
+                                                                error,
+                                                                stackTrace) =>
+                                                            Image.asset(
+                                                          'images/DP.png',
+                                                          fit: BoxFit.cover,
+                                                          width: 110,
+                                                          height: 130,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 10),
+                                                    SizedBox(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? '---' : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          SizedBox(
+                                                            width: 170,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: NasColors
+                                                                    .darkBlue,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 2.5),
+                                                          Text(
+                                                            "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? '---' : '---'}",
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              color: NasColors
+                                                                  .darkBlue,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 10),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: NasColors.lightBlue,
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () async {
+                                                  try {
+                                                    RenderRepaintBoundary
+                                                        boundary =
+                                                        _iqamaContainerKey
+                                                                .currentContext!
+                                                                .findRenderObject()
+                                                            as RenderRepaintBoundary;
+                                                    var image =
+                                                        await boundary.toImage(
+                                                            pixelRatio: 3.0);
+                                                    ByteData? byteData =
+                                                        await image.toByteData(
+                                                            format:
+                                                                ImageByteFormat
+                                                                    .png);
+                                                    Uint8List pngBytes =
+                                                        byteData!.buffer
+                                                            .asUint8List();
+                                                    final tempDir =
+                                                        await getTemporaryDirectory();
+                                                    final file = await File(
+                                                            '${tempDir.path}/iqama.png')
+                                                        .create();
+                                                    await file
+                                                        .writeAsBytes(pngBytes);
+                                                    await Share.shareXFiles(
+                                                        [XFile(file.path)],
+                                                        text:
+                                                            'Check out this container image!');
+                                                  } catch (e) {
+                                                    debugPrint(
+                                                        'Error sharing container image: $e');
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                          content: Text(
+                                                              'Failed to share container: $e')),
+                                                    );
+                                                  }
+                                                },
+                                                icon: const Icon(
+                                                    Icons.ios_share,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: NasColors.lightBlue,
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () {
+                                                  Clipboard.setData(ClipboardData(
+                                                      text:
+                                                          "images/iqama.png"));
+                                                },
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: NasColors.lightBlue,
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () {
+                                                  // Action for the favorite button
+                                                },
+                                                icon: const Icon(Icons.star,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(15)),
+                                            color: NasColors.lightBlue,
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .name,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "${singletonClass.employeeDataList.first.data!.firstName}",
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        // Copy the image URL or any text to the clipboard
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                                text:
+                                                                    "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Colors.white,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .cardNumber,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        // Copy the image URL or any text to the clipboard
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                          text:
+                                                              "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",
+                                                        ));
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Colors.white,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .dateOfBirth,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          "${singletonClass.employeeDataList.first.data!.dob}",
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        // Copy the image URL or any text to the clipboard
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                                text:
+                                                                    "${singletonClass.employeeDataList.first.data!.dob}"));
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Colors.white,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .expiryDate,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        // Copy the image URL or any text to the clipboard
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                          text:
+                                                              "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",
+                                                        )); // Text to be copied
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Colors.white,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .placeOfBirth,
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                          maxLines: 4,
+                                                          softWrap: true,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Spacer(),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        // Copy the image URL or any text to the clipboard
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                          text:
+                                                              "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                        )); // Text to be copied
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                const Divider(
+                                                  height: 1,
+                                                  color: Colors.white,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
                           },
                           child: Container(
-                            padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                            padding: const EdgeInsets.only(
+                                top: 10.0, left: 30, right: 30),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               boxShadow: [
-                                if (index != 0)
-                                  const BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 10,
-                                    spreadRadius: 10,
-                                    offset: Offset(0, -6),
-                                  ),
+                                const BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  spreadRadius: 10,
+                                  offset: Offset(0, -6),
+                                ),
                                 const BoxShadow(
                                   color: Colors.black12,
                                   blurRadius: 10,
@@ -233,12 +1629,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               ],
                             ),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  documents.type == "Doc_Contract_Emp"
-                                      ? AppLocalizations.of(context)!.employmentContract
-                                      : documents.type ?? '',
+                                  AppLocalizations.of(context)!.iqama,
                                   maxLines: 2,
                                   style: GoogleFonts.inter(
                                     fontSize: 18,
@@ -249,1178 +1644,20 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                 const SizedBox(height: 10),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  child: isImage
-                                      ? Image.network(
-                                    url,
+                                  child: Image.asset(
+                                    "images/iqama.png",
                                     height: 60,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                     alignment: Alignment.topCenter,
-                                  )
-                                      : Icon(
-                                    isPdf
-                                        ? Icons.picture_as_pdf
-                                        : Icons.insert_drive_file,
-                                    size: 60,
-                                    color: NasColors.darkBlue,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                      : Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/empty.json'),
-                            ),
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
-            if (_selectedOptionIndex == 1) ...[
-              SizedBox(height: 30),
-              if(singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia")
-              Column(children: [
-                GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet<void>(
-                        backgroundColor: NasColors.darkBlue,
-                        enableDrag: true,
-                        isDismissible: true,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(20),
-                            topLeft: Radius.circular(20),
-                          ),
-                        ),
-                        context: context,
-                        builder: (BuildContext context) {
-                          // Pass the document data to the bottom sheet
-                          return Container(
-                            height: MediaQuery.of(context).size.height * 0.9,
-                            width: double.infinity,
-                            color: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: ListView(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!.cnic,
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            AppLocalizations.of(context)!.done,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          ))
-                                    ],
-                                  ),
-                                  RepaintBoundary(
-                                    key: _containerKey,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: NasColors.lightGrey,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Color(0xFFC3DBCB), // Start color
-                                            Color(0xFFDBDBCF), // Middle color
-                                            Color(0xFFC3DBCB), // End color
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Logos Row
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.zero,
-                                            child: Image.asset(
-                                                "images/cnicLogo.png",
-                                                height: 50,
-                                                width: double.infinity,
-                                                fit: BoxFit.fitWidth,
-                                                alignment: Alignment.topCenter,
-                                              ),
-                                            ),
-                                          SizedBox(height: 20),
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              // Profile Image
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 18.0),
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.zero,
-                                                  child: (singletonClass.employeeDataList.first.data?.profilePic?.isNotEmpty ?? false)
-                                                      ? Image.network(
-                                                    singletonClass.employeeDataList.first.data!.profilePic!,
-                                                    fit: BoxFit.cover,
-                                                    width: 110,
-                                                    height: 110,
-                                                    errorBuilder: (context, error, stackTrace) => Image.asset(
-                                                      'images/DP.png',
-                                                      fit: BoxFit.cover,
-                                                      width: 110,
-                                                      height: 110,
-                                                    ),
-                                                  )
-                                                      : Image.asset(
-                                                    'images/DP.png',
-                                                    fit: BoxFit.cover,
-                                                    width: 110,
-                                                    height: 110,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              SizedBox(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    SizedBox(
-                                                      width:170,
-                                                      child: Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 20),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () async {
-                                            try {
-                                              RenderRepaintBoundary boundary = _containerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                              var image = await boundary.toImage(pixelRatio: 3.0);
-                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
-                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                              final tempDir = await getTemporaryDirectory();
-                                              final file = await File('${tempDir.path}/container_image.png').create();
-                                              await file.writeAsBytes(pngBytes);
-                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
-                                            } catch (e) {
-                                              debugPrint('Error sharing container image: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to share container: $e')),
-                                              );
-                                            }
-                                          },
-                                          icon: const Icon(Icons.ios_share,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            // Copy the image URL or any text to the clipboard
-                                            Clipboard.setData(ClipboardData(
-                                                text: "images/cnic.png")); // Text to be copied
-                                          },
-                                          icon: const Icon(Icons.copy,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            // Action for the favorite button
-                                          },
-                                          icon: const Icon(Icons.star,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: NasColors.lightBlue,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.name,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.firstName}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.cardNumber,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.nic}",
-                                                    textAlign: TextAlign.left,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.nic}",));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.dateOfBirthInHijri,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.dob}",
-                                                    textAlign: TextAlign.left,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}"));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.expiryDateInHijri,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                      "---",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "---")); // Text to be copied
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.placeOfBirth,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                      "${singletonClass.employeeDataList.first.data!.address!.city}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text:  "${singletonClass.employeeDataList.first.data!.address!.city}",)); // Text to be copied
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    child: Container(
-                      padding:
-                          const EdgeInsets.only(top: 10.0, left: 30, right: 30),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                            const BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              spreadRadius: 10,
-                              offset: Offset(0,
-                                  -6),
-                            ),
-                          const BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(0,
-                                5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.cnic,
-                            maxLines: 2,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "images/cnic.png",
-                              height: 60,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ))
-              ]),
-              //Iqama
-              (singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia") ? const SizedBox.shrink() :
-              Column(children: [
-                GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet<void>(
-                        backgroundColor: NasColors.darkBlue,
-                        enableDrag: true,
-                        isDismissible: true,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(20),
-                            topLeft: Radius.circular(20),
-                          ),
-                        ),
-                        context: context,
-                        builder: (BuildContext context) {
-                          return Container(
-                            height: MediaQuery.of(context).size.height * 0.9,
-                            width: double.infinity,
-                            color: Colors.transparent,
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: ListView(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!.iqama,
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            AppLocalizations.of(context)!.done,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          )),
-                                    ],
-                                  ),
-                                  RepaintBoundary(
-                                    key: _iqamaContainerKey,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: NasColors.lightGrey,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: Image.asset(
-                                                  "images/iqamaLogoLeft.png",
-                                                  width: 100,
-                                                  fit: BoxFit.contain,
-                                                  alignment: Alignment.topCenter,
-                                                ),
-                                              ),
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: Image.asset(
-                                                  "images/iqamaLogo.png",
-                                                  width: 100,
-                                                  fit: BoxFit.contain,
-                                                  alignment: Alignment.topCenter,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 20),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              ClipRRect(
-                                                child: Image.network(
-                                                  singletonClass.employeeDataList.first.data?.profilePic ?? '',
-                                                  fit: BoxFit.cover,
-                                                  width: 110,
-                                                  height: 130,
-                                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                                    'images/DP.png',
-                                                    fit: BoxFit.cover,
-                                                    width: 110,
-                                                    height: 130,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 10),
-                                              SizedBox(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    SizedBox(
-                                                      width:170,
-                                                      child: Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2.5),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? '---' : '---'}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 10),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () async {
-                                            try {
-                                              RenderRepaintBoundary boundary = _iqamaContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                              var image = await boundary.toImage(pixelRatio: 3.0);
-                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
-                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                              final tempDir = await getTemporaryDirectory();
-                                              final file = await File('${tempDir.path}/iqama.png').create();
-                                              await file.writeAsBytes(pngBytes);
-                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
-                                            } catch (e) {
-                                              debugPrint('Error sharing container image: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to share container: $e')),
-                                              );
-                                            }
-                                          },
-                                          icon: const Icon(Icons.ios_share,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(
-                                                text: "images/iqama.png"));
-                                          },
-                                          icon: const Icon(Icons.copy,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: NasColors.lightBlue,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            // Action for the favorite button
-                                          },
-                                          icon: const Icon(Icons.star,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: NasColors.lightBlue,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.name,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.firstName}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.cardNumber,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",
-                                                    textAlign: TextAlign.left,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                    text: "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.dateOfBirth,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.dob}",
-                                                    textAlign: TextAlign.left,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}"));
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.expiryDate,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",)); // Text to be copied
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(context)!.placeOfBirth,
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    "${singletonClass.employeeDataList.first.data!.address!.city}",
-                                                    maxLines: 4,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.normal,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              IconButton(
-                                                onPressed: () {
-                                                  // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                    text:  "${singletonClass.employeeDataList.first.data!.address!.city}",)); // Text to be copied
-                                                },
-                                                icon: const Icon(Icons.copy,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          const Divider(
-                                            height: 1,
-                                            color: Colors.white,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    child: Container(
-                      padding:
-                      const EdgeInsets.only(top: 10.0, left: 30, right: 30),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            spreadRadius: 10,
-                            offset: Offset(0,
-                                -6),
-                          ),
-                          const BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(0,
-                                5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.iqama,
-                            maxLines: 2,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "images/iqama.png",
-                              height: 60,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ))
-              ]),
-              //Passport
+                          ))
+                    ]),
+
+              ///Passport
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -1490,30 +1727,42 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                       child: Column(
                                         children: [
                                           ClipRRect(
-                                              borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-                                              child: Image.asset(
-                                                "images/passportHeader.png",
-                                                height: 80,
-                                                width: double.infinity,
-                                                fit: BoxFit.fitWidth,
-                                                alignment: Alignment.topCenter,
-                                              ),
+                                            borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10)),
+                                            child: Image.asset(
+                                              "images/passportHeader.png",
+                                              height: 80,
+                                              width: double.infinity,
+                                              fit: BoxFit.fitWidth,
+                                              alignment: Alignment.topCenter,
                                             ),
+                                          ),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.only(left: 20.0),
+                                                padding: const EdgeInsets.only(
+                                                    left: 20.0),
                                                 child: ClipRRect(
-                                                  borderRadius: BorderRadius.zero,
-                                                  child:Image.network(
-                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '---',
+                                                  borderRadius:
+                                                      BorderRadius.zero,
+                                                  child: Image.network(
+                                                    singletonClass
+                                                            .employeeDataList
+                                                            .first
+                                                            .data
+                                                            ?.profilePic ??
+                                                        '---',
                                                     fit: BoxFit.cover,
                                                     width: 110,
                                                     height: 130,
-                                                    errorBuilder: (BuildContext context,
-                                                        Object exception,
-                                                        StackTrace? stackTrace) {
+                                                    errorBuilder:
+                                                        (BuildContext context,
+                                                            Object exception,
+                                                            StackTrace?
+                                                                stackTrace) {
                                                       return Image.asset(
                                                         'images/DP.png',
                                                         fit: BoxFit.cover,
@@ -1527,100 +1776,109 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               Spacer(),
                                               SizedBox(
                                                   child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
-                                                        maxLines: 4,
-                                                        softWrap: true,
-                                                        textAlign: TextAlign.left,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : '---'}",
-                                                        maxLines: 4,
-                                                        textAlign: TextAlign.left,
-                                                        softWrap: true,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                              ),
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                    maxLines: 4,
+                                                    softWrap: true,
+                                                    textAlign: TextAlign.left,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
                                               Spacer()
                                             ],
                                           ),
@@ -1640,18 +1898,38 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              RenderRepaintBoundary boundary = _passportContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                              var image = await boundary.toImage(pixelRatio: 3.0);
-                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
-                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                              final tempDir = await getTemporaryDirectory();
-                                              final file = await File('${tempDir.path}/passport.png').create();
+                                              RenderRepaintBoundary boundary =
+                                                  _passportContainerKey
+                                                          .currentContext!
+                                                          .findRenderObject()
+                                                      as RenderRepaintBoundary;
+                                              var image = await boundary
+                                                  .toImage(pixelRatio: 3.0);
+                                              ByteData? byteData =
+                                                  await image.toByteData(
+                                                      format:
+                                                          ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!
+                                                  .buffer
+                                                  .asUint8List();
+                                              final tempDir =
+                                                  await getTemporaryDirectory();
+                                              final file = await File(
+                                                      '${tempDir.path}/passport.png')
+                                                  .create();
                                               await file.writeAsBytes(pngBytes);
-                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
+                                              await Share.shareXFiles(
+                                                  [XFile(file.path)],
+                                                  text:
+                                                      'Check out this container image!');
                                             } catch (e) {
-                                              debugPrint('Error sharing container image: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to share container: $e')),
+                                              debugPrint(
+                                                  'Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        'Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -1669,7 +1947,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           onPressed: () {
                                             // Copy the image URL or any text to the clipboard
                                             Clipboard.setData(ClipboardData(
-                                                text: "images/passport.png")); // Text to be copied
+                                                text:
+                                                    "images/passport.png")); // Text to be copied
                                           },
                                           icon: const Icon(Icons.copy,
                                               color: Colors.white),
@@ -1706,16 +1985,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             children: [
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.name,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1726,7 +2007,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1737,7 +2018,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                      text:
+                                                          "${singletonClass.employeeDataList.first.data!.firstName}"));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1754,16 +2036,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             children: [
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.cardNumber,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .cardNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1776,7 +2060,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1786,8 +2070,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               IconButton(
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                    text: "${singletonClass.employeeDataList.first.data!.passport!.id}",));
+                                                  Clipboard.setData(
+                                                      ClipboardData(
+                                                    text:
+                                                        "${singletonClass.employeeDataList.first.data!.passport!.id}",
+                                                  ));
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1802,20 +2089,22 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           const SizedBox(height: 10),
                                           Row(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.dateOfBirth,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .dateOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1828,7 +2117,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1839,7 +2128,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
                                                   Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
+                                                      text:
+                                                          "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1856,16 +2146,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             children: [
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.expiryDate,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .expiryDate,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1877,7 +2169,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1887,8 +2179,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               IconButton(
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                      text: "${singletonClass.employeeDataList.first.data!.passport!.expiryDate}",)); // Text to be copied
+                                                  Clipboard.setData(
+                                                      ClipboardData(
+                                                    text:
+                                                        "${singletonClass.employeeDataList.first.data!.passport!.expiryDate}",
+                                                  )); // Text to be copied
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1905,16 +2200,18 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             children: [
                                               Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.placeOfBirth,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .placeOfBirth,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1926,7 +2223,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight:
-                                                      FontWeight.normal,
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -1936,8 +2233,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               IconButton(
                                                 onPressed: () {
                                                   // Copy the image URL or any text to the clipboard
-                                                  Clipboard.setData(ClipboardData(
-                                                    text:  "${singletonClass.employeeDataList.first.data!.address!.city}",)); // Text to be copied
+                                                  Clipboard.setData(
+                                                      ClipboardData(
+                                                    text:
+                                                        "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                  )); // Text to be copied
                                                 },
                                                 icon: const Icon(Icons.copy,
                                                     color: Colors.white),
@@ -1962,7 +2262,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     },
                     child: Container(
                       padding:
-                      const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                          const EdgeInsets.only(top: 10.0, left: 30, right: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         boxShadow: [
@@ -2009,7 +2309,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ))
               ]),
-              //Employee Contract
+
+              ///Employee Contract
               Column(children: [
                 GestureDetector(
                     onTap: () {
@@ -2026,7 +2327,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         ),
                         context: context,
                         builder: (BuildContext context) {
-                          // Pass the document data to the bottom sheet
                           return Container(
                             height: MediaQuery.of(context).size.height * 0.9,
                             width: double.infinity,
@@ -2038,7 +2338,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        AppLocalizations.of(context)!.employmentContract,
+                                        AppLocalizations.of(context)!
+                                            .employmentContract,
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
@@ -2080,34 +2381,77 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         children: [
                                           SizedBox(height: 10),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
-                                              Text("${singletonClass.companyDataList.first.data!.name}",
-                                                style: GoogleFonts.inter(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.black,
-                                                  fontSize: 15
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 8.0),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.zero,
+                                                  child: Image.network(
+                                                    singletonClass
+                                                            .companyDataList
+                                                            .first
+                                                            .data
+                                                            ?.logo ??
+                                                        '',
+                                                    fit: BoxFit.fill,
+                                                    width: 40,
+                                                    height: 40,
+                                                    errorBuilder:
+                                                        (BuildContext context,
+                                                            Object exception,
+                                                            StackTrace?
+                                                                stackTrace) {
+                                                      return Image.asset(
+                                                        'images/site.png',
+                                                        fit: BoxFit.fill,
+                                                        width: 40,
+                                                        height: 40,
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
+                                              ),
+                                              SizedBox(width: 100),
+                                              Text(
+                                                "${singletonClass.companyDataList.first.data!.name}",
+                                                style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.black,
+                                                    fontSize: 15),
                                               ),
                                             ],
                                           ),
                                           SizedBox(height: 15),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.only(left: 8.0),
+                                                padding: const EdgeInsets.only(
+                                                    left: 8.0),
                                                 child: ClipRRect(
-                                                  borderRadius: BorderRadius.zero,
-                                                  child:Image.network(
-                                                    singletonClass.employeeDataList.first.data?.profilePic ?? '',
+                                                  borderRadius:
+                                                      BorderRadius.zero,
+                                                  child: Image.network(
+                                                    singletonClass
+                                                            .employeeDataList
+                                                            .first
+                                                            .data
+                                                            ?.profilePic ??
+                                                        '',
                                                     // URL for the network image, empty string if null
                                                     fit: BoxFit.cover,
                                                     width: 100,
                                                     height: 100,
-                                                    errorBuilder: (BuildContext context,
-                                                        Object exception,
-                                                        StackTrace? stackTrace) {
+                                                    errorBuilder:
+                                                        (BuildContext context,
+                                                            Object exception,
+                                                            StackTrace?
+                                                                stackTrace) {
                                                       return Image.asset(
                                                         'images/DP.png',
                                                         fit: BoxFit.cover,
@@ -2120,96 +2464,138 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               ),
                                               Spacer(),
                                               SizedBox(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
+                                                  child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SizedBox(
+                                                    width: 170,
+                                                    child: Text(
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
                                                       maxLines: 4,
-                                                      textAlign: TextAlign.left,
                                                       softWrap: true,
+                                                      textAlign: TextAlign.left,
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            NasColors.darkBlue,
                                                       ),
                                                     ),
-                                                    SizedBox(
-                                                      width:170,
-                                                      child: Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
-                                                        maxLines: 4,
-                                                        softWrap: true,
-                                                        textAlign: TextAlign.left,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
                                                     ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : '---'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
                                                     ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : '---'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Divider(
+                                                      color: Colors.black,
+                                                      thickness: 1,
                                                     ),
-                                                    Text(
-                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : '---'}",
-                                                      maxLines: 4,
-                                                      textAlign: TextAlign.left,
-                                                      softWrap: true,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
-                                                        color: NasColors.darkBlue,
-                                                      ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
                                                     ),
-                                                  ],
-                                                )
-                                              ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : '---'}",
+                                                    maxLines: 4,
+                                                    textAlign: TextAlign.left,
+                                                    softWrap: true,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
                                               Spacer()
                                             ],
                                           ),
                                           SizedBox(height: 20),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.only(left: 10.0),
+                                                padding: const EdgeInsets.only(
+                                                    left: 10.0),
                                                 child: Container(
                                                   width: 86,
                                                   height: 37,
                                                   decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.zero,
+                                                    borderRadius:
+                                                        BorderRadius.zero,
                                                   ),
                                                   child: ClipRRect(
-                                                    borderRadius: BorderRadius.zero,
+                                                    borderRadius:
+                                                        BorderRadius.zero,
                                                     child: Image.network(
-                                                      singletonClass.employeeDataList.first.data?.employeeInfo!.first.empSignature ?? '---',
+                                                      singletonClass
+                                                              .employeeDataList
+                                                              .first
+                                                              .data
+                                                              ?.employeeInfo!
+                                                              .first
+                                                              .empSignature ??
+                                                          '---',
                                                       fit: BoxFit.contain,
-                                                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                                        return  Icon(
+                                                      errorBuilder:
+                                                          (BuildContext context,
+                                                              Object exception,
+                                                              StackTrace?
+                                                                  stackTrace) {
+                                                        return Icon(
                                                           Icons.broken_image,
                                                           size: 30,
-                                                          color: NasColors.darkBlue,
+                                                          color: NasColors
+                                                              .darkBlue,
                                                         );
                                                       },
                                                     ),
@@ -2234,18 +2620,38 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              RenderRepaintBoundary boundary = _employeeContractContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                              var image = await boundary.toImage(pixelRatio: 3.0);
-                                              ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
-                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
-                                              final tempDir = await getTemporaryDirectory();
-                                              final file = await File('${tempDir.path}/employee_contract.png').create();
+                                              RenderRepaintBoundary boundary =
+                                                  _employeeContractContainerKey
+                                                          .currentContext!
+                                                          .findRenderObject()
+                                                      as RenderRepaintBoundary;
+                                              var image = await boundary
+                                                  .toImage(pixelRatio: 3.0);
+                                              ByteData? byteData =
+                                                  await image.toByteData(
+                                                      format:
+                                                          ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!
+                                                  .buffer
+                                                  .asUint8List();
+                                              final tempDir =
+                                                  await getTemporaryDirectory();
+                                              final file = await File(
+                                                      '${tempDir.path}/employee_contract.png')
+                                                  .create();
                                               await file.writeAsBytes(pngBytes);
-                                              await Share.shareXFiles([XFile(file.path)], text: 'Check out this container image!');
+                                              await Share.shareXFiles(
+                                                  [XFile(file.path)],
+                                                  text:
+                                                      'Check out this container image!');
                                             } catch (e) {
-                                              debugPrint('Error sharing container image: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to share container: $e')),
+                                              debugPrint(
+                                                  'Error sharing container image: $e');
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        'Failed to share container: $e')),
                                               );
                                             }
                                           },
@@ -2262,21 +2668,40 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         child: IconButton(
                                           onPressed: () async {
                                             try {
-                                              RenderRepaintBoundary boundary = _employeeContractContainerKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                                              ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-                                              ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-                                              Uint8List pngBytes = byteData!.buffer.asUint8List();
+                                              RenderRepaintBoundary boundary =
+                                                  _employeeContractContainerKey
+                                                          .currentContext!
+                                                          .findRenderObject()
+                                                      as RenderRepaintBoundary;
+                                              ui.Image image = await boundary
+                                                  .toImage(pixelRatio: 3.0);
+                                              ByteData? byteData =
+                                                  await image.toByteData(
+                                                      format: ui
+                                                          .ImageByteFormat.png);
+                                              Uint8List pngBytes = byteData!
+                                                  .buffer
+                                                  .asUint8List();
 
-                                              final tempDir = await getTemporaryDirectory();
-                                              final file = File('${tempDir.path}/copied_image.png');
+                                              final tempDir =
+                                                  await getTemporaryDirectory();
+                                              final file = File(
+                                                  '${tempDir.path}/copied_image.png');
                                               await file.writeAsBytes(pngBytes);
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('image copied')),
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content:
+                                                        Text('image copied')),
                                               );
                                             } catch (e) {
-                                              debugPrint('Error copying image: $e');
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('Failed to copy image: $e')),
+                                              debugPrint(
+                                                  'Error copying image: $e');
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        'Failed to copy image: $e')),
                                               );
                                             }
                                           },
@@ -2303,7 +2728,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   const SizedBox(height: 10),
                                   Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(15)),
                                       color: NasColors.lightBlue,
                                     ),
                                     child: Padding(
@@ -2313,28 +2739,39 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.name,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .name,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                   Text(
-                                                    singletonClass.employeeDataList.isNotEmpty &&
-                                                        singletonClass.employeeDataList.first.data != null
+                                                    singletonClass
+                                                                .employeeDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data !=
+                                                                null
                                                         ? "${singletonClass.employeeDataList.first.data!.firstName}"
-                                                        : "N/A",
+                                                        : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -2345,41 +2782,69 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   Clipboard.setData(
                                                     ClipboardData(
-                                                      text: singletonClass.employeeDataList.isNotEmpty &&
-                                                          singletonClass.employeeDataList.first.data != null
+                                                      text: singletonClass
+                                                                  .employeeDataList
+                                                                  .isNotEmpty &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data !=
+                                                                  null
                                                           ? "${singletonClass.employeeDataList.first.data!.firstName}"
-                                                          : "N/A",
+                                                          : "---",
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.copy, color: Colors.white),
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 5),
-                                          const Divider(height: 1, color: Colors.white),
+                                          const Divider(
+                                              height: 1, color: Colors.white),
                                           const SizedBox(height: 10),
                                           Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.employeeNumber,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .employeeNumber,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Text(
-                                                    singletonClass.employeeDataList.isNotEmpty &&
-                                                        singletonClass.employeeDataList.first.data != null &&
-                                                        singletonClass.employeeDataList.first.data!.employeeInfo != null &&
-                                                        singletonClass.employeeDataList.first.data!.employeeInfo!.isNotEmpty
+                                                    singletonClass
+                                                                .employeeDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data !=
+                                                                null &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data!
+                                                                    .employeeInfo !=
+                                                                null &&
+                                                            singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data!
+                                                                .employeeInfo!
+                                                                .isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
                                                         : "---",
                                                     textAlign: TextAlign.left,
@@ -2387,7 +2852,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -2398,44 +2864,83 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   Clipboard.setData(
                                                     ClipboardData(
-                                                      text: singletonClass.employeeDataList.isNotEmpty &&
-                                                          singletonClass.employeeDataList.first.data != null &&
-                                                          singletonClass.employeeDataList.first.data!.employeeInfo != null &&
-                                                          singletonClass.employeeDataList.first.data!.employeeInfo!.isNotEmpty
+                                                      text: singletonClass
+                                                                  .employeeDataList
+                                                                  .isNotEmpty &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data !=
+                                                                  null &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data!
+                                                                      .employeeInfo !=
+                                                                  null &&
+                                                              singletonClass
+                                                                  .employeeDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .employeeInfo!
+                                                                  .isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
                                                           : "---",
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.copy, color: Colors.white),
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 5),
-                                          const Divider(height: 1, color: Colors.white),
+                                          const Divider(
+                                              height: 1, color: Colors.white),
                                           const SizedBox(height: 10),
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.contractId,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .contractId,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Text(
-                                                    singletonClass.employeeDataList.isNotEmpty &&
-                                                        singletonClass.employeeDataList.first.data != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                    singletonClass
+                                                                .employeeDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data !=
+                                                                null &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data!
+                                                                    .contractInfo !=
+                                                                null &&
+                                                            singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data!
+                                                                .contractInfo!
+                                                                .isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
                                                         : "---",
                                                     textAlign: TextAlign.left,
@@ -2443,7 +2948,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -2454,50 +2960,89 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   Clipboard.setData(
                                                     ClipboardData(
-                                                      text: singletonClass.employeeDataList.isNotEmpty &&
-                                                          singletonClass.employeeDataList.first.data != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                      text: singletonClass
+                                                                  .employeeDataList
+                                                                  .isNotEmpty &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data !=
+                                                                  null &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data!
+                                                                      .contractInfo !=
+                                                                  null &&
+                                                              singletonClass
+                                                                  .employeeDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .contractInfo!
+                                                                  .isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
                                                           : "---",
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.copy, color: Colors.white),
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 5),
-                                          const Divider(height: 1, color: Colors.white),
+                                          const Divider(
+                                              height: 1, color: Colors.white),
                                           const SizedBox(height: 10),
                                           Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppLocalizations.of(context)!.expiryDate,
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .expiryDate,
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Text(
-                                                    singletonClass.employeeDataList.isNotEmpty &&
-                                                        singletonClass.employeeDataList.first.data != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                    singletonClass
+                                                                .employeeDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data !=
+                                                                null &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data!
+                                                                    .contractInfo !=
+                                                                null &&
+                                                            singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data!
+                                                                .contractInfo!
+                                                                .isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
                                                         : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -2508,26 +3053,45 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   Clipboard.setData(
                                                     ClipboardData(
-                                                      text: singletonClass.employeeDataList.isNotEmpty &&
-                                                          singletonClass.employeeDataList.first.data != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                      text: singletonClass
+                                                                  .employeeDataList
+                                                                  .isNotEmpty &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data !=
+                                                                  null &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data!
+                                                                      .contractInfo !=
+                                                                  null &&
+                                                              singletonClass
+                                                                  .employeeDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .contractInfo!
+                                                                  .isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
                                                           : "---",
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.copy, color: Colors.white),
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 5),
-                                          const Divider(height: 1, color: Colors.white),
+                                          const Divider(
+                                              height: 1, color: Colors.white),
                                           const SizedBox(height: 10),
                                           Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     "${AppLocalizations.of(context)!.contract}${AppLocalizations.of(context)!.type}",
@@ -2535,23 +3099,41 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Text(
-                                                    singletonClass.employeeDataList.isNotEmpty &&
-                                                        singletonClass.employeeDataList.first.data != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                        singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                    singletonClass
+                                                                .employeeDataList
+                                                                .isNotEmpty &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data !=
+                                                                null &&
+                                                            singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data!
+                                                                    .contractInfo !=
+                                                                null &&
+                                                            singletonClass
+                                                                .employeeDataList
+                                                                .first
+                                                                .data!
+                                                                .contractInfo!
+                                                                .isNotEmpty
                                                         ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
                                                         : "---",
                                                     maxLines: 4,
                                                     softWrap: true,
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -2562,26 +3144,43 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 onPressed: () {
                                                   Clipboard.setData(
                                                     ClipboardData(
-                                                      text: singletonClass.employeeDataList.isNotEmpty &&
-                                                          singletonClass.employeeDataList.first.data != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo != null &&
-                                                          singletonClass.employeeDataList.first.data!.contractInfo!.isNotEmpty
+                                                      text: singletonClass
+                                                                  .employeeDataList
+                                                                  .isNotEmpty &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data !=
+                                                                  null &&
+                                                              singletonClass
+                                                                      .employeeDataList
+                                                                      .first
+                                                                      .data!
+                                                                      .contractInfo !=
+                                                                  null &&
+                                                              singletonClass
+                                                                  .employeeDataList
+                                                                  .first
+                                                                  .data!
+                                                                  .contractInfo!
+                                                                  .isNotEmpty
                                                           ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
                                                           : "---",
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.copy, color: Colors.white),
+                                                icon: const Icon(Icons.copy,
+                                                    color: Colors.white),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 5),
-                                          const Divider(height: 1, color: Colors.white),
+                                          const Divider(
+                                              height: 1, color: Colors.white),
                                         ],
                                       ),
                                     ),
                                   )
-
                                 ],
                               ),
                             ),
@@ -2591,7 +3190,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     },
                     child: Container(
                       padding:
-                      const EdgeInsets.only(top: 10.0, left: 30, right: 30),
+                          const EdgeInsets.only(top: 10.0, left: 30, right: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         boxShadow: [
@@ -2599,14 +3198,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                             color: Colors.black12,
                             blurRadius: 10,
                             spreadRadius: 10,
-                            offset: Offset(0,
-                                -6),
+                            offset: Offset(0, -6),
                           ),
                           const BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
-                            offset: Offset(0,
-                                5),
+                            offset: Offset(0, 5),
                           ),
                         ],
                       ),
@@ -2623,15 +3220,77 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               color: NasColors.darkBlue,
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "images/companyCard.png",
-                              height: 60,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: NasColors.lightGrey,
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(20),
+                                  topLeft: Radius.circular(20)),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFFD7DCE0),
+                                  Color(0xFFE6EBEE),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.zero,
+                                        child: Image.network(
+                                          (singletonClass.companyDataList
+                                                      .isNotEmpty &&
+                                                  singletonClass.companyDataList
+                                                          .first.data?.logo !=
+                                                      null)
+                                              ? singletonClass.companyDataList
+                                                  .first.data!.logo!
+                                              : '',
+                                          fit: BoxFit.fill,
+                                          width: 40,
+                                          height: 40,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Image.asset(
+                                              'images/site.png',
+                                              fit: BoxFit.fill,
+                                              width: 40,
+                                              height: 40,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 100),
+                                    Expanded(
+                                      child: Text(
+                                        (singletonClass.companyDataList
+                                                    .isNotEmpty &&
+                                                singletonClass.companyDataList
+                                                        .first.data?.name !=
+                                                    null)
+                                            ? singletonClass.companyDataList
+                                                .first.data!.name!
+                                            : '',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],

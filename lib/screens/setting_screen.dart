@@ -21,10 +21,18 @@ class _SettingScreenState extends State<SettingScreen> {
   bool _isToggled = false ;
   bool isBiometricEnabled = false;
   bool _isBiometricEnabled = false;
+  bool _isNotificationToggled = true;
+
   @override
   void initState() {
     super.initState();
     _loadBiometricState();
+    _initializeSettings();
+  }
+
+  void _initializeSettings() async {
+    _isNotificationToggled = await _loadNotificationState();
+    setState(() {});
   }
 
   // Load the state from SharedPreferences
@@ -34,7 +42,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
     setState(() {
       _isBiometricEnabled = isBiometricEnabled;
-      _isToggled = isBiometricEnabled; // Ensure toggle matches stored value
+      _isToggled = isBiometricEnabled;
     });
   }
 
@@ -61,6 +69,17 @@ class _SettingScreenState extends State<SettingScreen> {
     singletonClass.branchShiftsDataList.clear();
     singletonClass.branchID = null;
     singletonClass.branchName = null;
+  }
+
+  /// Notifications
+  Future<void> _saveNotificationState(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', enabled);
+  }
+
+  Future<bool> _loadNotificationState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('notifications_enabled') ?? true; // Default to true
   }
 
   @override
@@ -192,6 +211,65 @@ class _SettingScreenState extends State<SettingScreen> {
                         inactiveTrackColor: Colors.white,
                         inactiveThumbColor: Colors.black,
                       ),
+
+
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  height: 50,
+                  width: MediaQuery.of(context).size.width - 50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withValues(alpha: 0.5),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.notifications_none_sharp , size: 28,color: NasColors.darkBlue,),
+                      Text( AppLocalizations.of(context)!.notifications,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: NasColors.darkBlue,
+                        ),
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: _isNotificationToggled,
+                        onChanged: (bool value) async {
+                          setState(() {
+                            _isNotificationToggled = value;
+                          });
+
+                          await _saveNotificationState(value);
+
+                          if (value) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Notifications enabled')),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Notifications disabled')),
+                            );
+                          }
+                        },
+                        activeColor: Colors.white,
+                        activeTrackColor: NasColors.lightBlue,
+                        inactiveTrackColor: Colors.white,
+                        inactiveThumbColor: Colors.black,
+                      ),
+
 
 
                     ],

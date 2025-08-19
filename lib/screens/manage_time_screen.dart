@@ -201,7 +201,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                           Checkbox(
                             value: _isChecked,
                             activeColor: NasColors.onTime,
-                            onChanged: (bool? value) {
+                            onChanged:(singletonClass.branchID != null) ? (bool? value) {
                               setState(() {
                                 _isChecked = value ?? false;
                                 if (_isChecked == true) {
@@ -211,7 +211,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   _shiftFuture = fetchAndSetShiftDetails();
                                 }
                               });
-                            },),
+                            } : null ),
                         ],
                       ),
                     ),
@@ -569,7 +569,11 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData ||
                         singletonClass.timeTableShiftsDataList.isEmpty ||
+                        singletonClass.timeTableShiftsDataList.first.data == null ||
+                        singletonClass.timeTableShiftsDataList.first.data!.isEmpty ||
+                        singletonClass.timeTableShiftsDataList.first.data!.first.shifts == null ||
                         singletonClass.timeTableShiftsDataList.first.data!.first.shifts!.isEmpty ||
+                        singletonClass.timeTableShiftsDataList.first.data!.first.shifts!.first.shiftDates == null ||
                         singletonClass.timeTableShiftsDataList.first.data!.first.shifts!.first.shiftDates!.isEmpty) {
                       return  Center(
                         child: Padding(
@@ -847,13 +851,10 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       branchId = singletonClass.getJWTModel()?.branchId;
     }
 
-    final String? loggedInEmpId = singletonClass.getJWTModel()?.employeeId;
-    final String? departmentId = singletonClass.getJWTModel()?.departmentId;
-
-    if (branchId == null || loggedInEmpId == null) return;
+    if (branchId == null) return;
 
     final uri = Uri.parse(
-      '${singletonClass.baseURL}/branches/branchEmplyeesInfo/$branchId/$departmentId/$loggedInEmpId',
+      '${singletonClass.baseURL}/branches/branchEmplyeesInfo/$branchId',
     );
     final response = await http.get(uri, headers: singletonClass.getHeaders());
 
@@ -890,35 +891,39 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   }
   /// TIME TABLE API CALL
   Future<TimeTableShiftModel?> getTimeTable(String employeeId) async {
-    String? companyId;
-    String? branchId;
+    final jwt = singletonClass.getJWTModel();
 
-    if (singletonClass.branchID == null || singletonClass.branchID!.isEmpty) {
-      companyId = singletonClass.getJWTModel()?.companyId;
-      branchId = singletonClass.getJWTModel()?.branchId;
-    } else {
-      companyId = singletonClass.selectedCompanyId;
-      branchId = singletonClass.branchID;
-      print(companyId);
-      print(branchId);
+    final companyId = (singletonClass.selectedCompanyId?.isNotEmpty ?? false)
+        ? singletonClass.selectedCompanyId
+        : jwt?.companyId;
+
+    final branchId = (singletonClass.branchID?.isNotEmpty ?? false)
+        ? singletonClass.branchID
+        : jwt?.branchId;
+
+    if (companyId == null || branchId == null) {
+      print("Company ID or Branch ID is missing");
+      return null;
     }
 
     final uri = Uri.parse(
-      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=July&employeeId=$employeeId',
+      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=August&employeeId=$employeeId',
     );
 
     final response = await http.get(uri, headers: singletonClass.getHeaders());
     print("time table uri $uri");
     print("TIME TABLE RESPONSE ${response.body}");
+
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
-      final timeTable = TimeTableShiftModel.fromJson(responseBody);
-      singletonClass.timeTableShiftsDataList.clear();
-      singletonClass.timeTableShiftsDataList.addAll([timeTable]);
+      final timeTable = TimeTableShiftModel.fromJson(json.decode(response.body));
+      singletonClass.timeTableShiftsDataList
+        ..clear()
+        ..add(timeTable);
       return timeTable;
     }
     return null;
   }
+
 
 
   /// UPDATE SHIFT DATA
@@ -970,8 +975,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
 
   String formatOnlyTime(String timeStr) {
     try {
-      final time = DateTime.parse("1970-01-01T$timeStr"); // use dummy date
-      return DateFormat.jm().format(time); // e.g., "8:00 AM"
+      final time = DateTime.parse("1970-01-01T$timeStr");
+      return DateFormat.jm().format(time);
     } catch (e) {
       return '--:--';
     }

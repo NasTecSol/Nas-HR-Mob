@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
@@ -34,9 +35,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: IconButton(
+                 IconButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -60,7 +59,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     ),
                   ),
-                ),
                 Padding(
                   padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                   child: Text(
@@ -110,7 +108,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             itemCount: singletonClass
                                 .notificationModelList.first.data!.length,
                             itemBuilder: (BuildContext context, int index) {
-                              final notificationData = singletonClass.notificationModelList.first.data![index];
+                              final notificationData = singletonClass.notificationModelList.first.data!.reversed.toList()[index];
                               final isArabic = Localizations.localeOf(context).languageCode == 'ar';
                               Future<List<String>> getTranslatedText() async {
                                 if (!isArabic) {
@@ -146,9 +144,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     direction: DismissDirection.endToStart,
                                     onDismissed: (direction) {
                                       setState(() {
-                                        singletonClass
-                                            .notificationModelList.first.data!
-                                            .removeAt(index);
+                                        singletonClass.notificationModelList.first.data!.removeAt(index);
+                                        print(notificationData.id);
+                                        deleteNotification(notificationData.id!);
                                       });
                                     },
                                     background: Container(
@@ -297,6 +295,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
     );
   }
+  ///Delete Api call
+  Future<bool> deleteNotification(String notificationId) async {
+    try {
+      var client = http.Client();
+      var uri = Uri.parse('${singletonClass.baseURL}/notification-data/$notificationId');
+      var response = await client.delete(uri, headers: singletonClass.getHeaders());
+      print(response.body);
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint("Error deleting notification: $e");
+      return false;
+    }
+  }
+
 
   String formatRelativeTime(String createdAt) {
     DateTime createdDate = DateTime.parse(createdAt);

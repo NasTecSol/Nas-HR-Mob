@@ -148,7 +148,9 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                 ],
               ),
               if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                  singletonClass.getJWTModel()?.grade == 'L1') ...[
+                  singletonClass.getJWTModel()?.grade == 'L1'||
+                  singletonClass.getJWTModel()?.grade == 'L2'||
+                  singletonClass.getJWTModel()?.grade == 'L3') ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -158,8 +160,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                   ],
                 ),
               ],
-              if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                  singletonClass.getJWTModel()?.grade == 'L3') ...[
+              if (singletonClass.getJWTModel()?.grade == 'L4') ...[
                 Expanded(
                   child: FutureBuilder(
                       future: getPenalties(),
@@ -208,7 +209,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                   itemCount: _request!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = _request![index];
+                                    final request = _request!.reversed.toList()[index];
                                     return AnimatedContainer(
                                       duration:
                                           const Duration(milliseconds: 300),
@@ -360,7 +361,9 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                 SizedBox(height: 20),
               ],
               if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                  singletonClass.getJWTModel()?.grade == 'L1') ...[
+                  singletonClass.getJWTModel()?.grade == 'L1'||
+                  singletonClass.getJWTModel()?.grade == 'L2'||
+                  singletonClass.getJWTModel()?.grade == 'L3') ...[
                 if (_selectedOptionIndex == 0) ...[
                   Expanded(
                     child: FutureBuilder(
@@ -409,7 +412,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             padding: const EdgeInsets.all(5),
                             itemCount: _request!.length,
                             itemBuilder: (BuildContext context, int index) {
-                              final request = _request![index];
+                              final request = _request!.reversed.toList()[index];
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
                                 margin: const EdgeInsets.symmetric(vertical: 5),
@@ -449,7 +452,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    request.requestData?.first.date ?? 'No Date',
+                                                    request.requestData?.first.date ?? '---',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
                                                       fontWeight: FontWeight.bold,
@@ -458,7 +461,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "SAR ${request.requestData?.first.amount ?? '0'}",
+                                                  "SAR ${request.requestData?.first.amount ?? '---'}",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
@@ -468,7 +471,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                               ],
                                             ),
                                             Text(
-                                              request.requestData?.first.remark ?? 'No Remark',
+                                              request.requestData?.first.remark ?? '---',
                                               style: GoogleFonts.inter(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w500,
@@ -596,7 +599,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                     itemCount: _approver!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      final request = _approver![index];
+                                      final request = _approver!.reversed.toList()[index];
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(

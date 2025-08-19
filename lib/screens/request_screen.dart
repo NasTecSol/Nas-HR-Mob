@@ -573,7 +573,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 padding: const EdgeInsets.all(5),
                                 itemCount: _request!.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final request = _request![index];
+                                  final request = _request!.reversed.toList()[index];
                                   final searchText = searchController.text.toLowerCase();
                                   if (isSearching &&
                                       !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
@@ -583,7 +583,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                       request.approvers!.isNotEmpty &&
                                       request.approvers!.every((approver) =>
                                       approver.status?.toLowerCase() == 'approved');
-
+                                  String formatDate(String updatedAt) {
+                                    DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                    return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                  }
+                                  String date = formatDate(request.createdAt!);
                                   return GestureDetector(
                                     onTap: () => _toggleExpand(index),
                                     child: AnimatedContainer(
@@ -608,24 +612,48 @@ class _RequestScreenState extends State<RequestScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(15.0),
                                         child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Column(
                                               children: [
+                                                if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                    DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                    DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                  Align(
+                                                    alignment: Alignment.topRight,
+                                                    child: Container(
+                                                      width: 10,
+                                                      height: 10,
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.blue,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                ],
+                                                Align(
+                                                  alignment: Alignment.topRight,
+                                                  child: Text(
+                                                    date,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                      FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5),
                                                 Row(
                                                   children: [
                                                     Container(
                                                       height: 50,
                                                       width: 50,
                                                       decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(15),
-                                                        image:
-                                                            const DecorationImage(
-                                                          image: AssetImage(
-                                                              'images/DP.png'),
+                                                        borderRadius: BorderRadius.circular(15),
+                                                        image: const DecorationImage(
+                                                          image: AssetImage('images/DP.png'),
                                                           fit: BoxFit.fill,
                                                         ),
                                                       ),
@@ -655,23 +683,23 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             alignment: Alignment
                                                                 .topLeft,
                                                             child: Text(
-                                                              request.subType !=
-                                                                      null
-                                                                  ? request
-                                                                      .subType!
-                                                                      .replaceAllMapped(
-                                                                        RegExp(
-                                                                            r'([a-z])([A-Z])'),
-                                                                        (Match match) =>
-                                                                            '${match.group(1)} ${match.group(2)}',
-                                                                      )
-                                                                      .replaceFirst(
-                                                                          request.subType![
-                                                                              0],
-                                                                          request
-                                                                              .subType![0]
-                                                                              .toUpperCase())
-                                                                  : '',
+                                                             _translateRequestSubtype2( request.subType !=
+                                                                 null
+                                                                 ? request
+                                                                 .subType!
+                                                                 .replaceAllMapped(
+                                                               RegExp(
+                                                                   r'([a-z])([A-Z])'),
+                                                                   (Match match) =>
+                                                               '${match.group(1)} ${match.group(2)}',
+                                                             )
+                                                                 .replaceFirst(
+                                                                 request.subType![
+                                                                 0],
+                                                                 request
+                                                                     .subType![0]
+                                                                     .toUpperCase())
+                                                                 : '', context),
                                                               style: GoogleFonts
                                                                   .inter(
                                                                 fontSize: 15,
@@ -687,8 +715,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     const SizedBox(width: 5),
-                                                    Column(
-                                                      children: [
                                                         Container(
                                                           height: 30,
                                                           width: 75,
@@ -725,40 +751,15 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ),
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            height: 5),
-                                                        Icon(
-                                                          request
-                                                                      .requestData!
-                                                                      .first
-                                                                      .leaveType ==
-                                                                  'sickLeave'
-                                                              ? Icons
-                                                                  .sick_outlined
-                                                              : request
-                                                                          .requestData!
-                                                                          .first
-                                                                          .leaveType ==
-                                                                      'annualLeave'
-                                                                  ? Icons
-                                                                      .calendar_today_outlined
-                                                                  : request.requestData!.first
-                                                                              .leaveType ==
-                                                                          'casualLeave'
-                                                                      ? Icons
-                                                                          .beach_access_outlined
-                                                                      : request.requestType ==
-                                                                              'loanRequest'
-                                                                          ? Icons
-                                                                              .payments_outlined
-                                                                          : Icons
-                                                                              .error_outline,
-                                                          // Fallback icon if no match
-                                                          size: 30,
-                                                          color: Colors.black,
-                                                        )
-                                                      ],
-                                                    ),
+                                                    Icon(
+                                                      request.requestData!.first.leaveType == 'sickLeave'
+                                                          ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
+                                                          ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
+                                                          ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
+                                                          ? Icons.payments_outlined : Icons.description_outlined,
+                                                      size: 30,
+                                                      color: Colors.black,
+                                                    )
                                                   ],
                                                 ),
                                                 const SizedBox(height: 10),
@@ -790,7 +791,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   request
                                                                       .requestData!
                                                                       .isNotEmpty
-                                                              ? "Duration: ${request.requestData!.first.duration}"
+                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
                                                               : AppLocalizations
                                                                       .of(context)!
                                                                   .noData,
@@ -1050,13 +1051,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 5),
                                                           Text(
-                                                            "Req",
+                                                            "➡️",
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.w500,
                                                               color: Colors.black,
-                                                              fontSize: 12,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
@@ -1100,7 +1100,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                                 const SizedBox(height: 5),
                                                                 Text(
-                                                                  request.approvers![i].approverName ?? 'N/A',
+                                                                  request.approvers![i].approverName ?? '---',
                                                                   style: GoogleFonts.inter(
                                                                     fontSize: 12,
                                                                     fontWeight: FontWeight.w500,
@@ -1120,7 +1120,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ]
                                                         else
                                                           Text(
-                                                            'N/A',
+                                                            '---',
                                                             style: GoogleFonts.inter(
                                                               fontSize: 15,
                                                               color: Colors.grey,
@@ -1161,13 +1161,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 5),
                                                           Text(
-                                                            "CEO",
+                                                            allApproved ? "✅" : "⏳",
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.w500,
                                                               color: Colors.black,
-                                                              fontSize: 12,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
@@ -1300,7 +1299,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemCount: _request!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = _request![index];
+                                    final request = _request!.reversed.toList()[index];
                                     final searchText = searchController.text.toLowerCase();
                                     if (isSearching &&
                                         !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
@@ -1310,7 +1309,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                         request.approvers!.isNotEmpty &&
                                         request.approvers!.every((approver) =>
                                         approver.status?.toLowerCase() == 'approved');
-
+                                    String formatDate(String updatedAt) {
+                                      DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                      return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                    }
+                                    String date = formatDate(request.createdAt!);
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -1340,6 +1343,35 @@ class _RequestScreenState extends State<RequestScreen> {
                                             children: [
                                               Column(
                                                 children: [
+                                                  if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                      DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                      DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                    Align(
+                                                      alignment: Alignment.topRight,
+                                                      child: Container(
+                                                        width: 10,
+                                                        height: 10,
+                                                        decoration: const BoxDecoration(
+                                                          color: Colors.blue,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 5),
+                                                  ],
+                                                  Align(
+                                                    alignment: Alignment.topRight,
+                                                    child: Text(
+                                                      date,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
                                                   Row(
                                                     children: [
                                                       Container(
@@ -1382,24 +1414,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                             Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .topLeft,
+                                                              alignment: Alignment.topLeft,
                                                               child: Text(
-                                                                request.subType !=
-                                                                        null
-                                                                    ? request
-                                                                        .subType!
-                                                                        .replaceAllMapped(
-                                                                          RegExp(
-                                                                              r'([a-z])([A-Z])'),
-                                                                          (Match match) =>
-                                                                              '${match.group(1)} ${match.group(2)}',
-                                                                        )
-                                                                        .replaceFirst(
-                                                                            request.subType![0],
-                                                                            request.subType![0].toUpperCase())
-                                                                    : '',
+                                                                _translateRequestSubtype2(request.subType != null ? request.subType!.replaceAllMapped(RegExp(r'([a-z])([A-Z])'),
+                                                                      (Match match) => '${match.group(1)} ${match.group(2)}',
+                                                                ).replaceFirst(request.subType![0], request.subType![0].toUpperCase()) : '', context),
                                                                 style:
                                                                     GoogleFonts
                                                                         .inter(
@@ -1416,8 +1435,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                       const SizedBox(width: 5),
-                                                      Column(
-                                                        children: [
                                                           Container(
                                                             height: 30,
                                                             width: 75,
@@ -1455,46 +1472,41 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(
-                                                              height: 5),
+                                                          SizedBox(width: 5),
                                                           Icon(
-                                                            request
-                                                                        .requestData!
-                                                                        .first
-                                                                        .leaveType ==
-                                                                    'sickLeave'
-                                                                ? Icons
-                                                                    .sick_outlined
-                                                                : request
-                                                                            .requestData!
-                                                                            .first
-                                                                            .leaveType ==
-                                                                        'annualLeave'
-                                                                    ? Icons
-                                                                        .calendar_today_outlined
-                                                                    : request.requestData!.first.leaveType ==
-                                                                            'casualLeave'
-                                                                        ? Icons
-                                                                            .beach_access_outlined
-                                                                        : request.requestType ==
-                                                                                'loanRequest'
-                                                                            ? Icons.savings_outlined
-                                                                            : Icons.error_outline,
-                                                            // Fallback icon if no match
-                                                            size: 30,
-                                                            color: Colors.black,
-                                                          )
+                                                        request
+                                                            .requestData!
+                                                            .first
+                                                            .leaveType ==
+                                                            'sickLeave'
+                                                            ? Icons
+                                                            .sick_outlined
+                                                            : request
+                                                            .requestData!
+                                                            .first
+                                                            .leaveType ==
+                                                            'annualLeave'
+                                                            ? Icons
+                                                            .calendar_today_outlined
+                                                            : request.requestData!.first.leaveType ==
+                                                            'casualLeave'
+                                                            ? Icons
+                                                            .beach_access_outlined
+                                                            : request.requestType ==
+                                                            'loanRequest'
+                                                            ? Icons.savings_outlined
+                                                            : Icons.description_outlined,
+                                                        // Fallback icon if no match
+                                                        size: 30,
+                                                        color: Colors.black,
+                                                      )
                                                         ],
                                                       ),
-                                                    ],
-                                                  ),
                                                   const SizedBox(height: 10),
                                                   Align(
                                                     alignment:
                                                         Alignment.topLeft,
-                                                    child: request
-                                                                .requestType ==
-                                                            "loanRequest"
+                                                    child: request.requestType == "loanRequest"
                                                         ? Text(
                                                             request.requestData !=
                                                                         null &&
@@ -1569,8 +1581,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'leaveRequest') ...[
+                                                    if (request.requestType == 'leaveRequest') ...[
                                                       const SizedBox(
                                                           height: 10),
                                                       Align(
@@ -1641,8 +1652,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           height: 10),
                                                     ],
                                                     const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'loanRequest') ...[
+                                                    if (request.requestType == 'loanRequest') ...[
                                                       const SizedBox(
                                                           height: 10),
                                                       Align(
@@ -1786,7 +1796,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: NasColors.onTime,
+                                                                    color: NasColors.completed,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1799,13 +1809,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ],
                                                             ),
-                                                            const SizedBox(height: 5),
                                                             Text(
-                                                              "Req",
+                                                              "➡️",
                                                               style: GoogleFonts.inter(
                                                                 fontWeight: FontWeight.w500,
                                                                 color: Colors.black,
-                                                                fontSize: 12,
+                                                                fontSize: 15,
                                                               ),
                                                             ),
                                                           ],
@@ -1849,7 +1858,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   ),
                                                                   const SizedBox(height: 5),
                                                                   Text(
-                                                                    request.approvers![i].approverName ?? 'N/A',
+                                                                    request.approvers![i].approverName ?? '---',
                                                                     style: GoogleFonts.inter(
                                                                       fontSize: 12,
                                                                       fontWeight: FontWeight.w500,
@@ -1869,7 +1878,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             ]
                                                           else
                                                             Text(
-                                                              'N/A',
+                                                              '---',
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 15,
                                                                 color: Colors.grey,
@@ -1897,7 +1906,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: allApproved ? NasColors.onTime : NasColors.pending,
+                                                                    color: allApproved ? NasColors.completed : NasColors.pending,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1910,13 +1919,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ],
                                                             ),
-                                                            const SizedBox(height: 5),
                                                             Text(
-                                                              "CEO",
+                                                              allApproved ? "✅" : "⏳",
                                                               style: GoogleFonts.inter(
                                                                 fontWeight: FontWeight.w500,
                                                                 color: Colors.black,
-                                                                fontSize: 12,
+                                                                fontSize: 15,
                                                               ),
                                                             ),
                                                           ],
@@ -2045,12 +2053,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemCount: _approver!.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final request = _approver![index];
+                                    final request = _approver!.reversed.toList()[index];
                                     final searchText = searchController.text.toLowerCase();
                                     if (isSearching &&
                                         !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
                                       return const SizedBox.shrink();
                                     }
+                                    String formatDate(String updatedAt) {
+                                      DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                      return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                    }
+                                    String date = formatDate(request.createdAt!);
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -2080,6 +2093,39 @@ class _RequestScreenState extends State<RequestScreen> {
                                             children: [
                                               Column(
                                                 children: [
+                                                  if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                      DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                      DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                    Align(
+                                                      alignment: Alignment.topRight,
+                                                      child: Container(
+                                                        width: 10,
+                                                        height: 10,
+                                                        decoration: const BoxDecoration(
+                                                          color: Colors.blue,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 5),
+                                                  ],
+                                                  Align(
+                                                    alignment:
+                                                    Alignment.topRight,
+                                                    child: Text(
+                                                      date,
+                                                      style:
+                                                      GoogleFonts
+                                                          .inter(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
                                                   Row(
                                                     children: [
                                                       Container(
@@ -2126,20 +2172,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   Alignment
                                                                       .topLeft,
                                                               child: Text(
-                                                                request.subType !=
-                                                                        null
-                                                                    ? request
-                                                                        .subType!
-                                                                        .replaceAllMapped(
-                                                                          RegExp(
-                                                                              r'([a-z])([A-Z])'),
-                                                                          (Match match) =>
-                                                                              '${match.group(1)} ${match.group(2)}',
-                                                                        )
-                                                                        .replaceFirst(
-                                                                            request.subType![0],
-                                                                            request.subType![0].toUpperCase())
-                                                                    : '',
+                                                               _translateRequestSubtype2( request.subType !=
+                                                                   null
+                                                                   ? request
+                                                                   .subType!
+                                                                   .replaceAllMapped(
+                                                                 RegExp(
+                                                                     r'([a-z])([A-Z])'),
+                                                                     (Match match) =>
+                                                                 '${match.group(1)} ${match.group(2)}',
+                                                               )
+                                                                   .replaceFirst(
+                                                                   request.subType![0],
+                                                                   request.subType![0].toUpperCase())
+                                                                   : '', context),
                                                                 style:
                                                                     GoogleFonts
                                                                         .inter(
@@ -2156,8 +2202,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                       const SizedBox(width: 5),
-                                                      Column(
-                                                        children: [
                                                           Container(
                                                             height: 30,
                                                             width: 75,
@@ -2195,36 +2239,33 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                           ),
-                                                          const SizedBox(
-                                                              height: 5),
-                                                          Icon(
-                                                            request
-                                                                        .requestData!
-                                                                        .first
-                                                                        .leaveType ==
-                                                                    'sickLeave'
-                                                                ? Icons
-                                                                    .sick_outlined
-                                                                : request
-                                                                            .requestData!
-                                                                            .first
-                                                                            .leaveType ==
-                                                                        'annualLeave'
-                                                                    ? Icons
-                                                                        .calendar_today_outlined
-                                                                    : request.requestData!.first.leaveType ==
-                                                                            'casualLeave'
-                                                                        ? Icons
-                                                                            .beach_access_outlined
-                                                                        : request.requestType ==
-                                                                                'loanRequest'
-                                                                            ? Icons.savings_outlined
-                                                                            : Icons.error_outline,
-                                                            size: 30,
-                                                            color: Colors.black,
-                                                          )
-                                                        ],
-                                                      ),
+                                                      SizedBox(width: 5),
+                                                      Icon(
+                                                        request
+                                                            .requestData!
+                                                            .first
+                                                            .leaveType ==
+                                                            'sickLeave'
+                                                            ? Icons
+                                                            .sick_outlined
+                                                            : request
+                                                            .requestData!
+                                                            .first
+                                                            .leaveType ==
+                                                            'annualLeave'
+                                                            ? Icons
+                                                            .calendar_today_outlined
+                                                            : request.requestData!.first.leaveType ==
+                                                            'casualLeave'
+                                                            ? Icons
+                                                            .beach_access_outlined
+                                                            : request.requestType ==
+                                                            'loanRequest'
+                                                            ? Icons.savings_outlined
+                                                            : Icons.description_outlined,
+                                                        size: 30,
+                                                        color: Colors.black,
+                                                      )
                                                     ],
                                                   ),
                                                   Align(
@@ -3005,7 +3046,7 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateRequest(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
-      case 'leave Request':
+      case 'Leave Request':
         return localizations.leaveRequests;
       case 'Loan Request':
         return localizations.loanRequest;
@@ -3035,7 +3076,7 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateBottomText(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
-      case 'leave Request':
+      case 'Leave Request':
         return localizations.leaveRequestBottom;
       case 'Loan Request':
         return localizations.loanRequestBottom;
@@ -3065,6 +3106,8 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateRequestSubtype(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
+      case 'leave Request':
+        return localizations.leaveRequests;
       case 'Sick Leave':
         return localizations.sickLeave;
       case 'Annual Leave':
@@ -3103,7 +3146,7 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.moon;
       case "Bad Behaviour":
         return localizations.badBehaviour;
-      case "Marraige Leave":
+      case "Marriage Leave":
         return localizations.marriageLeave;
       case "Exam Leave":
         return localizations.examLeave;
@@ -3111,11 +3154,68 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.deathLeave;
       case "Special Document":
         return localizations.specialDocument;
+      case "Maternity Leave":
+        return localizations.maternityLeave;
       default:
         return status!;
     }
   }
-
+  ///Request subtype on get method
+  String _translateRequestSubtype2(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Sick Leave':
+        return localizations.sickLeave;
+      case 'Annual Leave':
+        return localizations.annualLeave;
+      case 'Casual Leave':
+        return localizations.casualLeave;
+      case 'Advancesalaryrequest':
+        return localizations.advanceSalaryRequest;
+      case 'LongTermloanrequest':
+        return localizations.longTermLoanRequest;
+      case "Housingallowance":
+        return localizations.housingAllowance;
+      case "Travelingallowance":
+        return localizations.travellingAllowance;
+      case 'Salaryincrementalallowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salaryslip":
+        return localizations.salarySlip;
+      case "Promotionalletter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advanceexpense":
+        return localizations.advanceExpense;
+      case "Businessexpense":
+        return localizations.businessExpense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Badbehaviour":
+        return localizations.badBehaviour;
+      case "Marraigeleave":
+        return localizations.marriageLeave;
+      case "Exams Leave":
+        return localizations.examLeave;
+      case "Exam Leave":
+        return localizations.examLeave;
+      case "Death Leave":
+        return localizations.deathLeave;
+      case "Specialdocument":
+        return localizations.specialDocument;
+      default:
+        return status!;
+    }
+  }
   //Approve Colors
   Color _getColorForApproverStatus(String? approverStatus) {
     if (approverStatus == null ||
@@ -4789,7 +4889,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             onPressed: () async {
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
-                                type: FileType.any,
+                                type: FileType.image,
                               );
 
                               if (result != null &&
@@ -5361,27 +5461,19 @@ class _RequestScreenState extends State<RequestScreen> {
                                               ),
                                               content: SizedBox(
                                                 height: 120,
-                                                // Adjust the height as needed to fit content
                                                 child: Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceBetween,
                                                   children: [
-                                                    // Low Severity Option
                                                     GestureDetector(
                                                       onTap: () {
                                                         setState(() {
-                                                          employee.severity =
-                                                              1; // Set severity level to 1 for Low
-                                                          if (_selectedEmployees
-                                                              .contains(
-                                                                  employee)) {
-                                                            _selectedEmployees
-                                                                .remove(
-                                                                    employee);
+                                                          employee.severity = 1;
+                                                          if (_selectedEmployees.contains(employee)) {
+                                                            _selectedEmployees.remove(employee);
                                                           } else {
-                                                            _selectedEmployees
-                                                                .add(employee);
+                                                            _selectedEmployees.add(employee);
                                                           }
                                                         });
                                                         Navigator.pop(
@@ -6031,11 +6123,8 @@ class _RequestScreenState extends State<RequestScreen> {
     String? firstName = singletonClass.employeeDataList.first.data!.firstName;
     String? middleName = singletonClass.employeeDataList.first.data!.middleName;
     String? lastName = singletonClass.employeeDataList.first.data!.lastName;
-    String? policyId =
-        singletonClass.companyDataList.first.data!.policies!.first.policyId;
-    String? employeeName = [firstName, middleName, lastName]
-        .where((name) => name != null && name.isNotEmpty)
-        .join(' ');
+    String? policyId = singletonClass.companyDataList.first.data!.policies!.first.policyId;
+    String? employeeName = [firstName, middleName, lastName].where((name) => name != null && name.isNotEmpty).join(' ');
 
     String? selectedRequestType = _selectedRequestType;
     String? selectedSubType = _selectedSubType?.requestType;
@@ -6056,16 +6145,12 @@ class _RequestScreenState extends State<RequestScreen> {
       return;
     }
 
-    // Prepare attachments if a file is selected
     List<Map<String, dynamic>> attachments = [];
     if (selectedFile != null) {
       attachments.add({
-        "fileName": singletonClass
-            .attachmentResponseDataList.first.data!.attachmentName,
-        "fileType": singletonClass
-            .attachmentResponseDataList.first.data!.attachmentType,
-        "fileContent":
-            singletonClass.attachmentResponseDataList.first.data!.url,
+        "fileName": singletonClass.attachmentResponseDataList.first.data!.attachmentName,
+        "fileType": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
+        "fileContent": singletonClass.attachmentResponseDataList.first.data!.url,
       });
     }
 
@@ -6086,14 +6171,14 @@ class _RequestScreenState extends State<RequestScreen> {
         return {
           "empId": employee!.empId,
           "name": employee.employeeName,
-          "severity": employee.severity, // Adjust as needed
+          "severity": employee.severity,
         };
       }).toList();
 
       requestData.add({
         "employees": employees,
         "fine_penality": selectedSubType,
-        "amount": _amount.text, // Example amount
+        "amount": _amount.text,
         "details": _details.text,
         "date&time": formattedFromDate,
         "remark": _notes.text,
@@ -6139,7 +6224,7 @@ class _RequestScreenState extends State<RequestScreen> {
     };
 
     String body = json.encode(data);
-    print("Request JSON POST ${body}");
+    print("Request JSON POST $body");
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
 
     setState(() {
@@ -6158,7 +6243,7 @@ class _RequestScreenState extends State<RequestScreen> {
       });
 
       final decodedResponse = json.decode(response.body);
-      print("REQUEST RESPONSE ${decodedResponse}");
+      print("REQUEST RESPONSE $decodedResponse");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
@@ -6354,8 +6439,6 @@ class _RequestScreenState extends State<RequestScreen> {
         "specialLeaveRequest",
       ],
     };
-
-    // Updated URI with query parameters
     final uri = Uri.parse(
       '${singletonClass.baseURL}/request/approver/$employeeId?limit=$limit&page=$page',
     );
@@ -6372,8 +6455,6 @@ class _RequestScreenState extends State<RequestScreen> {
       if (response.statusCode == 201) {
         final responseBody = json.decode(response.body);
         final requestData = ApproverRequestData.fromJson(responseBody);
-
-        // Optionally: merge or update list if pagination is used for loading more
         if (page == 0) {
           singletonClass.setApproverDataList([requestData]);
         } else {
