@@ -129,7 +129,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get announcements => 'الإعلانات';
 
   @override
-  String get halfToOne => '2/1';
+  String get totalRecord => 'إجمالي السجلات';
 
   @override
   String get seventyFive => '75';
@@ -216,7 +216,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get breaks => 'إستراحة';
 
   @override
-  String get breakOut => 'استراحة خروج';
+  String get breakOut => 'نهاية استراحة';
 
   @override
   String get clockOut => 'تسجيل الخروج';
@@ -371,10 +371,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
 
   @override
-  String get checkIn => 'تسجيل الدخول';
+  String get checkIn => 'تسجيل دخول';
 
   @override
-  String get checkOut => 'تسجيل الخروج';
+  String get checkOut => 'تسجيل خروج';
 
   @override
   String get worked => 'عمل لمدة';
@@ -398,7 +398,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inProgress => 'قيد التنفيذ';
 
   @override
-  String get pending => 'معلق';
+  String get pending => 'قيد الانتظار';
 
   @override
   String get completed => 'مكتمل';
@@ -539,7 +539,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get location => 'الموقع';
 
   @override
-  String get biometricCheckIn => 'تسجيل الحضور بالبصمة الحيوية';
+  String get biometricCheckIn => 'تسجيل الدخول بالبصمة';
 
   @override
   String get logout => 'تسجيل الخروج';
@@ -602,7 +602,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get earlyCheckOut => 'الخروج المبكر';
 
   @override
-  String get earlyLeft => 'انصراف مبكر';
+  String get earlyLeft => 'خروج مبكر';
 
   @override
   String get comment => 'إضافة تعليق';
@@ -1417,7 +1417,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quarterly => 'ربع سنوي';
 
   @override
-  String get missingCheckInOut => 'لم يتم تسجيل الخروج';
+  String get missingCheckInOut => 'مفقود تسجيل دخول/خروج';
 
   @override
   String get advanceExpense => 'نفقة مقدمة';
@@ -1712,4 +1712,119 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get maternityLeave => 'إجازة الأمومة';
+
+  @override
+  String get taskDetails => 'تفاصيل المهمة';
+
+  @override
+  String get teamRequests => 'طلبات الفريق';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get timeStamp => 'الطابع الزمني';
+
+  @override
+  String get srNo => 'الرقم التسلسلي';
+
+  @override
+  String get h => 'س';
+
+  @override
+  String get m => 'د';
+
+  @override
+  String get category => 'الفئة';
+
+  @override
+  String get value => 'القيمة';
+
+  @override
+  String get dayOff => 'يوم عطلة';
+
+  @override
+  String get absentWithApproval => 'غياب بموافقة';
+
+  @override
+  String get noCheckIn => 'لم يتم تسجيل الدخول';
+
+  @override
+  String get latePenality => 'عقوبة التأخير';
+
+  @override
+  String get shortHours => 'ساعات ناقصة';
+
+  @override
+  String get missingCheckIn => 'مفقود تسجيل دخول';
+
+  @override
+  String get missingCheckOut => 'مفقود تسجيل خروج';
+
+  @override
+  String get oosIn => 'خارج النظام - دخول';
+
+  @override
+  String get oosOut => 'خارج النظام - خروج';
+
+  @override
+  String get earlyIn => 'دخول مبكر';
+
+  @override
+  String get onTimeIn => 'دخول في الوقت';
+
+  @override
+  String get onTimeOut => 'خروج في الوقت';
+
+  @override
+  String get lateIn => 'دخول متأخر';
+
+  @override
+  String get lateOut => 'خروج متأخر';
+
+  @override
+  String get smIn => 'SM دخول';
+
+  @override
+  String get smOut => 'SM خروج';
+
+  @override
+  String get breakIn => 'بداية استراحة';
+
+  @override
+  String get slot => 'فترة';
+
+  @override
+  String get outOffShift => 'خارج أوقات الدوام';
+
+  @override
+  String get fullDay => 'يوم كامل';
+
+  @override
+  String get pleaseSetupBiometric => 'يرجى إعداد البصمة في إعدادات جهازك';
+
+  @override
+  String get pleaseAuthenticate => 'يرجى المصادقة للوصول إلى هذه الميزة';
+
+  @override
+  String get biometricAuthenticationFailed => 'فشلت عملية المصادقة الحيوية';
+
+  @override
+  String get biometricAuthenticationDisabled => 'تم تعطيل المصادقة الحيوية';
+
+  @override
+  String get biometricAuthenticationEnabled => 'المصادقة البيومترية مفعلة';
+
+  @override
+  String get notificationEnabled => 'الإشعارات مفعلة';
+
+  @override
+  String get notificationsDisabled => 'الإشعارات معطلة';
+
+  @override
+  String get anErrorOccurredDuringAuthentication => 'حدث خطأ أثناء المصادقة';
+
+  @override
+  String get biometricNotAvailable =>
+      'المصادقة البيومترية غير متوفرة أو غير مسجلة';
 }

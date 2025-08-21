@@ -57,24 +57,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    trackOpenLocation();
+    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    if (hasSocket) {
+      final locale = WidgetsBinding.instance.window.locale.languageCode;
+      SocketService().initializeSocket('${singletonClass.tenantId}', locale);
+    }
     _draggableScrollableController.addListener(() {
-      setState(() {
-        isExpanded = _draggableScrollableController.size > 0.3;
-        showHeaderContent = isExpanded;
-        blurAmount = isExpanded ? 10.0 : 0.0;
-      });
-      WidgetsBinding.instance.addObserver(this);
-      trackOpenLocation();
-    });
-    setState(() {
+      if (mounted) {
+        setState(() {
+          isExpanded = _draggableScrollableController.size > 0.3;
+          showHeaderContent = isExpanded;
+          blurAmount = isExpanded ? 10.0 : 0.0;
+        });
+      }
     });
   }
+
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _draggableScrollableController.dispose();
     super.dispose();
   }
+
+
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -125,46 +135,54 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const OnsiteCheckin()));
-                      _removeOverlay();
-                    },
-                    child: Container(
-                      height: 90,
-                      width: 90,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Image.asset("images/site.png"),
+                  if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true)...[
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const OnsiteCheckin()));
+                        _removeOverlay();
+                      },
+                      child: Container(
+                        height: 90,
+                        width: 90,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Image.asset("images/site.png"),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    AppLocalizations.of(context)!.location,
-                    textAlign: TextAlign.left,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    const SizedBox(height: 5),
+                    Text(
+                      AppLocalizations.of(context)!.location,
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
+                  ],
+
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () async {
                       if (!(await _authService.checkBiometricAvailability())) {
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please set up biometrics in your device settings')),
+                           SnackBar(
+                              content: Text(AppLocalizations.of(context)!.pleaseSetupBiometric,
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white
+                                ),
+                              )),
                         );
                         return;
                       }
@@ -628,14 +646,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               .withValues(alpha: 0.5),
                                           spreadRadius: 1,
                                           blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
+                                          offset: const Offset(0,0),
                                         ),
                                       ],
                                     ),
                                     child: Center(
                                       child: Image.asset(
-                                        'images/teamClocking.png',
+                                        'images/fingerprint.png',
                                         fit: BoxFit.contain,
                                         width: 30,
                                         height: 30,
@@ -645,7 +662,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  AppLocalizations.of(context)!.teamClocking,
+                                  AppLocalizations.of(context)!.biometricCheckIn,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -761,11 +778,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasNotChatBot =
         uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
-    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
-    if (hasSocket){
-      final locale = Localizations.localeOf(context).languageCode;
-      print("socket");
-      SocketService().initializeSocket('${singletonClass.tenantId}', locale);}
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -880,7 +893,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           SizedBox(
                             width: 170,
                             child: Text(
-                              'Contract ID #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
+                              '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -1577,7 +1590,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     singletonClass.attendanceDataList.isNotEmpty &&
                                                             singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
                                                         ? '${AppLocalizations.of(context)!.worked} '
-                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0)}'
+                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0 , context)}'
                                                         : '${AppLocalizations.of(context)!.worked} --:--',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1589,8 +1602,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             SizedBox(
                                               height: 55,
                                               width: 55,
-                                              child: Lottie.asset(
-                                                  'images/totalWork.json'),
+                                              child: Lottie.asset('images/totalWork.json'),
                                             ),
                                           ],
                                         ),
@@ -1894,7 +1906,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 context,
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                        const TeamClocking()));
+                                                        const TeamAttendanceScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1914,7 +1926,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ),
                                             child: Center(
                                               child: Image.asset(
-                                                'images/teamClocking.png',
+                                                'images/attendance.png',
                                                 fit: BoxFit.contain,
                                                 width: 30,
                                                 height: 30,
@@ -1925,7 +1937,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         const SizedBox(height: 5),
                                         Text(
                                           AppLocalizations.of(context)!
-                                              .teamClocking,
+                                              .attendance,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -2182,6 +2194,104 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const ManageTimeScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/clock.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .manageTime,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const TeamClocking()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/fingerprint.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .biometricCheckIn,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -2428,13 +2538,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       color:
                                                           NasColors.lightBlue,
                                                       width:
-                                                          2.0, // Set the border width
+                                                          2.0,
                                                     ),
                                                     right: BorderSide(
                                                       color:
                                                           NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
+                                                      width: 2.0,
                                                     ),
                                                   ),
                                                   borderRadius:

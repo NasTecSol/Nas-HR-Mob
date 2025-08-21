@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
@@ -524,9 +525,23 @@ class SingletonClass {
     return DateFormat('hh:mm a').format(createdDate);
   }
 
-  String formatDate2(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('dd-MM-yyyy').format(createdDate);
+  String formatDate2(String createdAt , context) {
+    try{
+      DateTime updatedAtDateTime = DateTime.parse(createdAt);
+      final locale = Localizations.localeOf(context).languageCode;
+      if (locale == 'ar'){
+        final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
+        return arabicFormatter.format(updatedAtDateTime);
+      }else{
+        final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+        return formattedTime;
+      }
+    } catch (e){
+      if (kDebugMode) {
+        print("Error formatting time: $e");
+      }
+      return '--:--';
+    }
   }
 
   String formatDateTime(String dateTime) {
@@ -538,10 +553,10 @@ class SingletonClass {
     }
   }
 
-  String formatMinutes(int totalMinutes) {
+  String formatMinutes(int totalMinutes, context) {
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
-    return "$hours h $minutes min";
+    return "$hours ${AppLocalizations.of(context)!.h} $minutes ${AppLocalizations.of(context)!.m}";
   }
 
   bool isToday(String? datetimeString) {

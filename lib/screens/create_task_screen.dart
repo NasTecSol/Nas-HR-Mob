@@ -478,7 +478,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         GestureDetector(
                           onTap: () async {
                             FilePickerResult? result = await FilePicker.platform.pickFiles(
-                              type: FileType.any,
+                              type: FileType.image,
                             );
 
                             if (result != null && result.files.single.path != null) {

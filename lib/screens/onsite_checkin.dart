@@ -83,7 +83,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
-  // Get current location and update the map with current location and check proximity
   Future<void> _getCurrentLocation() async {
     PermissionStatus permissionGranted = await _location.requestPermission();
     if (permissionGranted == PermissionStatus.granted) {
@@ -111,7 +110,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     final ByteData bytes = await rootBundle.load('images/placeholder.png');
     final Uint8List list = bytes.buffer.asUint8List();
 
-    // Create a point annotation at the current location
     await _mapboxMap.annotations.createPointAnnotationManager().then((pointAnnotationManager) {
       final pointAnnotationOptions = PointAnnotationOptions(
         geometry: Point(coordinates: Position(locationData.longitude!, locationData.latitude!)),
@@ -122,7 +120,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
-  // Check if the user is within the proximity of the company location
   void _checkProximityToCompanyLocation() {
     if (_currentLocation != null) {
       final double distance = _calculateDistance(
@@ -135,36 +132,32 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       if (distance > _radiusInMeters) {
         _showOutOfLocationMessage();
       } else {
-        _showCheckInConfirmationDialog(); // Show check-in confirmation if within radius
+        _showCheckInConfirmationDialog();
       }
     }
   }
 
-  // Calculate the distance between two coordinates (in meters)
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371000; // Radius of the Earth in meters
+    const R = 6371000;
     final dLat = _degreesToRadians(lat2 - lat1);
     final dLon = _degreesToRadians(lon2 - lon1);
     final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_degreesToRadians(lat1)) * math.cos(_degreesToRadians(lat2)) *
             math.sin(dLon / 2) * math.sin(dLon / 2);
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return R * c; // Distance in meters
+    return R * c;
   }
 
-  // Convert degrees to radians
   double _degreesToRadians(double degrees) {
     return degrees * math.pi / 180;
   }
 
-  // Show an alert if the user is out of the company location's radius
   void _showOutOfLocationMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
     );
   }
 
-  // Show a dialog asking if the user is sure about checking in
   void _showCheckInConfirmationDialog() {
     showDialog(
       context: context,
@@ -217,7 +210,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       pointAnnotationManager.create(pointAnnotationOptions);
     });
 
-    // Draw a circle to represent the company's location radius
     await _mapboxMap.annotations.createCircleAnnotationManager().then((circleAnnotationManager) {
       final circleAnnotationOptions = CircleAnnotationOptions(
         geometry: Point(coordinates: Position(_companyLongitude!, _companyLatitude!)),
@@ -231,12 +223,10 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     });
   }
 
-  // Move the map view to the company's location
   Future<void> _moveToCompanyLocation() async {
     _moveToLocation(_companyLatitude!, _companyLongitude!);
   }
 
-  // Move the map view to the current location
   void _moveToCurrentLocation() {
     if (_currentLocation != null) {
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);

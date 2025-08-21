@@ -17,11 +17,15 @@ class SocketService {
   IO.Socket? _socket;
 
   void initializeSocket(String tenantId, String languageCode) {
+    if (_socket != null && _socket!.connected){
+      print("⚡ Socket already connected, skipping re-init");
+      return;
+    }
+
     String? socketBaseUrl = singletonClass.baseURL;
     if (socketBaseUrl!.endsWith('/api')) {
       socketBaseUrl = socketBaseUrl.substring(0, socketBaseUrl.length - 3);
     }
-    if (_socket != null && _socket!.connected) return;
 
     _socket = IO.io(
       socketBaseUrl,
@@ -53,7 +57,14 @@ class SocketService {
 
     _socket!.connect();
   }
-
+  void disposeSocket() {
+    if (_socket != null) {
+      _socket!.dispose();
+      _socket!.disconnect();
+      _socket = null;
+      print("🧹 Socket disposed");
+    }
+  }
   Future<void> _handleBroadcastEvent(dynamic data, String languageCode) async {
     try {
       if (data == null) return;

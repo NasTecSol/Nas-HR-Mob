@@ -338,11 +338,11 @@ abstract class AppLocalizations {
   /// **'Announcements'**
   String get announcements;
 
-  /// No description provided for @halfToOne.
+  /// No description provided for @totalRecord.
   ///
   /// In en, this message translates to:
-  /// **'2/1'**
-  String get halfToOne;
+  /// **'Total Record'**
+  String get totalRecord;
 
   /// No description provided for @seventyFive.
   ///
@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @breakOut.
   ///
   /// In en, this message translates to:
-  /// **'Break-Out'**
+  /// **'Break Out'**
   String get breakOut;
 
   /// No description provided for @clockOut.
@@ -1157,7 +1157,7 @@ abstract class AppLocalizations {
   /// No description provided for @biometricCheckIn.
   ///
   /// In en, this message translates to:
-  /// **'Biometric Check-in'**
+  /// **'Biometric Checkin\'s'**
   String get biometricCheckIn;
 
   /// No description provided for @logout.
@@ -3487,6 +3487,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maternity Leave'**
   String get maternityLeave;
+
+  /// No description provided for @taskDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Details'**
+  String get taskDetails;
+
+  /// No description provided for @teamRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Request'**
+  String get teamRequests;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @timeStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Stamp'**
+  String get timeStamp;
+
+  /// No description provided for @srNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Sr No'**
+  String get srNo;
+
+  /// No description provided for @h.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get h;
+
+  /// No description provided for @m.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get m;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @value.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get value;
+
+  /// No description provided for @dayOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Day Off'**
+  String get dayOff;
+
+  /// No description provided for @absentWithApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent with Approval'**
+  String get absentWithApproval;
+
+  /// No description provided for @noCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'No Check-In'**
+  String get noCheckIn;
+
+  /// No description provided for @latePenality.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Penalty'**
+  String get latePenality;
+
+  /// No description provided for @shortHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Hours'**
+  String get shortHours;
+
+  /// No description provided for @missingCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Check-In'**
+  String get missingCheckIn;
+
+  /// No description provided for @missingCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Check-Out'**
+  String get missingCheckOut;
+
+  /// No description provided for @oosIn.
+  ///
+  /// In en, this message translates to:
+  /// **'OOS In'**
+  String get oosIn;
+
+  /// No description provided for @oosOut.
+  ///
+  /// In en, this message translates to:
+  /// **'OOS Out'**
+  String get oosOut;
+
+  /// No description provided for @earlyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Early In'**
+  String get earlyIn;
+
+  /// No description provided for @onTimeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'OnTime In'**
+  String get onTimeIn;
+
+  /// No description provided for @onTimeOut.
+  ///
+  /// In en, this message translates to:
+  /// **'OnTime Out'**
+  String get onTimeOut;
+
+  /// No description provided for @lateIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Late In'**
+  String get lateIn;
+
+  /// No description provided for @lateOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Out'**
+  String get lateOut;
+
+  /// No description provided for @smIn.
+  ///
+  /// In en, this message translates to:
+  /// **'SM In'**
+  String get smIn;
+
+  /// No description provided for @smOut.
+  ///
+  /// In en, this message translates to:
+  /// **'SM Out'**
+  String get smOut;
+
+  /// No description provided for @breakIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Break In'**
+  String get breakIn;
+
+  /// No description provided for @slot.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot'**
+  String get slot;
+
+  /// No description provided for @outOffShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Out Off Shift'**
+  String get outOffShift;
+
+  /// No description provided for @fullDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Day'**
+  String get fullDay;
+
+  /// No description provided for @pleaseSetupBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set up biometrics in your device settings'**
+  String get pleaseSetupBiometric;
+
+  /// No description provided for @pleaseAuthenticate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please authenticate to access this feature'**
+  String get pleaseAuthenticate;
+
+  /// No description provided for @biometricAuthenticationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication failed'**
+  String get biometricAuthenticationFailed;
+
+  /// No description provided for @biometricAuthenticationDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication disabled'**
+  String get biometricAuthenticationDisabled;
+
+  /// No description provided for @biometricAuthenticationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication enabled'**
+  String get biometricAuthenticationEnabled;
+
+  /// No description provided for @notificationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Enabled'**
+  String get notificationEnabled;
+
+  /// No description provided for @notificationsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Disabled'**
+  String get notificationsDisabled;
+
+  /// No description provided for @anErrorOccurredDuringAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred during authentication'**
+  String get anErrorOccurredDuringAuthentication;
+
+  /// No description provided for @biometricNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics not available or not enrolled'**
+  String get biometricNotAvailable;
 }
 
 class _AppLocalizationsDelegate
