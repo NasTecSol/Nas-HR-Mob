@@ -648,7 +648,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                 ),
                                                 const SizedBox(width: 8),
                                                 Text(
-                                                  singletonClass.formatDate2(event.date ?? ""),
+                                                  singletonClass.formatDate2(event.date ?? "" , context),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,

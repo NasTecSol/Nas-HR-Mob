@@ -174,7 +174,13 @@ class _SettingScreenState extends State<SettingScreen> {
                           if (_isToggled) {
                             if (!(await _authService.checkBiometricAvailability())) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please set up biometrics in your device settings')),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.pleaseSetupBiometric,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    fontSize: 15
+                                  ),
+                                )),
                               );
                               setState(() {
                                 _isToggled = false;
@@ -189,20 +195,38 @@ class _SettingScreenState extends State<SettingScreen> {
                               });
                               await _saveBiometricState(value);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Biometric authentication enabled')),
+                                 SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationEnabled,
+                                   style: GoogleFonts.inter(
+                                       fontWeight: FontWeight.w500,
+                                       color: Colors.white,
+                                       fontSize: 15
+                                   ),
+                                )),
                               );
                             } else {
                               setState(() {
                                 _isToggled = false;
                               });
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Biometric authentication failed')),
+                                 SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationFailed,
+                                  style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15
+                                  ),
+                                )),
                               );
                             }
                           } else {
                             await _saveBiometricState(false); // Save state when disabling
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Biometric authentication disabled')),
+                              SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationDisabled,
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    fontSize: 15
+                                ),
+                              )),
                             );
                           }
                         },
@@ -256,11 +280,23 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           if (value) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Notifications enabled')),
+                              SnackBar(content: Text(AppLocalizations.of(context)!.notificationEnabled,
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    fontSize: 15
+                                ),
+                              )),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Notifications disabled')),
+                               SnackBar(content:  Text(AppLocalizations.of(context)!.notificationsDisabled,
+                                 style: GoogleFonts.inter(
+                                     fontWeight: FontWeight.w500,
+                                     color: Colors.white,
+                                     fontSize: 15
+                                 ),
+                               )),
                             );
                           }
                         },

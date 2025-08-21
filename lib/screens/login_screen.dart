@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final isBiometricsAvailable = await _localAuth.canCheckBiometrics;
       if (isBiometricsAvailable) {
         final isAuthenticated = await _localAuth.authenticate(
-          localizedReason: 'Please authenticate to access this feature',
+          localizedReason: AppLocalizations.of(context)!.pleaseAuthenticate,
           options: const AuthenticationOptions(
             biometricOnly: true,
           ),
@@ -117,23 +117,43 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication failed'),
+             SnackBar(
+              content:  Text(AppLocalizations.of(context)!.biometricAuthenticationFailed,
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    fontSize: 15
+                ),
+              )
             ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Biometrics not available or not enrolled'),
+           SnackBar(
+            content: Text(AppLocalizations.of(context)!.biometricNotAvailable,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                  fontSize: 15
+              ),
+            )
           ),
         );
       }
     } catch (e) {
-      print('Error during biometric authentication: $e');
+      if (kDebugMode) {
+        print('Error during biometric authentication: $e');
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred during authentication'),
+         SnackBar(
+          content: Text(AppLocalizations.of(context)!.anErrorOccurredDuringAuthentication,
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: 15
+            ),
+          )
         ),
       );
     }
@@ -281,7 +301,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextFormField(
                     controller: _password,
                     obscureText: _obscurePassword,
-                    obscuringCharacter: '*',
+                    obscuringCharacter: '•',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                    ),
                     cursorColor: Colors.grey,
                     validator: (value) {
                       if (value == null || value.isEmpty) {

@@ -80,7 +80,7 @@ class _TaskScreenState extends State<TaskScreen> {
     /// Filter tasks by status
     List<Dattaa> toDoTasks = filteredTaskList.where((task) => task.status == "TODO").toList();
     List<Dattaa> inProgressTask = filteredTaskList.where((task) => task.status == "InProgress").toList();
-    List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "completed").toList();
+    List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "Completed").toList();
 
     /// Get the total number of tasks for each status
     int totalToDoTasks = toDoTasks.length;

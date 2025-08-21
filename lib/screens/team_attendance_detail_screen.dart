@@ -114,7 +114,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ),
                         Text(
                           singletonClass
-                              .formatDate2(widget.attendanceData!.createdAt!),
+                              .formatDate2(widget.attendanceData!.createdAt! , context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -188,7 +188,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
 
                           if (widget.attendanceData!.secondaryStatus != null)
                             Container(
-                              height: widget.attendanceData!.secondaryStatus == "Missing CheckIn/Out" ? 60 : 40,
+                              height: widget.attendanceData!.secondaryStatus == "Missing-CheckOut" ? 60 : 40,
                               width: 120,
                               decoration: BoxDecoration(
                                 color: getStatusColor(widget.attendanceData!.secondaryStatus!),
@@ -196,7 +196,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               child: Center(
                                 child: Text(
-                                  _translateStatus(widget.attendanceData!.secondaryStatus!, context),
+                                  translateSecondaryStatus(widget.attendanceData!.secondaryStatus!, context),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -349,7 +349,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               SizedBox(width: 10),
                               Text(
-                                "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
+                                "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -827,7 +827,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Category",
+                                  AppLocalizations.of(context)!.category,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -835,7 +835,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ),
                                 ),
                                 Text(
-                                  "Detail",
+                                  AppLocalizations.of(context)!.details,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -843,7 +843,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ),
                                 ),
                                 Text(
-                                  "Value",
+                                  AppLocalizations.of(context)!.value,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -1083,7 +1083,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ),
                                   child: Text(
                                     '${widget.attendanceData!.slots!.isNotEmpty && widget.attendanceData!.slots != null ? widget.attendanceData!.slots!.length : 0}',
-                                    // Approver List Notification count
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
@@ -1612,6 +1611,87 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
     }
   }
 
+  ///secondary status translation
+  String translateSecondaryStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'late':
+        return localizations.late;
+      case 'leave':
+        return localizations.leave;
+      case 'holiday':
+        return localizations.holiday;
+      case 'dayOFF':
+        return localizations.dayOff;
+      case 'training':
+        return localizations.training;
+      case 'absent with approval':
+        return localizations.absentWithApproval;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      case 'Late':
+        return localizations.late;
+      case 'Pending':
+        return localizations.pending;
+      case 'No-CheckIn':
+        return localizations.noCheckIn;
+      case 'Late-Penality':
+        return localizations.latePenality;
+      case 'Short-Hours':
+        return localizations.shortHours;
+      case 'Missing-CheckIn':
+        return localizations.missingCheckIn;
+      case 'Missing-CheckOut':
+        return localizations.missingCheckOut;
+      case 'Check-In':
+        return localizations.checkIn;
+      case 'Check-Out':
+        return localizations.checkOut;
+      case 'OOS-In':
+        return localizations.oosIn;
+      case 'OOS-Out':
+        return localizations.oosOut;
+      case 'Early-In':
+        return localizations.earlyIn;
+      case 'Early-Left':
+        return localizations.earlyLeft;
+      case 'OnTime-In':
+        return localizations.onTimeIn;
+      case 'OnTime-Out':
+        return localizations.onTimeOut;
+      case 'Late-In':
+        return localizations.lateIn;
+      case 'Late-Out':
+        return localizations.lateOut;
+      case 'SM-In':
+        return localizations.smIn;
+      case 'SM-Out':
+        return localizations.smOut;
+      case 'Break-In':
+        return localizations.breakIn;
+      case 'Break-Out':
+        return localizations.breakOut;
+      case 'slot':
+        return localizations.slot;
+      case 'Out-Off-Shift':
+        return localizations.outOffShift;
+      case 'Full-Day':
+        return localizations.fullDay;
+      default:
+        return status;
+    }
+  }
+
+
   DateTime? parseTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) return null;
     DateTime dateTime = DateTime.parse(dateTimeString);
@@ -1633,9 +1713,9 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
       int remainingMinutes = totalMinutes % 60;
 
       if (hours > 0) {
-        return '$hours h $remainingMinutes min';
+        return '$hours ${AppLocalizations.of(context)!.h} $remainingMinutes ${AppLocalizations.of(context)!.m}';
       } else {
-        return '$remainingMinutes min';
+        return '$remainingMinutes ${AppLocalizations.of(context)!.m}';
       }
     } catch (e) {
       if (kDebugMode) {
