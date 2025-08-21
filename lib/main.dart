@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:nashr/screens/socket_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -13,7 +14,6 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'Controller/language_change_controller.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,25 +87,48 @@ void main() async {
       ],
       child: Consumer<LanguageChangeController>(
         builder: (context, provider, child) {
-          return MaterialApp(
-            locale: provider.appLocale,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('ar'),
-            ],
-            debugShowCheckedModeBanner: false,
-            home: const SplashScreen(),
-          );
+          return MyApp(provider: provider);
         },
       ),
     ),
   );
+}
+
+/// ✅ Add your App wrapper here so we can manage socket lifecycle
+class MyApp extends StatefulWidget {
+  final LanguageChangeController provider;
+  const MyApp({super.key, required this.provider});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  @override
+  void dispose() {
+    SocketService().disposeSocket();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      locale: widget.provider.appLocale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ar'),
+      ],
+      debugShowCheckedModeBanner: false,
+      home: const SplashScreen(),
+    );
+  }
 }
 
 class NotificationService {
@@ -143,5 +166,4 @@ class NotificationService {
 
     await _plugin.show(0, title, body, notificationDetails);
   }
-
 }

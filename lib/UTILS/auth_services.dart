@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 
 class AuthService {
   final LocalAuthentication _localAuth = LocalAuthentication();
@@ -19,13 +20,13 @@ class AuthService {
       if (!(await checkBiometricAvailability())) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please set up biometrics in your device settings')),
+             SnackBar(content: Text(AppLocalizations.of(context)!.pleaseSetupBiometric)),
           );
         });
         return false;
       }
       isAuthenticated = await _localAuth.authenticate(
-        localizedReason: 'Please authenticate to access this feature',
+        localizedReason: AppLocalizations.of(context)!.pleaseAuthenticate,
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,

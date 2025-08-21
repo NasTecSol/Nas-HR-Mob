@@ -858,7 +858,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       alignment:
                                                           Alignment.topLeft,
                                                       child: Text(
-                                                        "25 Days",
+                                                        "25 ${AppLocalizations.of(context)!.days}",
                                                         style:
                                                             GoogleFonts.inter(
                                                           fontWeight:
@@ -1375,15 +1375,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   Row(
                                                     children: [
                                                       Container(
-                                                        height: 50,
-                                                        width: 50,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(15),
-                                                          image:
-                                                              const DecorationImage(
+                                                        height: 40,
+                                                        width: 40,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(15),
+                                                          image: const DecorationImage(
                                                             image: AssetImage(
                                                                 'images/DP.png'),
                                                             fit: BoxFit.fill,
@@ -1513,7 +1509,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "Duration: ${request.requestData!.first.loanDuration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
                                                                 : AppLocalizations.of(
                                                                         context)!
                                                                     .noData,
@@ -1533,7 +1529,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "Duration: ${request.requestData!.first.duration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
                                                                 : AppLocalizations.of(
                                                                         context)!
                                                                     .noData,
@@ -1605,7 +1601,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "25 Days",
+                                                          "25 ${AppLocalizations.of(context)!.days}",
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2373,7 +2369,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "25 Days",
+                                                          "25 ${AppLocalizations.of(context)!.days}",
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:

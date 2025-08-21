@@ -321,7 +321,7 @@ class _ComplaintsState extends State<Complaints> {
                                             Row(
                                               children: [
                                                 Text(
-                                                  singletonClass.formatDate2(request.createdAt!),
+                                                  singletonClass.formatDate2(request.createdAt! , context),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -575,7 +575,7 @@ class _ComplaintsState extends State<Complaints> {
                                                   Row(
                                                     children: [
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt!, context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 15,
                                                           fontWeight:
@@ -836,7 +836,7 @@ class _ComplaintsState extends State<Complaints> {
                                                   Row(
                                                     children: [
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt!, context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 15,
                                                           fontWeight:
@@ -931,7 +931,7 @@ class _ComplaintsState extends State<Complaints> {
                                                       ),
                                                       const Spacer(),
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt! , context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 12,
                                                           fontWeight: FontWeight.bold,

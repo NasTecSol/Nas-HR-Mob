@@ -556,7 +556,7 @@ class _TeamClockingState extends State<TeamClocking> {
                                 Row(
                                   children: [
                                     Text(
-                                      singletonClass.formatDate2(team.createdAt.toString()),
+                                      singletonClass.formatDate2(team.createdAt.toString() , context),
                                       style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
@@ -622,18 +622,18 @@ class _TeamClockingState extends State<TeamClocking> {
                                       ),
                                     ),
                                     const Spacer(),
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 20,
+                                      color: NasColors.onTime,
+                                    ),
                                     Text(
-                                      "${lateDuration.inMinutes ~/ 60}h ${lateDuration.inMinutes % 60}m",
+                                      "${team.type}",
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: NasColors.pending,
+                                        color: Colors.black,
                                       ),
-                                    ),
-                                    Icon(
-                                      Icons.error,
-                                      size: 20,
-                                      color: NasColors.pending,
                                     ),
                                     const SizedBox(width: 5),
                                   ],
@@ -658,20 +658,154 @@ class _TeamClockingState extends State<TeamClocking> {
                                       color: Colors.black,
                                     ),
                                     const Spacer(),
-                                    SizedBox(
-                                      child: Text(
-                                        "${earlyDuration.inMinutes ~/ 60}h ${earlyDuration.inMinutes % 60}m",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.onTime,
-                                        ),
+                                    Text( AppLocalizations.of(context)!.totalRecord,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),),
+                                    SizedBox(width: 5),
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (team.rawBiometrics != null && team.rawBiometrics!.isNotEmpty) {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                backgroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(16),
+                                                ),
+                                                title: Row(
+                                                  children: [
+                                                    Container(
+                                                      height: 40,
+                                                      width: 70,
+                                                      decoration: BoxDecoration(
+                                                        color: NasColors.onTime
+                                                      ),
+                                                      child: Center(child: Text(AppLocalizations.of(context)!.srNo,
+                                                        style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 12,
+                                                          color: Colors.white
+                                                        ),
+                                                      )),
+                                                    ),
+                                                    Container(
+                                                      height: 40,
+                                                      width: 115,
+                                                      decoration: BoxDecoration(
+                                                          color: NasColors.onTime
+                                                      ),
+                                                      child: Center(child: Text(AppLocalizations.of(context)!.timeStamp,
+                                                        style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.w500,
+                                                            fontSize: 12,
+                                                            color: Colors.white
+                                                        ),
+                                                      )),
+                                                    ),
+                                                    Container(
+                                                      height: 40,
+                                                      width: 80,
+                                                      decoration: BoxDecoration(
+                                                          color: NasColors.onTime
+                                                      ),
+                                                      child: Center(child: Text(AppLocalizations.of(context)!.type,
+                                                        style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.w500,
+                                                            fontSize: 12,
+                                                            color: Colors.white
+                                                        ),
+                                                      )),
+                                                    ),
+                                                  ],
+                                                ),
+                                                content: SizedBox(
+                                                  width: double.maxFinite,
+                                                  child: ListView.builder(
+                                                    shrinkWrap: true,
+                                                    itemCount: team.rawBiometrics!.length,
+                                                    itemBuilder: (context, index) {
+                                                      final bio = team.rawBiometrics![index];
+                                                      return  Row(
+                                                        children: [
+                                                          SizedBox(
+                                                            height: 40,
+                                                            width: 70,
+                                                            child: Center(
+                                                                child: Text("${index + 1}",
+                                                              style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  fontSize: 12,
+                                                                  color: Colors.black
+                                                              ),
+                                                            )),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 40,
+                                                            width: 115,
+                                                            child: Center(child: Text(singletonClass.formatCheckInTime(bio.timestamp.toString(), context),
+                                                              style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  fontSize: 12,
+                                                                  color: Colors.black
+                                                              ),
+                                                            )),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 40,
+                                                            width: 80,
+                                                            child: Center(child: Text("${bio.type}",
+                                                              style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  fontSize: 12,
+                                                                  color: Colors.black
+                                                              ),
+                                                            )),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: Text(AppLocalizations.of(context)!.close,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: Colors.red
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: (team.rawBiometrics!.length == 1 ||team.rawBiometrics!.length == 2) ? NasColors.onTime : Colors.red,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 28,
+                                            minHeight: 28,
+                                          ),
+                                          child: Text(
+                                            '${team.rawBiometrics!.length}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
                                       ),
-                                    ),
-                                    Icon(
-                                      Icons.directions_run_outlined,
-                                      size: 20,
-                                      color: NasColors.onTime,
                                     ),
                                   ],
                                 ),
