@@ -2186,11 +2186,11 @@ abstract class AppLocalizations {
   /// **'Select a Request Type'**
   String get selectRequestType;
 
-  /// No description provided for @passwordOrPhoneNo.
+  /// No description provided for @passwordOrUsernameIncorrect.
   ///
   /// In en, this message translates to:
-  /// **'Password or Phone number is incorrect'**
-  String get passwordOrPhoneNo;
+  /// **'Password or username is incorrect'**
+  String get passwordOrUsernameIncorrect;
 
   /// No description provided for @pleaseEnterNotes.
   ///

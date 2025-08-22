@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -37,12 +38,13 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   @override
   void initState() {
     super.initState();
-    _parseCompanyLocation();
-    _getCurrentLocation();
-    _loadMapState();
+    setState(() {
+      _parseCompanyLocation();
+      _getCurrentLocation();
+      _loadMapState();
+    });
   }
 
-  // Parse the company location from the model and set the company lat and long
   void _parseCompanyLocation() {
     final String? locString = singletonClass.remoteAttendanceModelList.isNotEmpty &&
         singletonClass.remoteAttendanceModelList.first.data!.isNotEmpty &&
@@ -59,8 +61,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
   }
 
-
-  // Load the check-in state from shared preferences
   Future<void> _loadMapState() async {
     final today = DateTime.now();
     final dataList = singletonClass.attendanceDataList.first.data?.data ?? [];
@@ -288,7 +288,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
-    print(currentTime);
+    if (kDebugMode) {
+      print(currentTime);
+    }
 
     Map<String, dynamic> data = {
       "deviceUserId": "$empId",
@@ -302,7 +304,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       "timeZone" : timeZoneName
     };
     String body = json.encode(data);
-    print("body of check in ${body}");
+    if (kDebugMode) {
+      print("body of check in $body");
+    }
     var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
@@ -314,7 +318,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         body: body,
         headers: singletonClass.getHeaders(),
       );
-      print(response.body);
+      if (kDebugMode) {
+        print(response.body);
+      }
       setState(() {
         isLoading = false;
       });
@@ -347,7 +353,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         );
       } else {
         // Handle other error statuses
-        print('Error: ${response.statusCode}');
+        if (kDebugMode) {
+          print('Error: ${response.statusCode}');
+        }
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
@@ -362,7 +370,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
 
       // Show error alert for exceptions
       QuickAlert.show(
@@ -385,7 +395,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
-    print(currentTime);
+    if (kDebugMode) {
+      print(currentTime);
+    }
 
     Map<String, dynamic> data = {
       "deviceUserId": "$empId",
@@ -398,7 +410,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       "captureTime": currentTime,
       "timeZone" : timeZoneName
     };
-    print(data);
+    if (kDebugMode) {
+      print(data);
+    }
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
@@ -416,7 +430,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       setState(() {
         isLoading = false;
       });
-      print(response.body);
+      if (kDebugMode) {
+        print(response.body);
+      }
 
       if (response.statusCode == 201) {
         setState(() {
@@ -448,7 +464,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         );
       } else {
         // Handle other error statuses
-        print('Error: ${response.statusCode}');
+        if (kDebugMode) {
+          print('Error: ${response.statusCode}');
+        }
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
@@ -463,7 +481,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
 
       // Show error alert for exceptions
       QuickAlert.show(

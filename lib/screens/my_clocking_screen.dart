@@ -216,9 +216,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                     shrinkWrap: true,
                     itemCount: singletonClass.clockingDataList.first.data!.length,
                     itemBuilder: (BuildContext context, int index) {
-                      final clock = singletonClass.clockingDataList.first.data!.reversed.toList()[index];
+                      final clock = singletonClass.clockingDataList.first.data![index];
                       String? formattedDate;
-                      // Format date
                       final locale = Localizations.localeOf(context).languageCode;
                       if (locale == 'ar'){
                         String formattedDatee = DateFormat('MMMM dd, yyyy' ,'ar')

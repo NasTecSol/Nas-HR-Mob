@@ -1583,7 +1583,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           children: [
                                             SizedBox(
                                                 height: 100,
-                                                width: 100,
+                                                width: 120,
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
@@ -1600,8 +1600,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ),
                                                 )),
                                             SizedBox(
-                                              height: 55,
-                                              width: 55,
+                                              height: 50,
+                                              width: 50,
                                               child: Lottie.asset('images/totalWork.json'),
                                             ),
                                           ],

@@ -1056,7 +1056,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectRequestType => 'Select a Request Type';
 
   @override
-  String get passwordOrPhoneNo => 'Password or Phone number is incorrect';
+  String get passwordOrUsernameIncorrect => 'Password or username is incorrect';
 
   @override
   String get pleaseEnterNotes => 'Please enter a note';
