@@ -403,7 +403,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ))
                 else ...[
-                  filteredTeams.isNotEmpty
+                  filteredTeams.first.teamData!.isNotEmpty
                       ? Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.all(5),
@@ -530,7 +530,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ))
                 else ...[
-                  filteredUnderTeams.isNotEmpty
+                  filteredUnderTeams.first.teamData!.isNotEmpty
                       ? Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.all(5),
@@ -677,7 +677,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         ),
                       ))
                 else ...[
-                  filteredTeams.isNotEmpty
+                  filteredTeams.first.teamData!.isNotEmpty
                       ? Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(5),
@@ -805,7 +805,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                 ))
               else ...[
-                filteredTeams.isNotEmpty
+                filteredTeams.first.teamData!.isNotEmpty
                     ? Expanded(
                         child: ListView.builder(
                           padding: const EdgeInsets.all(5),
@@ -1023,7 +1023,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length: 0}', // Request List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

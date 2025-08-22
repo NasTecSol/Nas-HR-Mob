@@ -712,8 +712,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.passport?.id?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.passport!.id!
+                                        (employeeProfile?.passport?.id != null &&
+                                            employeeProfile!.passport!.id.toString().isNotEmpty)
+                                            ? employeeProfile.passport!.id.toString()
                                             : "---",
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
@@ -1112,8 +1113,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.center,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .familyInfo,
+                                          AppLocalizations.of(context)!.familyInfo,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1121,11 +1121,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           ),
                                         ),
                                       ),
+
+                                      // Father Name
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .fatherName,
+                                          AppLocalizations.of(context)!.fatherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1136,7 +1137,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.fatherName}",
+                                          (familyInfo?.fatherName?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.fatherName.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1145,11 +1148,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Mother Name
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .motherName,
+                                          AppLocalizations.of(context)!.motherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1160,7 +1164,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.motherName}",
+                                          (familyInfo?.motherName?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.motherName.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1169,6 +1175,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Address
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1183,7 +1191,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.streetAddress}",
+                                          (familyInfo?.familyAddress?.streetAddress?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.streetAddress.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1192,6 +1202,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Country
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1206,7 +1218,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.country}",
+                                          (familyInfo?.familyAddress?.country?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.country.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1215,6 +1229,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // City
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1229,7 +1245,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.city}",
+                                          (familyInfo?.familyAddress?.city?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.city.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1238,11 +1256,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Family Phone No
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .familyPhoneNo,
+                                          AppLocalizations.of(context)!.familyPhoneNo,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1253,7 +1272,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyContactNumber}",
+                                          (familyInfo?.familyContactNumber?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyContactNumber.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1262,11 +1283,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Emergency Contact
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .emergencyContact,
+                                          AppLocalizations.of(context)!.emergencyContact,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1275,11 +1297,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Relation
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .relation,
+                                          AppLocalizations.of(context)!.relation,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1290,7 +1313,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.emergencyContactInfo?.first.relationType}",
+                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                              ? (familyInfo!.emergencyContactInfo!.first.relationType?.toString().isNotEmpty ?? false
+                                              ? familyInfo.emergencyContactInfo!.first.relationType.toString()
+                                              : "---")
+                                              : "---",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
@@ -1300,6 +1327,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Emergency Contact Number
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1314,7 +1343,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.emergencyContactInfo?.first.relationContactNumber}",
+                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                              ? (familyInfo!.emergencyContactInfo!.first.relationContactNumber?.toString().isNotEmpty ?? false
+                                              ? familyInfo.emergencyContactInfo!.first.relationContactNumber.toString()
+                                              : "---")
+                                              : "---",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,

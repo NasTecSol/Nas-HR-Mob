@@ -284,19 +284,17 @@ class _ComplaintsState extends State<Complaints> {
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey
-                                          .withValues(alpha: 0.3),
+                                      color: Colors.grey.withValues(alpha: 0.3),
                                       spreadRadius: 2,
                                       blurRadius: 8,
-                                      offset: const Offset(0,
-                                          0), // changes position of shadow
+                                      offset: const Offset(0, 0),
                                     ),
                                   ],
                                 ),
                                 child: Row(
                                   children: [
                                     Container(
-                                        height: 140,
+                                        height: 160,
                                         width:
                                         20,
                                         decoration: locale == "ar" ? BoxDecoration(
@@ -550,9 +548,8 @@ class _ComplaintsState extends State<Complaints> {
                                       child: Row(
                                         children: [
                                           Container(
-                                              height: 140,
-                                              width:
-                                              20, // Adjusted the width for visibility
+                                              height: 160,
+                                              width: 20,
                                               decoration: locale == "ar" ? BoxDecoration(
                                                 borderRadius: const BorderRadius.only(
                                                   topRight: Radius.circular(15),
@@ -672,7 +669,6 @@ class _ComplaintsState extends State<Complaints> {
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 10),
                                                 ],
                                               ),
                                             ),
@@ -1346,7 +1342,7 @@ class _ComplaintsState extends State<Complaints> {
 
   // GET CALL
 
-  Future<ComplaintsModel?> getComplaintsData({int page = 0, int limit = 10}) async {
+  Future<ComplaintsModel?> getComplaintsData({int page = 0, int limit = 20}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
 
     // Request body with the required parameter

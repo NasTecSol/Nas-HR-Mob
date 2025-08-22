@@ -298,6 +298,7 @@ class SingletonClass {
     String? employeeId =  getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/notification-data/getNotificationData/$employeeId');
+    print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -374,6 +375,7 @@ class SingletonClass {
         : getJWTModel()?.branchId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
+    print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);

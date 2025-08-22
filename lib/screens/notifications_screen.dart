@@ -114,17 +114,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 if (!isArabic) {
                                   return [
                                     notificationData.notificationType ?? '',
-                                    notificationData.message ?? ''
+                                    notificationData.message ?? '',
+                                    notificationData.metaData ?? '',
                                   ];
                                 } else {
-                                  final titleTranslation =
-                                      await translator.translate(notificationData.notificationType ?? '',
-                                          to: 'ar');
-                                  final messageTranslation = await translator.translate(notificationData.message ?? '',
-                                          to: 'ar');
+                                  final titleTranslation = await translator.translate(notificationData.notificationType ?? '', to: 'ar');
+                                  final messageTranslation = await translator.translate(notificationData.message ?? '', to: 'ar');
+                                  final metaDataTranslation = await translator.translate(notificationData.metaData ?? '', to: 'ar');
                                   return [
                                     titleTranslation.text,
-                                    messageTranslation.text
+                                    messageTranslation.text,
+                                    metaDataTranslation.text,
                                   ];
                                 }
                               }
@@ -132,12 +132,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               return FutureBuilder<List<String>>(
                                 future: getTranslatedText(),
                                 builder: (context, snapshot) {
-                                  final translatedTitle = snapshot.hasData
-                                      ? snapshot.data![0]
-                                      : notificationData.notificationType ?? '';
-                                  final translatedMessage = snapshot.hasData
-                                      ? snapshot.data![1]
-                                      : notificationData.notificationMessage ?? '';
+                                  final translatedTitle = snapshot.hasData ? snapshot.data![0] : notificationData.notificationType ?? '';
+                                  final translatedMessage = snapshot.hasData ? snapshot.data![1] : notificationData.message ?? '';
+                                  final translateMetaMessage = snapshot.hasData ? snapshot.data![2] : notificationData.metaData ?? '';
 
                                   return Dismissible(
                                     key: Key(notificationData.id.toString()),
@@ -239,6 +236,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                             color: Colors.black,
                                                           ),
                                                         ),
+                                                        if (singletonClass.employeeDataList.first.data!.email!.first.workEmail  == singletonClass.notificationModelList.first.data!.first.from!.first.email)
                                                         Text(
                                                           translatedMessage,
                                                           style:
@@ -252,6 +250,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                               .ellipsis,
                                                           maxLines: 4,
                                                         ),
+                                                        if (singletonClass.employeeDataList.first.data!.email!.first.workEmail == singletonClass.notificationModelList.first.data!.first.to!.first.email)
+                                                          Text(
+                                                            translateMetaMessage,
+                                                            style:
+                                                            GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                              FontWeight.bold,
+                                                              color: Colors.grey,
+                                                            ),
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            maxLines: 4,
+                                                          ),
                                                       ],
                                                     ),
                                                   ),

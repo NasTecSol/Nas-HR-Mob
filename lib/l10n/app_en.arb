@@ -761,7 +761,7 @@
   "overTime":"Overtime",
   "training":"Training",
   "selectRequestType":"Select a Request Type",
-  "passwordOrPhoneNo":"Password or Phone number is incorrect",
+  "passwordOrUsernameIncorrect":"Password or username is incorrect",
   "pleaseEnterNotes":"Please enter a note",
   "enterToAndFromDate":"Please select both From Date and To Date",
   "selectSubType":"Please select subtype",

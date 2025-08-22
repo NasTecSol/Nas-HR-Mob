@@ -72,8 +72,11 @@ class SocketService {
       final isArabic = languageCode == 'ar';
       final message = data['message']?[isArabic ? 'ar' : 'en'] ?? 'New Broadcast Event';
 
-      final log = data['data']?['log'];
+      final module = data['module'];
       final targetAudience = data['targetAudience'];
+      final dynamic log = (module == "request")
+          ? data['data']
+          :  data['data']?['log'];
 
       final String? grade = singletonClass.getJWTModel()?.grade;
       final String? empId = singletonClass.getJWTModel()?.employeeId;
@@ -87,14 +90,34 @@ class SocketService {
           shouldNotify = true;
         }
       } else if (["L0", "L1", "L2", "L3"].contains(grade)) {
-        final String? supervisorId = targetAudience?['supervisors']?.toString();
-        final String? targetBranchId = targetAudience?['branchId']?.toString();
-        if (supervisorId != null && targetBranchId != null && empId != null && branchId != null) {
+        String? supervisorId;
+        String? targetBranchId;
+        final String? logEmpId = log?['employeeId'];
+        if (logEmpId != null && empId != null && logEmpId == empId) {
+          shouldNotify = true;
+        }
+        if (targetAudience is Map<String, dynamic>) {
+          supervisorId = targetAudience['supervisors']?.toString();
+          targetBranchId = targetAudience['branchId']?.toString();
+        } else if (targetAudience is List) {
+          for (var item in targetAudience) {
+            if (item is Map<String, dynamic>) {
+              supervisorId ??= item['approverId']?.toString();
+              targetBranchId ??= item['branchId']?.toString();
+            }
+          }
+        }
+
+        if (supervisorId != null &&
+            targetBranchId != null &&
+            empId != null &&
+            branchId != null) {
           if (supervisorId == empId && targetBranchId == branchId) {
             shouldNotify = true;
           }
         }
       }
+
 
       if (shouldNotify) {
         NotificationService.showNotification(

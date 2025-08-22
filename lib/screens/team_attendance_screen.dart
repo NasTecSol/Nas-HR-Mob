@@ -682,7 +682,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         itemCount:filteredAttendanceDataList.length,
                         itemBuilder: (ctx, i) {
-                          final attendance = filteredAttendanceDataList.reversed.toList()[i];
+                          final attendance = filteredAttendanceDataList[i];
                           final searchText = searchController.text.toLowerCase();
                           if (isSearching &&
                               !(attendance.name?.toLowerCase().contains(searchText) ?? false)) {
