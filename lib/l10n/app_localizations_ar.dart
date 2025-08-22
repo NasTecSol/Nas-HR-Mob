@@ -1055,7 +1055,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectRequestType => 'اختر نوع الطلب';
 
   @override
-  String get passwordOrPhoneNo => 'كلمة المرور أو رقم الهاتف غير صحيح';
+  String get passwordOrUsernameIncorrect =>
+      'كلمة المرور أو اسم المستخدم غير صحيح';
 
   @override
   String get pleaseEnterNotes => 'يرجى إدخال ملاحظة';

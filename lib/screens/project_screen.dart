@@ -159,16 +159,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                               // Makes the whole area tappable
                               child: Row(
                                 children: [
-                                  Container(
-                                    height: 60,
-                                    width: 60,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
+                                  ClipOval(
                                     child: Image.network(
                                       project.logo ?? '',
                                       fit: BoxFit.cover,

@@ -428,7 +428,7 @@
   "overTime": "ساعات إضافية",
   "training": "تدريب",
   "selectRequestType": "اختر نوع الطلب",
-  "passwordOrPhoneNo": "كلمة المرور أو رقم الهاتف غير صحيح",
+  "passwordOrUsernameIncorrect": "كلمة المرور أو اسم المستخدم غير صحيح",
   "pleaseEnterNotes": "يرجى إدخال ملاحظة",
   "enterToAndFromDate": "يرجى تحديد كل من تاريخ البداية وتاريخ النهاية",
   "selectSubType": "نوع الإجازة",

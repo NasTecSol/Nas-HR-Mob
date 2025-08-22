@@ -834,6 +834,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
+                                const SizedBox(width: 10),
                                 Text(
                                   AppLocalizations.of(context)!.details,
                                   style: GoogleFonts.inter(
@@ -867,71 +868,25 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                             padding: const EdgeInsets.only(
                                                 bottom: 10.0),
                                             child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                Container(
-                                                  height: 50,
-                                                  width: 80,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 15.0),
+                                                Padding(
+                                                    padding: const EdgeInsets.only(top: 15.0),
                                                     child: Text(
+                                                      maxLines: 3,
+                                                      overflow: TextOverflow.fade,
                                                       "${penalities.action}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
+                                                        fontWeight: FontWeight.normal,
+                                                        color: NasColors.darkBlue,
                                                       ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                      textAlign: TextAlign.center,
                                                     ),
                                                   ),
-                                                ),
                                                 const SizedBox(width: 5),
-                                                Container(
-                                                  height: 50,
-                                                  width: 80,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 15.0),
+                                                Padding(
+                                                    padding: const EdgeInsets.only(top: 15.0),
                                                     child: Text(
                                                       "${penalities.lateMinute}",
                                                       style: GoogleFonts.inter(
@@ -945,28 +900,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                           TextAlign.center,
                                                     ),
                                                   ),
-                                                ),
                                                 const SizedBox(width: 5),
-                                                Container(
-                                                  height: 50,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
+                                                Padding(
                                                     padding:
                                                         const EdgeInsets.only(
                                                             top: 10.0),
@@ -983,7 +918,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                           TextAlign.center,
                                                     ),
                                                   ),
-                                                ),
                                               ],
                                             ),
                                           );

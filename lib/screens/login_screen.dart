@@ -474,7 +474,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title:  AppLocalizations.of(context)!.passwordOrPhoneNo,
+            title:  AppLocalizations.of(context)!.passwordOrUsernameIncorrect,
             type: QuickAlertType.error,
           );
         } else {
