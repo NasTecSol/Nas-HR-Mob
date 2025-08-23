@@ -1769,7 +1769,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-  // Cards
   Widget buildOptionsCard2(int index, String title) {
     return GestureDetector(
       onTap: () {
@@ -1813,6 +1812,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
+  ///Upload profile methods
   void _showConfirmationDialog(PlatformFile file) {
     showDialog(
       context: context,
@@ -1964,7 +1964,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-
   ///Signature CALL
   Future<void> _uploadSignatureToApi(Uint8List data) async {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
@@ -2023,43 +2022,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var uri = Uri.parse('${singletonClass.baseURL}/employee/$employeeId');
     Map<String, dynamic> employeeData = {
-      "userName": singletonClass.employeeDataList.first.data!.userName,
-      "password": singletonClass.employeeDataList.first.data!.password,
-      "email": singletonClass.employeeDataList.first.data!.email,
-      "firstName": singletonClass.employeeDataList.first.data!.firstName,
-      "middleName": singletonClass.employeeDataList.first.data!.middleName,
-      "lastName": singletonClass.employeeDataList.first.data!.lastName,
-      "martialStatus": singletonClass.employeeDataList.first.data!.martialStatus,
-      "religion": singletonClass.employeeDataList.first.data!.religion,
-      "address": singletonClass.employeeDataList.first.data!.address,
-      "NIC": singletonClass.employeeDataList.first.data!.nic,
-      "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
-      "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus": singletonClass.employeeDataList.first.data!..imigrationSatus,
-      "DOB": singletonClass.employeeDataList.first.data!.dob,
-      "age": singletonClass.employeeDataList.first.data!.age,
-      "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,
-      "gender": singletonClass.employeeDataList.first.data!.gender,
-      "role": singletonClass.employeeDataList.first.data!.role,
-      "profession": singletonClass.employeeDataList.first.data!.profession,
-      "nationality": singletonClass.employeeDataList.first.data!.nationality,
       "profilePic": singletonClass.profileResponseDataList.first.data!.url,
-      "familyInfo": singletonClass.employeeDataList.first.data!.familyInfo,
-      "educationInfo":
-          singletonClass.employeeDataList.first.data!.educationInfo,
-      "experienceBackground":
-          singletonClass.employeeDataList.first.data!.experienceBackground,
-      "bankingInfo": singletonClass.employeeDataList.first.data!.bankingInfo,
-      "employeeInfo": singletonClass.employeeDataList.first.data!.employeeInfo,
-      "salaryInfo": singletonClass.employeeDataList.first.data!.salaryInfo,
-      "socialLinks": singletonClass.employeeDataList.first.data!.socialLinks,
-      "loanInfo": singletonClass.employeeDataList.first.data!.loanInfo,
-      "assetsInfo": singletonClass.employeeDataList.first.data!.assetsInfo,
-      "approvals": singletonClass.employeeDataList.first.data!.approvals,
-      "contractInfo": singletonClass.employeeDataList.first.data!.contractInfo,
-      "documentsInfo":
-          singletonClass.employeeDataList.first.data!.documentsInfo,
-      "createdBy": singletonClass.employeeDataList.first.data!.createdBy,
     };
 
     try {
@@ -2068,7 +2031,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
-      print("DATA ><><>< $employeeData");
+      log("DATA ><><>< $employeeData");
       if (response.statusCode == 200) {
         print('Employee data updated successfully');
       } else {
