@@ -681,7 +681,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       final responseBody = await response.stream.bytesToString();
       print("API Response Body: $responseBody");
       setState(() {
-        isLoading = false; // Corrected to set isLoading to true
+        isLoading = false;
       });
 
       if (response.statusCode == 200) {
