@@ -68,6 +68,18 @@ class _RequestScreenState extends State<RequestScreen> {
     setState(() {});
   }
 
+
+  Future<void> fetchLatestRequestData() async {
+    try {
+      getApproverData();
+      getRequestData();
+      _fetchRequestData(0);
+      _fetchApproverData(0);
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -353,886 +365,165 @@ class _RequestScreenState extends State<RequestScreen> {
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1'||
-                    singletonClass.getJWTModel()?.grade == 'L2'||
-                    singletonClass.getJWTModel()?.grade == 'L3') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                    child: SizedBox(
-                      width: 140,
+        child: RefreshIndicator(
+          color: NasColors.darkBlue,
+          backgroundColor: Colors.white,
+          onRefresh: fetchLatestRequestData,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                      singletonClass.getJWTModel()?.grade == 'L1'||
+                      singletonClass.getJWTModel()?.grade == 'L2'||
+                      singletonClass.getJWTModel()?.grade == 'L3') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5.0, top: 15.0),
+                      child: SizedBox(
+                        width: 140,
+                        child: Text(
+                          AppLocalizations.of(context)!.requestAndApproval,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (singletonClass.getJWTModel()?.grade == 'L4') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5.0, top: 15.0),
                       child: Text(
-                        AppLocalizations.of(context)!.requestAndApproval,
-                        textAlign: TextAlign.center,
+                        AppLocalizations.of(context)!.requests,
                         style: GoogleFonts.inter(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: NasColors.darkBlue,
-                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15.0),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: NasColors.darkBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        _overlayEntry = _createOverlayEntry();
+                        Overlay.of(context).insert(_overlayEntry!);
+                      },
+                      child: SizedBox(
+                        height: 30,
+                        width: 120,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              AppLocalizations.of(context)!.requests,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ],
-                if (singletonClass.getJWTModel()?.grade == 'L4') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                    child: Text(
-                      AppLocalizations.of(context)!.requests,
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
-                  ),
-                ],
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15.0),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      backgroundColor: NasColors.darkBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      _overlayEntry = _createOverlayEntry();
-                      Overlay.of(context).insert(_overlayEntry!);
-                    },
-                    child: SizedBox(
-                      height: 30,
-                      width: 120,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            AppLocalizations.of(context)!.requests,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1'||
-                singletonClass.getJWTModel()?.grade == 'L2'||
-                singletonClass.getJWTModel()?.grade == 'L3' ) ...[
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    buildOptionsCard(0, AppLocalizations.of(context)!.requests),
-                    buildOptionsCard(
-                        1, AppLocalizations.of(context)!.approvals),
-                  ],
-                ),
               ),
               const SizedBox(height: 10),
-            ],
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 100,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.5),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
+              if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                  singletonClass.getJWTModel()?.grade == 'L1'||
+                  singletonClass.getJWTModel()?.grade == 'L2'||
+                  singletonClass.getJWTModel()?.grade == 'L3' ) ...[
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          cursorColor: Colors.grey,
-                          onChanged: (value) {
-                            setState(() {
-                              isSearching = true;
-                            });
-                          },
-                          controller: searchController,
-                          decoration: InputDecoration(
-                            hintText:
-                                '${AppLocalizations.of(context)!.search}...',
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Icon(
-                        Icons.search,
-                        color: NasColors.darkBlue,
-                      ),
+                      buildOptionsCard(0, AppLocalizations.of(context)!.requests),
+                      buildOptionsCard(
+                          1, AppLocalizations.of(context)!.approvals),
                     ],
                   ),
                 ),
+                const SizedBox(height: 10),
               ],
-            ),
-            const SizedBox(height: 30),
-            if (singletonClass.getJWTModel()?.grade == 'L4') ...[
-              Expanded(
-                child: FutureBuilder(
-                    future: getRequestData(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error: ${snapshot.error}'),
-                        );
-                      } else if (snapshot.hasData) {
-                        return _request!.isEmpty
-                            ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(5),
-                                itemCount: _request!.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  final request = _request!.reversed.toList()[index];
-                                  final searchText = searchController.text.toLowerCase();
-                                  if (isSearching &&
-                                      !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  final allApproved = request.approvers != null &&
-                                      request.approvers!.isNotEmpty &&
-                                      request.approvers!.every((approver) =>
-                                      approver.status?.toLowerCase() == 'approved');
-                                  String formatDate(String updatedAt) {
-                                    DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                                    return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
-                                  }
-                                  String date = formatDate(request.createdAt!);
-                                  return GestureDetector(
-                                    onTap: () => _toggleExpand(index),
-                                    child: AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 5),
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(15)),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey
-                                                .withValues(alpha: 0.5),
-                                            spreadRadius: 2,
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(15.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Column(
-                                              children: [
-                                                if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
-                                                    DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
-                                                    DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
-                                                  Align(
-                                                    alignment: Alignment.topRight,
-                                                    child: Container(
-                                                      width: 10,
-                                                      height: 10,
-                                                      decoration: const BoxDecoration(
-                                                        color: Colors.blue,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                ],
-                                                Align(
-                                                  alignment: Alignment.topRight,
-                                                  child: Text(
-                                                    date,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      height: 50,
-                                                      width: 50,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius: BorderRadius.circular(15),
-                                                        image: const DecorationImage(
-                                                          image: AssetImage('images/DP.png'),
-                                                          fit: BoxFit.fill,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 5),
-                                                    SizedBox(
-                                                      width: 150,
-                                                      child: Column(
-                                                        children: [
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .topLeft,
-                                                            child: Text(
-                                                              "${request.employeeName}",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .topLeft,
-                                                            child: Text(
-                                                             _translateRequestSubtype2( request.subType !=
-                                                                 null
-                                                                 ? request
-                                                                 .subType!
-                                                                 .replaceAllMapped(
-                                                               RegExp(
-                                                                   r'([a-z])([A-Z])'),
-                                                                   (Match match) =>
-                                                               '${match.group(1)} ${match.group(2)}',
-                                                             )
-                                                                 .replaceFirst(
-                                                                 request.subType![
-                                                                 0],
-                                                                 request
-                                                                     .subType![0]
-                                                                     .toUpperCase())
-                                                                 : '', context),
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 5),
-                                                        Container(
-                                                          height: 30,
-                                                          width: 75,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            shape: BoxShape
-                                                                .rectangle,
-                                                            color: _getColorForVerificationStatus(
-                                                                request.status ??
-                                                                    'default'),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              _translateStatus(
-                                                                  request
-                                                                      .status,
-                                                                  context),
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize: 12,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                    Icon(
-                                                      request.requestData!.first.leaveType == 'sickLeave'
-                                                          ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
-                                                          ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
-                                                          ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
-                                                          ? Icons.payments_outlined : Icons.description_outlined,
-                                                      size: 30,
-                                                      color: Colors.black,
-                                                    )
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 10),
-                                                Align(
-                                                  alignment: Alignment.topLeft,
-                                                  child: request.requestType ==
-                                                          "loanRequest"
-                                                      ? Text(
-                                                          request.requestData !=
-                                                                      null &&
-                                                                  request
-                                                                      .requestData!
-                                                                      .isNotEmpty
-                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
-                                                              : AppLocalizations
-                                                                      .of(context)!
-                                                                  .noData,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        )
-                                                      : Text(
-                                                          request.requestData !=
-                                                                      null &&
-                                                                  request
-                                                                      .requestData!
-                                                                      .isNotEmpty
-                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
-                                                              : AppLocalizations
-                                                                      .of(context)!
-                                                                  .noData,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                ),
-                                                if (_expandedIndex ==
-                                                    index) ...[
-                                                  const SizedBox(height: 10),
-                                                  Align(
-                                                    alignment:
-                                                        Alignment.topLeft,
-                                                    child: Text(
-                                                      "${request.reason}",
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.grey,
-                                                        fontSize: 15,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Align(
-                                                    alignment:
-                                                        Alignment.topLeft,
-                                                    child: Text(
-                                                      '${request.requestType}',
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.grey,
-                                                        fontSize: 15,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  if (request.requestType ==
-                                                      'leaveRequest') ...[
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .balanceToDate,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        "25 ${AppLocalizations.of(context)!.days}",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .balanceToEndOfYear,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        "15",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                  ],
-                                                  if (request.requestType ==
-                                                      'loanRequest') ...[
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .totalLoanAmount,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          request.requestData !=
-                                                                      null &&
-                                                                  request
-                                                                      .requestData!
-                                                                      .isNotEmpty
-                                                              ? "${request.requestData!.first.loanAmount}"
-                                                              : AppLocalizations
-                                                                      .of(context)!
-                                                                  .noData,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        )),
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .loanInstallment,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          request.requestData !=
-                                                                      null &&
-                                                                  request
-                                                                      .requestData!
-                                                                      .isNotEmpty
-                                                              ? "${request.requestData!.first.loanInstallment}"
-                                                              : AppLocalizations
-                                                                      .of(context)!
-                                                                  .noData,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        )),
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .loanCycle,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          request.requestData !=
-                                                                      null &&
-                                                                  request
-                                                                      .requestData!
-                                                                      .isNotEmpty
-                                                              ? "${request.requestData!.first.loanCycle}"
-                                                              : AppLocalizations
-                                                                      .of(context)!
-                                                                  .noData,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        )),
-                                                  ],
-                                                  const SizedBox(height: 10),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    children: [
-                                                      // Req
-                                                      Column(
-                                                        children: [
-                                                          Stack(
-                                                            alignment: Alignment.center,
-                                                            children: [
-                                                              Container(
-                                                                height: 25,
-                                                                width: 25,
-                                                                decoration: BoxDecoration(
-                                                                  shape: BoxShape.circle,
-                                                                  color: NasColors.onTime,
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                height: 10,
-                                                                width: 10,
-                                                                decoration: const BoxDecoration(
-                                                                  shape: BoxShape.circle,
-                                                                  color: Colors.white,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Text(
-                                                            "➡️",
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                      // Line after Req
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(bottom: 20.0),
-                                                        child: Container(
-                                                          width: 40,
-                                                          height: 2,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      ),
-                                                      ...[
-                                                        if (request.approvers != null && request.approvers!.isNotEmpty)
-                                                          for (int i = 0; i < request.approvers!.length; i++) ...[
-                                                            Column(
-                                                              children: [
-                                                                Stack(
-                                                                  alignment: Alignment.center,
-                                                                  children: [
-                                                                    Container(
-                                                                      height: 25,
-                                                                      width: 25,
-                                                                      decoration: BoxDecoration(
-                                                                        shape: BoxShape.circle,
-                                                                        color: _getColorForApproverStatus(
-                                                                            request.approvers![i].status),
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      height: 10,
-                                                                      width: 10,
-                                                                      decoration: const BoxDecoration(
-                                                                        shape: BoxShape.circle,
-                                                                        color: Colors.white,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(height: 5),
-                                                                Text(
-                                                                  request.approvers![i].approverName ?? '---',
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 12,
-                                                                    fontWeight: FontWeight.w500,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            if (i != request.approvers!.length - 1)
-                                                              Padding(
-                                                                padding: const EdgeInsets.only(bottom: 20.0),
-                                                                child: Container(
-                                                                  width: 40,
-                                                                  height: 2,
-                                                                  color: Colors.grey,
-                                                                ),
-                                                              ),
-                                                          ]
-                                                        else
-                                                          Text(
-                                                            '---',
-                                                            style: GoogleFonts.inter(
-                                                              fontSize: 15,
-                                                              color: Colors.grey,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                      ],
-                                                      // Line before CEO
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(bottom: 20.0),
-                                                        child: Container(
-                                                          width: 40,
-                                                          height: 2,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      ),
-                                                      // CEO
-                                                      Column(
-                                                        children: [
-                                                          Stack(
-                                                            alignment: Alignment.center,
-                                                            children: [
-                                                              Container(
-                                                                height: 25,
-                                                                width: 25,
-                                                                decoration: BoxDecoration(
-                                                                  shape: BoxShape.circle,
-                                                                  color: allApproved ? NasColors.onTime : NasColors.pending,
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                height: 10,
-                                                                width: 10,
-                                                                decoration: const BoxDecoration(
-                                                                  shape: BoxShape.circle,
-                                                                  color: Colors.white,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Text(
-                                                            allApproved ? "✅" : "⏳",
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.w500,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                    ],
-                                                  )
-                                                ],
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                      } else {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                    }),
-              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_requestTotalPages, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (_requestCurrentPage != index) {
-                          _fetchRequestData(index); // Send 0, 1, 2...
-                        }
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _requestCurrentPage == index
-                              ? NasColors.darkBlue
-                              : NasColors.onTime.withOpacity(0.31),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width - 100,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.5),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
-                        child: Text(
-                          '${index + 1}',
-                          style: GoogleFonts.inter(
-                            color: _requestCurrentPage == index ? Colors.white : Colors.black,
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            cursorColor: Colors.grey,
+                            onChanged: (value) {
+                              setState(() {
+                                isSearching = true;
+                              });
+                            },
+                            controller: searchController,
+                            decoration: InputDecoration(
+                              hintText:
+                                  '${AppLocalizations.of(context)!.search}...',
+                              border: InputBorder.none,
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Icon(
+                          Icons.search,
+                          color: NasColors.darkBlue,
+                        ),
+                      ],
                     ),
-                  );
-                }),
+                  ),
+                ],
               ),
-
-            ],
-            if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                singletonClass.getJWTModel()?.grade == 'L1'||
-                singletonClass.getJWTModel()?.grade == 'L2'||
-                singletonClass.getJWTModel()?.grade == 'L3') ...[
-              if (_selectedOptionIndex == 0) ...[
+              const SizedBox(height: 30),
+              if (singletonClass.getJWTModel()?.grade == 'L4') ...[
                 Expanded(
                   child: FutureBuilder(
                       future: getRequestData(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(
                             child: SizedBox(
                               height: 200,
@@ -1273,8 +564,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               : ListView.builder(
                                   padding: const EdgeInsets.all(5),
                                   itemCount: _request!.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
+                                  itemBuilder: (BuildContext context, int index) {
                                     final request = _request!.reversed.toList()[index];
                                     final searchText = searchController.text.toLowerCase();
                                     if (isSearching &&
@@ -1314,8 +604,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(15.0),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Column(
                                                 children: [
@@ -1351,13 +640,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   Row(
                                                     children: [
                                                       Container(
-                                                        height: 40,
-                                                        width: 40,
+                                                        height: 50,
+                                                        width: 50,
                                                         decoration: BoxDecoration(
                                                           borderRadius: BorderRadius.circular(15),
                                                           image: const DecorationImage(
-                                                            image: AssetImage(
-                                                                'images/DP.png'),
+                                                            image: AssetImage('images/DP.png'),
                                                             fit: BoxFit.fill,
                                                           ),
                                                         ),
@@ -1368,14 +656,12 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         child: Column(
                                                           children: [
                                                             Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .topLeft,
+                                                              alignment: Alignment
+                                                                  .topLeft,
                                                               child: Text(
                                                                 "${request.employeeName}",
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
+                                                                style: GoogleFonts
+                                                                    .inter(
                                                                   fontSize: 15,
                                                                   fontWeight:
                                                                       FontWeight
@@ -1386,23 +672,37 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                             Align(
-                                                              alignment: Alignment.topLeft,
+                                                              alignment: Alignment
+                                                                  .topLeft,
                                                               child: Text(
-                                                                _translateRequestSubtype2(request.subType != null ? request.subType!.replaceAllMapped(RegExp(r'([a-z])([A-Z])'),
-                                                                      (Match match) => '${match.group(1)} ${match.group(2)}',
-                                                                ).replaceFirst(request.subType![0], request.subType![0].toUpperCase()) : '', context),
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
+                                                               _translateRequestSubtype2( request.subType !=
+                                                                   null
+                                                                   ? request
+                                                                   .subType!
+                                                                   .replaceAllMapped(
+                                                                 RegExp(
+                                                                     r'([a-z])([A-Z])'),
+                                                                     (Match match) =>
+                                                                 '${match.group(1)} ${match.group(2)}',
+                                                               )
+                                                                   .replaceFirst(
+                                                                   request.subType![
+                                                                   0],
+                                                                   request
+                                                                       .subType![0]
+                                                                       .toUpperCase())
+                                                                   : '', context),
+                                                                style: GoogleFonts
+                                                                    .inter(
                                                                   fontSize: 15,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  color: Colors
-                                                                      .grey,
+                                                                  color:
+                                                                      Colors.grey,
                                                                 ),
                                                               ),
-                                                            )
+                                                            ),
                                                           ],
                                                         ),
                                                       ),
@@ -1431,9 +731,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
+                                                                style: GoogleFonts
+                                                                    .inter(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
@@ -1444,41 +743,22 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                           ),
-                                                          SizedBox(width: 5),
-                                                          Icon(
-                                                        request
-                                                            .requestData!
-                                                            .first
-                                                            .leaveType ==
-                                                            'sickLeave'
-                                                            ? Icons
-                                                            .sick_outlined
-                                                            : request
-                                                            .requestData!
-                                                            .first
-                                                            .leaveType ==
-                                                            'annualLeave'
-                                                            ? Icons
-                                                            .calendar_today_outlined
-                                                            : request.requestData!.first.leaveType ==
-                                                            'casualLeave'
-                                                            ? Icons
-                                                            .beach_access_outlined
-                                                            : request.requestType ==
-                                                            'loanRequest'
-                                                            ? Icons.savings_outlined
-                                                            : Icons.description_outlined,
-                                                        // Fallback icon if no match
+                                                      Icon(
+                                                        request.requestData!.first.leaveType == 'sickLeave'
+                                                            ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
+                                                            ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
+                                                            ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
+                                                            ? Icons.payments_outlined : Icons.description_outlined,
                                                         size: 30,
                                                         color: Colors.black,
                                                       )
-                                                        ],
-                                                      ),
+                                                    ],
+                                                  ),
                                                   const SizedBox(height: 10),
                                                   Align(
-                                                    alignment:
-                                                        Alignment.topLeft,
-                                                    child: request.requestType == "loanRequest"
+                                                    alignment: Alignment.topLeft,
+                                                    child: request.requestType ==
+                                                            "loanRequest"
                                                         ? Text(
                                                             request.requestData !=
                                                                         null &&
@@ -1486,16 +766,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
+                                                                : AppLocalizations
+                                                                        .of(context)!
                                                                     .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
                                                           )
@@ -1506,16 +784,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
+                                                                : AppLocalizations
+                                                                        .of(context)!
                                                                     .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
                                                           ),
@@ -1528,8 +804,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           Alignment.topLeft,
                                                       child: Text(
                                                         "${request.reason}",
-                                                        style:
-                                                            GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           color: Colors.grey,
@@ -1543,8 +818,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           Alignment.topLeft,
                                                       child: Text(
                                                         '${request.requestType}',
-                                                        style:
-                                                            GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontWeight:
                                                               FontWeight.bold,
                                                           color: Colors.grey,
@@ -1552,10 +826,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 10),
-                                                    if (request.requestType == 'leaveRequest') ...[
-                                                      const SizedBox(
-                                                          height: 10),
+                                                    if (request.requestType ==
+                                                        'leaveRequest') ...[
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
@@ -1587,8 +860,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(
-                                                          height: 10),
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
@@ -1620,13 +892,11 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(
-                                                          height: 10),
+                                                      const SizedBox(height: 10),
                                                     ],
-                                                    const SizedBox(height: 10),
-                                                    if (request.requestType == 'loanRequest') ...[
-                                                      const SizedBox(
-                                                          height: 10),
+                                                    if (request.requestType ==
+                                                        'loanRequest') ...[
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
@@ -1654,28 +924,25 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanAmount}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
+                                                                : AppLocalizations
+                                                                        .of(context)!
                                                                     .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
                                                           )),
-                                                      const SizedBox(
-                                                          height: 10),
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
                                                           AppLocalizations.of(
                                                                   context)!
-                                                              .loanAmount,
+                                                              .loanInstallment,
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -1696,21 +963,18 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanInstallment}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
+                                                                : AppLocalizations
+                                                                        .of(context)!
                                                                     .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
                                                           )),
-                                                      const SizedBox(
-                                                          height: 10),
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
@@ -1738,16 +1002,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         .requestData!
                                                                         .isNotEmpty
                                                                 ? "${request.requestData!.first.loanCycle}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
+                                                                : AppLocalizations
+                                                                        .of(context)!
                                                                     .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
                                                           )),
@@ -1768,7 +1030,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: NasColors.completed,
+                                                                    color: NasColors.onTime,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1878,7 +1140,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                   width: 25,
                                                                   decoration: BoxDecoration(
                                                                     shape: BoxShape.circle,
-                                                                    color: allApproved ? NasColors.completed : NasColors.pending,
+                                                                    color: allApproved ? NasColors.onTime : NasColors.pending,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1974,363 +1236,1081 @@ class _RequestScreenState extends State<RequestScreen> {
                     );
                   }),
                 ),
+
               ],
-              if (_selectedOptionIndex == 1) ...[
-                Expanded(
-                  child: FutureBuilder(
-                      future: getApproverData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Text('Error: ${snapshot.error}'),
-                          );
-                        } else if (snapshot.hasData) {
-                          return singletonClass
-                                  .approverDataList.first.data!.data!.isEmpty
-                              ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
-                                    ),
-                                  ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                  ),
-                                ],
+              if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                  singletonClass.getJWTModel()?.grade == 'L1'||
+                  singletonClass.getJWTModel()?.grade == 'L2'||
+                  singletonClass.getJWTModel()?.grade == 'L3') ...[
+                if (_selectedOptionIndex == 0) ...[
+                  Expanded(
+                    child: FutureBuilder(
+                        future: getRequestData(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/loader.json'),
                               ),
-                            ),
-                          )
-                              : ListView.builder(
-                                  padding: const EdgeInsets.all(5),
-                                  itemCount: _approver!.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    final request = _approver!.reversed.toList()[index];
-                                    final searchText = searchController.text.toLowerCase();
-                                    if (isSearching &&
-                                        !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    String formatDate(String updatedAt) {
-                                      DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                                      return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
-                                    }
-                                    String date = formatDate(request.createdAt!);
-                                    return GestureDetector(
-                                      onTap: () => _toggleExpand(index),
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 5),
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(15)),
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey
-                                                  .withValues(alpha: 0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(15.0),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Column(
-                                                children: [
-                                                  if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
-                                                      DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
-                                                      DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else if (snapshot.hasData) {
+                            return _request!.isEmpty
+                                ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                                : ListView.builder(
+                                    padding: const EdgeInsets.all(5),
+                                    itemCount: _request!.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      final request = _request!.reversed.toList()[index];
+                                      final searchText = searchController.text.toLowerCase();
+                                      if (isSearching &&
+                                          !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      final allApproved = request.approvers != null &&
+                                          request.approvers!.isNotEmpty &&
+                                          request.approvers!.every((approver) =>
+                                          approver.status?.toLowerCase() == 'approved');
+                                      String formatDate(String updatedAt) {
+                                        DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                        return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                      }
+                                      String date = formatDate(request.createdAt!);
+                                      return GestureDetector(
+                                        onTap: () => _toggleExpand(index),
+                                        child: AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(15)),
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withValues(alpha: 0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(15.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Column(
+                                                  children: [
+                                                    if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                        DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                        DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                      Align(
+                                                        alignment: Alignment.topRight,
+                                                        child: Container(
+                                                          width: 10,
+                                                          height: 10,
+                                                          decoration: const BoxDecoration(
+                                                            color: Colors.blue,
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 5),
+                                                    ],
                                                     Align(
                                                       alignment: Alignment.topRight,
-                                                      child: Container(
-                                                        width: 10,
-                                                        height: 10,
-                                                        decoration: const BoxDecoration(
-                                                          color: Colors.blue,
-                                                          shape: BoxShape.circle,
+                                                      child: Text(
+                                                        date,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                          FontWeight.bold,
+                                                          color: Colors.grey,
                                                         ),
                                                       ),
                                                     ),
                                                     SizedBox(height: 5),
-                                                  ],
-                                                  Align(
-                                                    alignment:
-                                                    Alignment.topRight,
-                                                    child: Text(
-                                                      date,
-                                                      style:
-                                                      GoogleFonts
-                                                          .inter(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                        FontWeight
-                                                            .bold,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    children: [
-                                                      Container(
-                                                        height: 50,
-                                                        width: 50,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(15),
-                                                          image:
-                                                              const DecorationImage(
-                                                            image: AssetImage(
-                                                                'images/DP.png'),
-                                                            fit: BoxFit.fill,
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          height: 40,
+                                                          width: 40,
+                                                          decoration: BoxDecoration(
+                                                            borderRadius: BorderRadius.circular(15),
+                                                            image: const DecorationImage(
+                                                              image: AssetImage(
+                                                                  'images/DP.png'),
+                                                              fit: BoxFit.fill,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(width: 5),
-                                                      SizedBox(
-                                                        width: 150,
-                                                        child: Column(
-                                                          children: [
-                                                            Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .topLeft,
-                                                              child: Text(
-                                                                "${request.employeeName}",
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontSize: 15,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  color: Colors
-                                                                      .black,
+                                                        const SizedBox(width: 5),
+                                                        SizedBox(
+                                                          width: 150,
+                                                          child: Column(
+                                                            children: [
+                                                              Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .topLeft,
+                                                                child: Text(
+                                                                  "${request.employeeName}",
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Align(
+                                                                alignment: Alignment.topLeft,
+                                                                child: Text(
+                                                                  _translateRequestSubtype2(request.subType != null ? request.subType!.replaceAllMapped(RegExp(r'([a-z])([A-Z])'),
+                                                                        (Match match) => '${match.group(1)} ${match.group(2)}',
+                                                                  ).replaceFirst(request.subType![0], request.subType![0].toUpperCase()) : '', context),
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                            Container(
+                                                              height: 30,
+                                                              width: 75,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                shape: BoxShape
+                                                                    .rectangle,
+                                                                color: _getColorForVerificationStatus(
+                                                                    request.status ??
+                                                                        'default'),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  _translateStatus(
+                                                                      request
+                                                                          .status,
+                                                                      context),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize: 12,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                            Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .topLeft,
-                                                              child: Text(
-                                                               _translateRequestSubtype2( request.subType !=
-                                                                   null
-                                                                   ? request
-                                                                   .subType!
-                                                                   .replaceAllMapped(
-                                                                 RegExp(
-                                                                     r'([a-z])([A-Z])'),
-                                                                     (Match match) =>
-                                                                 '${match.group(1)} ${match.group(2)}',
-                                                               )
-                                                                   .replaceFirst(
-                                                                   request.subType![0],
-                                                                   request.subType![0].toUpperCase())
-                                                                   : '', context),
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontSize: 15,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  color: Colors
-                                                                      .grey,
-                                                                ),
-                                                              ),
-                                                            )
+                                                            SizedBox(width: 5),
+                                                            Icon(
+                                                          request
+                                                              .requestData!
+                                                              .first
+                                                              .leaveType ==
+                                                              'sickLeave'
+                                                              ? Icons
+                                                              .sick_outlined
+                                                              : request
+                                                              .requestData!
+                                                              .first
+                                                              .leaveType ==
+                                                              'annualLeave'
+                                                              ? Icons
+                                                              .calendar_today_outlined
+                                                              : request.requestData!.first.leaveType ==
+                                                              'casualLeave'
+                                                              ? Icons
+                                                              .beach_access_outlined
+                                                              : request.requestType ==
+                                                              'loanRequest'
+                                                              ? Icons.savings_outlined
+                                                              : Icons.description_outlined,
+                                                          // Fallback icon if no match
+                                                          size: 30,
+                                                          color: Colors.black,
+                                                        )
                                                           ],
                                                         ),
-                                                      ),
-                                                      const SizedBox(width: 5),
-                                                          Container(
-                                                            height: 30,
-                                                            width: 75,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              shape: BoxShape
-                                                                  .rectangle,
-                                                              color: _getColorForVerificationStatus(
-                                                                  request.status ??
-                                                                      'default'),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10),
+                                                    const SizedBox(height: 10),
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.topLeft,
+                                                      child: request.requestType == "loanRequest"
+                                                          ? Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                          : Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
                                                             ),
-                                                            child: Center(
-                                                              child: Text(
-                                                                _translateStatus(
-                                                                    request
-                                                                        .status,
-                                                                    context),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 12,
+                                                    ),
+                                                    if (_expandedIndex ==
+                                                        index) ...[
+                                                      const SizedBox(height: 10),
+                                                      Align(
+                                                        alignment:
+                                                            Alignment.topLeft,
+                                                        child: Text(
+                                                          "${request.reason}",
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 10),
+                                                      Align(
+                                                        alignment:
+                                                            Alignment.topLeft,
+                                                        child: Text(
+                                                          '${request.requestType}',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 10),
+                                                      if (request.requestType == 'leaveRequest') ...[
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .balanceToDate,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            "25 ${AppLocalizations.of(context)!.days}",
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .balanceToEndOfYear,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            "15",
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                      ],
+                                                      const SizedBox(height: 10),
+                                                      if (request.requestType == 'loanRequest') ...[
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .totalLoanAmount,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanAmount}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .loanAmount,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanInstallment}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .loanCycle,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanCycle}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                      ],
+                                                      const SizedBox(height: 10),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                        children: [
+                                                          // Req
+                                                          Column(
+                                                            children: [
+                                                              Stack(
+                                                                alignment: Alignment.center,
+                                                                children: [
+                                                                  Container(
+                                                                    height: 25,
+                                                                    width: 25,
+                                                                    decoration: BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: NasColors.completed,
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    height: 10,
+                                                                    width: 10,
+                                                                    decoration: const BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: Colors.white,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Text(
+                                                                "➡️",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+
+                                                          // Line after Req
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(bottom: 20.0),
+                                                            child: Container(
+                                                              width: 40,
+                                                              height: 2,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                          ...[
+                                                            if (request.approvers != null && request.approvers!.isNotEmpty)
+                                                              for (int i = 0; i < request.approvers!.length; i++) ...[
+                                                                Column(
+                                                                  children: [
+                                                                    Stack(
+                                                                      alignment: Alignment.center,
+                                                                      children: [
+                                                                        Container(
+                                                                          height: 25,
+                                                                          width: 25,
+                                                                          decoration: BoxDecoration(
+                                                                            shape: BoxShape.circle,
+                                                                            color: _getColorForApproverStatus(
+                                                                                request.approvers![i].status),
+                                                                          ),
+                                                                        ),
+                                                                        Container(
+                                                                          height: 10,
+                                                                          width: 10,
+                                                                          decoration: const BoxDecoration(
+                                                                            shape: BoxShape.circle,
+                                                                            color: Colors.white,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(height: 5),
+                                                                    Text(
+                                                                      request.approvers![i].approverName ?? '---',
+                                                                      style: GoogleFonts.inter(
+                                                                        fontSize: 12,
+                                                                        fontWeight: FontWeight.w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                if (i != request.approvers!.length - 1)
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(bottom: 20.0),
+                                                                    child: Container(
+                                                                      width: 40,
+                                                                      height: 2,
+                                                                      color: Colors.grey,
+                                                                    ),
+                                                                  ),
+                                                              ]
+                                                            else
+                                                              Text(
+                                                                '---',
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 15,
+                                                                  color: Colors.grey,
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                              ),
+                                                          ],
+                                                          // Line before CEO
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(bottom: 20.0),
+                                                            child: Container(
+                                                              width: 40,
+                                                              height: 2,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                          // CEO
+                                                          Column(
+                                                            children: [
+                                                              Stack(
+                                                                alignment: Alignment.center,
+                                                                children: [
+                                                                  Container(
+                                                                    height: 25,
+                                                                    width: 25,
+                                                                    decoration: BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: allApproved ? NasColors.completed : NasColors.pending,
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    height: 10,
+                                                                    width: 10,
+                                                                    decoration: const BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: Colors.white,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Text(
+                                                                allApproved ? "✅" : "⏳",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                          } else {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                        }),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_requestTotalPages, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_requestCurrentPage != index) {
+                              _fetchRequestData(index); // Send 0, 1, 2...
+                            }
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _requestCurrentPage == index
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: GoogleFonts.inter(
+                                color: _requestCurrentPage == index ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+                if (_selectedOptionIndex == 1) ...[
+                  Expanded(
+                    child: FutureBuilder(
+                        future: getApproverData(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/loader.json'),
+                              ),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else if (snapshot.hasData) {
+                            return singletonClass
+                                    .approverDataList.first.data!.data!.isEmpty
+                                ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
+                                      ),
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                                : ListView.builder(
+                                    padding: const EdgeInsets.all(5),
+                                    itemCount: _approver!.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      final request = _approver!.reversed.toList()[index];
+                                      final searchText = searchController.text.toLowerCase();
+                                      if (isSearching &&
+                                          !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      String formatDate(String updatedAt) {
+                                        DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                        return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                      }
+                                      String date = formatDate(request.createdAt!);
+                                      return GestureDetector(
+                                        onTap: () => _toggleExpand(index),
+                                        child: AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(15)),
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withValues(alpha: 0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(15.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Column(
+                                                  children: [
+                                                    if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
+                                                        DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
+                                                        DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                      Align(
+                                                        alignment: Alignment.topRight,
+                                                        child: Container(
+                                                          width: 10,
+                                                          height: 10,
+                                                          decoration: const BoxDecoration(
+                                                            color: Colors.blue,
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 5),
+                                                    ],
+                                                    Align(
+                                                      alignment:
+                                                      Alignment.topRight,
+                                                      child: Text(
+                                                        date,
+                                                        style:
+                                                        GoogleFonts
+                                                            .inter(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 5),
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          height: 50,
+                                                          width: 50,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(15),
+                                                            image:
+                                                                const DecorationImage(
+                                                              image: AssetImage(
+                                                                  'images/DP.png'),
+                                                              fit: BoxFit.fill,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        SizedBox(
+                                                          width: 150,
+                                                          child: Column(
+                                                            children: [
+                                                              Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .topLeft,
+                                                                child: Text(
+                                                                  "${request.employeeName}",
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .topLeft,
+                                                                child: Text(
+                                                                 _translateRequestSubtype2( request.subType !=
+                                                                     null
+                                                                     ? request
+                                                                     .subType!
+                                                                     .replaceAllMapped(
+                                                                   RegExp(
+                                                                       r'([a-z])([A-Z])'),
+                                                                       (Match match) =>
+                                                                   '${match.group(1)} ${match.group(2)}',
+                                                                 )
+                                                                     .replaceFirst(
+                                                                     request.subType![0],
+                                                                     request.subType![0].toUpperCase())
+                                                                     : '', context),
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize: 15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                            Container(
+                                                              height: 30,
+                                                              width: 75,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                shape: BoxShape
+                                                                    .rectangle,
+                                                                color: _getColorForVerificationStatus(
+                                                                    request.status ??
+                                                                        'default'),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  _translateStatus(
+                                                                      request
+                                                                          .status,
+                                                                      context),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize: 12,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                      SizedBox(width: 5),
-                                                      Icon(
-                                                        request
-                                                            .requestData!
-                                                            .first
-                                                            .leaveType ==
-                                                            'sickLeave'
-                                                            ? Icons
-                                                            .sick_outlined
-                                                            : request
-                                                            .requestData!
-                                                            .first
-                                                            .leaveType ==
-                                                            'annualLeave'
-                                                            ? Icons
-                                                            .calendar_today_outlined
-                                                            : request.requestData!.first.leaveType ==
-                                                            'casualLeave'
-                                                            ? Icons
-                                                            .beach_access_outlined
-                                                            : request.requestType ==
-                                                            'loanRequest'
-                                                            ? Icons.savings_outlined
-                                                            : Icons.description_outlined,
-                                                        size: 30,
-                                                        color: Colors.black,
-                                                      )
-                                                    ],
-                                                  ),
-                                                  Align(
-                                                    alignment:
-                                                        Alignment.topLeft,
-                                                    child: request
-                                                                .requestType ==
-                                                            "loanRequest"
-                                                        ? Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
-                                                                    .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          )
-                                                        : Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
-                                                                    .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                  ),
-                                                  if (_expandedIndex ==
-                                                      index) ...[
-                                                    const SizedBox(height: 10),
+                                                        SizedBox(width: 5),
+                                                        Icon(
+                                                          request
+                                                              .requestData!
+                                                              .first
+                                                              .leaveType ==
+                                                              'sickLeave'
+                                                              ? Icons
+                                                              .sick_outlined
+                                                              : request
+                                                              .requestData!
+                                                              .first
+                                                              .leaveType ==
+                                                              'annualLeave'
+                                                              ? Icons
+                                                              .calendar_today_outlined
+                                                              : request.requestData!.first.leaveType ==
+                                                              'casualLeave'
+                                                              ? Icons
+                                                              .beach_access_outlined
+                                                              : request.requestType ==
+                                                              'loanRequest'
+                                                              ? Icons.savings_outlined
+                                                              : Icons.description_outlined,
+                                                          size: 30,
+                                                          color: Colors.black,
+                                                        )
+                                                      ],
+                                                    ),
                                                     Align(
                                                       alignment:
                                                           Alignment.topLeft,
-                                                      child: Text(
-                                                        "${request.reason}",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
+                                                      child: request
+                                                                  .requestType ==
+                                                              "loanRequest"
+                                                          ? Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                          : Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
                                                     ),
-                                                    const SizedBox(height: 10),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.topLeft,
-                                                      child: Text(
-                                                        '${request.requestType}',
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.grey,
-                                                          fontSize: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'leaveRequest') ...[
-                                                      const SizedBox(
-                                                          height: 10),
+                                                    if (_expandedIndex ==
+                                                        index) ...[
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .balanceToDate,
+                                                          "${request.reason}",
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
@@ -2340,231 +2320,410 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(height: 5),
+                                                      const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
                                                             Alignment.topLeft,
                                                         child: Text(
-                                                          "25 ${AppLocalizations.of(context)!.days}",
+                                                          '${request.requestType}',
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontWeight:
                                                                 FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .balanceToEndOfYear,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.w500,
                                                             color: Colors.grey,
                                                             fontSize: 15,
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(height: 5),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          "15",
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 10),
-                                                    ],
-                                                    const SizedBox(height: 10),
-                                                    if (request.requestType ==
-                                                        'loanRequest') ...[
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .totalLoanAmount,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: Colors.grey,
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 5),
-                                                      Align(
+                                                      const SizedBox(height: 10),
+                                                      if (request.requestType ==
+                                                          'leaveRequest') ...[
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
                                                           alignment:
                                                               Alignment.topLeft,
                                                           child: Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${request.requestData!.first.loanAmount}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
-                                                                    .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .balanceToDate,
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )),
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .loanInstallment,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: Colors.grey,
-                                                            fontSize: 15,
                                                           ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(height: 5),
-                                                      Align(
+                                                        const SizedBox(height: 5),
+                                                        Align(
                                                           alignment:
                                                               Alignment.topLeft,
                                                           child: Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${request.requestData!.first.loanInstallment}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
-                                                                    .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            "25 ${AppLocalizations.of(context)!.days}",
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
                                                               fontSize: 15,
                                                             ),
-                                                          )),
-                                                      const SizedBox(
-                                                          height: 10),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topLeft,
-                                                        child: Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .loanCycle,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: Colors.grey,
-                                                            fontSize: 15,
                                                           ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(height: 5),
-                                                      Align(
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
                                                           alignment:
                                                               Alignment.topLeft,
                                                           child: Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${request.requestData!.first.loanCycle}"
-                                                                : AppLocalizations.of(
-                                                                        context)!
-                                                                    .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .balanceToEndOfYear,
+                                                            style:
+                                                                GoogleFonts.inter(
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )),
-                                                    ],
-                                                    const SizedBox(height: 10),
-                                                    if (request.status ==
-                                                        'pending') ...[
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(10.0),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            GestureDetector(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            "15",
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                      ],
+                                                      const SizedBox(height: 10),
+                                                      if (request.requestType ==
+                                                          'loanRequest') ...[
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .totalLoanAmount,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanAmount}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .loanInstallment,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanInstallment}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        Align(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .loanCycle,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 5),
+                                                        Align(
+                                                            alignment:
+                                                                Alignment.topLeft,
+                                                            child: Text(
+                                                              request.requestData !=
+                                                                          null &&
+                                                                      request
+                                                                          .requestData!
+                                                                          .isNotEmpty
+                                                                  ? "${request.requestData!.first.loanCycle}"
+                                                                  : AppLocalizations.of(
+                                                                          context)!
+                                                                      .noData,
+                                                              style: GoogleFonts
+                                                                  .inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )),
+                                                      ],
+                                                      const SizedBox(height: 10),
+                                                      if (request.status ==
+                                                          'pending') ...[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(10.0),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              GestureDetector(
+                                                                onTap: () {
+                                                                  showDialog(
+                                                                      context:
+                                                                          context,
+                                                                      builder:
+                                                                          (BuildContext
+                                                                              context) {
+                                                                        return AlertDialog(
+                                                                          backgroundColor:
+                                                                              Colors.white,
+                                                                          title:
+                                                                              Text(
+                                                                            AppLocalizations.of(context)!
+                                                                                .comment,
+                                                                            style:
+                                                                                GoogleFonts.poppins(
+                                                                              fontWeight:
+                                                                                  FontWeight.w500,
+                                                                              color:
+                                                                                  NasColors.darkBlue,
+                                                                              fontSize:
+                                                                                  23,
+                                                                            ),
+                                                                          ),
+                                                                          content:
+                                                                              SingleChildScrollView(
+                                                                            // 🔧 Fixes overflow
+                                                                            child:
+                                                                                Container(
+                                                                              decoration:
+                                                                                  BoxDecoration(
+                                                                                color: Colors.white,
+                                                                                borderRadius: BorderRadius.circular(10.0),
+                                                                                border: Border.all(
+                                                                                  color: NasColors.darkBlue,
+                                                                                  width: 1.0,
+                                                                                ),
+                                                                                boxShadow: const [
+                                                                                  BoxShadow(
+                                                                                    color: Colors.white,
+                                                                                    blurRadius: 15,
+                                                                                    offset: Offset(0.10, 10.0),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                              child:
+                                                                                  TextField(
+                                                                                textAlign: TextAlign.center,
+                                                                                controller: _comment,
+                                                                                minLines: 1,
+                                                                                maxLines: null,
+                                                                                decoration: InputDecoration(
+                                                                                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                                                                  focusedBorder: OutlineInputBorder(
+                                                                                    borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                                  ),
+                                                                                  enabledBorder: OutlineInputBorder(
+                                                                                    borderSide: BorderSide(color: NasColors.darkBlue),
+                                                                                  ),
+                                                                                ),
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.black,
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                  fontSize: 12,
+                                                                                ),
+                                                                                autofocus: false,
+                                                                                textInputAction: TextInputAction.done,
+                                                                                cursorColor: Colors.black,
+                                                                                onTapOutside: (event) {
+                                                                                  FocusManager.instance.primaryFocus?.unfocus();
+                                                                                },
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          actions: [
+                                                                            Row(
+                                                                              mainAxisAlignment:
+                                                                                  MainAxisAlignment.center,
+                                                                              children: [
+                                                                                Container(
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: Colors.red,
+                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                  ),
+                                                                                  child: TextButton(
+                                                                                    onPressed: () {
+                                                                                      Navigator.pop(context);
+                                                                                      patchRequestData(request.id, 'rejected', request.toJson());
+                                                                                      _comment.clear();
+                                                                                    },
+                                                                                    child: Text(
+                                                                                      AppLocalizations.of(context)!.rejected,
+                                                                                      style: GoogleFonts.poppins(
+                                                                                        fontWeight: FontWeight.w500,
+                                                                                        color: Colors.white,
+                                                                                        fontSize: 12,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ],
+                                                                        );
+                                                                      });
+                                                                },
+                                                                child: Container(
+                                                                  width: 120,
+                                                                  height: 40,
+                                                                  decoration:
+                                                                      const BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(
+                                                                                10)),
+                                                                    gradient:
+                                                                        LinearGradient(
+                                                                      colors: [
+                                                                        Color(
+                                                                            0xFF4D4D4D),
+                                                                        Color(
+                                                                            0xFFE64545),
+                                                                        Color(
+                                                                            0xFFCF3E3E),
+                                                                        Color(
+                                                                            0xFFC13A3A),
+                                                                        Color(
+                                                                            0xFF992E2E),
+                                                                      ],
+                                                                      begin: Alignment
+                                                                          .topRight,
+                                                                      end: Alignment
+                                                                          .bottomLeft,
+                                                                    ),
+                                                                  ),
+                                                                  child: Align(
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child: Text(
+                                                                      AppLocalizations.of(
+                                                                              context)!
+                                                                          .cancel,
+                                                                      style: GoogleFonts
+                                                                          .inter(
+                                                                        fontSize:
+                                                                            15,
+                                                                        color: Colors
+                                                                            .white,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 5),
+                                                              GestureDetector(
+                                                                onTap: () {
+                                                                  showDialog(
+                                                                    context: context,
+                                                                    builder: (BuildContext context) {
                                                                       return AlertDialog(
-                                                                        backgroundColor:
-                                                                            Colors.white,
-                                                                        title:
-                                                                            Text(
-                                                                          AppLocalizations.of(context)!
-                                                                              .comment,
-                                                                          style:
-                                                                              GoogleFonts.poppins(
-                                                                            fontWeight:
-                                                                                FontWeight.w500,
-                                                                            color:
-                                                                                NasColors.darkBlue,
-                                                                            fontSize:
-                                                                                23,
+                                                                        backgroundColor: Colors.white,
+                                                                        title: Text(
+                                                                          AppLocalizations.of(context)!.comment,
+                                                                          style: GoogleFonts.poppins(
+                                                                            fontWeight: FontWeight.w500,
+                                                                            color: NasColors.darkBlue,
+                                                                            fontSize: 23,
                                                                           ),
                                                                         ),
-                                                                        content:
-                                                                            SingleChildScrollView(
-                                                                          // 🔧 Fixes overflow
-                                                                          child:
-                                                                              Container(
-                                                                            decoration:
-                                                                                BoxDecoration(
+                                                                        content: SingleChildScrollView(
+                                                                          child: Container(
+                                                                            decoration: BoxDecoration(
                                                                               color: Colors.white,
                                                                               borderRadius: BorderRadius.circular(10.0),
                                                                               border: Border.all(
@@ -2579,8 +2738,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                                 ),
                                                                               ],
                                                                             ),
-                                                                            child:
-                                                                                TextField(
+                                                                            child: TextField(
                                                                               textAlign: TextAlign.center,
                                                                               controller: _comment,
                                                                               minLines: 1,
@@ -2610,22 +2768,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                         ),
                                                                         actions: [
                                                                           Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
+                                                                            mainAxisAlignment: MainAxisAlignment.center,
                                                                             children: [
                                                                               Container(
                                                                                 decoration: BoxDecoration(
-                                                                                  color: Colors.red,
+                                                                                  color: NasColors.completed,
                                                                                   borderRadius: BorderRadius.circular(10),
                                                                                 ),
                                                                                 child: TextButton(
                                                                                   onPressed: () {
                                                                                     Navigator.pop(context);
-                                                                                    patchRequestData(request.id, 'rejected', request.toJson());
+                                                                                    patchRequestData(request.id, 'approved', request.toJson());
                                                                                     _comment.clear();
                                                                                   },
                                                                                   child: Text(
-                                                                                    AppLocalizations.of(context)!.rejected,
+                                                                                    AppLocalizations.of(context)!.accept,
                                                                                     style: GoogleFonts.poppins(
                                                                                       fontWeight: FontWeight.w500,
                                                                                       color: Colors.white,
@@ -2638,257 +2795,117 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                           ),
                                                                         ],
                                                                       );
-                                                                    });
-                                                              },
-                                                              child: Container(
-                                                                width: 120,
-                                                                height: 40,
-                                                                decoration:
-                                                                    const BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(
-                                                                              10)),
-                                                                  gradient:
-                                                                      LinearGradient(
-                                                                    colors: [
-                                                                      Color(
-                                                                          0xFF4D4D4D),
-                                                                      Color(
-                                                                          0xFFE64545),
-                                                                      Color(
-                                                                          0xFFCF3E3E),
-                                                                      Color(
-                                                                          0xFFC13A3A),
-                                                                      Color(
-                                                                          0xFF992E2E),
-                                                                    ],
-                                                                    begin: Alignment
-                                                                        .topRight,
-                                                                    end: Alignment
-                                                                        .bottomLeft,
-                                                                  ),
-                                                                ),
-                                                                child: Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
-                                                                  child: Text(
-                                                                    AppLocalizations.of(
-                                                                            context)!
-                                                                        .cancel,
-                                                                    style: GoogleFonts
-                                                                        .inter(
-                                                                      fontSize:
-                                                                          15,
-                                                                      color: Colors
-                                                                          .white,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                width: 5),
-                                                            GestureDetector(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                  context: context,
-                                                                  builder: (BuildContext context) {
-                                                                    return AlertDialog(
-                                                                      backgroundColor: Colors.white,
-                                                                      title: Text(
-                                                                        AppLocalizations.of(context)!.comment,
-                                                                        style: GoogleFonts.poppins(
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: NasColors.darkBlue,
-                                                                          fontSize: 23,
-                                                                        ),
-                                                                      ),
-                                                                      content: SingleChildScrollView(
-                                                                        child: Container(
-                                                                          decoration: BoxDecoration(
-                                                                            color: Colors.white,
-                                                                            borderRadius: BorderRadius.circular(10.0),
-                                                                            border: Border.all(
-                                                                              color: NasColors.darkBlue,
-                                                                              width: 1.0,
-                                                                            ),
-                                                                            boxShadow: const [
-                                                                              BoxShadow(
-                                                                                color: Colors.white,
-                                                                                blurRadius: 15,
-                                                                                offset: Offset(0.10, 10.0),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                          child: TextField(
-                                                                            textAlign: TextAlign.center,
-                                                                            controller: _comment,
-                                                                            minLines: 1,
-                                                                            maxLines: null,
-                                                                            decoration: InputDecoration(
-                                                                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                                                              focusedBorder: OutlineInputBorder(
-                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
-                                                                              ),
-                                                                              enabledBorder: OutlineInputBorder(
-                                                                                borderSide: BorderSide(color: NasColors.darkBlue),
-                                                                              ),
-                                                                            ),
-                                                                            style: const TextStyle(
-                                                                              color: Colors.black,
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 12,
-                                                                            ),
-                                                                            autofocus: false,
-                                                                            textInputAction: TextInputAction.done,
-                                                                            cursorColor: Colors.black,
-                                                                            onTapOutside: (event) {
-                                                                              FocusManager.instance.primaryFocus?.unfocus();
-                                                                            },
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      actions: [
-                                                                        Row(
-                                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Container(
-                                                                              decoration: BoxDecoration(
-                                                                                color: NasColors.completed,
-                                                                                borderRadius: BorderRadius.circular(10),
-                                                                              ),
-                                                                              child: TextButton(
-                                                                                onPressed: () {
-                                                                                  Navigator.pop(context);
-                                                                                  patchRequestData(request.id, 'approved', request.toJson());
-                                                                                  _comment.clear();
-                                                                                },
-                                                                                child: Text(
-                                                                                  AppLocalizations.of(context)!.accept,
-                                                                                  style: GoogleFonts.poppins(
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                    color: Colors.white,
-                                                                                    fontSize: 12,
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
+                                                                    },
+                                                                  );
+                                                                },
+                                                                child: Container(
+                                                                  width: 120,
+                                                                  height: 40,
+                                                                  decoration: const BoxDecoration(
+                                                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                                    gradient: LinearGradient(
+                                                                      colors: [
+                                                                        Color(0xFF47734D),
+                                                                        Color(0xFF5B9362),
+                                                                        Color(0xFF66A56E),
+                                                                        Color(0xFF76BE7F),
+                                                                        Color(0xFF86D991),
                                                                       ],
-                                                                    );
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: Container(
-                                                                width: 120,
-                                                                height: 40,
-                                                                decoration: const BoxDecoration(
-                                                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                                  gradient: LinearGradient(
-                                                                    colors: [
-                                                                      Color(0xFF47734D),
-                                                                      Color(0xFF5B9362),
-                                                                      Color(0xFF66A56E),
-                                                                      Color(0xFF76BE7F),
-                                                                      Color(0xFF86D991),
-                                                                    ],
-                                                                    begin: Alignment.topRight,
-                                                                    end: Alignment.bottomLeft,
+                                                                      begin: Alignment.topRight,
+                                                                      end: Alignment.bottomLeft,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                child: Align(
-                                                                  alignment: Alignment.center,
-                                                                  child: Text(
-                                                                    AppLocalizations.of(context)!.acceptRequest,
-                                                                    style: GoogleFonts.inter(
-                                                                      fontSize: 15,
-                                                                      color: Colors.white,
+                                                                  child: Align(
+                                                                    alignment: Alignment.center,
+                                                                    child: Text(
+                                                                      AppLocalizations.of(context)!.acceptRequest,
+                                                                      style: GoogleFonts.inter(
+                                                                        fontSize: 15,
+                                                                        color: Colors.white,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          ],
+                                                            ],
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ]
+                                                      ]
+                                                    ],
                                                   ],
-                                                ],
-                                              ),
-                                            ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
+                                      );
+                                    },
+                                  );
+                          } else {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    Center(
+                                      child: SizedBox(
+                                        height: 200,
+                                        width: 200,
+                                        child: Lottie.asset('images/empty.json'),
                                       ),
-                                    );
-                                  },
-                                );
-                        } else {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
                                     ),
-                                  ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: NasColors.darkBlue,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      }),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_totalPages, (index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          if (_currentPage != index) {
-                            _fetchApproverData(index); // Send 0, 1, 2...
+                            );
                           }
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentPage == index
-                                ? NasColors.darkBlue
-                                : NasColors.onTime.withOpacity(0.31),
-                          ),
-                          child: Text(
-                            '${index + 1}',
-                            style: GoogleFonts.inter(
-                              color: _currentPage == index ? Colors.white : Colors.black,
+                        }),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_totalPages, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_currentPage != index) {
+                              _fetchApproverData(index); // Send 0, 1, 2...
+                            }
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentPage == index
+                                  ? NasColors.darkBlue
+                                  : NasColors.onTime.withOpacity(0.31),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: GoogleFonts.inter(
+                                color: _currentPage == index ? Colors.white : Colors.black,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
+                      );
+                    }),
+                  ),
 
+                ],
               ],
             ],
-          ],
+          ),
         ),
       ),
     );

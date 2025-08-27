@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -712,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  AppLocalizations.of(context)!.manageTime,
+                                  AppLocalizations.of(context)!.manageShifts,
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -760,8 +761,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
-    final uiSettings =
-        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
 
     final hasDocuments =
         uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
@@ -809,9 +809,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
                   ),
-                  child: Container(
-                      color: Colors.black
-                          .withValues(alpha: (opacityAmount * 0.1 * 2))),
+                  child: Container(color: Colors.black.withValues(alpha: (opacityAmount * 0.1 * 2))),
                 ),
               ],
             ),
@@ -837,13 +835,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             child: ClipOval(
                               child: Image.network(
                                 dashBoardData?.profilePic ?? '',
-                                // URL for the network image, empty string if null
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
                                 errorBuilder: (BuildContext context,
                                     Object exception, StackTrace? stackTrace) {
-                                  // Display the default asset image if the network image fails to load
                                   return Image.asset(
                                     'images/DP.png',
                                     fit: BoxFit.cover,
@@ -962,17 +958,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.white.withValues(alpha: 0.6),
-                                  // Adjust opacity for the glow effect
                                   spreadRadius: 5,
-                                  // Spread the shadow to create a glow effect
-                                  blurRadius:
-                                      10, // Blur radius to make the glow smooth
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(9.0),
-                              // optional padding
                               child: Image.asset(
                                 'images/clocking.png',
                                 fit: BoxFit.contain,
@@ -997,11 +989,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.white.withValues(alpha: 0.6),
-                                  // Adjust opacity for the glow effect
                                   spreadRadius: 5,
-                                  // Spread the shadow to create a glow effect
-                                  blurRadius:
-                                      10, // Blur radius to make the glow smooth
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
@@ -1031,11 +1020,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.white.withValues(alpha: 0.6),
-                            // Adjust opacity for the glow effect
                             spreadRadius: 5,
-                            // Spread the shadow to create a glow effect
-                            blurRadius:
-                                10, // Blur radius to make the glow smooth
+                            blurRadius: 10,
                           ),
                         ],
                       ),
@@ -1587,10 +1573,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    singletonClass.attendanceDataList.isNotEmpty &&
-                                                            singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                    singletonClass.clockingDataList.isNotEmpty &&
+                                                            singletonClass.clockingDataList.first.data!.isNotEmpty
                                                         ? '${AppLocalizations.of(context)!.worked} '
-                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.attendanceDataList.first.data!.data!.first.totalHoursWorked?.toString() ?? '0')?.round() ?? 0 , context)}'
+                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.clockingDataList.first.data!.first.totalTime?.toString() ?? '0')?.round() ?? 0 , context)}'
                                                         : '${AppLocalizations.of(context)!.worked} --:--',
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -1966,8 +1952,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2002,11 +1987,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const AssetsScreen()));
+                                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AssetsScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -2114,8 +2095,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
+                                                  color: Colors.grey.withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -2234,7 +2214,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       const SizedBox(height: 5),
                                       Text(
                                         AppLocalizations.of(context)!
-                                            .manageTime,
+                                            .manageShifts,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -2308,8 +2288,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     color: Colors.grey.withValues(alpha: 0.5),
                                     spreadRadius: 2,
                                     blurRadius: 8,
-                                    offset: const Offset(
-                                        0, 3), // changes position of shadow
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
@@ -2345,11 +2324,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   border: Border(
                                                     left: BorderSide(
                                                       color: NasColors.lightBlue,
-                                                      width: 4.0, // Set the border width
+                                                      width: 4.0,
                                                     ),
                                                     right: BorderSide(
                                                       color: NasColors.lightBlue,
-                                                      width: 2.0, // Set the border width
+                                                      width: 2.0,
                                                     ),
                                                   ),
                                                   borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -2371,8 +2350,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                             height: 50,
                                                             width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonthIcon.png"),
+                                                            child: Image.asset("images/thisMonthIcon.png"),
                                                           )
                                                         ],
                                                       ),
@@ -2380,15 +2358,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         mainAxisAlignment: MainAxisAlignment.center,
                                                         children: [
                                                           Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(2)}",
+                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(0)}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
+                                                                fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
                                                         ],
-                                                      )
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -2399,16 +2376,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 decoration: BoxDecoration(
                                                   border: Border(
                                                     left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 2.0,
                                                     ),
                                                     right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
+                                                      color: NasColors.lightBlue,
+                                                      width: 2.0,
                                                     ),
                                                   ),
                                                   borderRadius:
@@ -2568,7 +2541,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             height: 50,
                                                             width: 50,
                                                             child: Image.asset(
-                                                                "images/remoteIcon.png"),
+                                                                "images/image.png"),
                                                           )
                                                         ],
                                                       ),
@@ -2736,8 +2709,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final int hours = totalMinutes ~/ 60;
     final int minutes = totalMinutes % 60;
 
-    final String hoursLabel = "h";
-    final String minutesLabel = "m";
+    final String hoursLabel = AppLocalizations.of(context)!.h;
+    final String minutesLabel = AppLocalizations.of(context)!.m;
 
     return "$hours $hoursLabel $minutes $minutesLabel";
   }
@@ -2956,38 +2929,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
    ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
-    String url =
-        '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
-
-    // Fallbacks if any location is null
+    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
     String finalLocation = _openLocation ?? "0.0,0.0";
-
     Map<String, dynamic> data = {"lastLocation": finalLocation};
-
     String jsonData = jsonEncode(data);
     log("remote Location Json$jsonData");
-
-    setState(() {
-      isLoading = true;
-    });
-
     try {
       final response = await http.patch(
         Uri.parse(url),
         headers: singletonClass.getHeaders(),
         body: jsonData,
       );
-
-      setState(() {
-        isLoading = false;
-      });
-
-      print("send remote loc:${response.body}");
+      if (kDebugMode) {
+        print("send remote loc:${response.body}");
+      }
       final decodedResponse = json.decode(response.body);
       if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
       } else {}
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      if (kDebugMode) {
+        print('Failed to send data. Error: $error');
+      }
     }
   }
    /// Current Location

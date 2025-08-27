@@ -55,7 +55,8 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
           children: [
             ListView(
               padding: EdgeInsets.zero,
-            children: [ Column(
+            children: [
+              Column(
               children: [
                 Row(
                   children: [
@@ -85,7 +86,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                       ),
                     ),
                     Text(
-                      AppLocalizations.of(context)!.tasks,
+                      AppLocalizations.of(context)!.taskDetails,
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -154,7 +155,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                                   : _selectedOption.toString();
                               updateTask(
                                 "TODO",
-                                widget.toDoTasks!.first.id,
+                                widget.toDoTasks!.first.taskId,
                                 widget.toDoTasks!.first.id,
                                 widget.toDoTasks!.first.projectId,
                                 widget.toDoTasks!.first.subject,
@@ -259,7 +260,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                           Align(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              widget.toDoTasks!.first.assignTo!.first,
+                              "${widget.toDoTasks!.first.assignTo!.first.userName}",
                               style: GoogleFonts.inter(
                                   fontSize: 15,
                                   color: Colors.black,
@@ -366,16 +367,43 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         width: 200,
                         child: GestureDetector(
                           onTap: () async {
-                            final Uri uri =
-                            Uri.parse("${widget.toDoTasks!.first.attachments}");
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri,
-                                  mode: LaunchMode.externalApplication);
+                            String url = "${widget.toDoTasks!.first.attachments}".toLowerCase();
+                            if (url.endsWith(".png") ||
+                                url.endsWith(".jpg") ||
+                                url.endsWith(".jpeg")) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      height: MediaQuery.of(context).size.height * 0.5,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Image.network(
+                                        "${widget.toDoTasks!.first.attachments}",
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else if (url.endsWith(".pdf") || (url.endsWith(".doc") || url.endsWith(".docx"))) {
+                              final Uri uri = Uri.parse("${widget.toDoTasks!.first.attachments}");
+                              if (await canLaunchUrl(uri)) { await launchUrl(uri, mode: LaunchMode.externalApplication); }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Unsupported file type")),
+                              );
                             }
                           },
                           child: (() {
-                            String url = "${widget.toDoTasks!.first.attachments}"
-                                .toLowerCase();
+                            String url = "${widget.toDoTasks!.first.attachments}".toLowerCase();
                             if (url.endsWith(".png") ||
                                 url.endsWith(".jpg") ||
                                 url.endsWith(".jpeg")) {
@@ -386,8 +414,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                             } else if (url.endsWith(".pdf")) {
                               return const Icon(Icons.picture_as_pdf,
                                   size: 50, color: Colors.red);
-                            } else if (url.endsWith(".doc") ||
-                                url.endsWith(".docx")) {
+                            } else if (url.endsWith(".doc") || url.endsWith(".docx")) {
                               return const Icon(Icons.description,
                                   size: 50, color: Colors.blue);
                             } else {
@@ -467,91 +494,6 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         ),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Container(
-                        height: 150,
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.9,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8EBF0),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0, 4),
-                              blurRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            controller: comment,
-                            maxLength: 300,
-                            maxLines: 5,
-                            cursorColor: Colors.grey,
-                            decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)!.comment,
-                                hintStyle: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500),
-                                border: InputBorder.none,
-                                suffixIcon: IconButton(
-                                  icon: Image.asset(
-                                    'images/send.png',
-                                    height: 24,
-                                    width: 24,
-                                    color: NasColors.onTime,
-                                  ),
-                                  onPressed: () {
-                                    final date = DateTime.now();
-                                    final commentToSend = comment.text.trim().isEmpty
-                                        ? widget.toDoTasks!.first.comments!.first.comments
-                                        : comment.text.trim();
-                                    final commentBy = comment.text.trim().isEmpty
-                                        ? widget.toDoTasks!.first.comments!.first.commentedBy
-                                        : singletonClass.getJWTModel()?.userName;
-                                    final commentedAt= comment.text.trim().isEmpty
-                                        ? widget.toDoTasks!.first.comments!.first.commentedAt
-                                        : date;
-                                    final selectOption = _selectedOption == null
-                                        ? widget.toDoTasks!.first.status
-                                        : _selectedOption.toString();
-                                    updateTask(
-                                      "TODO",
-                                      widget.toDoTasks!.first.id,
-                                      widget.toDoTasks!.first.id,
-                                      widget.toDoTasks!.first.projectId,
-                                      widget.toDoTasks!.first.subject,
-                                      widget.toDoTasks!.first.description,
-                                      widget.toDoTasks!.first.attachments,
-                                      selectOption.toString(),
-                                      widget.toDoTasks!.first.estimatedDuration,
-                                      widget.toDoTasks!.first.type,
-                                      widget.toDoTasks!.first.tag,
-                                      widget.toDoTasks!.first.assignTo,
-                                      widget.toDoTasks!.first.reportedTo!.first.manager,
-                                      widget.toDoTasks!.first.logDuration!.first.date,
-                                      widget.toDoTasks!.first.logDuration!.first.hours,
-                                      widget.toDoTasks!.first.logDuration!.first.loggedBy,
-                                      widget.toDoTasks!.first.subTask,
-                                      commentToSend,
-                                      commentBy,
-                                     commentedAt.toString(),
-                                    );
-                                  },
-                                )),
-                          ),
-                        ),
-                      )
-                    ],
-                  )
                 ],
                 if (widget.inProgressTasks != null &&
                     widget.inProgressTasks!.isNotEmpty &&
@@ -612,7 +554,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                                   : _selectedOption.toString();
                               updateTask(
                                 "InProgress",
-                                  widget.inProgressTasks!.first.id,
+                                  widget.inProgressTasks!.first.taskId,
                                   widget.inProgressTasks!.first.id,
                                   widget.inProgressTasks!.first.projectId,
                                   widget.inProgressTasks!.first.subject,
@@ -714,7 +656,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                           Align(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              widget.inProgressTasks!.first.assignTo!.first,
+                              "${widget.inProgressTasks!.first.assignTo!.first.userName}",
                               style: GoogleFonts.inter(
                                   fontSize: 15,
                                   color: Colors.black,
@@ -821,18 +763,43 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         width: 200,
                         child: GestureDetector(
                           onTap: () async {
-                            final Uri uri =
-                            Uri.parse("${widget.inProgressTasks!.first
-                                .attachments}");
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri,
-                                  mode: LaunchMode.externalApplication);
+                            String url = "${widget.inProgressTasks!.first.attachments}".toLowerCase();
+                            if (url.endsWith(".png") ||
+                                url.endsWith(".jpg") ||
+                                url.endsWith(".jpeg")) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      height: MediaQuery.of(context).size.height * 0.5,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Image.network(
+                                        "${widget.inProgressTasks!.first.attachments}",
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else if (url.endsWith(".pdf") || (url.endsWith(".doc") || url.endsWith(".docx"))) {
+                              final Uri uri = Uri.parse("${widget.inProgressTasks!.first.attachments}");
+                              if (await canLaunchUrl(uri)) { await launchUrl(uri, mode: LaunchMode.externalApplication); }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Unsupported file type")),
+                              );
                             }
                           },
                           child: (() {
-                            String url = "${widget.inProgressTasks!.first
-                                .attachments}"
-                                .toLowerCase();
+                            String url = "${widget.inProgressTasks!.first.attachments}".toLowerCase();
                             if (url.endsWith(".png") ||
                                 url.endsWith(".jpg") ||
                                 url.endsWith(".jpeg")) {
@@ -843,8 +810,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                             } else if (url.endsWith(".pdf")) {
                               return const Icon(Icons.picture_as_pdf,
                                   size: 50, color: Colors.red);
-                            } else if (url.endsWith(".doc") ||
-                                url.endsWith(".docx")) {
+                            } else if (url.endsWith(".doc") || url.endsWith(".docx")) {
                               return const Icon(Icons.description,
                                   size: 50, color: Colors.blue);
                             } else {
@@ -924,88 +890,6 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         ),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Container(
-                        height: 150,
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.9,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8EBF0),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0, 4),
-                              blurRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            controller: comment,
-                            cursorColor: Colors.grey,
-                            decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)!.comment,
-                                hintStyle: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500),
-                                border: InputBorder.none,
-                                suffixIcon: IconButton(
-                                  icon: Image.asset(
-                                    'images/send.png',
-                                    height: 24,
-                                    width: 24,
-                                    color: NasColors.onTime,
-                                  ),
-                                  onPressed: () {
-                                    final date = DateTime.now();
-                                    final commentBy = comment.text.trim().isEmpty
-                                        ? widget.inProgressTasks!.first.comments!.first.commentedBy
-                                        : singletonClass.getJWTModel()?.userName;
-                                    final commentedAt= comment.text.trim().isEmpty
-                                        ? widget.inProgressTasks!.first.comments!.first.commentedAt
-                                        : date;
-                                    final commentToSend = comment.text.trim().isEmpty
-                                        ? widget.inProgressTasks!.first.comments!.first.comments
-                                        : comment.text.trim();
-                                    final selectOption = _selectedOption == null
-                                        ? widget.inProgressTasks!.first.status
-                                        : _selectedOption.toString();
-                                    updateTask(
-                                      "InProgress",
-                                      widget.inProgressTasks!.first.id,
-                                      widget.inProgressTasks!.first.id,
-                                      widget.inProgressTasks!.first.projectId,
-                                      widget.inProgressTasks!.first.subject,
-                                      widget.inProgressTasks!.first.description,
-                                      widget.inProgressTasks!.first.attachments,
-                                      selectOption.toString(),
-                                      widget.inProgressTasks!.first.estimatedDuration,
-                                      widget.inProgressTasks!.first.type,
-                                      widget.inProgressTasks!.first.tag,
-                                      widget.inProgressTasks!.first.assignTo,
-                                      widget.inProgressTasks!.first.reportedTo!.first.manager,
-                                      widget.inProgressTasks!.first.logDuration!.first.date,
-                                      widget.inProgressTasks!.first.logDuration!.first.hours,
-                                      widget.inProgressTasks!.first.logDuration!.first.loggedBy,
-                                      widget.inProgressTasks!.first.subTask,
-                                      commentToSend,
-                                      commentBy,
-                                      commentedAt.toString(),);
-                                  },
-                                )),
-                          ),
-                        ),
-                      )
-                    ],
-                  )
                 ],
                 if (widget.completedTask != null &&
                     widget.completedTask!.isNotEmpty &&
@@ -1066,7 +950,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                                   : _selectedOption.toString();
                               updateTask(
                                 "Completed",
-                                widget.completedTask!.first.id,
+                                widget.completedTask!.first.taskId,
                                 widget.completedTask!.first.id,
                                 widget.completedTask!.first.projectId,
                                 widget.completedTask!.first.subject,
@@ -1167,7 +1051,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                           Align(
                             alignment: Alignment.topLeft,
                             child: Text(
-                              widget.completedTask!.first.assignTo!.first,
+                             "${widget.completedTask!.first.assignTo!.first.userName}",
                               style: GoogleFonts.inter(
                                   fontSize: 15,
                                   color: Colors.black,
@@ -1274,17 +1158,43 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         width: 200,
                         child: GestureDetector(
                           onTap: () async {
-                            final Uri uri =
-                            Uri.parse("${widget.completedTask!.first.attachments}");
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri,
-                                  mode: LaunchMode.externalApplication);
+                            String url = "${widget.completedTask!.first.attachments}".toLowerCase();
+                            if (url.endsWith(".png") ||
+                                url.endsWith(".jpg") ||
+                                url.endsWith(".jpeg")) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      height: MediaQuery.of(context).size.height * 0.5,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Image.network(
+                                        "${widget.completedTask!.first.attachments}",
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else if (url.endsWith(".pdf") || (url.endsWith(".doc") || url.endsWith(".docx"))) {
+                              final Uri uri = Uri.parse("${widget.completedTask!.first.attachments}");
+                              if (await canLaunchUrl(uri)) { await launchUrl(uri, mode: LaunchMode.externalApplication); }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Unsupported file type")),
+                              );
                             }
                           },
                           child: (() {
-                            String url = "${widget.completedTask!.first
-                                .attachments}"
-                                .toLowerCase();
+                            String url = "${widget.completedTask!.first.attachments}".toLowerCase();
                             if (url.endsWith(".png") ||
                                 url.endsWith(".jpg") ||
                                 url.endsWith(".jpeg")) {
@@ -1295,8 +1205,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                             } else if (url.endsWith(".pdf")) {
                               return const Icon(Icons.picture_as_pdf,
                                   size: 50, color: Colors.red);
-                            } else if (url.endsWith(".doc") ||
-                                url.endsWith(".docx")) {
+                            } else if (url.endsWith(".doc") || url.endsWith(".docx")) {
                               return const Icon(Icons.description,
                                   size: 50, color: Colors.blue);
                             } else {
@@ -1376,93 +1285,10 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
                         ),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Container(
-                        height: 150,
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.9,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8EBF0),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              offset: const Offset(0, 4),
-                              blurRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            controller: comment,
-                            cursorColor: Colors.grey,
-                            decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)!.comment,
-                                hintStyle: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500),
-                                border: InputBorder.none,
-                                suffixIcon: IconButton(
-                                  icon: Image.asset(
-                                    'images/send.png',
-                                    height: 24,
-                                    width: 24,
-                                    color: NasColors.onTime,
-                                  ),
-                                  onPressed: () {
-                                    final date = DateTime.now();
-                                    final commentBy = comment.text.trim().isEmpty
-                                        ? widget.completedTask!.first.comments!.first.commentedBy
-                                        : singletonClass.getJWTModel()?.userName;
-                                    final commentedAt= comment.text.trim().isEmpty
-                                        ? widget.completedTask!.first.comments!.first.commentedAt
-                                        : date;
-                                    final commentToSend = comment.text.trim().isEmpty
-                                        ? widget.completedTask!.first.comments!.first.comments
-                                        : comment.text.trim();
-                                    final selectOption = _selectedOption == null
-                                        ? widget.completedTask!.first.assignTo
-                                        : _selectedOption.toString();
-                                    updateTask(
-                                      "Completed",
-                                      widget.completedTask!.first.id,
-                                      widget.completedTask!.first.id,
-                                      widget.completedTask!.first.projectId,
-                                      widget.completedTask!.first.subject,
-                                      widget.completedTask!.first.description,
-                                      widget.completedTask!.first.attachments,
-                                      selectOption.toString(),
-                                      widget.completedTask!.first.estimatedDuration,
-                                      widget.completedTask!.first.type,
-                                      widget.completedTask!.first.tag,
-                                      widget.completedTask!.first.assignTo,
-                                      widget.completedTask!.first.reportedTo!.first.manager,
-                                      widget.completedTask!.first.logDuration!.first.date,
-                                      widget.completedTask!.first.logDuration!.first.hours,
-                                      widget.completedTask!.first.logDuration!.first.loggedBy,
-                                      widget.completedTask!.first.subTask,
-                                      commentToSend,
-                                      commentBy,
-                                      commentedAt.toString(),);
-                                  },
-                                )),
-                          ),
-                        ),
-                      )
-                    ],
-                  )
                 ],
 
               ],
             ),
-
             ]
           ),
             if (isLoading)
@@ -1475,6 +1301,105 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
               )
           ]
         ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+        child: Row(
+              children: [
+                Container(
+                  height: 150,
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.9,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8EBF0),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: const Offset(0, 4),
+                        blurRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      controller: comment,
+                      maxLength: 300,
+                      maxLines: 5,
+                      cursorColor: Colors.grey,
+                      decoration: InputDecoration(
+                          hintText: AppLocalizations.of(context)!.comment,
+                          hintStyle: GoogleFonts.inter(
+                              fontSize: 15,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500),
+                          border: InputBorder.none,
+                          suffixIcon: IconButton(
+                            icon: Image.asset(
+                              'images/send.png',
+                              height: 24,
+                              width: 24,
+                              color: NasColors.onTime,
+                            ),
+                            onPressed: () {
+                              final date = DateTime.now();
+                              Dattaa? task;
+                              if (widget.toDoTasks!.isNotEmpty && widget.toDoTasks!.first.status == 'TODO') {
+                                task = widget.toDoTasks!.first;
+                              } else if (widget.inProgressTasks!.isNotEmpty && widget.inProgressTasks!.first.status == 'InProgress') {
+                                task = widget.inProgressTasks!.first;
+                              } else if (widget.completedTask!.isNotEmpty && widget.completedTask!.first.status == 'Completed') {
+                                task = widget.completedTask!.first;
+                              }
+                              final commentToSend = comment.text.trim().isEmpty
+                                  ? task!.comments!.first.comments
+                                  : comment.text.trim();
+                              final commentBy = comment.text.trim().isEmpty
+                                  ? task!.comments!.first.commentedBy
+                                  : singletonClass.getJWTModel()?.userName;
+                              final commentedAt= comment.text.trim().isEmpty
+                                  ? task!.comments!.first.commentedAt
+                                  : date;
+                              final selectOption = _selectedOption == null
+                                  ? task!.status
+                                  : _selectedOption.toString();
+                              if (task != null) {
+                                updateTask(
+                                  task.status,
+                                  task.taskId,
+                                  task.id,
+                                  task.projectId,
+                                  task.subject,
+                                  task.description,
+                                  task.attachments,
+                                  selectOption.toString(),
+                                  task.estimatedDuration,
+                                  task.type,
+                                  task.tag,
+                                  task.assignTo,
+                                  task.reportedTo!.first.manager,
+                                  task.logDuration!.first.date,
+                                  task.logDuration!.first.hours,
+                                  task.logDuration!.first.loggedBy,
+                                  task.subTask,
+                                  commentToSend,
+                                  commentBy,
+                                  commentedAt.toString(),
+                                );
+                              }
+
+                            },
+                          )),
+                    ),
+                  ),
+                )
+              ],
+            )
+
       ),
     );
   }
@@ -1492,7 +1417,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
       String? estimatedDuration,
       String? type,
       List<String>? tag,
-      List<String>? assignTo,
+      List<AssignTo>? assignTo,
       String? reportedTo,
       String? date,
       String? hours,
@@ -1609,8 +1534,9 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
             type: QuickAlertType.success,
           );
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const MainScreen()));
+              context, MaterialPageRoute(builder: (context) => const MainScreen(index: 1)));
           singletonClass.taskModelList.clear();
+          singletonClass.taskAttachmentDataList.clear();
         } else {
           String errorMessage = decodedResponse['data']?['message'] ?? 'Unknown error';
           log('Error: $errorMessage');

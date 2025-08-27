@@ -888,7 +888,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                 Padding(
                                                     padding: const EdgeInsets.only(top: 15.0),
                                                     child: Text(
-                                                      "${penalities.lateMinute}",
+                                                      singletonClass.formatMinutes(penalities.lateMinute!, context),
                                                       style: GoogleFonts.inter(
                                                         fontSize: 15,
                                                         fontWeight:
@@ -902,17 +902,13 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                   ),
                                                 const SizedBox(width: 5),
                                                 Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 10.0),
+                                                    padding:const EdgeInsets.only(top: 10.0),
                                                     child: Text(
-                                                      "${penalities.percentage}",
+                                                      "${penalities.percentage} ${"SAR"}",
                                                       style: GoogleFonts.inter(
                                                         fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
+                                                        fontWeight: FontWeight.normal,
+                                                        color: NasColors.darkBlue,
                                                       ),
                                                       textAlign:
                                                           TextAlign.center,

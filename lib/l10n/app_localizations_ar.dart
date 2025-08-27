@@ -12,7 +12,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dashboard => 'لوحة التحكم';
 
   @override
-  String get approvals => 'الموافقات';
+  String get approvals => 'طلبات الفريق';
 
   @override
   String get teamMates => 'زملاء الفريق';
@@ -806,7 +806,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employee => 'الموظف';
 
   @override
-  String get admin => 'المسؤول';
+  String get admin => 'مسؤول';
 
   @override
   String get superAdmin => 'المسؤول الأعلى';
@@ -1081,7 +1081,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get againstMe => 'ضدي';
 
   @override
-  String get teams => 'الفرق';
+  String get teams => 'الفريق';
 
   @override
   String get applyRequests => 'تقديم الطلب';
@@ -1828,4 +1828,22 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get biometricNotAvailable =>
       'المصادقة البيومترية غير متوفرة أو غير مسجلة';
+
+  @override
+  String get manageShifts => 'إدارة المناوبات';
+
+  @override
+  String get noSignature => 'لا يوجد توقيع';
+
+  @override
+  String get editSignature => 'تعديل التوقيع';
+
+  @override
+  String get addSignature => 'إضافة توقيع';
+
+  @override
+  String get myProjects => 'مشاريعي';
+
+  @override
+  String get member => 'عضو';
 }
