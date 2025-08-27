@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
           });
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
+            MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -178,8 +178,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (kDebugMode)
-                          Text("You're in Debug mode"),
+                        if(singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)...[
+                          Container(
+                            height:8,
+                            width: 8,
+                            decoration: BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            singletonClass.companyName ?? "None",
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                         IconButton(onPressed: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
                         }, icon: Icon(Icons.apartment_outlined,
@@ -462,7 +478,7 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
             );
           }
         } else if (loginResponse.statusCode == 400 || loginResponse.statusCode == 500) {

@@ -80,7 +80,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.manageTime,
+                  AppLocalizations.of(context)!.manageShifts,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

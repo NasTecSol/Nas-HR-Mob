@@ -1,7 +1,6 @@
 {
   "dashboard": "لوحة التحكم",
-  "approvals": "الموافقات",
-  "teams": "الفرق",
+  "approvals": "طلبات الفريق",
   "manageTime": "إدارة الوقت",
   "finance": "المالية",
   "documents": "المستندات",
@@ -436,7 +435,7 @@
   "penaltiesAndFine": "العقوبات والغرامات",
   "penaltiesAndFineBottom": "نوع العقوبات والغرامات ",
   "againstMe": "ضدي",
-  "teams": "الفرق",
+  "teams": "الفريق",
   "applyRequests": "تقديم الطلب",
   "subType": "نوع الإجازة",
   "notes": "ملاحظات",
@@ -701,7 +700,12 @@
     "notificationEnabled": "الإشعارات مفعلة",
     "notificationsDisabled": "الإشعارات معطلة",
     "anErrorOccurredDuringAuthentication": "حدث خطأ أثناء المصادقة",
-    "biometricNotAvailable": "المصادقة البيومترية غير متوفرة أو غير مسجلة"
-
-
+    "biometricNotAvailable": "المصادقة البيومترية غير متوفرة أو غير مسجلة",
+    "manageShifts":"إدارة المناوبات",
+    "noSignature": "لا يوجد توقيع",
+    "editSignature": "تعديل التوقيع",
+    "addSignature": "إضافة توقيع",
+    "myProjects": "مشاريعي",
+    "admin": "مسؤول",
+    "member": "عضو"
 }

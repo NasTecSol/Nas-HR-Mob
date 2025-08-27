@@ -33,144 +33,288 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return DateTime.now().add(Duration(days: index));
   });
 
+
+  Future<void> fetchLatestEventData() async {
+    try {
+      getEventData();
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Row(children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                child: Text(
-                  AppLocalizations.of(context)!.calendar,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
+        child: RefreshIndicator(
+          color: NasColors.darkBlue,
+          backgroundColor: Colors.white,
+          onRefresh: fetchLatestEventData ,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              Row(children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0, top: 15.0),
+                  child: Text(
+                    AppLocalizations.of(context)!.calendar,
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: NasColors.darkBlue,
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(),
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.add,
-                        color: NasColors.darkBlue,
-                        size: 30,
+                const Spacer(),
+                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                      singletonClass.getJWTModel()?.grade == 'L1') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.add,
+                          color: NasColors.darkBlue,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateEventScreen(selectedIndex: _selectedOptionIndex,)));
+                        },
                       ),
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateEventScreen(selectedIndex: _selectedOptionIndex,)));
-                      },
                     ),
-                  ),
-              ],
-            ]),
-            const SizedBox(height: 20),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  buildOptionsCard(0, AppLocalizations.of(context)!.meetings),
-                  buildOptionsCard(1, AppLocalizations.of(context)!.tasks),
-                  buildOptionsCard(2, AppLocalizations.of(context)!.events),
                 ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              AppLocalizations.of(context)!.selectDate,
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: NasColors.darkBlue,
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 80,
-              child: ListView.builder(
+              ]),
+              const SizedBox(height: 20),
+              SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                itemCount: _dates.length,
-                itemBuilder: (context, index) {
-                  final date = _dates[index];
-                  final bool isSelected = _selectedDateIndex == index;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedDateIndex = index;
-                        _selectedDate = date;
-                      });
-                    },
-                    child: Container(
-                      width: 55,
-                      margin: const EdgeInsets.symmetric(horizontal: 5),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? NasColors.darkBlue
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(35),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "${date.day}",
-                            style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.grey),
-                          ),
-                          Text(
-                            _getDayOfWeek(date),
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    buildOptionsCard(0, AppLocalizations.of(context)!.meetings),
+                    buildOptionsCard(1, AppLocalizations.of(context)!.tasks),
+                    buildOptionsCard(2, AppLocalizations.of(context)!.events),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            if (_selectedOptionIndex == 0) ...[
-              FutureBuilder<EventModel?>(
-                future: getEventData(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error: ${snapshot.error}',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
+              const SizedBox(height: 20),
+              Text(
+                AppLocalizations.of(context)!.selectDate,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _dates.length,
+                  itemBuilder: (context, index) {
+                    final date = _dates[index];
+                    final bool isSelected = _selectedDateIndex == index;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedDateIndex = index;
+                          _selectedDate = date;
+                        });
+                      },
+                      child: Container(
+                        width: 55,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? NasColors.darkBlue
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(35),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${date.day}",
+                              style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected ? Colors.white : Colors.grey),
+                            ),
+                            Text(
+                              _getDayOfWeek(date),
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
-                  } else if (snapshot.hasData && snapshot.data != null) {
-                    final meetingList = snapshot.data!.data!.where((event) =>
-                    event.category == "General Meeting" || event.category == "Work Meeting").toList();
-                    if (meetingList.isEmpty) {
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (_selectedOptionIndex == 0) ...[
+                FutureBuilder<EventModel?>(
+                  future: getEventData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    } else if (snapshot.hasData && snapshot.data != null) {
+                      final meetingList = snapshot.data!.data!.where((event) =>
+                      event.category == "General Meeting" || event.category == "Work Meeting").toList();
+                      if (meetingList.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          const Divider(
+                            color: Colors.grey,
+                            height: 2,
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Text(
+                                "${meetingList.length} Meetings",
+                                style: GoogleFonts.inter(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                              const Spacer(),
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Image.asset("images/meeting.png"),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          const Divider(
+                            color: Colors.grey,
+                            height: 2,
+                            thickness: 1,
+                          ),
+                          ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: meetingList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final meeting = meetingList[index];
+                              String membersList = "No Members Available";
+
+                              if (meeting.members != null && meeting.members is List<Members>) {
+                                List<String?> names = meeting.members!.map((e) => e.name).toList();
+
+                                if (names.isNotEmpty) {
+                                  membersList = names.join(", ");
+                                }
+                              }
+                              return Column(
+                                children: [
+                                  const SizedBox(height: 50),
+                                  Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Text(
+                                      meeting.eventName ?? "No Meeting Name",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 50),
+                                  Row(
+                                    children: <Widget>[
+                                      const Expanded(
+                                        child: Divider(
+                                          color: Colors.grey,
+                                          height: 2,
+                                          thickness: 1,
+                                          endIndent: 10,
+                                        ),
+                                      ),
+                                      Text(
+                                        meeting.month ?? "No Time",
+                                        style: GoogleFonts.inter(
+                                          color: NasColors.darkBlue,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Expanded(
+                                        child: Divider(
+                                          color: Colors.grey,
+                                          height: 2,
+                                          thickness: 1,
+                                          indent: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    membersList,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.grey,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    } else {
                       return Center(
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
@@ -196,523 +340,393 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                       );
                     }
-
-                    return Column(
-                      children: [
-                        const Divider(
-                          color: Colors.grey,
-                          height: 2,
-                          thickness: 1,
+                  },
+                ),
+              ],
+              if (_selectedOptionIndex == 1) ...[
+                FutureBuilder<EventModel?>(
+                  future: getEventData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Text(
-                              "${meetingList.length} Meetings",
-                              style: GoogleFonts.inter(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                color: NasColors.darkBlue,
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    } else if (snapshot.hasData && snapshot.data != null) {
+                      final eventList = snapshot.data!.data!
+                          .where((event) => event.category == "Task Deadlines")
+                          .toList();
+
+                      if (eventList.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(5),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: eventList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final task = eventList[index];
+                          return Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 15),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withValues(alpha: 0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 150,
+                                    width: 20,
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(15),
+                                        bottomLeft: Radius.circular(15),
+                                      ),
+                                      color: _getColorForVerificationStatus("Pending"),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(15.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  task.eventName ?? "No Task Name",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                task.eventType ?? "Unknown",
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.inter(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: _getColorForVerificationStatus("Pending"),
+                                                size: 25,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(
+                                                task.month ?? "No Duration",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: _getColorForVerificationStatus("Pending"),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              task.eventDescription ?? "No Project Name",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const Spacer(),
-                            SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Image.asset("images/meeting.png"),
-                            )
-                          ],
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(
+                        child: Text(
+                          "No data available",
+                          style: GoogleFonts.inter(fontSize: 15, color: Colors.grey),
                         ),
-                        const SizedBox(height: 20),
-                        const Divider(
-                          color: Colors.grey,
-                          height: 2,
-                          thickness: 1,
+                      );
+                    }
+                  },
+                ),
+              ],
+              if (_selectedOptionIndex == 2) ...[
+                FutureBuilder<EventModel?>(
+                  future: getEventData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
                         ),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: meetingList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final meeting = meetingList[index];
-                            String membersList = "No Members Available";
-
-                            if (meeting.members != null && meeting.members is List<Members>) {
-                              List<String?> names = meeting.members!.map((e) => e.name).toList();
-
-                              if (names.isNotEmpty) {
-                                membersList = names.join(", ");
-                              }
-                            }
-                            return Column(
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
+                      final eventList = snapshot.data!.data!
+                          .where((event) => event.category == "Standup" || event.category == "Celebration")
+                          .toList();
+                      if (eventList.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
                               children: [
-                                const SizedBox(height: 50),
+                                Center(
+                                  child: SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: Lottie.asset('images/empty.json'),
+                                  ),
+                                ),
+                                Text(
+                                  AppLocalizations.of(context)!.noData,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(10),
+                        shrinkWrap: true,
+                        itemCount: eventList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final event = eventList[index];
+
+                          return Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Column(
+                              children: [
                                 Align(
                                   alignment: Alignment.topLeft,
                                   child: Text(
-                                    meeting.eventName ?? "No Meeting Name",
+                                    event.eventType ?? "Unknown Type",
                                     style: GoogleFonts.inter(
-                                      fontSize: 22,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: NasColors.darkBlue,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 50),
-                                Row(
-                                  children: <Widget>[
-                                    const Expanded(
-                                      child: Divider(
-                                        color: Colors.grey,
-                                        height: 2,
-                                        thickness: 1,
-                                        endIndent: 10,
-                                      ),
-                                    ),
-                                    Text(
-                                      meeting.month ?? "No Time",
-                                      style: GoogleFonts.inter(
-                                        color: NasColors.darkBlue,
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Expanded(
-                                      child: Divider(
-                                        color: Colors.grey,
-                                        height: 2,
-                                        thickness: 1,
-                                        indent: 10,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  membersList,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.grey,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  } else {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/empty.json'),
-                              ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
-            if (_selectedOptionIndex == 1) ...[
-              FutureBuilder<EventModel?>(
-                future: getEventData(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error: ${snapshot.error}',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    );
-                  } else if (snapshot.hasData && snapshot.data != null) {
-                    final eventList = snapshot.data!.data!
-                        .where((event) => event.category == "Task Deadlines")
-                        .toList();
-
-                    if (eventList.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Center(
-                                child: SizedBox(
-                                  height: 200,
-                                  width: 200,
-                                  child: Lottie.asset('images/empty.json'),
-                                ),
-                              ),
-                              Text(
-                                AppLocalizations.of(context)!.noData,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(5),
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: eventList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final task = eventList[index];
-                        return Directionality(
-                          textDirection: TextDirection.ltr,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 15),
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.all(Radius.circular(15)),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.5),
-                                  spreadRadius: 2,
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
+                                const SizedBox(height: 10),
                                 Container(
-                                  height: 150,
-                                  width: 20,
+                                  margin: const EdgeInsets.symmetric(vertical: 15),
                                   decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(15),
-                                      bottomLeft: Radius.circular(15),
-                                    ),
-                                    color: _getColorForVerificationStatus("Pending"),
+                                    borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                    color: NasColors.containerColor,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withAlpha(80),
+                                        spreadRadius: 2,
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                task.eventName ?? "No Task Name",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              task.eventType ?? "Unknown",
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.calendar_month_outlined,
-                                              color: _getColorForVerificationStatus("Pending"),
-                                              size: 25,
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Text(
-                                              task.month ?? "No Duration",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w500,
-                                                color: _getColorForVerificationStatus("Pending"),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            task.eventDescription ?? "No Project Name",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              color: Colors.grey,
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 175,
+                                        width: 80,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(15),
+                                            bottomLeft: Radius.circular(15),
+                                          ),
+                                          color: NasColors.darkBlue,
+                                          image: DecorationImage(
+                                            image: AssetImage(_getImageForEventType(event.eventType ?? "")),
+                                            fit: BoxFit.contain,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  } else {
-                    return Center(
-                      child: Text(
-                        "No data available",
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.grey),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
-            if (_selectedOptionIndex == 2) ...[
-              FutureBuilder<EventModel?>(
-                future: getEventData(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error: ${snapshot.error}',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    );
-                  } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
-                    final eventList = snapshot.data!.data!
-                        .where((event) => event.category == "Standup" || event.category == "Celebration")
-                        .toList();
-                    if (eventList.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Center(
-                                child: SizedBox(
-                                  height: 200,
-                                  width: 200,
-                                  child: Lottie.asset('images/empty.json'),
-                                ),
-                              ),
-                              Text(
-                                AppLocalizations.of(context)!.noData,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(10),
-                      shrinkWrap: true,
-                      itemCount: eventList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final event = eventList[index];
-
-                        return Directionality(
-                          textDirection: TextDirection.ltr,
-                          child: Column(
-                            children: [
-                              Align(
-                                alignment: Alignment.topLeft,
-                                child: Text(
-                                  event.eventType ?? "Unknown Type",
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 15),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                  color: NasColors.containerColor,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withAlpha(80),
-                                      spreadRadius: 2,
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 0),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      height: 175,
-                                      width: 80,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(15),
-                                          bottomLeft: Radius.circular(15),
-                                        ),
-                                        color: NasColors.darkBlue,
-                                        image: DecorationImage(
-                                          image: AssetImage(_getImageForEventType(event.eventType ?? "")),
-                                          fit: BoxFit.contain,
-                                        ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(left: 8.0, top: 2, right: 8.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(height: 20),
-                                            Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                event.eventName ?? "Unnamed Event",
-                                                maxLines: 2,
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 8.0, top: 2, right: 8.0),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(height: 20),
+                                              Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  event.eventName ?? "Unnamed Event",
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 15),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.calendar_month_outlined,
+                                                    color: NasColors.darkBlue,
+                                                    size: 30,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    singletonClass.formatDate2(event.date ?? "" , context),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 20),
+                                              Text(
+                                                event.eventDescription ?? "No Description",
+                                                maxLines: 5,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
+                                                  color: Colors.grey,
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 15),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.calendar_month_outlined,
-                                                  color: NasColors.darkBlue,
-                                                  size: 30,
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  singletonClass.formatDate2(event.date ?? "" , context),
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 20),
-                                            Text(
-                                              event.eventDescription ?? "No Description",
-                                              maxLines: 5,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                          ],
+                                              const SizedBox(height: 20),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
                             ],
                           ),
-                        );
-                      },
-                    );
-                  } else {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/empty.json'),
-                              ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
+                      );
+                    }
+                  },
+                ),
+              ],
 
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1833,4 +1833,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get biometricNotAvailable =>
       'Biometrics not available or not enrolled';
+
+  @override
+  String get manageShifts => 'Manage Shifts';
+
+  @override
+  String get noSignature => 'No signature available';
+
+  @override
+  String get editSignature => 'Edit Signature';
+
+  @override
+  String get addSignature => 'Add Signature';
+
+  @override
+  String get myProjects => 'My Projects';
+
+  @override
+  String get member => 'member';
 }

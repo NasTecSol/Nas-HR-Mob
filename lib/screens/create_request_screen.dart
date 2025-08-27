@@ -2835,7 +2835,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     );
   }
 
-  String _translateBottomText(String? status, BuildContext context) {
+  String _translateBottomText(String? status, BuildContext context){
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
       case 'Leave Request':
@@ -2903,8 +2903,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       });
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        AttachmentResponse attachmentResponse =
-        AttachmentResponse.fromJson(decodedJson);
+        AttachmentResponse attachmentResponse = AttachmentResponse.fromJson(decodedJson);
         singletonClass.attachmentResponseDataList = [attachmentResponse];
         return {"success": true, "message": ""};
       } else {

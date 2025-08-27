@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/screens/main_screen.dart';
+import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -142,141 +145,162 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     onDismissed: (direction) {
                                       setState(() {
                                         singletonClass.notificationModelList.first.data!.removeAt(index);
-                                        print(notificationData.id);
+                                        if (kDebugMode) {
+                                          print(notificationData.id);
+                                        }
                                         deleteNotification(notificationData.id!);
                                       });
                                     },
                                     background: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(15)),
-                                        color: Colors.red,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 2,
-                                            blurRadius: 2,
-                                            offset: const Offset(3, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          child: Icon(
-                                              Icons.delete_outline_rounded,
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 5),
                                         decoration: BoxDecoration(
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(15)),
-                                          color: Colors.white,
+                                          color: Colors.red,
                                           boxShadow: [
                                             BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
+                                              color: Colors.grey.withOpacity(0.5),
                                               spreadRadius: 2,
                                               blurRadius: 2,
                                               offset: const Offset(3, 3),
                                             ),
                                           ],
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    "${singletonClass.getJWTModel()!.userName}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                  const Spacer(),
-                                                  Text(
-                                                    formatRelativeTime(
-                                                        "${notificationData.createdAt}"),
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          translatedTitle,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.black,
-                                                          ),
-                                                        ),
-                                                        if (singletonClass.employeeDataList.first.data!.email!.first.workEmail  == singletonClass.notificationModelList.first.data!.first.from!.first.email)
-                                                        Text(
-                                                          translatedMessage,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.grey,
-                                                          ),
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 4,
-                                                        ),
-                                                        if (singletonClass.employeeDataList.first.data!.email!.first.workEmail == singletonClass.notificationModelList.first.data!.first.to!.first.email)
-                                                          Text(
-                                                            translateMetaMessage,
-                                                            style:
-                                                            GoogleFonts.inter(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                              FontWeight.bold,
-                                                              color: Colors.grey,
-                                                            ),
-                                                            overflow: TextOverflow
-                                                                .ellipsis,
-                                                            maxLines: 4,
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 80,
-                                                    width: 80,
-                                                    child: Image.asset(
-                                                        _getNotificationImage(
-                                                            "${notificationData.notificationType}")),
-                                                  ),
-                                                ],
+                                        child: const Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 20),
+                                            child: Icon(
+                                                Icons.delete_outline_rounded,
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: GestureDetector(
+                                          onTap: () {
+                                            final type = notificationData.notificationType!.toLowerCase();
+                                            if (type.contains('leave') || type.contains('request')) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2)),
+                                              );
+                                            } else if (type.contains('employee') && type.contains('late')) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => TeamAttendanceScreen()),
+                                              );
+                                            } else if (type.contains('meeting')) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => MainScreen(index: 3)),
+                                              );
+                                            }
+                                          },
+                                          child: Container(
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(15)),
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color:
+                                                    Colors.grey.withOpacity(0.5),
+                                                spreadRadius: 2,
+                                                blurRadius: 2,
+                                                offset: const Offset(3, 3),
                                               ),
                                             ],
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      "${singletonClass.getJWTModel()!.userName}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      formatRelativeTime(
+                                                          "${notificationData.createdAt}"),
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            translatedTitle,
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.black,
+                                                            ),
+                                                          ),
+                                                          if (singletonClass.employeeDataList.first.data!.email!.first.workEmail  == notificationData.from!.first.email)...[
+                                                            Text(
+                                                              translatedMessage,
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.grey,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
+                                                              maxLines: 4,
+                                                            ),
+                                                          ]else...[
+                                                            Text(
+                                                              translateMetaMessage,
+                                                              style:
+                                                              GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                FontWeight.bold,
+                                                                color: Colors.grey,
+                                                              ),
+                                                              overflow: TextOverflow
+                                                                  .ellipsis,
+                                                              maxLines: 4,
+                                                            ),
+                                                          ],
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 80,
+                                                      width: 80,
+                                                      child: Image.asset(
+                                                          _getNotificationImage(
+                                                              "${notificationData.notificationType}")),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),

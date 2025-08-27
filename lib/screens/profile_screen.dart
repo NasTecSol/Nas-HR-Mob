@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -97,9 +96,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
 
     try {
-      await singletonClass.getEmployeeData(); // Fetch updated employee data
+      await singletonClass.getEmployeeData();
       setState(() {
-        // Update UI with the latest data
         isLoading = false;
       });
     } catch (e) {
@@ -277,7 +275,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       duration:
                                       const Duration(milliseconds: 300),
                                       height: _expanded ? 300 : 180,
-                                      // Adjust height based on expanded state
                                       width: 400,
                                       margin: const EdgeInsets.only(top: 30),
                                       decoration: BoxDecoration(
@@ -298,15 +295,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           padding:
                                           const EdgeInsets.only(top: 35),
                                           child: Column(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  '${employeeProfile?.firstName} ${employeeProfile?.middleName} ${employeeProfile?.lastName}',
+                                                  (employeeProfile?.firstName?.isNotEmpty == true ||
+                                                      employeeProfile?.middleName?.isNotEmpty == true ||
+                                                      employeeProfile?.lastName?.isNotEmpty == true)
+                                                      ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                      : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -317,7 +316,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  '${employeeProfile?.profession}',
+                                                  (employeeProfile?.profession?.isNotEmpty == true)
+                                                      ? employeeProfile!.profession!
+                                                      : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.w400,
@@ -330,11 +331,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.depName}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.depName?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.depName!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -343,11 +347,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.workDomain}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.workDomain?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.workDomain!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -356,11 +363,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.grade}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.grade?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.grade!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -646,8 +656,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       alignment: Alignment.topLeft,
                                       child: Text(
                                         (employeeProfile?.phoneNumber?.isNotEmpty == true &&
-                                            (employeeProfile?.phoneNumber?.first.mobileNumber?.trim().isNotEmpty ?? false))
-                                            ? employeeProfile!.phoneNumber!.first.mobileNumber!
+                                            (employeeProfile?.phoneNumber?.first.mobileNumber?.toString().isNotEmpty ?? false))
+                                            ? employeeProfile!.phoneNumber!.first.mobileNumber!.toString()
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -758,129 +768,116 @@ class _ProfileScreenState extends State<ProfileScreen>
                             Column(
                               children: [
                                 ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: bankInfo?.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      final bank = bankInfo![index];
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                              BorderRadius.circular(25),
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.4),
-                                                  spreadRadius: 5,
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: bankInfo?.length ?? 0,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final bank = bankInfo?[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(25),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.4),
+                                              spreadRadius: 5,
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 3),
                                             ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  height: 165,
-                                                  width: 80,
-                                                  // Adjusted the width for visibility
-                                                  decoration:
-                                                  const BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius.only(
-                                                      topLeft:
-                                                      Radius.circular(15),
-                                                      bottomLeft:
-                                                      Radius.circular(15),
-                                                    ),
-                                                    color: Colors.white,
-                                                    image: DecorationImage(
-                                                      image: AssetImage(
-                                                          "images/bankicon.png"),
-                                                      // Use a method to get the appropriate image
-                                                      fit: BoxFit.contain,
-                                                    ),
-                                                  ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              height: 165,
+                                              width: 80,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  bottomLeft: Radius.circular(15),
                                                 ),
-                                                Column(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                                  crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                color: Colors.white,
+                                                image: DecorationImage(
+                                                  image: AssetImage("images/bankicon.png"),
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${bank.title}",
+                                                        (bank?.title?.isNotEmpty == true) ? bank!.title! : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 18,
-                                                          fontWeight:
-                                                          FontWeight.bold,
+                                                          fontWeight: FontWeight.bold,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${employeeProfile!.firstName} ${employeeProfile.middleName} ${employeeProfile.lastName}",
+                                                        ((employeeProfile?.firstName?.isNotEmpty == true) ||
+                                                            (employeeProfile?.middleName?.isNotEmpty == true) ||
+                                                            (employeeProfile?.lastName?.isNotEmpty == true))
+                                                            ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                            : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        maskAccountNumber(
-                                                            "${bank.accountNumber}"),
-                                                        // Call the method to mask the account number
+                                                        (bank?.accountNumber?.isNotEmpty == true)
+                                                            ? maskAccountNumber(bank!.accountNumber!)
+                                                            : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${bank.bankName}",
+                                                        (bank?.bankName?.isNotEmpty == true) ? bank!.bankName! : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                   ],
-                                                )
-                                              ],
-                                            )),
-                                      );
-                                    })
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
                               ],
                             ),
                           if (_selectedOptionIndex == 1)
@@ -1622,81 +1619,91 @@ class _ProfileScreenState extends State<ProfileScreen>
               Expanded(
                 child: Container(
                     color: Colors.white,
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                        Stack(
-                          children: [
-                            // Signature Display or Placeholder
-                            Column(
-                              children: [
-                                _isEditing
-                                    ? Column(
-                                  children: [
-                                    Signature(
-                                      controller: _controller,
-                                      height: MediaQuery.of(context).size.height * 0.5,
-                                      backgroundColor: Colors.grey[200]!,
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed: _resetSignature,
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                          child: Text(AppLocalizations.of(context)!.cancel,
-                                            style: GoogleFonts.inter(
-                                              color: Colors.white
-                                            ),
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: _saveSignature,
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                          child: Text(AppLocalizations.of(context)!.save,
-                                            style: GoogleFonts.inter(
+                    child: RefreshIndicator(
+                      color: NasColors.darkBlue,
+                      backgroundColor: Colors.white,
+                      onRefresh: fetchLatestProfileData,
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          Stack(
+                            children: [
+                              Column(
+                                children: [
+                                  _isEditing
+                                      ? Column(
+                                    children: [
+                                      Signature(
+                                        controller: _controller,
+                                        height: MediaQuery.of(context).size.height * 0.5,
+                                        backgroundColor: Colors.grey[200]!,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: _resetSignature,
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                            child: Text(AppLocalizations.of(context)!.cancel,
+                                              style: GoogleFonts.inter(
                                                 color: Colors.white
+                                              ),
                                             ),
                                           ),
+                                          ElevatedButton(
+                                            onPressed: _saveSignature,
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                            child: Text(AppLocalizations.of(context)!.save,
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                      : Column(
+                                    children: [
+                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
+                                          singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
+                                          ? Center(
+                                            child: Image.network(
+                                              singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
+                                              height: 250,
+                                            ),
+                                          )
+                                          : Container(
+                                        height: 250,
+                                        alignment: Alignment.center,
+                                        color: Colors.grey[200],
+                                        child: Text(AppLocalizations.of(context)!.noSignature,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                )
-                                    : Column(
-                                  children: [
-                                    singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
-                                        singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
-                                        ? Image.network(
-                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
-                                      height: 250,
-                                    )
-                                        : Container(
-                                      height: 250,
-                                      alignment: Alignment.center,
-                                      color: Colors.grey[200],
-                                      child: Text('No signature available'),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: IconButton(
-                                onPressed: _startEditing,
-                                icon: Icon(
-                                  _signatureImageFile != null ? Icons.edit : Icons.add,
-                                  color: Colors.black,
-                                ),
-                                tooltip: _signatureImageFile != null ? 'Edit Signature' : 'Add Signature',
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton(
+                                  onPressed: _startEditing,
+                                  icon: Icon(
+                                    _signatureImageFile != null ? Icons.edit : Icons.add,
+                                    color: Colors.black,
+                                  ),
+                                  tooltip: _signatureImageFile != null ? AppLocalizations.of(context)!.editSignature : AppLocalizations.of(context)!.addSignature,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     )),
               ),
             ],
@@ -1993,8 +2000,8 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        SignatureModel profileResponse = SignatureModel.fromJson(decodedJson);
-        singletonClass.signatureModelList = [profileResponse];
+        SignatureModel signatureResponse = SignatureModel.fromJson(decodedJson);
+        singletonClass.signatureModelList = [signatureResponse];
 
         updateSignature();
         singletonClass.getEmployeeData();

@@ -3715,6 +3715,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Biometrics not available or not enrolled'**
   String get biometricNotAvailable;
+
+  /// No description provided for @manageShifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Shifts'**
+  String get manageShifts;
+
+  /// No description provided for @noSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'No signature available'**
+  String get noSignature;
+
+  /// No description provided for @editSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Signature'**
+  String get editSignature;
+
+  /// No description provided for @addSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Signature'**
+  String get addSignature;
+
+  /// No description provided for @myProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'My Projects'**
+  String get myProjects;
+
+  /// No description provided for @member.
+  ///
+  /// In en, this message translates to:
+  /// **'member'**
+  String get member;
 }
 
 class _AppLocalizationsDelegate
