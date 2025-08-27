@@ -38,7 +38,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     try {
       getEventData();
     } catch (e) {
-      print("Error fetching data: $e");
+      if (kDebugMode) {
+        print("Error fetching data: $e");
+      }
     }
   }
 
