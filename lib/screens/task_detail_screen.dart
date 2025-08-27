@@ -128,7 +128,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                         color: Colors.red,
                                         size: 25,
                                       ),
-                                      Text("${widget.projectData!.projectKey}"),
+                                      Text("${toDoTasks.taskId}"),
                                       const Spacer(),
                                       ClipOval(
                                         child: Container(
@@ -137,7 +137,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                           width: 40,
                                           alignment: Alignment.center,
                                           child: Text(
-                                            _getInitials(toDoTasks.assignTo!.first),
+                                            _getInitials("${toDoTasks.assignTo!.first.userName}"),
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -199,7 +199,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                         color: Colors.red,
                                         size: 25,
                                       ),
-                                      Text("${widget.projectData!.projectKey}"),
+                                      Text("${inProgressTasks.taskId}"),
                                       const Spacer(),
                                       ClipOval(
                                         child: Container(
@@ -208,7 +208,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                           width: 40,
                                           alignment: Alignment.center,
                                           child: Text(
-                                            _getInitials(inProgressTasks.assignTo!.first),
+                                            _getInitials("${inProgressTasks.assignTo!.first.userName}"),
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -270,7 +270,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                         color: Colors.red,
                                         size: 25,
                                       ),
-                                      Text("${widget.projectData!.projectKey}"),
+                                      Text("${completed.taskId}"),
                                       const Spacer(),
                                       ClipOval(
                                         child: Container(
@@ -279,7 +279,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                           width: 40,
                                           alignment: Alignment.center,
                                           child: Text(
-                                            _getInitials(completed.assignTo!.first),
+                                            _getInitials("${completed.assignTo!.first.userName}"),
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,

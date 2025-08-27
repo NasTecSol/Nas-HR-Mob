@@ -197,7 +197,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             return null;
                           },
                           controller: _eventName,
-                          cursorColor: Colors.black,
+                          cursorColor: Colors.grey,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -249,7 +249,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             return null;
                           },
                           controller: _eventDiscription,
-                          cursorColor: Colors.black,
+                          cursorColor: Colors.grey,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.0),
@@ -692,7 +692,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 FocusScope.of(context).unfocus(); // Close keyboard on Done
                                 onEditingComplete();
                               },
-                              cursorColor: Colors.black,
+                              cursorColor: Colors.grey,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12.0),
@@ -856,7 +856,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             type: QuickAlertType.success,
           );
 
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 3)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400 || decodedResponse['statusCode'] == 500 ) {
           log("Server Message: ${decodedResponse['data']['message']}");

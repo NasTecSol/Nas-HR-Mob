@@ -1037,5 +1037,12 @@
   "notificationEnabled":"Notification Enabled",
   "notificationsDisabled":"Notification Disabled",
   "anErrorOccurredDuringAuthentication":"An error occurred during authentication",
-  "biometricNotAvailable":"Biometrics not available or not enrolled"
+  "biometricNotAvailable":"Biometrics not available or not enrolled",
+  "manageShifts":"Manage Shifts",
+  "noSignature":"No signature available",
+  "editSignature":"Edit Signature",
+  "addSignature":"Add Signature",
+  "myProjects":"My Projects",
+  "admin":"Admin",
+  "member":"member"
 }

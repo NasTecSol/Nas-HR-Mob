@@ -10,7 +10,8 @@ import '../widgets/colors.dart';
 import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int index;
+  const MainScreen({super.key, required this.index});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -41,6 +42,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _loadData();
     setState(() {
+      _currentIndex = widget.index;
       _loadData();
     });
   }
