@@ -3751,6 +3751,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'member'**
   String get member;
+
+  /// No description provided for @d.
+  ///
+  /// In en, this message translates to:
+  /// **'d'**
+  String get d;
+
+  /// No description provided for @ago.
+  ///
+  /// In en, this message translates to:
+  /// **'ago'**
+  String get ago;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
 }
 
 class _AppLocalizationsDelegate

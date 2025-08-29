@@ -1851,4 +1851,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get member => 'member';
+
+  @override
+  String get d => 'd';
+
+  @override
+  String get ago => 'ago';
+
+  @override
+  String get justNow => 'just now';
 }

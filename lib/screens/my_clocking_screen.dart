@@ -469,14 +469,30 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                   );
                 } else {
                   return Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.noData,
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                        fontSize: 15,
-                      ),
-                    ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/empty.json'),
+                                ),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                   );
                 }
               },
