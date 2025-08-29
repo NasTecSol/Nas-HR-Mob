@@ -1044,5 +1044,8 @@
   "addSignature":"Add Signature",
   "myProjects":"My Projects",
   "admin":"Admin",
-  "member":"member"
+  "member":"member",
+  "d":"d",
+  "ago":"ago",
+  "justNow":"just now"
 }

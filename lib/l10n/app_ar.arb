@@ -707,5 +707,8 @@
     "addSignature": "إضافة توقيع",
     "myProjects": "مشاريعي",
     "admin": "مسؤول",
-    "member": "عضو"
+    "member": "عضو",
+    "d":"اليوم",
+    "ago":"منذ",
+    "justNow": "الآن"
 }

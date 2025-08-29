@@ -24,6 +24,7 @@ import 'package:nashr/screens/team_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../UTILS/auth_services.dart';
 import '../request_controller/attendance_model.dart' hide Data;
 import '../widgets/colors.dart';
@@ -31,6 +32,7 @@ import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'onsite_checkin.dart';
 import 'dart:io';
+import 'package:reorderables/reorderables.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -231,506 +233,189 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   //2ND OverLay
   OverlayEntry? _overlayEntry2;
-
   OverlayEntry _createViewAllOverlay() {
     final uiSettings =
         singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
     final titles = uiSettings.map((e) => e.title?.toString() ?? '').toList();
-    final hasDocuments =
-        titles.any((title) => title == "Document" || title == "Documents");
-    final hasTeams =
-        titles.any((title) => title == "teams" || title == "Teams");
-    final hasTeamClocking = titles
-        .any((title) => title == "teamClockings" || title == "teamClockings");
-    final hasAssets =
-        titles.any((title) => title == "assets" || title == "Assets");
-    final hasTeamAttendance = titles
-        .any((title) => title == "teamAttendance" || title == "teamAttendance");
-    final hasAttendance =
-        titles.any((title) => title == "attendance" || title == "attendance");
-    final hasComplaints =
-        titles.any((title) => title == "complaints" || title == "complaints");
-    final hasPenaltiesAndFines = titles.any((title) =>
-        title == "penaltiesAndFines" || title == "penaltiesAndFines");
+    Future<List<Map<String, String>>> loadQuickActions() async {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
+      List<Map<String, String>> defaultQuickActions = [
+        {"icon": "images/files.png", "label": AppLocalizations.of(context)!.documents},
+        {"icon": "images/assets.png", "label": AppLocalizations.of(context)!.assets},
+        {"icon": "images/Team.png", "label": AppLocalizations.of(context)!.teams},
+        {"icon": "images/Complain.png", "label": AppLocalizations.of(context)!.complaints},
+        {"icon": "images/Penalties.png", "label": AppLocalizations.of(context)!.penalties},
+        {"icon": "images/attendance.png", "label": AppLocalizations.of(context)!.attendance},
+        {"icon": "images/fingerprint.png", "label": AppLocalizations.of(context)!.biometricCheckIn},
+        {"icon": "images/clock.png", "label": AppLocalizations.of(context)!.manageShifts},
+      ];
+      List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
+      if (savedOrder != null && savedOrder.isNotEmpty) {
+        defaultQuickActions.sort((a, b) {
+          int indexA = savedOrder.indexOf(a["label"]!);
+          int indexB = savedOrder.indexOf(b["label"]!);
+          return indexA.compareTo(indexB);
+        });
+      }
+      return defaultQuickActions;
+    }
+
+
     return OverlayEntry(
-        builder: (context) => Positioned(
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () {
-                _removeOverlay();
-              },
-              child: Material(
-                color: NasColors.darkBlue.withValues(alpha: 0.8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF444658),
-                        Color(0xFF83869B),
-                        Color(0xFFBCC0E7),
-                        Color(0xFF727694),
-                        Color(0xFF444658),
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.quickActions,
-                            style: GoogleFonts.inter(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: NasColors.darkBlue),
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 40),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+      builder: (context) => FutureBuilder<List<Map<String, String>>>(
+          future: loadQuickActions(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            List<Map<String, String>> quickActions = snapshot.data!;
+            return Positioned.fill(
+          child: GestureDetector(
+          onTap: _removeOverlay,
+          child: Material(
+            color: NasColors.darkBlue.withValues(alpha: 0.8),
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF444658),
+                    Color(0xFF83869B),
+                    Color(0xFFBCC0E7),
+                    Color(0xFF727694),
+                    Color(0xFF444658),
+                  ],
+                ),
+              ),
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                  child: ReorderableWrap(
+                    spacing: 40,
+                    runSpacing: 40,
+                    alignment: WrapAlignment.center,
+                    runAlignment: WrapAlignment.center,
+                    needsLongPressDraggable: true,
+                    onReorder: (oldIndex, newIndex) async {
+                      final item = quickActions.removeAt(oldIndex);
+                      quickActions.insert(newIndex, item);
+                      final prefs = await SharedPreferences.getInstance();
+                      final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
+                      List<String> labelsOrder = quickActions.map((e) => e["label"]!).toList();
+                      prefs.setStringList("quickActions_$userId", labelsOrder);
+                    },
+                    buildDraggableFeedback: (context, constraints, child) {
+                      return Material(
+                        color: Colors.transparent,
+                        child: child,
+                      );
+                    },
+                    children: quickActions.map((item) {
+                      return GestureDetector(
+                        onTap: (){
+                          if ( item["label"] == AppLocalizations.of(context)!.documents) {
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => DocumentScreen()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.assets){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AssetsScreen()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.teams){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TeamScreen()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.complaints){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Complaints()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.penalties){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => PenaltyAndFineScreen()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.attendance){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TeamAttendanceScreen()),
+                            );
+                          }
+                          else if (item["label"] == AppLocalizations.of(context)!.biometricCheckIn){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TeamClocking()),
+                            );
+                          } else if (item["label"] == AppLocalizations.of(context)!.manageShifts){
+                            _removeOverlay();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ManageTimeScreen()),
+                            );
+                          }
+                        },
+                        child: Column(
+                          key: ValueKey(item["label"]),
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Column(
-                              children: [
-                                if (hasDocuments) ...[
-                                  GestureDetector(
-                                    onTap: () {
-                                      _removeOverlay();
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const DocumentScreen()));
-                                    },
-                                    child: Container(
-                                      height: 65,
-                                      width: 65,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey
-                                                .withValues(alpha: 0.5),
-                                            spreadRadius: 1,
-                                            blurRadius: 0.5,
-                                            offset: const Offset(0,
-                                                0), // changes position of shadow
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Image.asset(
-                                          'images/files.png',
-                                          fit: BoxFit.contain,
-                                          width: 30,
-                                          height: 30,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    AppLocalizations.of(context)!.documents,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ]
-                              ],
-                            ),
-                            SizedBox(width: 40),
-                            if (hasAssets) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 50.0),
-                                child: Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeOverlay();
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const AssetsScreen()));
-                                      },
-                                      child: Container(
-                                        height: 65,
-                                        width: 65,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey
-                                                  .withValues(alpha: 0.5),
-                                              spreadRadius: 1,
-                                              blurRadius: 0.5,
-                                              offset: const Offset(0,
-                                                  0), // changes position of shadow
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child: Image.asset(
-                                            'images/assets.png',
-                                            fit: BoxFit.contain,
-                                            width: 30,
-                                            height: 30,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      AppLocalizations.of(context)!.assets,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            SizedBox(width: 40),
-                            if (hasTeams) ...[
-                              Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      _removeOverlay();
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TeamScreen()));
-                                    },
-                                    child: Container(
-                                      height: 65,
-                                      width: 65,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey
-                                                .withValues(alpha: 0.5),
-                                            spreadRadius: 1,
-                                            blurRadius: 0.5,
-                                            offset: const Offset(0,
-                                                0), // changes position of shadow
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Image.asset(
-                                          'images/Team.png',
-                                          fit: BoxFit.contain,
-                                          width: 30,
-                                          height: 30,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    AppLocalizations.of(context)!.teams,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
+                            Container(
+                              height: 75,
+                              width: 75,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    spreadRadius: 1,
+                                    blurRadius: 3,
                                   ),
                                 ],
                               ),
-                            ],
-                          ]),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Column(
-                            children: [
-                              if (hasComplaints) ...[
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const Complaints()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/Complain.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
+                              child: Center(
+                                child: Image.asset(
+                                  item["icon"]!,
+                                  width: 35,
+                                  height: 35,
+                                  fit: BoxFit.contain,
                                 ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.complaints,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ]
-                            ],
-                          ),
-                          SizedBox(width: 40),
-                          if (hasPenaltiesAndFines) ...[
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const PenaltyAndFineScreen()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/Penalties.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.penalties,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              item["label"]!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
-                          SizedBox(width: 40),
-                          if (hasAttendance) ...[
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TeamAttendanceScreen()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/attendance.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.attendance,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                      SizedBox(height: 40),
-                      if (hasTeamAttendance && hasTeamClocking) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TeamClocking()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,0),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/fingerprint.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.biometricCheckIn,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 30),
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const ManageTimeScreen()));
-                                  },
-                                  child: Container(
-                                    height: 65,
-                                    width: 65,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 1,
-                                          blurRadius: 0.5,
-                                          offset: const Offset(0,
-                                              0), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'images/clock.png',
-                                        fit: BoxFit.contain,
-                                        width: 30,
-                                        height: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  AppLocalizations.of(context)!.manageShifts,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        )
-                      ]
-                    ],
-                  )),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            )));
+            ),
+          ),
+        ),
+      );})
+    );
   }
+
 
   void _removeOverlay() {
     _overlayEntry?.remove();

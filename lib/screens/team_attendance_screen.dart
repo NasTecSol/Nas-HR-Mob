@@ -719,7 +719,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           }
                           String date = formatDate(attendance.updatedAt!);
                           int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
-                          int? earlyCheckOut = int.tryParse(attendance.lateMinutes.toString());
+                          int? earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString());
                           String breakTime = formatMinutes(attendance.breakTime);
                           return GestureDetector(
                             onTap: () {
@@ -1034,7 +1034,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             SizedBox(height: 5),
                                             Text(
                                               "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
-                                              style: GoogleFonts.inter(
+                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
                                                 color: NasColors.onTime,

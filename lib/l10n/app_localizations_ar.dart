@@ -1846,4 +1846,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get member => 'عضو';
+
+  @override
+  String get d => 'اليوم';
+
+  @override
+  String get ago => 'منذ';
+
+  @override
+  String get justNow => 'الآن';
 }

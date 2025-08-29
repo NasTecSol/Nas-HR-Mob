@@ -15,7 +15,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:signature/signature.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
 import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
@@ -116,7 +115,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bankInfo = singletonClass.employeeDataList.first.data!.bankingInfo;
     final salaryInfo = singletonClass.employeeDataList.first.data!.salaryInfo;
     final familyInfo = singletonClass.employeeDataList.first.data!.familyInfo;
-    final documentInfo = singletonClass.employeeDataList.first.data!.documentsInfo;
     final shiftInfo = singletonClass.employeeDataList.first.data!.employeeInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
@@ -155,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 2)...[
                           Text(
-                            AppLocalizations.of(context)!.documents,
+                            AppLocalizations.of(context)!.loans,
                             style: GoogleFonts.inter(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -165,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 3)...[
                           Text(
-                            AppLocalizations.of(context)!.loans,
+                            AppLocalizations.of(context)!.familyInfo,
                             style: GoogleFonts.inter(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -175,16 +173,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 4)...[
                           Text(
-                            AppLocalizations.of(context)!.familyInfo,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 5)...[
-                          Text(
                             AppLocalizations.of(context)!.shiftInfo,
                             style: GoogleFonts.inter(
                               fontSize: 25,
@@ -193,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ],
-                        if(_selectedOptionIndex2 == 6)...[
+                        if(_selectedOptionIndex2 == 5)...[
                           Text(
                             AppLocalizations.of(context)!.signature,
                             style: GoogleFonts.inter(
@@ -204,8 +192,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ],
                         const Spacer(),
-
-                        // Display the Settings button for "Profile" tab (index 0)
                         if (_selectedOptionIndex2 == 0)
                           IconButton(
                             onPressed: () {
@@ -242,11 +228,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         children: [
                           buildOptionsCard2(0, AppLocalizations.of(context)!.profile),
                           buildOptionsCard2(1, AppLocalizations.of(context)!.bankAccounts),
-                          buildOptionsCard2(2, AppLocalizations.of(context)!.documents),
-                          buildOptionsCard2(3, AppLocalizations.of(context)!.loans),
-                          buildOptionsCard2(4, AppLocalizations.of(context)!.familyInfo),
-                          buildOptionsCard2(5, AppLocalizations.of(context)!.shiftInfo),
-                          buildOptionsCard2(6, AppLocalizations.of(context)!.signature),
+                          buildOptionsCard2(2, AppLocalizations.of(context)!.loans),
+                          buildOptionsCard2(3, AppLocalizations.of(context)!.familyInfo),
+                          buildOptionsCard2(4, AppLocalizations.of(context)!.shiftInfo),
+                          buildOptionsCard2(5, AppLocalizations.of(context)!.signature),
                         ],
                       ),
                     ),
@@ -272,14 +257,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   child: GestureDetector(
                                     onTap: () => _toggleExpand(),
                                     child: AnimatedContainer(
-                                      duration:
-                                      const Duration(milliseconds: 300),
-                                      height: _expanded ? 300 : 180,
+                                      duration: const Duration(milliseconds: 700),
+                                      height: _expanded ? 220 : 125,
                                       width: 400,
                                       margin: const EdgeInsets.only(top: 30),
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(25),
-                                        color: NasColors.darkBlue,
+                                        color: NasColors.darkBlue.withOpacity(_expanded ? 1 : 0.9), // fade effect
+                                        borderRadius: BorderRadius.circular(_expanded ? 30 : 60), // round animation
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.grey.withOpacity(0.4),
@@ -950,134 +934,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               Expanded(
                 child: Container(
                   color: Colors.white,
-                  child: ListView(
-                    children: [ Column(
-                      children: [
-                        documentInfo!.isNotEmpty
-                            ? ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          itemCount: documentInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final documents = documentInfo[index];
-                            final fileType = documents.format?.split('.').last.toLowerCase(); // Null check for documents.type
-                            final isImage = fileType != null && ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-                            final isPdf = fileType == 'pdf';
-
-                            return Transform.translate(
-                              offset: Offset(0, index == 0 ? 0 : -10),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (isImage || isPdf) {
-                                    if (await canLaunch(documents.url)) {
-                                      await launch(documents.url);
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Could not open the document!')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Unsupported file type!')),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      if (index != 0)
-                                        const BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          spreadRadius: 10,
-                                          offset: Offset(0, -6),
-                                        ),
-                                      const BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${documents.type}",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: isImage
-                                            ? Image.network(
-                                          documents.url,
-                                          height: 60,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.topCenter,
-                                        )
-                                            : Icon(
-                                          isPdf ? Icons.picture_as_pdf : Icons.insert_drive_file,
-                                          size: 60,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                            : Center(
-            child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-            children: [
-            Center(
-            child: SizedBox(
-            height: 200,
-            width: 200,
-            child: Lottie.asset('images/empty.json'),
-            ),
-            ),
-            Text(
-            AppLocalizations.of(context)!.noData,
-            style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: NasColors.darkBlue,
-            ),
-            ),
-            ],
-            ),
-            ),
-            )
-                      ],
-                    ),
-            ]
-                  )
-                ),
-              ),
-            ],
-            if (_selectedOptionIndex2 == 3)...[
-              Expanded(
-                child: Container(
-                  color: Colors.white,
                   child: const LoanScreen(),
                 ),
               ),
             ],
-            if (_selectedOptionIndex2 == 4)...[
+            if (_selectedOptionIndex2 == 3)...[
               Expanded(
                 child: Container(
                     color: Colors.white,
@@ -1364,7 +1225,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     )),
               ),
             ],
-            if (_selectedOptionIndex2 == 5)...[
+            if (_selectedOptionIndex2 == 4)...[
               Expanded(
                 child: Container(
                   color: Colors.white,
@@ -1615,7 +1476,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               )
 
             ],
-            if (_selectedOptionIndex2 == 6)...[
+            if (_selectedOptionIndex2 == 5)...[
               Expanded(
                 child: Container(
                     color: Colors.white,
