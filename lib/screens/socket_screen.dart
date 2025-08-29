@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/singleton_class.dart';
@@ -39,11 +40,13 @@ class SocketService {
           .build(),
     );
 
-    _socket!.onConnect((_) => print('✅ Socket connected'));
-    _socket!.onDisconnect((_) => print('❌ Socket disconnected'));
-    _socket!.onReconnect((_) => print('🔁 Socket reconnecting'));
-    _socket!.onConnectError((err) => print('❌ Connection error: $err'));
-    _socket!.onError((err) => print('❌ Socket error: $err'));
+    if (kDebugMode){
+      _socket!.onConnect((_) => print('✅ Socket connected'));
+      _socket!.onDisconnect((_) => print('❌ Socket disconnected'));
+      _socket!.onReconnect((_) => print('🔁 Socket reconnecting'));
+      _socket!.onConnectError((err) => print('❌ Connection error: $err'));
+      _socket!.onError((err) => print('❌ Socket error: $err'));
+    }
 
 
     _socket!.on('broadcast-event', (data) {
@@ -76,7 +79,7 @@ class SocketService {
       final targetAudience = data['targetAudience'];
       final dynamic log = (module == "request")
           ? data['data']
-          :  data['data']?['log'];
+          :  data['data'];
 
       final String? grade = singletonClass.getJWTModel()?.grade;
       final String? empId = singletonClass.getJWTModel()?.employeeId;
