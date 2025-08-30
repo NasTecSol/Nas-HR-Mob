@@ -240,13 +240,11 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 10),
-
-                          // Suggestion List
                           if (_suggestions.isNotEmpty)
                             ..._suggestions.map((suggestion) {
                               return CheckboxListTile(
+                                activeColor: NasColors.darkBlue,
                                 title: Row(
                                   children: [
                                     SizedBox(

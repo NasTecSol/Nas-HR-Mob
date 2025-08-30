@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:background_fetch/background_fetch.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,7 @@ void main() async {
       ),
     ),
   );
+  initBackgroundFetch();
 }
 
 /// ✅ Add your App wrapper here so we can manage socket lifecycle
@@ -166,4 +168,40 @@ class NotificationService {
 
     await _plugin.show(0, title, body, notificationDetails);
   }
+}
+
+///background mode method
+Future<void> backgroundFetchTask(String taskId) async {
+  final locale = WidgetsBinding.instance.window.locale.languageCode;
+  try {
+    SocketService().initializeSocket(
+      "${SingletonClass().tenantId}", locale,
+    );
+
+    await NotificationService.showNotification(
+      title: "NAS HR",
+      body: "Background fetch triggered ✅",
+    );
+  } catch (e) {
+    debugPrint("❌ Background fetch error: $e");
+  }
+
+  BackgroundFetch.finish(taskId);
+}
+
+void initBackgroundFetch() {
+  BackgroundFetch.configure(
+    BackgroundFetchConfig(
+      minimumFetchInterval: 15,
+      stopOnTerminate: false,
+      enableHeadless: true,
+      startOnBoot: true,
+    ),
+    backgroundFetchTask,
+  ).then((status) {
+    debugPrint("[BackgroundFetch] Configured: $status");
+  }).catchError((e) {
+    debugPrint("[BackgroundFetch] ERROR: $e");
+  });
+  BackgroundFetch.registerHeadlessTask(backgroundFetchTask);
 }
