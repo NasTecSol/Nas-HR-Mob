@@ -220,46 +220,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                 ]
 
               ],
-              if (isSearching == true)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: TextField(
-                      controller: searchController,
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.search,
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: const BorderSide(color: Colors.black),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: const BorderSide(color: Colors.black),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide:
-                          const BorderSide(color: Colors.black, width: 1.5),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(Icons.close),
-                          onPressed: () {
-                            setState(() {
-                              isSearching = false;
-                              searchController.clear();
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              if(_selectedOptionIndex == 0)
               IconButton(
                   onPressed: () {
                     setState(() {
@@ -325,7 +286,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                             final searchText = searchController.text.toLowerCase();
 
                             if (isSearching &&
-                                !(employee.userName?.toLowerCase().contains(searchText) ?? false)) {
+                                !((employee.userName?.toLowerCase().contains(searchText) ?? false) ||
+                                    (employee.employeeInfo!.first.empId?.toLowerCase().contains(searchText) ?? false))) {
                               return const SizedBox.shrink();
                             }
 

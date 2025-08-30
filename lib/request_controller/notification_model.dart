@@ -29,11 +29,8 @@ class Data {
   String? id;
   String? notificationType;
   String? message;
-  String? messageAr;
   String? title;
-  String? titleAr;
   String? metaData;
-  String? metaDataAr;
   List<From>? from;
   List<To>? to;
   String? notificationMessage;
@@ -43,19 +40,39 @@ class Data {
   String? updatedAt;
   int? v;
 
-  Data({this.id, this.notificationType, this.message, this.messageAr, this.title, this.titleAr, this.metaData, this.metaDataAr, this.from, this.to, this.notificationMessage, this.status, this.requestId, this.createdAt, this.updatedAt, this.v});
+  Data({
+    this.id,
+    this.notificationType,
+    this.message,
+    this.title,
+    this.metaData,
+    this.from,
+    this.to,
+    this.notificationMessage,
+    this.status,
+    this.requestId,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     notificationType = json["notificationType"];
     message = json["message"];
-    messageAr = json["messageAr"];
     title = json["title"];
-    titleAr = json["titleAr"];
     metaData = json["metaData"];
-    metaDataAr = json["metaDataAr"];
-    from = json["from"] == null ? null : (json["from"] as List).map((e) => From.fromJson(e)).toList();
-    to = json["to"] == null ? null : (json["to"] as List).map((e) => To.fromJson(e)).toList();
+    if (json["from"] is List) {
+      from = (json["from"] as List)
+          .map((e) => e is Map<String, dynamic> ? From.fromJson(e) : From(email: e.toString()))
+          .toList();
+    }
+    if (json["to"] is List) {
+      to = (json["to"] as List)
+          .map((e) => e is Map<String, dynamic> ? To.fromJson(e) : To(email: e.toString()))
+          .toList();
+    }
+
     notificationMessage = json["notificationMessage"];
     status = json["status"];
     requestId = json["requestId"];
@@ -69,15 +86,12 @@ class Data {
     _data["_id"] = id;
     _data["notificationType"] = notificationType;
     _data["message"] = message;
-    _data["messageAr"] = messageAr;
     _data["title"] = title;
-    _data["titleAr"] = titleAr;
     _data["metaData"] = metaData;
-    _data["metaDataAr"] = metaDataAr;
-    if(from != null) {
+    if (from != null) {
       _data["from"] = from?.map((e) => e.toJson()).toList();
     }
-    if(to != null) {
+    if (to != null) {
       _data["to"] = to?.map((e) => e.toJson()).toList();
     }
     _data["notificationMessage"] = notificationMessage;
@@ -89,6 +103,7 @@ class Data {
     return _data;
   }
 }
+
 
 class To {
   String? email;

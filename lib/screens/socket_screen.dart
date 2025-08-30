@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:nashr/request_controller/socket_model.dart';
@@ -56,6 +55,7 @@ class SocketService {
       log("📢 Broadcast-event received: $data");
 
       _handleBroadcastEvent(data, languageCode);
+      singletonClass.getClockingData();
     });
 
     _socket!.connect();
