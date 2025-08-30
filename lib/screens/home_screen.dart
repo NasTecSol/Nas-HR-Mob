@@ -1947,14 +1947,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
-                                        AppLocalizations.of(context)!
-                                            .biometricCheckIn,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                          AppLocalizations.of(context)!.biometrics,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ],

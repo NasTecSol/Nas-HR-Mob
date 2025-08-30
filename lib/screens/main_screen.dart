@@ -93,8 +93,8 @@ class _MainScreenState extends State<MainScreen> {
             ?  Padding(
               padding: const EdgeInsets.only(top: 45.0),
               child: Center(
-                        child:SizedBox(
-              child: Lottie.asset(
+                child:SizedBox(
+                  child: Lottie.asset(
                   'images/mainLoader.json'
               ),),
               ),
@@ -124,27 +124,16 @@ class _MainScreenState extends State<MainScreen> {
                         singletonClass.employeeDataList.first.data?.profilePic != null &&
                         singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty;
 
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        width: 70,
-                        alignment: Alignment.center,
-                        decoration: index == 3
-                            ? BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: NasColors.darkBlue,
-                        )
-                            : null,
-                        child: CircleAvatar(
+                    return CircleAvatar(
                           backgroundColor: Colors.white,
-                          radius: 35,
+                          radius: 25,
                           child: ClipOval(
                             child: hasProfilePic
                                 ? Image.network(
                               singletonClass.employeeDataList.first.data!.profilePic!,
                               fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
+                              width: 60,
+                              height: 60,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return  Center(child: CircularProgressIndicator(
@@ -157,8 +146,6 @@ class _MainScreenState extends State<MainScreen> {
                             )
                                 : Image.asset('images/DP.png', fit: BoxFit.cover),
                           ),
-                        ),
-                      ),
                     );
                   }
                   return Padding(

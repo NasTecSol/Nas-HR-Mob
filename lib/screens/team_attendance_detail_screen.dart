@@ -867,55 +867,53 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                           return Padding(
                                             padding: const EdgeInsets.only(
                                                 bottom: 10.0),
-                                            child: Row(
+                                            child:Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Padding(
-                                                    padding: const EdgeInsets.only(top: 15.0),
-                                                    child: Text(
-                                                      maxLines: 3,
-                                                      overflow: TextOverflow.fade,
-                                                      "${penalities.action}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.normal,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                      textAlign: TextAlign.center,
+                                                  padding: const EdgeInsets.only(top: 15.0),
+                                                  child: Text(
+                                                    maxLines: 3,
+                                                    overflow: TextOverflow.fade,
+                                                    (penalities.action?.isNotEmpty ?? false) ? "${penalities.action}" : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
+                                                ),
                                                 const SizedBox(width: 5),
                                                 Padding(
-                                                    padding: const EdgeInsets.only(top: 15.0),
-                                                    child: Text(
-                                                      singletonClass.formatMinutes(penalities.lateMinute!, context),
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                  padding: const EdgeInsets.only(top: 15.0),
+                                                  child: Text(
+                                                    penalities.lateMinute != null
+                                                        ? singletonClass.formatMinutes(penalities.lateMinute!, context)
+                                                        : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
+                                                ),
                                                 const SizedBox(width: 5),
                                                 Padding(
-                                                    padding:const EdgeInsets.only(top: 10.0),
-                                                    child: Text(
-                                                      "${penalities.percentage} ${"SAR"}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.normal,
-                                                        color: NasColors.darkBlue,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                  padding: const EdgeInsets.only(top: 10.0),
+                                                  child: Text(
+                                                    penalities.percentage != null ? "${penalities.percentage} SAR" : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
+                                                ),
                                               ],
-                                            ),
+                                            )
                                           );
                                         }),
                                   )
