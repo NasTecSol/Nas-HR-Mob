@@ -506,8 +506,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(right: 12, top: 50, left: 10),
+                    padding: const EdgeInsets.only(right: 12, top: 50, left: 10),
                     child: AnimatedOpacity(
                       opacity: showHeaderContent ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
@@ -1097,15 +1096,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                               const SizedBox(width: 40),
                                               Text(
-                                                singletonClass
-                                                            .attendanceDataList
-                                                            .isNotEmpty &&
-                                                        singletonClass
-                                                            .attendanceDataList
-                                                            .first
-                                                            .data!
-                                                            .data!
-                                                            .isNotEmpty
+                                                singletonClass.attendanceDataList.isNotEmpty &&
+                                                        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                                     : '--:--',
                                                 style: GoogleFonts.inter(
