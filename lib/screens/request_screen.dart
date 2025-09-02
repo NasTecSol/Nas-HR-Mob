@@ -472,47 +472,49 @@ class _RequestScreenState extends State<RequestScreen> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    height: 50,
-                    width: MediaQuery.of(context).size.width - 100,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.5),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            cursorColor: Colors.grey,
-                            onChanged: (value) {
-                              setState(() {
-                                isSearching = true;
-                              });
-                            },
-                            controller: searchController,
-                            decoration: InputDecoration(
-                              hintText:
-                                  '${AppLocalizations.of(context)!.search}...',
-                              border: InputBorder.none,
+                  Expanded(
+                    child: Container(
+                      height: 50,
+                      width: MediaQuery.of(context).size.width - 100,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.5),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              cursorColor: Colors.grey,
+                              onChanged: (value) {
+                                setState(() {
+                                  isSearching = true;
+                                });
+                              },
+                              controller: searchController,
+                              decoration: InputDecoration(
+                                hintText:
+                                    '${AppLocalizations.of(context)!.search}...',
+                                border: InputBorder.none,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Icon(
-                          Icons.search,
-                          color: NasColors.darkBlue,
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          Icon(
+                            Icons.search,
+                            color: NasColors.darkBlue,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1015,156 +1017,158 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           )),
                                                     ],
                                                     const SizedBox(height: 10),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                      children: [
-                                                        // Req
-                                                        Column(
-                                                          children: [
-                                                            Stack(
-                                                              alignment: Alignment.center,
-                                                              children: [
-                                                                Container(
-                                                                  height: 25,
-                                                                  width: 25,
-                                                                  decoration: BoxDecoration(
-                                                                    shape: BoxShape.circle,
-                                                                    color: NasColors.onTime,
-                                                                  ),
-                                                                ),
-                                                                Container(
-                                                                  height: 10,
-                                                                  width: 10,
-                                                                  decoration: const BoxDecoration(
-                                                                    shape: BoxShape.circle,
-                                                                    color: Colors.white,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Text(
-                                                              "➡️",
-                                                              style: GoogleFonts.inter(
-                                                                fontWeight: FontWeight.w500,
-                                                                color: Colors.black,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-
-                                                        // Line after Req
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(bottom: 20.0),
-                                                          child: Container(
-                                                            width: 40,
-                                                            height: 2,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                        ...[
-                                                          if (request.approvers != null && request.approvers!.isNotEmpty)
-                                                            for (int i = 0; i < request.approvers!.length; i++) ...[
-                                                              Column(
+                                                    SingleChildScrollView(
+                                                      scrollDirection:Axis.horizontal,
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                        children: [
+                                                          Column(
+                                                            children: [
+                                                              Stack(
+                                                                alignment: Alignment.center,
                                                                 children: [
-                                                                  Stack(
-                                                                    alignment: Alignment.center,
-                                                                    children: [
-                                                                      Container(
-                                                                        height: 25,
-                                                                        width: 25,
-                                                                        decoration: BoxDecoration(
-                                                                          shape: BoxShape.circle,
-                                                                          color: _getColorForApproverStatus(
-                                                                              request.approvers![i].status),
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        height: 10,
-                                                                        width: 10,
-                                                                        decoration: const BoxDecoration(
-                                                                          shape: BoxShape.circle,
-                                                                          color: Colors.white,
-                                                                        ),
-                                                                      ),
-                                                                    ],
+                                                                  Container(
+                                                                    height: 25,
+                                                                    width: 25,
+                                                                    decoration: BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: NasColors.onTime,
+                                                                    ),
                                                                   ),
-                                                                  const SizedBox(height: 5),
-                                                                  Text(
-                                                                    request.approvers![i].approverName ?? '---',
-                                                                    style: GoogleFonts.inter(
-                                                                      fontSize: 12,
-                                                                      fontWeight: FontWeight.w500,
+                                                                  Container(
+                                                                    height: 10,
+                                                                    width: 10,
+                                                                    decoration: const BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: Colors.white,
                                                                     ),
                                                                   ),
                                                                 ],
                                                               ),
-                                                              if (i != request.approvers!.length - 1)
-                                                                Padding(
-                                                                  padding: const EdgeInsets.only(bottom: 20.0),
-                                                                  child: Container(
-                                                                    width: 40,
-                                                                    height: 2,
-                                                                    color: Colors.grey,
-                                                                  ),
+                                                              Text(
+                                                                "➡️",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
                                                                 ),
-                                                            ]
-                                                          else
-                                                            Text(
-                                                              '---',
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                color: Colors.grey,
-                                                                fontWeight: FontWeight.w500,
                                                               ),
-                                                            ),
-                                                        ],
-                                                        // Line before CEO
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(bottom: 20.0),
-                                                          child: Container(
-                                                            width: 40,
-                                                            height: 2,
-                                                            color: Colors.grey,
+                                                            ],
                                                           ),
-                                                        ),
-                                                        // CEO
-                                                        Column(
-                                                          children: [
-                                                            Stack(
-                                                              alignment: Alignment.center,
-                                                              children: [
-                                                                Container(
-                                                                  height: 25,
-                                                                  width: 25,
-                                                                  decoration: BoxDecoration(
-                                                                    shape: BoxShape.circle,
-                                                                    color: allApproved ? NasColors.onTime : NasColors.pending,
-                                                                  ),
-                                                                ),
-                                                                Container(
-                                                                  height: 10,
-                                                                  width: 10,
-                                                                  decoration: const BoxDecoration(
-                                                                    shape: BoxShape.circle,
-                                                                    color: Colors.white,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Text(
-                                                              allApproved ? "✅" : "⏳",
-                                                              style: GoogleFonts.inter(
-                                                                fontWeight: FontWeight.w500,
-                                                                color: Colors.black,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
 
-                                                      ],
+                                                          // Line after Req
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(bottom: 20.0),
+                                                            child: Container(
+                                                              width: 40,
+                                                              height: 2,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                          ...[
+                                                            if (request.approvers != null && request.approvers!.isNotEmpty)
+                                                              for (int i = 0; i < request.approvers!.length; i++) ...[
+                                                                Column(
+                                                                  children: [
+                                                                    Stack(
+                                                                      alignment: Alignment.center,
+                                                                      children: [
+                                                                        Container(
+                                                                          height: 25,
+                                                                          width: 25,
+                                                                          decoration: BoxDecoration(
+                                                                            shape: BoxShape.circle,
+                                                                            color: _getColorForApproverStatus(
+                                                                                request.approvers![i].status),
+                                                                          ),
+                                                                        ),
+                                                                        Container(
+                                                                          height: 10,
+                                                                          width: 10,
+                                                                          decoration: const BoxDecoration(
+                                                                            shape: BoxShape.circle,
+                                                                            color: Colors.white,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(height: 5),
+                                                                    Text(
+                                                                      request.approvers![i].approverName ?? '---',
+                                                                      style: GoogleFonts.inter(
+                                                                        fontSize: 12,
+                                                                        fontWeight: FontWeight.w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                if (i != request.approvers!.length - 1)
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(bottom: 20.0),
+                                                                    child: Container(
+                                                                      width: 40,
+                                                                      height: 2,
+                                                                      color: Colors.grey,
+                                                                    ),
+                                                                  ),
+                                                              ]
+                                                            else
+                                                              Text(
+                                                                '---',
+                                                                style: GoogleFonts.inter(
+                                                                  fontSize: 15,
+                                                                  color: Colors.grey,
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                              ),
+                                                          ],
+                                                          // Line before CEO
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(bottom: 20.0),
+                                                            child: Container(
+                                                              width: 40,
+                                                              height: 2,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                          // CEO
+                                                          Column(
+                                                            children: [
+                                                              Stack(
+                                                                alignment: Alignment.center,
+                                                                children: [
+                                                                  Container(
+                                                                    height: 25,
+                                                                    width: 25,
+                                                                    decoration: BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: allApproved ? NasColors.onTime : NasColors.pending,
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    height: 10,
+                                                                    width: 10,
+                                                                    decoration: const BoxDecoration(
+                                                                      shape: BoxShape.circle,
+                                                                      color: Colors.white,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Text(
+                                                                allApproved ? "✅" : "⏳",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.w500,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+
+                                                        ],
+                                                      ),
                                                     )
                                                   ],
                                                 ],
@@ -1748,11 +1752,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             alignment:
                                                                 Alignment.topLeft,
                                                             child: Text(
-                                                              request.requestData !=
-                                                                          null &&
-                                                                      request
-                                                                          .requestData!
-                                                                          .isNotEmpty
+                                                              request.requestData != null &&
+                                                                      request.requestData!.isNotEmpty
                                                                   ? "${request.requestData!.first.loanCycle}"
                                                                   : AppLocalizations.of(
                                                                           context)!
@@ -1769,156 +1770,158 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             )),
                                                       ],
                                                       const SizedBox(height: 10),
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                                        children: [
-                                                          // Req
-                                                          Column(
-                                                            children: [
-                                                              Stack(
-                                                                alignment: Alignment.center,
-                                                                children: [
-                                                                  Container(
-                                                                    height: 25,
-                                                                    width: 25,
-                                                                    decoration: BoxDecoration(
-                                                                      shape: BoxShape.circle,
-                                                                      color: NasColors.completed,
-                                                                    ),
-                                                                  ),
-                                                                  Container(
-                                                                    height: 10,
-                                                                    width: 10,
-                                                                    decoration: const BoxDecoration(
-                                                                      shape: BoxShape.circle,
-                                                                      color: Colors.white,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Text(
-                                                                "➡️",
-                                                                style: GoogleFonts.inter(
-                                                                  fontWeight: FontWeight.w500,
-                                                                  color: Colors.black,
-                                                                  fontSize: 15,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-
-                                                          // Line after Req
-                                                          Padding(
-                                                            padding: const EdgeInsets.only(bottom: 20.0),
-                                                            child: Container(
-                                                              width: 40,
-                                                              height: 2,
-                                                              color: Colors.grey,
-                                                            ),
-                                                          ),
-                                                          ...[
-                                                            if (request.approvers != null && request.approvers!.isNotEmpty)
-                                                              for (int i = 0; i < request.approvers!.length; i++) ...[
-                                                                Column(
+                                                      SingleChildScrollView(
+                                                        scrollDirection: Axis.horizontal,
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            Column(
+                                                              children: [
+                                                                Stack(
+                                                                  alignment: Alignment.center,
                                                                   children: [
-                                                                    Stack(
-                                                                      alignment: Alignment.center,
-                                                                      children: [
-                                                                        Container(
-                                                                          height: 25,
-                                                                          width: 25,
-                                                                          decoration: BoxDecoration(
-                                                                            shape: BoxShape.circle,
-                                                                            color: _getColorForApproverStatus(
-                                                                                request.approvers![i].status),
-                                                                          ),
-                                                                        ),
-                                                                        Container(
-                                                                          height: 10,
-                                                                          width: 10,
-                                                                          decoration: const BoxDecoration(
-                                                                            shape: BoxShape.circle,
-                                                                            color: Colors.white,
-                                                                          ),
-                                                                        ),
-                                                                      ],
+                                                                    Container(
+                                                                      height: 25,
+                                                                      width: 25,
+                                                                      decoration: BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: NasColors.completed,
+                                                                      ),
                                                                     ),
-                                                                    const SizedBox(height: 5),
-                                                                    Text(
-                                                                      request.approvers![i].approverName ?? '---',
-                                                                      style: GoogleFonts.inter(
-                                                                        fontSize: 12,
-                                                                        fontWeight: FontWeight.w500,
+                                                                    Container(
+                                                                      height: 10,
+                                                                      width: 10,
+                                                                      decoration: const BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: Colors.white,
                                                                       ),
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                if (i != request.approvers!.length - 1)
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(bottom: 20.0),
-                                                                    child: Container(
-                                                                      width: 40,
-                                                                      height: 2,
-                                                                      color: Colors.grey,
-                                                                    ),
+                                                                Text(
+                                                                  "➡️",
+                                                                  style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Colors.black,
+                                                                    fontSize: 15,
                                                                   ),
-                                                              ]
-                                                            else
-                                                              Text(
-                                                                '---',
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 15,
-                                                                  color: Colors.grey,
-                                                                  fontWeight: FontWeight.w500,
                                                                 ),
-                                                              ),
-                                                          ],
-                                                          // Line before CEO
-                                                          Padding(
-                                                            padding: const EdgeInsets.only(bottom: 20.0),
-                                                            child: Container(
-                                                              width: 40,
-                                                              height: 2,
-                                                              color: Colors.grey,
+                                                              ],
                                                             ),
-                                                          ),
-                                                          // CEO
-                                                          Column(
-                                                            children: [
-                                                              Stack(
-                                                                alignment: Alignment.center,
-                                                                children: [
-                                                                  Container(
-                                                                    height: 25,
-                                                                    width: 25,
-                                                                    decoration: BoxDecoration(
-                                                                      shape: BoxShape.circle,
-                                                                      color: allApproved ? NasColors.completed : NasColors.pending,
-                                                                    ),
-                                                                  ),
-                                                                  Container(
-                                                                    height: 10,
-                                                                    width: 10,
-                                                                    decoration: const BoxDecoration(
-                                                                      shape: BoxShape.circle,
-                                                                      color: Colors.white,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Text(
-                                                                allApproved ? "✅" : "⏳",
-                                                                style: GoogleFonts.inter(
-                                                                  fontWeight: FontWeight.w500,
-                                                                  color: Colors.black,
-                                                                  fontSize: 15,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
 
-                                                        ],
+                                                            // Line after Req
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(bottom: 20.0),
+                                                              child: Container(
+                                                                width: 40,
+                                                                height: 2,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            ),
+                                                            ...[
+                                                              if (request.approvers != null && request.approvers!.isNotEmpty)
+                                                                for (int i = 0; i < request.approvers!.length; i++) ...[
+                                                                  Column(
+                                                                    children: [
+                                                                      Stack(
+                                                                        alignment: Alignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            height: 25,
+                                                                            width: 25,
+                                                                            decoration: BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: _getColorForApproverStatus(
+                                                                                  request.approvers![i].status),
+                                                                            ),
+                                                                          ),
+                                                                          Container(
+                                                                            height: 10,
+                                                                            width: 10,
+                                                                            decoration: const BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: Colors.white,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      const SizedBox(height: 5),
+                                                                      Text(
+                                                                        request.approvers![i].approverName ?? '---',
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 12,
+                                                                          fontWeight: FontWeight.w500,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  if (i != request.approvers!.length - 1)
+                                                                    Padding(
+                                                                      padding: const EdgeInsets.only(bottom: 20.0),
+                                                                      child: Container(
+                                                                        width: 40,
+                                                                        height: 2,
+                                                                        color: Colors.grey,
+                                                                      ),
+                                                                    ),
+                                                                ]
+                                                              else
+                                                                Text(
+                                                                  '---',
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    color: Colors.grey,
+                                                                    fontWeight: FontWeight.w500,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                            // Line before CEO
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(bottom: 20.0),
+                                                              child: Container(
+                                                                width: 40,
+                                                                height: 2,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            ),
+                                                            // CEO
+                                                            Column(
+                                                              children: [
+                                                                Stack(
+                                                                  alignment: Alignment.center,
+                                                                  children: [
+                                                                    Container(
+                                                                      height: 25,
+                                                                      width: 25,
+                                                                      decoration: BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: allApproved ? NasColors.completed : NasColors.pending,
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                      height: 10,
+                                                                      width: 10,
+                                                                      decoration: const BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: Colors.white,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Text(
+                                                                  allApproved ? "✅" : "⏳",
+                                                                  style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Colors.black,
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+
+                                                          ],
+                                                        ),
                                                       )
                                                     ],
                                                   ],

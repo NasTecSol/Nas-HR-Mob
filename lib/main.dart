@@ -177,18 +177,11 @@ Future<void> backgroundFetchTask(String taskId) async {
     SocketService().initializeSocket(
       "${SingletonClass().tenantId}", locale,
     );
-
-    await NotificationService.showNotification(
-      title: "NAS HR",
-      body: "Background fetch triggered ✅",
-    );
   } catch (e) {
     debugPrint("❌ Background fetch error: $e");
   }
-
   BackgroundFetch.finish(taskId);
 }
-
 void initBackgroundFetch() {
   BackgroundFetch.configure(
     BackgroundFetchConfig(

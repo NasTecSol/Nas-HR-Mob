@@ -70,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _isTokenSaved = token != null && token.isNotEmpty;
     });
 
-    // If a token is found, decode it
     if (token != null && token.isNotEmpty) {
       decodeJwt(token);
     }
@@ -228,6 +227,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             }),
                       ],
                     ),
+                    if(kDebugMode)...[
+                      Text(
+                        "You're in debug mode",
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -309,8 +317,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
+                   Container(
+                    decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: NasColors.lightGrey,
                   ),
