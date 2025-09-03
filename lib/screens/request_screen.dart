@@ -535,7 +535,13 @@ class _RequestScreenState extends State<RequestScreen> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text('Error: ${snapshot.error}'),
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty
@@ -1262,7 +1268,13 @@ class _RequestScreenState extends State<RequestScreen> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else if (snapshot.hasData) {
                             return _request!.isEmpty
@@ -2010,7 +2022,13 @@ class _RequestScreenState extends State<RequestScreen> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else if (snapshot.hasData) {
                             return singletonClass

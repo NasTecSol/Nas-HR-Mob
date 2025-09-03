@@ -487,25 +487,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         alignment: Alignment.topLeft,
                                         child: Text(
                                           widget.isTeamMate == false
-                                              ? maskPhoneNumber((employeeDetails
-                                                          ?.isNotEmpty ??
-                                                      false)
-                                                  ? employeeDetails!
-                                                          .first
-                                                          .phoneNumber
-                                                          ?.first
-                                                          .mobileNumber ??
-                                                      ''
-                                                  : '')
-                                              : (employeeDetails?.isNotEmpty ??
-                                                      false)
-                                                  ? employeeDetails!
-                                                          .first
-                                                          .phoneNumber
-                                                          ?.first
-                                                          .mobileNumber ??
-                                                      '___'
-                                                  : '___',
+                                              ? maskPhoneNumber(
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '')
+                                                : '',
+                                          )
+                                              : (employeeDetails?.isNotEmpty ?? false)
+                                              ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '___')
+                                              : '___',
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,

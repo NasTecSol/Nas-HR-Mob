@@ -167,8 +167,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   singletonClass.branchName != null &&
                                       singletonClass.branchName!.isNotEmpty
                                       ? singletonClass.branchName!
-                                      : AppLocalizations.of(context)!
-                                      .selectBranch,
+                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -249,7 +248,13 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         );
                       } else if (snapshot.hasError) {
                         return Center(
-                          child: Text('Error: ${snapshot.error}'),
+                          child: Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/error.json'),
+                            ),
+                          ),
                         );
                       } else  {
                         final employees = singletonClass.branchShiftsDataList.first.data?.employees ?? [];
@@ -530,7 +535,15 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                             height: 200, width: 200),
                       );
                     } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(
+                        child: Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/error.json'),
+                          ),
+                        ),
+                      );
                     } else if (!snapshot.hasData ||
                         singletonClass.timeTableShiftsDataList.isEmpty ||
                         singletonClass.timeTableShiftsDataList.first.data == null ||

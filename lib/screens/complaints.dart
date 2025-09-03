@@ -241,7 +241,13 @@ class _ComplaintsState extends State<Complaints> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text('Error: ${snapshot.error}'),
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty ? Center(
@@ -493,7 +499,13 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else if (snapshot.hasData) {
                             return  _request!.isEmpty ? Center(
@@ -755,7 +767,13 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else {
                             return _approver!.isEmpty ? Center(
