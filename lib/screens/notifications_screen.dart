@@ -92,7 +92,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     );
                   } else if (snapshot.hasError) {
                     return Center(
-                      child: Text('Error: ${snapshot.error}'),
+                      child: Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/error.json'),
+                        ),
+                      ),
                     );
                   } else if (snapshot.hasData) {
                     return singletonClass
