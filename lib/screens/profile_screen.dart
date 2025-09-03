@@ -372,33 +372,64 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 (MediaQuery.of(context).size.width - 100) /
                                     2,
                                 child: Stack(children: [
-                                  Container(
-                                    height: 100,
-                                    width: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width:
-                                        2, // Adjust border width as needed
+                                  GestureDetector(
+                                    onTap: (){
+                                      String url = "${employeeProfile?.profilePic ?? ''}".toLowerCase();
+                                      if (url.endsWith(".png") ||
+                                          url.endsWith(".jpg") ||
+                                          url.endsWith(".jpeg")) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Dialog(
+                                              backgroundColor: Colors.transparent,
+                                              child: Container(
+                                                width: MediaQuery.of(context).size.width * 0.8,
+                                                height: MediaQuery.of(context).size.height * 0.4,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  borderRadius: BorderRadius.circular(12.0),
+                                                ),
+                                                child: Image.network(
+                                                  employeeProfile?.profilePic ?? '',
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.error),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width:
+                                          2, // Adjust border width as needed
+                                        ),
                                       ),
-                                    ),
-                                    child: ClipOval(
-                                      child: Image.network(
-                                        employeeProfile?.profilePic ?? '',
-                                        fit: BoxFit.cover,
-                                        width: 100,
-                                        height: 100,
-                                        errorBuilder: (BuildContext context,
-                                            Object exception,
-                                            StackTrace? stackTrace) {
-                                          return Image.asset(
-                                            'images/DP.png',
-                                            fit: BoxFit.cover,
-                                            width: 100,
-                                            height: 100,
-                                          );
-                                        },
+                                      child: ClipOval(
+                                        child: Image.network(
+                                          employeeProfile?.profilePic ?? '',
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                          errorBuilder: (BuildContext context,
+                                              Object exception,
+                                              StackTrace? stackTrace) {
+                                            return Image.asset(
+                                              'images/DP.png',
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100,
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ),

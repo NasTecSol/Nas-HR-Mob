@@ -35,6 +35,7 @@ class _TeamClockingState extends State<TeamClocking> {
   final List<DateTime> _dates = [];
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
+
   @override
   void initState() {
     super.initState();
@@ -51,28 +52,32 @@ class _TeamClockingState extends State<TeamClocking> {
     loadData();
   }
 
-  void _teamCheck(){
-    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
-      _isTeamChecked = false ;
+  void _teamCheck() {
+    if (singletonClass.branchID != null &&
+        singletonClass.branchID!.isNotEmpty) {
+      _isTeamChecked = false;
       extractAllEmployeeIdsForBranch(singletonClass.branchID);
       loadData();
     }
   }
 
- void _extractTeams(){
-   reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
-   log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
-   List<BranchData> branchDataList = singletonClass.branchDataList;
-   var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
-   filteredUnderTeams = filteredData['underTeams']!;
-   log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
-}
+  void _extractTeams() {
+    reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
+    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
+    List<BranchData> branchDataList = singletonClass.branchDataList;
+    var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
+    filteredUnderTeams = filteredData['underTeams']!;
+    log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+  }
+
   void extractAllEmployeeIdsForBranch(String? selectedBranchId) {
     List<String> allEmployeeIds = [];
 
-    if ((selectedBranchId != null && selectedBranchId.isNotEmpty)){
+    if ((selectedBranchId != null && selectedBranchId.isNotEmpty)) {
       final branches = singletonClass.branchesDataList.first.data;
-      final branchList = branches?.where((branch) => branch.branchCompanyId == selectedBranchId).toList();
+      final branchList = branches
+          ?.where((branch) => branch.branchCompanyId == selectedBranchId)
+          .toList();
 
       if (branchList != null && branchList.isNotEmpty) {
         for (var branch in branchList) {
@@ -107,11 +112,6 @@ class _TeamClockingState extends State<TeamClocking> {
     }
   }
 
-
-
-
-
-
   void _setDefaultDates() {
     final now = DateTime.now();
     _startDate = DateTime(now.year, now.month, 1);
@@ -119,12 +119,13 @@ class _TeamClockingState extends State<TeamClocking> {
     log("📆 Default Date Range: $_startDate to $_endDate");
   }
 
-
   void _initDates({required DateTime start, required DateTime end}) {
     _dates.clear();
     final now = DateTime.now();
 
-    for (var date = start; !date.isAfter(end) && !date.isAfter(now); date = date.add(Duration(days: 1))) {
+    for (var date = start;
+        !date.isAfter(end) && !date.isAfter(now);
+        date = date.add(Duration(days: 1))) {
       _dates.add(date);
     }
 
@@ -134,15 +135,16 @@ class _TeamClockingState extends State<TeamClocking> {
     log("📅 Generated ${_dates.length} dates from $start to $end");
   }
 
-
-  Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
+  Map<String, List<Teams>> getFilteredTeams(
+      List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> underTeams = [];
     String? userGrade = singletonClass.getJWTModel()?.grade;
     log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
     log("🔍 User grade: $userGrade");
 
     for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
+      for (var departmentDetails
+          in branchData.data?.branch!.departmentDetails ?? []) {
         for (var department in departmentDetails.departments ?? []) {
           log("🏢 Department: ${department.departmentName}");
           for (var supervisor in department.supervisors ?? []) {
@@ -151,7 +153,8 @@ class _TeamClockingState extends State<TeamClocking> {
           for (var team in department.teams ?? []) {
             log("🧑‍🤝‍🧑 Team: ${team.teamId}");
             for (var supervisor in department.supervisors ?? []) {
-              if (supervisor.empId == reportingManagerId && supervisor.teamId == team.teamId) {
+              if (supervisor.empId == reportingManagerId &&
+                  supervisor.teamId == team.teamId) {
                 log("✅ Match found — Supervisor: ${supervisor.empId}, Team: ${team.teamId}");
                 underTeams.add(team);
               }
@@ -164,8 +167,6 @@ class _TeamClockingState extends State<TeamClocking> {
     return {'underTeams': underTeams};
   }
 
-
-
   Future<void> loadData() async {
     log("📥 Starting data load...");
     await getTeamClockingAPI(startDate: _startDate!, endDate: _endDate!);
@@ -173,12 +174,14 @@ class _TeamClockingState extends State<TeamClocking> {
   }
 
   void filterAttendanceData() {
-    List<TeamClockingData> allClockingData = singletonClass.teamClockingDataList.first.data!;
+    List<TeamClockingData> allClockingData =
+        singletonClass.teamClockingDataList.first.data!;
 
     List<TeamClockingData> filtered = allClockingData;
 
     if (selectedEmployeeId != null) {
-      filtered = filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
+      filtered =
+          filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
     }
 
     if (_selectedDate != null) {
@@ -195,10 +198,10 @@ class _TeamClockingState extends State<TeamClocking> {
     });
   }
 
-
   String _getDayOfWeek(DateTime date) {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -255,7 +258,8 @@ class _TeamClockingState extends State<TeamClocking> {
                               scaffoldBackgroundColor: Colors.white,
                               textButtonTheme: TextButtonThemeData(
                                 style: TextButton.styleFrom(
-                                  foregroundColor: NasColors.darkBlue, // Button color
+                                  foregroundColor:
+                                      NasColors.darkBlue, // Button color
                                 ),
                               ),
                               colorScheme: ColorScheme.light(
@@ -267,18 +271,25 @@ class _TeamClockingState extends State<TeamClocking> {
                             child: child!,
                           );
                         },
-                        initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+                        initialDateRange: DateTimeRange(
+                            start: now.subtract(const Duration(days: 7)),
+                            end: now),
                       );
                       if (picked != null) {
                         singletonClass.teamClockingDataList.clear();
                         _startDate = picked.start;
                         _endDate = picked.end;
                         _initDates(start: picked.start, end: picked.end);
-                        await getTeamClockingAPI(startDate: _startDate!, endDate: _endDate!);
+                        await getTeamClockingAPI(
+                            startDate: _startDate!, endDate: _endDate!);
                         filterAttendanceData();
                       }
                     },
-                    icon:  Icon(Icons.date_range,color: NasColors.darkBlue,size: 30,),
+                    icon: Icon(
+                      Icons.date_range,
+                      color: NasColors.darkBlue,
+                      size: 30,
+                    ),
                   ),
                 ],
               ),
@@ -286,7 +297,8 @@ class _TeamClockingState extends State<TeamClocking> {
               Container(
                 height: 50,
                 width: MediaQuery.of(context).size.width - 50,
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
@@ -311,7 +323,8 @@ class _TeamClockingState extends State<TeamClocking> {
                         },
                         cursorColor: Colors.black,
                         decoration: InputDecoration(
-                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          hintText:
+                              '${AppLocalizations.of(context)!.search}...',
                           border: InputBorder.none,
                         ),
                       ),
@@ -325,114 +338,132 @@ class _TeamClockingState extends State<TeamClocking> {
                 ),
               ),
               SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10.0, right: 10),
-                    child: PopupMenuButton<String>(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      onSelected: (value) {
-                        setState(() {
-                          singletonClass.branchID = value;
-                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
-                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
-                          if (kDebugMode) {
-                            print('Selected Branch ID: $value');
+              if (singletonClass.getJWTModel()?.grade == "L0" ||
+                  singletonClass.getJWTModel()?.grade == "L1" ||
+                  singletonClass.getJWTModel()?.grade == "L2") ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0, right: 10),
+                      child: PopupMenuButton<String>(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        onSelected: (value) {
+                          setState(() {
+                            singletonClass.branchID = value;
+                            final branch = singletonClass
+                                .branchesDataList.first.data
+                                ?.firstWhere((branch) =>
+                                    branch.branchCompanyId == value);
+                            singletonClass.branchName =
+                                branch?.branchName ?? "Unknown Branch";
+                            if (kDebugMode) {
+                              print('Selected Branch ID: $value');
+                            }
+                            extractAllEmployeeIdsForBranch(value);
+                            singletonClass.getBranchData();
+                            loadData();
+                            _isTeamChecked = false;
+                          });
+                        },
+                        itemBuilder: (BuildContext context) {
+                          final branchList =
+                              singletonClass.branchesDataList.first.data;
+                          if (branchList == null || branchList.isEmpty) {
+                            return [];
                           }
-                          extractAllEmployeeIdsForBranch(value);
-                           singletonClass.getBranchData();
-                          loadData();
-                          _isTeamChecked = false ;
-                        });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        final branchList = singletonClass.branchesDataList.first.data;
-                        if (branchList == null || branchList.isEmpty) {
-                          return [];
-                        }
 
-                        return branchList.map((branch) => PopupMenuItem<String>(
-                          value: branch.branchCompanyId,
-                          child: Text(branch.branchName ?? "Unknown Branch"),
-                        )).toList();
-                      },
-                      child: Container(
-                        height: 60,
-                        width: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(45),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(width: 8),
-                            Image.asset(
-                              'images/site.png', // <-- Replace with your actual image path
-                              height: 14,
-                              width: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                singletonClass.branchName != null && singletonClass.branchName!.isNotEmpty
-                                    ? singletonClass.branchName!
-                                    : AppLocalizations.of(context)!.selectBranch,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                          return branchList
+                              .map((branch) => PopupMenuItem<String>(
+                                    value: branch.branchCompanyId,
+                                    child: Text(
+                                        branch.branchName ?? "Unknown Branch"),
+                                  ))
+                              .toList();
+                        },
+                        child: Container(
+                          height: 60,
+                          width: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(45),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
-                            const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: Column(
-                      children: [
-                        Checkbox(value: _isTeamChecked,
-                            activeColor: NasColors.onTime,
-                            onChanged:(singletonClass.branchID != null) ? (bool? value){
-                              setState(() {
-                                _isTeamChecked = value ?? false;
-                                singletonClass.branchID = null;
-                                singletonClass.branchName = null;
-                                singletonClass.getBranchData();
-                                selectedBranchIds.clear();
-                                _extractTeams();
-                                loadData();
-                              });
-                            } : null ),
-                        Text(AppLocalizations.of(context)!.teams,
-                          style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(width: 8),
+                              Image.asset(
+                                'images/site.png',
+                                // <-- Replace with your actual image path
+                                height: 14,
+                                width: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  singletonClass.branchName != null &&
+                                          singletonClass.branchName!.isNotEmpty
+                                      ? singletonClass.branchName!
+                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const Icon(Icons.keyboard_arrow_down,
+                                  color: Colors.black),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: Column(
+                        children: [
+                          Checkbox(
+                              value: _isTeamChecked,
+                              activeColor: NasColors.onTime,
+                              onChanged: (singletonClass.branchID != null)
+                                  ? (bool? value) {
+                                      setState(() {
+                                        _isTeamChecked = value ?? false;
+                                        singletonClass.branchID = null;
+                                        singletonClass.branchName = null;
+                                        singletonClass.getBranchData();
+                                        selectedBranchIds.clear();
+                                        _extractTeams();
+                                        loadData();
+                                      });
+                                    }
+                                  : null),
+                          Text(
+                            AppLocalizations.of(context)!.teams,
+                            style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: NasColors.darkBlue),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               SizedBox(
                 height: 80,
                 child: ListView.builder(
@@ -451,7 +482,9 @@ class _TeamClockingState extends State<TeamClocking> {
                         width: 55,
                         margin: const EdgeInsets.symmetric(horizontal: 5),
                         decoration: BoxDecoration(
-                          color: selected ? NasColors.darkBlue : Colors.transparent,
+                          color: selected
+                              ? NasColors.darkBlue
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(35),
                         ),
                         child: Column(
@@ -461,12 +494,14 @@ class _TeamClockingState extends State<TeamClocking> {
                                 style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: selected ? Colors.white : Colors.grey)),
+                                    color:
+                                        selected ? Colors.white : Colors.grey)),
                             Text(_getDayOfWeek(date),
                                 style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: selected ? Colors.white : Colors.grey)),
+                                    color:
+                                        selected ? Colors.white : Colors.grey)),
                           ],
                         ),
                       ),
@@ -475,18 +510,34 @@ class _TeamClockingState extends State<TeamClocking> {
                 ),
               ),
               FutureBuilder(
-                  future: getTeamClockingAPI(startDate: _startDate, endDate: _endDate),
+                  future: getTeamClockingAPI(
+                      startDate: _startDate, endDate: _endDate),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: Lottie.asset('images/loader.json', height: 200, width: 200));
+                      return Center(
+                          child: Lottie.asset('images/loader.json',
+                              height: 200, width: 200));
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/error.json'),
+                          ),
+                        ),
+                      );
                     }
                     if (singletonClass.teamClockingDataList.isEmpty ||
-                        singletonClass.teamClockingDataList.first.data == null ||
-                        singletonClass.teamClockingDataList.first.data!.isEmpty) {
+                        singletonClass.teamClockingDataList.first.data ==
+                            null ||
+                        singletonClass
+                            .teamClockingDataList.first.data!.isEmpty) {
                       return Center(
                         child: Column(
                           children: [
-                            Lottie.asset('images/empty.json', height: 200, width: 200),
+                            Lottie.asset('images/empty.json',
+                                height: 200, width: 200),
                             Text(
                               AppLocalizations.of(context)!.noData,
                               style: GoogleFonts.inter(
@@ -499,26 +550,27 @@ class _TeamClockingState extends State<TeamClocking> {
                         ),
                       );
                     }
-                    final dataList = singletonClass.teamClockingDataList.first.data!;
+                    final dataList =
+                        singletonClass.teamClockingDataList.first.data!;
                     return Expanded(
                         child: ListView.builder(
                       padding: EdgeInsets.zero,
                       itemCount: dataList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final team =dataList[index];
-                        final searchText =
-                        searchController.text.toLowerCase();
+                        final team = dataList[index];
+                        final searchText = searchController.text.toLowerCase();
                         if (isSearching &&
                             !(team.employeeName
-                                ?.toLowerCase()
-                                .contains(searchText) ??
+                                    ?.toLowerCase()
+                                    .contains(searchText) ??
                                 false)) {
                           return const SizedBox.shrink();
                         }
 
                         return GestureDetector(
                           onTap: () {
-                            if (team.rawBiometrics != null && team.rawBiometrics!.isNotEmpty) {
+                            if (team.rawBiometrics != null &&
+                                team.rawBiometrics!.isNotEmpty) {
                               showDialog(
                                 context: context,
                                 builder: (context) {
@@ -533,42 +585,43 @@ class _TeamClockingState extends State<TeamClocking> {
                                           height: 40,
                                           width: 70,
                                           decoration: BoxDecoration(
-                                              color: NasColors.onTime
-                                          ),
-                                          child: Center(child: Text(AppLocalizations.of(context)!.srNo,
+                                              color: NasColors.onTime),
+                                          child: Center(
+                                              child: Text(
+                                            AppLocalizations.of(context)!.srNo,
                                             style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 12,
-                                                color: Colors.white
-                                            ),
+                                                color: Colors.white),
                                           )),
                                         ),
                                         Container(
                                           height: 40,
                                           width: 120,
                                           decoration: BoxDecoration(
-                                              color: NasColors.onTime
-                                          ),
-                                          child: Center(child: Text(AppLocalizations.of(context)!.timeStamp,
+                                              color: NasColors.onTime),
+                                          child: Center(
+                                              child: Text(
+                                            AppLocalizations.of(context)!
+                                                .timeStamp,
                                             style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 12,
-                                                color: Colors.white
-                                            ),
+                                                color: Colors.white),
                                           )),
                                         ),
                                         Container(
                                           height: 40,
                                           width: 80,
                                           decoration: BoxDecoration(
-                                              color: NasColors.onTime
-                                          ),
-                                          child: Center(child: Text(AppLocalizations.of(context)!.type,
+                                              color: NasColors.onTime),
+                                          child: Center(
+                                              child: Text(
+                                            AppLocalizations.of(context)!.type,
                                             style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 12,
-                                                color: Colors.white
-                                            ),
+                                                color: Colors.white),
                                           )),
                                         ),
                                       ],
@@ -579,41 +632,51 @@ class _TeamClockingState extends State<TeamClocking> {
                                         shrinkWrap: true,
                                         itemCount: team.rawBiometrics!.length,
                                         itemBuilder: (context, index) {
-                                          final bio = team.rawBiometrics![index];
-                                          return  Row(
+                                          final bio =
+                                              team.rawBiometrics![index];
+                                          return Row(
                                             children: [
                                               SizedBox(
                                                 height: 40,
                                                 width: 70,
                                                 child: Center(
-                                                    child: Text("${index + 1}",
-                                                      style: GoogleFonts.inter(
-                                                          fontWeight: FontWeight.w500,
-                                                          fontSize: 12,
-                                                          color: Colors.black
-                                                      ),
-                                                    )),
+                                                    child: Text(
+                                                  "${index + 1}",
+                                                  style: GoogleFonts.inter(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 12,
+                                                      color: Colors.black),
+                                                )),
                                               ),
                                               SizedBox(
                                                 height: 40,
                                                 width: 115,
-                                                child: Center(child: Text(singletonClass.formatCheckInTime(bio.timestamp.toString(), context),
+                                                child: Center(
+                                                    child: Text(
+                                                  singletonClass
+                                                      .formatCheckInTime(
+                                                          bio.timestamp
+                                                              .toString(),
+                                                          context),
                                                   style: GoogleFonts.inter(
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       fontSize: 12,
-                                                      color: Colors.black
-                                                  ),
+                                                      color: Colors.black),
                                                 )),
                                               ),
                                               SizedBox(
                                                 height: 40,
                                                 width: 80,
-                                                child: Center(child: Text("${bio.type}",
+                                                child: Center(
+                                                    child: Text(
+                                                  "${bio.type}",
                                                   style: GoogleFonts.inter(
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       fontSize: 12,
-                                                      color: Colors.black
-                                                  ),
+                                                      color: Colors.black),
                                                 )),
                                               ),
                                             ],
@@ -624,12 +687,12 @@ class _TeamClockingState extends State<TeamClocking> {
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: Text(AppLocalizations.of(context)!.close,
+                                        child: Text(
+                                          AppLocalizations.of(context)!.close,
                                           style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w500,
-                                              color: Colors.red
-                                          ),
+                                              color: Colors.red),
                                         ),
                                       ),
                                     ],
@@ -641,7 +704,8 @@ class _TeamClockingState extends State<TeamClocking> {
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 10),
                             decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(15)),
                               color: Colors.white,
                             ),
                             child: Padding(
@@ -660,7 +724,8 @@ class _TeamClockingState extends State<TeamClocking> {
                                       ),
                                       Spacer(),
                                       Text(
-                                        singletonClass.formatDate2(team.createdAt.toString() , context),
+                                        singletonClass.formatDate2(
+                                            team.createdAt.toString(), context),
                                         style: GoogleFonts.inter(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
@@ -686,12 +751,15 @@ class _TeamClockingState extends State<TeamClocking> {
                                         width: 75,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.rectangle,
-                                          color: getStatusColor(team.status.toString()),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: getStatusColor(
+                                              team.status.toString()),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: Center(
                                           child: Text(
-                                            _translateSecondaryStatus("${team.status}", context),
+                                            _translateSecondaryStatus(
+                                                "${team.status}", context),
                                             textAlign: TextAlign.center,
                                             style: GoogleFonts.inter(
                                               fontWeight: FontWeight.bold,
@@ -706,8 +774,11 @@ class _TeamClockingState extends State<TeamClocking> {
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [
-                                      Text( team.checkInTime != null ?
-                                        singletonClass.formatCheckInTime(team.checkInTime! , context) : '--:--',
+                                      Text(
+                                        team.checkInTime != null
+                                            ? singletonClass.formatCheckInTime(
+                                                team.checkInTime!, context)
+                                            : '--:--',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -747,8 +818,13 @@ class _TeamClockingState extends State<TeamClocking> {
                                     children: [
                                       SizedBox(
                                         width: 70,
-                                        child: Text( team.checkOutTime != null ?
-                                          singletonClass.formatCheckInTime(team.checkOutTime! ,context) : '--:--',
+                                        child: Text(
+                                          team.checkOutTime != null
+                                              ? singletonClass
+                                                  .formatCheckInTime(
+                                                      team.checkOutTime!,
+                                                      context)
+                                              : '--:--',
                                           style: GoogleFonts.inter(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
@@ -762,32 +838,41 @@ class _TeamClockingState extends State<TeamClocking> {
                                         color: Colors.black,
                                       ),
                                       const Spacer(),
-                                      Text( AppLocalizations.of(context)!.totalRecord,
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .totalRecord,
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
-                                        ),),
+                                        ),
+                                      ),
                                       SizedBox(width: 5),
                                       Container(
-                                            padding: const EdgeInsets.all(2),
-                                            decoration: BoxDecoration(
-                                              color: (team.rawBiometrics!.length == 1 ||team.rawBiometrics!.length == 2) ? NasColors.onTime : Colors.red,
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            constraints: const BoxConstraints(
-                                              minWidth: 28,
-                                              minHeight: 28,
-                                            ),
-                                            child: Text(
-                                              '${team.rawBiometrics!.length}',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          color: (team.rawBiometrics!.length ==
+                                                      1 ||
+                                                  team.rawBiometrics!.length ==
+                                                      2)
+                                              ? NasColors.onTime
+                                              : Colors.red,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                         ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 28,
+                                          minHeight: 28,
+                                        ),
+                                        child: Text(
+                                          '${team.rawBiometrics!.length}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -816,7 +901,6 @@ class _TeamClockingState extends State<TeamClocking> {
       return null;
     }
   }
-
 
   Color getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -959,7 +1043,8 @@ class _TeamClockingState extends State<TeamClocking> {
   }
 
   ///API CALL
-  Future<TeamClockingModel?> getTeamClockingAPI({DateTime? startDate, DateTime? endDate}) async {
+  Future<TeamClockingModel?> getTeamClockingAPI(
+      {DateTime? startDate, DateTime? endDate}) async {
     singletonClass.teamClockingDataList.clear();
 
     Set<String> employeeIds = {};
@@ -1006,5 +1091,4 @@ class _TeamClockingState extends State<TeamClocking> {
     }
     return null;
   }
-
 }

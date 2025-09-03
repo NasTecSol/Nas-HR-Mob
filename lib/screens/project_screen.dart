@@ -114,13 +114,11 @@ class _ProjectScreenState extends State<ProjectScreen> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text(
-                              'Error: ${snapshot.error}',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red,
-                                fontSize: 15,
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
                               ),
                             ),
                           );
@@ -301,13 +299,11 @@ class _ProjectScreenState extends State<ProjectScreen> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text(
-                              'Error: ${snapshot.error}',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red,
-                                fontSize: 15,
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
                               ),
                             ),
                           );
@@ -489,13 +485,11 @@ class _ProjectScreenState extends State<ProjectScreen> {
                         );
                       } else if (snapshot.hasError) {
                         return Center(
-                          child: Text(
-                            'Error: ${snapshot.error}',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                              fontSize: 15,
+                          child: Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/error.json'),
                             ),
                           ),
                         );

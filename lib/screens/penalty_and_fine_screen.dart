@@ -176,7 +176,13 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text('Error: ${snapshot.error}'),
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty
@@ -379,7 +385,13 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text('Error: ${snapshot.error}'),
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasData) {
                           if (_request!.isEmpty) {
@@ -566,7 +578,13 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else if (snapshot.hasData) {
                             return  _approver!.isEmpty

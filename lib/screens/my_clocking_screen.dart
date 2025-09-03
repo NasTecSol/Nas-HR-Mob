@@ -168,12 +168,11 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                   );
                 } else if (snapshot.hasError) {
                   return Center(
-                    child: Text(
-                      'Error: ${snapshot.error}',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
+                    child: Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/error.json'),
                       ),
                     ),
                   );

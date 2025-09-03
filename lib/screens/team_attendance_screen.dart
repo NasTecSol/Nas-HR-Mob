@@ -497,7 +497,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 child: Text(
                                   singletonClass.branchName != null && singletonClass.branchName!.isNotEmpty
                                       ? singletonClass.branchName!
-                                      : AppLocalizations.of(context)!.selectBranch,
+                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
