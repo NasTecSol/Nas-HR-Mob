@@ -414,14 +414,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: Image.network(
-                                          employeeProfile?.profilePic ?? '',
+                                        child: (employeeProfile?.profilePic != null &&
+                                            employeeProfile!.profilePic!.isNotEmpty)
+                                            ? Image.network(
+                                          employeeProfile!.profilePic!,
                                           fit: BoxFit.cover,
                                           width: 100,
                                           height: 100,
-                                          errorBuilder: (BuildContext context,
-                                              Object exception,
-                                              StackTrace? stackTrace) {
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return const Center(
+                                              child: CircularProgressIndicator(),
+                                            );
+                                          },
+                                          errorBuilder: (context, error, stackTrace) {
                                             return Image.asset(
                                               'images/DP.png',
                                               fit: BoxFit.cover,
@@ -429,6 +435,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               height: 100,
                                             );
                                           },
+                                        )
+                                            : Image.asset(
+                                          'images/DP.png',
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
                                         ),
                                       ),
                                     ),
@@ -438,48 +450,43 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     right: -5,
                                     child: IconButton(
                                       icon: Container(
-                                        height: 30,
-                                        width: 30,
+                                        height: 35,
+                                        width: 35,
                                         decoration: BoxDecoration(
                                             borderRadius:
-                                            BorderRadius.circular(10),
+                                            BorderRadius.circular(15),
                                             color: Colors.white,
                                             border: Border.all(
                                                 color: Colors.black, width: 1)),
                                         child: const Icon(
                                           Icons.camera_alt_outlined,
                                           color: Colors.black,
+                                            size: 27,
                                         ),
                                       ),
                                       onPressed: () async {
                                         FilePickerResult? result =
                                         await FilePicker.platform.pickFiles(
                                           type: FileType
-                                              .image, // Ensures only image files are allowed
+                                              .image,
                                         );
 
                                         if (result != null &&
                                             result.files.single.path != null) {
                                           PlatformFile file =
                                               result.files.single;
-
-                                          // Save the file data for sending in the API call
                                           setState(() {
                                             selectedFile = file;
                                           });
 
                                           print('Selected file: ${file.name}');
-
-                                          // Show confirmation dialog before uploading
-                                          _showConfirmationDialog(
-                                              file); // Upload the selected file to the API
+                                          _showConfirmationDialog(file);
                                         } else {
-                                          // User canceled the file picker
                                           print('File selection canceled.');
                                         }
                                       },
                                       color: Colors
-                                          .green, // Adjust icon color as needed
+                                          .green,
                                     ),
                                   ),
                                 ]),

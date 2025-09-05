@@ -949,7 +949,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
-                  if (widget.attendanceData!.shift == 'timeTableShift') ...[
+                  if (widget.attendanceData!.shiftInfo!.shiftType == 'timeTableShift') ...[
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 400,
@@ -959,10 +959,9 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
-                            // Shadow color
                             spreadRadius: 1,
                             blurRadius: 6,
-                            offset: Offset(0, 3), // Shadow position (x, y)
+                            offset: Offset(0, 3),
                           ),
                         ],
                       ),
