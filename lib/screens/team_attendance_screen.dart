@@ -901,30 +901,72 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     children: [
                                       Column(
                                         children: [
-                                          Text(
-                                            attendance.shiftInfo != null &&
-                                                attendance.shiftInfo!.timefrom != null &&
-                                                attendance.shiftInfo!.timeTo != null
-                                                ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
-                                                : "---",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
+                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'fullTime')...[
+                                            Text(
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.timefrom != null &&
+                                                  attendance.shiftInfo!.timeTo != null
+                                                  ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
                                             ),
-                                          ),
-                                          Text(
-                                            maxLines: 5,
-                                            attendance.shiftInfo != null &&
-                                                attendance.shiftInfo!.shiftName != null
-                                                ? "${attendance.shiftInfo!.shiftName}"
-                                                : "---",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
+                                            Text(
+                                              maxLines: 5,
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.shiftName != null
+                                                  ? "${attendance.shiftInfo!.shiftName}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
                                             ),
-                                          ),
+                                          ],
+                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'flexibleShift')...[
+                                            Text(
+                                              maxLines: 5,
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.shiftName != null
+                                                  ? "${attendance.shiftInfo!.shiftName}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                          if (attendance.shiftInfo != null &&
+                                              attendance.shiftInfo!.shiftType == 'timeTableShift') ...[
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: attendance.slots!.take(2).map<Widget>((slot) {
+                                                final start = DateTime.tryParse(slot.slotStart ?? '');
+                                                final end = DateTime.tryParse(slot.slotEnd ?? '');
+                                                final startTime = start != null ? DateFormat.jm().format(start) : '--:--';
+                                                final endTime = end != null ? DateFormat.jm().format(end) : '--:--';
+
+                                                return Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        "$startTime - $endTime",
+                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }).toList(),
+                                            )
+                                          ],
                                         ],
                                       ),
                                       const Spacer(),

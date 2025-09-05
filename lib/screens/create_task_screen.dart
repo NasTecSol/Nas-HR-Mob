@@ -345,7 +345,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -379,7 +379,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon: Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 fromDate == null
                                     ? AppLocalizations.of(context)!.fromDate
                                     : DateFormat('yyyy-MM-dd')
@@ -390,12 +395,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
-                            ),
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -438,7 +438,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon:  Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 toDate == null
                                     ? AppLocalizations.of(context)!.toDate
                                     : DateFormat('yyyy-MM-dd')
@@ -448,11 +453,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   color: Colors.black,
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
                             ),
                           ],
                         ),

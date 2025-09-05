@@ -1106,7 +1106,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                           mainAxisAlignment:
                           MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -1149,7 +1149,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon: Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 fromDate == null
                                     ? AppLocalizations.of(context)!
                                     .fromDate
@@ -1161,12 +1166,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
-                            ),
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -1211,7 +1211,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              label: Text(
                                 toDate == null
                                     ? AppLocalizations.of(context)!.toDate
                                     : DateFormat('yyyy-MM-dd')
@@ -1221,11 +1221,11 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   color: Colors.black,
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
+                              icon: Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
                             ),
                           ],
                         ),
@@ -1244,7 +1244,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                           mainAxisAlignment:
                           MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -1291,7 +1291,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon: Icon(
+    Icons.calendar_month_outlined,
+    size: 30,
+    color: NasColors.darkBlue,
+    ),
+                              label: Text(
                                 fromDate == null
                                     ? AppLocalizations.of(context)!
                                     .fromDate
@@ -1303,12 +1308,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
-                            ),
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -1356,7 +1356,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon: Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 toDate == null
                                     ? AppLocalizations.of(context)!.toDate
                                     : DateFormat('yyyy-MM')
@@ -1366,11 +1371,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                   color: Colors.black,
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
                             ),
                           ],
                         ),
@@ -2381,15 +2381,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextButton(
+                          TextButton.icon(
                             onPressed: () async {
                               DateTime? date = await showDatePicker(
                                 context: context,
                                 initialDate: fromDate ?? DateTime.now(),
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime(2101),
-                                builder: (BuildContext context,
-                                    Widget? child) {
+                                builder: (BuildContext context, Widget? child) {
                                   return Theme(
                                     data: ThemeData.light().copyWith(
                                       colorScheme: ColorScheme.light(
@@ -2398,8 +2397,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                         onPrimary: Colors.black,
                                         onSurface: Colors.white,
                                       ),
-                                      textButtonTheme:
-                                      TextButtonThemeData(
+                                      textButtonTheme: TextButtonThemeData(
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.white,
                                         ),
@@ -2415,23 +2413,22 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 });
                               }
                             },
-                            child: Text(
+                            icon: Icon(
+                              Icons.calendar_month_outlined,
+                              size: 22,
+                              color: NasColors.darkBlue,
+                            ),
+                            label: Text(
                               fromDate == null
                                   ? AppLocalizations.of(context)!.fromDate
-                                  : DateFormat('yyyy-MM-dd')
-                                  .format(fromDate!),
+                                  : DateFormat('yyyy-MM-dd').format(fromDate!),
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.w400,
                                 color: Colors.black,
                               ),
                             ),
                           ),
-                          Icon(
-                            Icons.calendar_month_outlined,
-                            size: 30,
-                            color: NasColors.darkBlue,
-                          ),
-                          TextButton(
+                          TextButton.icon(
                             onPressed: () async {
                               DateTime? date = await showDatePicker(
                                 context: context,
@@ -2474,7 +2471,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 });
                               }
                             },
-                            child: Text(
+                            icon: Icon(
+                              Icons.calendar_month_outlined,
+                              size: 30,
+                              color: NasColors.darkBlue,
+                            ),
+                            label: Text(
                               toDate == null
                                   ? AppLocalizations.of(context)!.toDate
                                   : DateFormat('yyyy-MM-dd')
@@ -2484,11 +2486,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 color: Colors.black,
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.calendar_month_outlined,
-                            size: 30,
-                            color: NasColors.darkBlue,
                           ),
                         ],
                       ),

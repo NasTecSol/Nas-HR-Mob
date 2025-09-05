@@ -55,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedCompanyId;
   String? selectedBranchId;
   bool isLoadingBranches = false;
+  String? _totalWorkedHours;
 
 
   @override
@@ -68,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final locale = WidgetsBinding.instance.window.locale.languageCode;
       SocketService().initializeSocket('${singletonClass.tenantId}', locale);
     }
+    totalTimeMethod();
     _draggableScrollableController.addListener(() {
       if (mounted) {
         setState(() {
@@ -79,6 +81,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
   }
 
+  String totalTimeMethod() {
+    try {
+      final today = DateTime.now();
+      final dataList = singletonClass.clockingDataList.first.data;
+      if (dataList == null || dataList.isEmpty) return '--:--';
+      final todayEntries = dataList.where((entry) {
+        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+        return createdAt != null &&
+            createdAt.year == today.year &&
+            createdAt.month == today.month &&
+            createdAt.day == today.day;
+      }).toList();
+
+      if (todayEntries.isEmpty) return '--:--';
+      final lastEntry = todayEntries.last;
+      if ((lastEntry.checkInTime?.isNotEmpty ?? false) &&
+          (lastEntry.checkOutTime?.isNotEmpty ?? false)) {
+        final checkIn = DateTime.tryParse(lastEntry.checkInTime!);
+        final checkOut = DateTime.tryParse(lastEntry.checkOutTime!);
+
+        if (checkIn != null && checkOut != null) {
+          final duration = checkOut.difference(checkIn);
+          final workedHours =
+              '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}';
+          _totalWorkedHours = workedHours;
+          return workedHours;
+        }
+      }
+
+      return '--:--';
+    } catch (_) {
+      return '--:--';
+    }
+  }
 
   @override
   void dispose() {
@@ -518,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             radius: 40,
                             child: ClipOval(
                               child: Image.network(
-                                dashBoardData?.profilePic ?? '',
+                                dashBoardData?.profilePic!,
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
@@ -1245,23 +1281,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               MainAxisAlignment.center,
                                           children: [
                                             SizedBox(
-                                                height: 100,
-                                                width: 120,
-                                                child: Align(
-                                                  alignment: Alignment.center,
-                                                  child: Text(
-                                                    singletonClass.clockingDataList.isNotEmpty &&
-                                                            singletonClass.clockingDataList.first.data!.isNotEmpty
-                                                        ? '${AppLocalizations.of(context)!.worked} '
-                                                            '${singletonClass.formatMinutes(double.tryParse(singletonClass.clockingDataList.first.data!.first.totalTime?.toString() ?? '0')?.round() ?? 0 , context)}'
-                                                        : '${AppLocalizations.of(context)!.worked} --:--',
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                    ),
+                                              height: 100,
+                                              width: 120,
+                                              child: Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  _totalWorkedHours != null
+                                                      ? '${AppLocalizations.of(context)!.worked} ${_totalWorkedHours.toString()}'
+                                                      : '${AppLocalizations.of(context)!.worked} --:--',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.normal,
                                                   ),
-                                                )),
+                                                ),
+                                              ),
+                                            ),
                                             SizedBox(
                                               height: 50,
                                               width: 50,

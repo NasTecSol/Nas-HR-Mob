@@ -173,19 +173,15 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: Image.network(
-                                          (employeeDetails != null &&
-                                                  employeeDetails.isNotEmpty)
-                                              ? employeeDetails
-                                                      .first.profilePic ??
-                                                  ''
-                                              : '',
+                                        child: (employeeDetails != null &&
+                                            employeeDetails.isNotEmpty &&
+                                            (employeeDetails.first.profilePic?.isNotEmpty ?? false))
+                                            ? Image.network(
+                                          employeeDetails.first.profilePic!,
                                           fit: BoxFit.cover,
                                           width: 100,
                                           height: 100,
-                                          errorBuilder: (BuildContext context,
-                                              Object exception,
-                                              StackTrace? stackTrace) {
+                                          errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
                                             return Image.asset(
                                               'images/DP.png',
                                               fit: BoxFit.cover,
@@ -193,6 +189,12 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               height: 100,
                                             );
                                           },
+                                        )
+                                            : Image.asset(
+                                          'images/DP.png',
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
                                         ),
                                       ),
                                     ),
