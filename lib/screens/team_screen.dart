@@ -228,6 +228,28 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ),
                 ),
+                if(singletonClass.getJWTModel()?.grade == 'L4')...[
+                  SizedBox(width: 5),
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
                 const Spacer(),
               ],
             ),

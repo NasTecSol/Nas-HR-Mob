@@ -120,32 +120,42 @@ class _MainScreenState extends State<MainScreen> {
                 itemCount: imageIconList.length + 1,
                 tabBuilder: (int index, bool isActive) {
                   if (index == imageIconList.length) {
-                    final hasProfilePic = singletonClass.employeeDataList.isNotEmpty &&
-                        singletonClass.employeeDataList.first.data?.profilePic != null &&
-                        singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty;
-
                     return CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 25,
-                          child: ClipOval(
-                            child: hasProfilePic
-                                ? Image.network(
-                              singletonClass.employeeDataList.first.data!.profilePic!,
+                      backgroundColor: Colors.white,
+                      radius: 25,
+                      child: ClipOval(
+                        child: (singletonClass.employeeDataList.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data?.profilePic != null &&
+                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            ? Image.network(
+                          singletonClass.employeeDataList.first.data!.profilePic!,
+                          fit: BoxFit.cover,
+                          width: 60,
+                          height: 60,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: NasColors.darkBlue,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'images/DP.png',
                               fit: BoxFit.cover,
                               width: 60,
                               height: 60,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return  Center(child: CircularProgressIndicator(
-                                  color: NasColors.darkBlue,
-                                ));
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset('images/DP.png', fit: BoxFit.cover);
-                              },
-                            )
-                                : Image.asset('images/DP.png', fit: BoxFit.cover),
-                          ),
+                            );
+                          },
+                        )
+                            : Image.asset(
+                          'images/DP.png',
+                          fit: BoxFit.cover,
+                          width: 60,
+                          height: 60,
+                        ),
+                      ),
                     );
                   }
                   return Padding(
