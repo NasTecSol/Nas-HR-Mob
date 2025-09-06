@@ -21,17 +21,58 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   int _selectedOptionIndex = 0;
   SingletonClass singletonClass = SingletonClass();
+  late List<DateTime> _dates;
 
-  String _getDayOfWeek(DateTime date) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  @override
+  void initState() {
+    super.initState();
+    final today = DateTime.now();
+    _dates = List.generate(today.day, (index) {
+      return DateTime(today.year, today.month, index + 1);
+    });
   }
+  String _getDayOfWeek(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return [
+        "الإثنين", // Monday
+        "الثلاثاء", // Tuesday
+        "الأربعاء", // Wednesday
+        "الخميس", // Thursday
+        "الجمعة", // Friday
+        "السبت", // Saturday
+        "الأحد", // Sunday
+      ][date.weekday - 1];
+    } else {
+      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+    }
+  }
+
 
   DateTime _selectedDate = DateTime.now();
   int? _selectedDateIndex;
 
-  final List<DateTime> _dates = List.generate(30, (index) {
-    return DateTime.now().add(Duration(days: index));
-  });
+
+  String formatDay(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return _toArabicNumber(date.day);
+    } else {
+      return date.day.toString();
+    }
+  }
+
+
+  String _toArabicNumber(int number) {
+    const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return number
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[int.parse(digit)])
+        .join('');
+  }
 
 
   Future<void> fetchLatestEventData() async {
@@ -137,14 +178,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "${date.day}",
+                             formatDay(context, date),
                               style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: isSelected ? Colors.white : Colors.grey),
                             ),
                             Text(
-                              _getDayOfWeek(date),
+                              _getDayOfWeek(context ,date),
                               style: GoogleFonts.inter(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

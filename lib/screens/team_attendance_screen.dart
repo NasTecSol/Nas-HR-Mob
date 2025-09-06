@@ -30,14 +30,13 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   String? selectedEmployeeId;
   DateTime? _selectedDate;
   int? _selectedDateIndex;
-  final List<DateTime> _dates = [];
   Set<String> selectedBranchIds = {};
   DateTime? _startDate;
   DateTime? _endDate;
   int _selectedOptionIndex = 0;
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
-
+  late List<DateTime> _dates;
   @override
    void initState() {
     super.initState();
@@ -54,7 +53,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
     log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
-
+    final today = DateTime.now();
+    _dates = List.generate(today.day, (index) {
+      return DateTime(today.year, today.month, index + 1);
+    });
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
     loadData();
@@ -284,10 +286,43 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   }
 
 
-  String _getDayOfWeek(DateTime date) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  String _getDayOfWeek(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return [
+        "الإثنين", // Monday
+        "الثلاثاء", // Tuesday
+        "الأربعاء", // Wednesday
+        "الخميس", // Thursday
+        "الجمعة", // Friday
+        "السبت", // Saturday
+        "الأحد", // Sunday
+      ][date.weekday - 1];
+    } else {
+      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+    }
   }
 
+  String formatDay(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return _toArabicNumber(date.day);
+    } else {
+      return date.day.toString();
+    }
+  }
+
+
+  String _toArabicNumber(int number) {
+    const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return number
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[int.parse(digit)])
+        .join('');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -412,12 +447,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("${date.day}",
+                          Text(formatDay(context, date),
                               style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: selected ? Colors.white : Colors.grey)),
-                          Text(_getDayOfWeek(date),
+                          Text(_getDayOfWeek(context,date),
                               style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -669,12 +704,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         );
                       }
                       final hasMatchingData = filteredAttendanceDataList.any((attendance) {
+                        final status = attendance.status?.toLowerCase() ?? '';
+
                         if (_selectedOptionIndex == 0) return true;
-                        if (_selectedOptionIndex == 1) return attendance.status?.toLowerCase() == 'present';
-                        if (_selectedOptionIndex == 2) return attendance.status?.toLowerCase() == 'absent';
-                        if (_selectedOptionIndex == 3) return attendance.status?.toLowerCase() == 'missing checkin/out';
+                        if (_selectedOptionIndex == 1) return status == 'present';
+                        if (_selectedOptionIndex == 2) return status == 'absent';
+                        if (_selectedOptionIndex == 3) {
+                          final normalized = status.replaceAll('-', ' ');
+                          return normalized == 'missing checkin/out' ||
+                              normalized == 'missing checkin' ||
+                              normalized == 'missing checkout';
+                        }
                         if (_selectedOptionIndex == 4) return (attendance.lateMinutes ?? 0) > 0;
                         if (_selectedOptionIndex == 5) return (attendance.earlyCheckOut ?? 0) > 0;
+
                         return false;
                       });
                       return  hasMatchingData
@@ -692,7 +735,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             final status = attendance.status?.toLowerCase();
                             if ((_selectedOptionIndex == 1 && status != 'present') ||
                                 (_selectedOptionIndex == 2 && status != 'absent') ||
-                                (_selectedOptionIndex == 3 && status != 'missing checkin/out') ||
+                                (_selectedOptionIndex == 3 && !['missing checkin/out', 'missing checkin', 'missing checkout']
+                                    .contains(status.replaceAll('-', ' '))) ||
                                 (_selectedOptionIndex == 4 && (attendance.lateMinutes ?? 0) <= 0) ||
                                 (_selectedOptionIndex == 5 && (attendance.earlyCheckOut ?? 0) <= 0)) {
                               return const SizedBox.shrink();
@@ -946,8 +990,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: attendance.slots!.take(2).map<Widget>((slot) {
-                                                final start = DateTime.tryParse(slot.slotStart ?? '');
-                                                final end = DateTime.tryParse(slot.slotEnd ?? '');
+                                                final start = DateTime.tryParse(slot.slotStart ?? '')?.toLocal();
+                                                final end = DateTime.tryParse(slot.slotEnd ?? '')?.toLocal();
                                                 final startTime = start != null ? DateFormat.jm().format(start) : '--:--';
                                                 final endTime = end != null ? DateFormat.jm().format(end) : '--:--';
 
