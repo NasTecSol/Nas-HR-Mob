@@ -551,7 +551,8 @@ class _TeamScreenState extends State<TeamScreen> {
                         ),
                       ))
                 else ...[
-                  filteredUnderTeams.first.teamData!.isNotEmpty
+                  filteredUnderTeams.isNotEmpty &&
+                      filteredUnderTeams.first.teamData!.isNotEmpty
                       ? Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(5),

@@ -1757,10 +1757,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shortHours => 'ساعات ناقصة';
 
   @override
-  String get missingCheckIn => 'مفقود تسجيل دخول';
+  String get missingCheckIn => 'لم يتم تسجيل دخول';
 
   @override
-  String get missingCheckOut => 'مفقود تسجيل خروج';
+  String get missingCheckOut => 'لم يتم تسجيل خروج';
 
   @override
   String get oosIn => 'خارج النظام - دخول';

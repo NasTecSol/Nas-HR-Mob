@@ -32,7 +32,7 @@ class _TeamClockingState extends State<TeamClocking> {
   DateTime? _endDate;
   DateTime? _selectedDate;
   int? _selectedDateIndex;
-  final List<DateTime> _dates = [];
+  late List<DateTime> _dates;
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
 
@@ -46,7 +46,10 @@ class _TeamClockingState extends State<TeamClocking> {
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
     log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
-
+    final today = DateTime.now();
+    _dates = List.generate(today.day, (index) {
+      return DateTime(today.year, today.month, index + 1);
+    });
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
     loadData();
@@ -198,9 +201,43 @@ class _TeamClockingState extends State<TeamClocking> {
     });
   }
 
-  String _getDayOfWeek(DateTime date) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  String _getDayOfWeek(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return [
+        "الإثنين", // Monday
+        "الثلاثاء", // Tuesday
+        "الأربعاء", // Wednesday
+        "الخميس", // Thursday
+        "الجمعة", // Friday
+        "السبت", // Saturday
+        "الأحد", // Sunday
+      ][date.weekday - 1];
+    } else {
+      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+    }
   }
+
+  String formatDay(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return _toArabicNumber(date.day);
+    } else {
+      return date.day.toString();
+    }
+  }
+
+  String _toArabicNumber(int number) {
+    const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return number
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[int.parse(digit)])
+        .join('');
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -490,13 +527,13 @@ class _TeamClockingState extends State<TeamClocking> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("${date.day}",
+                            Text(formatDay(context, date),
                                 style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color:
                                         selected ? Colors.white : Colors.grey)),
-                            Text(_getDayOfWeek(date),
+                            Text(_getDayOfWeek(context ,date),
                                 style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
