@@ -121,54 +121,6 @@ class _ComplaintsState extends State<Complaints> {
                   ),
                 ),
                 const Spacer(),
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0.0),
-                    child: _selectedOptionIndex == 1 ? TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const FileComplaintsScreen()));
-                            },
-                            child: SizedBox(
-                              height: 30,
-                              width: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    AppLocalizations.of(context)!.fileComplain,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ) : SizedBox.shrink()
-                  ),
-                ],
-                if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                    singletonClass.getJWTModel()?.grade == 'L3') ...[
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -208,7 +160,6 @@ class _ComplaintsState extends State<Complaints> {
                     ),
                   ),
                 ]
-              ],
             ),
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1'  ||

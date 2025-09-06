@@ -37,6 +37,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   @override
   void initState() {
     super.initState();
+    getEmployeeAttendanceData();
     _employeeDetailsFuture = getEmployeeDetailsData();
   }
 
@@ -1213,15 +1214,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                             const SizedBox(
                                                                 height: 5),
                                                             Text(
-                                                              "${lateMinutes ?? 0} ${AppLocalizations.of(context)?.minutes ?? 'min'}",
-                                                              style: GoogleFonts
-                                                                  .inter(
+                                                              "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
+                                                              style: GoogleFonts.inter(
                                                                 fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: NasColors
-                                                                    .pending,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: NasColors.pending,
                                                               ),
                                                             ),
                                                           ],
@@ -1246,15 +1243,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                             const SizedBox(
                                                                 height: 5),
                                                             Text(
-                                                              "${earlyCheckOut ?? 0} ${AppLocalizations.of(context)?.minutes ?? 'min'}",
-                                                              style: GoogleFonts
-                                                                  .inter(
+                                                              "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
+                                                              style: GoogleFonts.inter(
                                                                 fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: NasColors
-                                                                    .onTime,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: NasColors.onTime,
                                                               ),
                                                             ),
                                                           ],
@@ -1692,7 +1685,12 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   //EMPLOYEE ATTENDANCE DATA API CALL
-  Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData() async {
+  Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData(
+      {
+        int limit = 10000,
+        int page = 0,
+      }
+      ) async {
     String? employeeId =
         singletonClass.employeeDetailsDataList.first.data?.first.id;
     var client = http.Client();
@@ -1710,7 +1708,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString');
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     print("Employee Attendance Data${response.body}");
