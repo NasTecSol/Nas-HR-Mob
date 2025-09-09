@@ -247,9 +247,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     log("📨 TEAM DATA BODY: ${response.body}");
 
     if (response.statusCode == 200) {
+      singletonClass.teamAttendanceDataList.clear();
       final responseBody = json.decode(response.body);
       final attendance = TeamAttendanceModel.fromJson(responseBody);
-      singletonClass.teamAttendanceDataList.clear();
       singletonClass.teamAttendanceDataList.add(attendance);
       log("✅ Attendance data successfully fetched and saved");
       return attendance;
@@ -488,9 +488,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             if (kDebugMode) {
                               print('Selected Branch ID: $value');
                             }
-                            loadData();
                             _isTeamChecked = false ;
                             _isChecked = false ;
+                            loadData();
                           });
                         },
                         itemBuilder: (BuildContext context) {
@@ -561,7 +561,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 _isChecked = false;
                                 _isTeamChecked = value ?? false;
                                 selectedBranchIds.clear();
-                                _setDefaultDates();
+                                // _setDefaultDates();
                                 _initDates(start: _startDate!, end: _endDate!);
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
@@ -591,7 +591,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               if (_isChecked == false) {
                                 singletonClass.teamAttendanceDataList.clear();
                                 _isTeamChecked = true;
-                                _setDefaultDates();
                                 selectedBranchIds.clear();
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
@@ -599,7 +598,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 loadData();
                               } else {
                                 singletonClass.teamAttendanceDataList.clear();
-                                _setDefaultDates();
                                 selectedBranchIds.clear();
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;

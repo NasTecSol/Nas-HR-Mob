@@ -2306,15 +2306,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                               width: 110,
                                                               child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .sickDaysThisMonth,
+                                                                AppLocalizations.of(context)!.sickLeave,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
+                                                                    fontWeight: FontWeight.w500,
+                                                                    fontSize: 13),
                                                               )),
                                                           SizedBox(
                                                             height: 50,

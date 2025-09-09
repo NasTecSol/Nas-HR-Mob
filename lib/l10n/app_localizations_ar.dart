@@ -728,7 +728,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get clearAll => 'مسح الكل';
 
   @override
-  String get leaveRequests => 'طلبات الإجازة';
+  String get leaveRequests => 'طلب الإجازة';
 
   @override
   String get leaveTaken => 'تم أخذ الإجازة';
