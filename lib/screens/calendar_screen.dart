@@ -90,7 +90,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 10.0),
         child: RefreshIndicator(
           color: NasColors.darkBlue,
           backgroundColor: Colors.white,
