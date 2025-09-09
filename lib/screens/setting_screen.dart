@@ -380,10 +380,10 @@ class _SettingScreenState extends State<SettingScreen> {
                           onPressed: () async {
                             Navigator.pop(context);
                             await logout();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const SplashScreen()));
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => SplashScreen()),
+                                  (Route<dynamic> route) => false,
+                            );
                           },
                           child: Text(AppLocalizations.of(context)!.yes,
                             style: GoogleFonts.inter(

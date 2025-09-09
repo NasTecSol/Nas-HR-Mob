@@ -544,7 +544,7 @@ class _RequestScreenState extends State<RequestScreen> {
                             ),
                           );
                         } else if (snapshot.hasData) {
-                          return _request!.isEmpty
+                          return _request == null || _request!.isEmpty
                               ? Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -1277,7 +1277,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             );
                           } else if (snapshot.hasData) {
-                            return _request!.isEmpty
+                            return _request == null || _request!.isEmpty
                                 ? Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
@@ -3034,7 +3034,6 @@ class _RequestScreenState extends State<RequestScreen> {
   String _translateStatus(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    // Check for null values
     if (status == null) {
       return localizations.noData;
     }
@@ -3147,11 +3146,10 @@ class _RequestScreenState extends State<RequestScreen> {
     if (approverStatus == null ||
         approverStatus.isEmpty ||
         approverStatus == 'pending') {
-      return NasColors
-          .pending; // Use pending color if status is empty or pending
+      return NasColors.pending;
     } else {
       return NasColors
-          .completed; // Use completed color if status is other than pending
+          .completed;
     }
   }
 
@@ -3176,6 +3174,8 @@ class _RequestScreenState extends State<RequestScreen> {
     switch (eventType) {
       case 'leaveRequest':
         return 'images/time.png';
+      case 'specialLeaveRequest':
+        return 'images/leaveRequest.png';
       case 'assetsRequest':
         return 'images/pc.png';
       case 'loanRequest':

@@ -1681,10 +1681,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       getEmployeeAttendanceData();
       return employeeData;
     }
-    return null; // Print the response body
+    return null;
   }
 
-  //EMPLOYEE ATTENDANCE DATA API CALL
+  ///EMPLOYEE ATTENDANCE DATA API CALL
   Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData(
       {
         int limit = 10000,
