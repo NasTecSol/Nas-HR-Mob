@@ -1047,5 +1047,8 @@
   "member":"member",
   "d":"d",
   "ago":"ago",
-  "justNow":"just now"
+  "justNow":"just now",
+  "clockingNotifications":"Clocking Notifications",
+  "clockingNotification":"Clocking Notification",
+  "requestNotification":"Request Notification"
 }

@@ -1855,4 +1855,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get justNow => 'الآن';
+
+  @override
+  String get clockingNotifications => 'Clocking Notifications';
+
+  @override
+  String get clockingNotification => 'إشعار التسجيل';
+
+  @override
+  String get requestNotification => 'إشعار الطلب';
 }
