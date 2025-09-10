@@ -17,6 +17,7 @@ import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
+import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
@@ -499,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasNotChatBot =
         uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
-
+    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -692,13 +693,43 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        IconButton(
+                        hasSocket ? IconButton(
                           onPressed: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        const SettingScreen()));
+                                        const SocketNotificationScreen()));
+                          },
+                          icon: Container(
+                            height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  spreadRadius: 5,
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0),
+                              child: Image.asset(
+                                'images/fingerprint.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ) : IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const SettingScreen()));
                           },
                           icon: Container(
                             height: 45,

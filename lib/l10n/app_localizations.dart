@@ -3769,6 +3769,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'just now'**
   String get justNow;
+
+  /// No description provided for @clockingNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notifications'**
+  String get clockingNotifications;
+
+  /// No description provided for @clockingNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notification'**
+  String get clockingNotification;
+
+  /// No description provided for @requestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Notification'**
+  String get requestNotification;
 }
 
 class _AppLocalizationsDelegate

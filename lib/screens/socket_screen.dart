@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/singleton_class.dart';
@@ -48,14 +50,17 @@ class SocketService {
     }
 
 
-    _socket!.on('broadcast-event', (data) {
+    _socket!.on('broadcast-event', (data) async {
       final socketData = SocketModel.fromJson(data);
       singletonClass.socketDataList.add(socketData);
-
-      log("📢 Broadcast-event received: $data");
-
       _handleBroadcastEvent(data, languageCode);
+      log("📢 Broadcast-event received: $data");
       singletonClass.getClockingData();
+      final prefs = await SharedPreferences.getInstance();
+      final empId = singletonClass.getJWTModel()?.employeeId ?? "unknown";
+      final List<Map<String, dynamic>> jsonList =
+      singletonClass.socketDataList.map((e) => e.toJson()).toList();
+      await prefs.setString("socket_data_$empId", jsonEncode(jsonList));
     });
 
     _socket!.connect();

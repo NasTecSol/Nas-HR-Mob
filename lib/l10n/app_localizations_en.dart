@@ -1860,4 +1860,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get justNow => 'just now';
+
+  @override
+  String get clockingNotifications => 'Clocking Notifications';
+
+  @override
+  String get clockingNotification => 'Clocking Notification';
+
+  @override
+  String get requestNotification => 'Request Notification';
 }

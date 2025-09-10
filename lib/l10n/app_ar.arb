@@ -710,5 +710,8 @@
     "member": "عضو",
     "d":"اليوم",
     "ago":"منذ",
-    "justNow": "الآن"
+    "justNow": "الآن",
+    "clockingNotification": "إشعار الحضور",
+    "clockingNotification": "إشعار التسجيل",
+    "requestNotification": "إشعار الطلب"
 }
