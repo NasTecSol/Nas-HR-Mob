@@ -596,14 +596,14 @@ class _TeamClockingState extends State<TeamClocking> {
                       itemBuilder: (BuildContext context, int index) {
                         final team = dataList[index];
                         final searchText = searchController.text.toLowerCase();
-                        if (isSearching &&
-                            !(team.employeeName
-                                    ?.toLowerCase()
-                                    .contains(searchText) ??
-                                false)) {
-                          return const SizedBox.shrink();
-                        }
+                        if (isSearching) {
+                          final matchesName = team.employeeName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
 
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink();
+                          }
+                        }
                         return GestureDetector(
                           onTap: () {
                             if (team.rawBiometrics != null &&

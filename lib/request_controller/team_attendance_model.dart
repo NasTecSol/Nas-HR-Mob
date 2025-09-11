@@ -240,7 +240,7 @@ class Penalties {
     uniqueId = json["uniqueId"];
     action = json["action"];
     percentage = json["percentage"];
-    lateMinute = json["lateMinute"];
+    lateMinute = json["lateMinutes"];
     occurrence = json["occurrence"];
   }
 
@@ -249,7 +249,7 @@ class Penalties {
     _data["uniqueId"] = uniqueId;
     _data["action"] = action;
     _data["percentage"] = percentage;
-    _data["lateMinute"] = lateMinute;
+    _data["lateMinutes"] = lateMinute;
     _data["occurrence"] = occurrence;
     return _data;
   }

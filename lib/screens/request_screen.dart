@@ -575,9 +575,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                   itemBuilder: (BuildContext context, int index) {
                                     final request = _request!.reversed.toList()[index];
                                     final searchText = searchController.text.toLowerCase();
-                                    if (isSearching &&
-                                        !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
-                                      return const SizedBox.shrink();
+                                    if (isSearching) {
+                                      final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;
+                                      final matchesId = request.empId?.toLowerCase().contains(searchText) ?? false;
+
+                                      if (!matchesName && !matchesId) {
+                                        return const SizedBox.shrink(); // hide if neither matches
+                                      }
                                     }
                                     final allApproved = request.approvers != null &&
                                         request.approvers!.isNotEmpty &&
@@ -1309,9 +1313,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                         (BuildContext context, int index) {
                                       final request = _request!.reversed.toList()[index];
                                       final searchText = searchController.text.toLowerCase();
-                                      if (isSearching &&
-                                          !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
-                                        return const SizedBox.shrink();
+                                      if (isSearching) {
+                                        final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;
+                                        final matchesId = request.empId?.toLowerCase().contains(searchText) ?? false;
+
+                                        if (!matchesName && !matchesId) {
+                                          return const SizedBox.shrink(); // hide if neither matches
+                                        }
                                       }
                                       final allApproved = request.approvers != null &&
                                           request.approvers!.isNotEmpty &&
@@ -2064,9 +2072,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                         (BuildContext context, int index) {
                                       final request = _approver!.reversed.toList()[index];
                                       final searchText = searchController.text.toLowerCase();
-                                      if (isSearching &&
-                                          !(request.employeeName?.toLowerCase().contains(searchText) ?? false)) {
-                                        return const SizedBox.shrink();
+                                      if (isSearching) {
+                                        final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;
+                                        final matchesId = request.empId?.toLowerCase().contains(searchText) ?? false;
+
+                                        if (!matchesName && !matchesId) {
+                                          return const SizedBox.shrink();
+                                        }
                                       }
                                       String formatDate(String updatedAt) {
                                         DateTime updatedAtDateTime = DateTime.parse(updatedAt);

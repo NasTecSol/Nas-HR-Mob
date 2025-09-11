@@ -460,8 +460,13 @@ class _TeamScreenState extends State<TeamScreen> {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
-                        if (isSearching && !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
-                          return const SizedBox.shrink();
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink();
+                          }
                         }
                         return Column(
                           children: [
@@ -566,14 +571,15 @@ class _TeamScreenState extends State<TeamScreen> {
                             team.employeeId) {
                           return SizedBox.shrink();
                         }
-                        final searchText =
-                        searchController.text.toLowerCase();
-                        if (isSearching &&
-                            !(team.userName
-                                ?.toLowerCase()
-                                .contains(searchText) ??
-                                false)) {
-                          return const SizedBox.shrink();
+                        final searchText = searchController.text.toLowerCase();
+
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink();
+                          }
                         }
                         return Column(
                           children: [
@@ -711,8 +717,13 @@ class _TeamScreenState extends State<TeamScreen> {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
-                        if (isSearching && !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
-                          return const SizedBox.shrink();
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink(); // hide if neither matches
+                          }
                         }
                         return Column(
                           children: [
@@ -839,14 +850,14 @@ class _TeamScreenState extends State<TeamScreen> {
                                 team.employeeId) {
                               return SizedBox.shrink();
                             }
-                            final searchText =
-                                searchController.text.toLowerCase();
-                            if (isSearching &&
-                                !(team.userName
-                                        ?.toLowerCase()
-                                        .contains(searchText) ??
-                                    false)) {
-                              return const SizedBox.shrink();
+                            final searchText = searchController.text.toLowerCase();
+                            if (isSearching) {
+                              final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                              final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                              if (!matchesName && !matchesId) {
+                                return const SizedBox.shrink(); // hide if neither matches
+                              }
                             }
                             return Column(
                               children: [

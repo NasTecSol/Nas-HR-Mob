@@ -1869,4 +1869,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestNotification => 'Request Notification';
+
+  @override
+  String get workMeeting => 'Work Meeting';
+
+  @override
+  String get celebration => 'Celebration';
+
+  @override
+  String get generalMeeting => 'General Meeting';
+
+  @override
+  String get standup => 'Standup';
+
+  @override
+  String get taskDeadlines => 'Task Deadlines';
+
+  @override
+  String get teamSync => 'Team Sync';
+
+  @override
+  String get clientCall => 'Client Call';
+
+  @override
+  String get projectPlanning => 'Project Planning';
+
+  @override
+  String get reviewSession => 'Review Session';
+
+  @override
+  String get strategyMeeting => 'Strategy Meeting';
+
+  @override
+  String get birthdayParty => 'Birthday Party';
+
+  @override
+  String get workAnniversary => 'Work Anniversary';
+
+  @override
+  String get achievementCelebration => 'Achievement Celebration';
+
+  @override
+  String get farewellParty => 'Farewell Party';
+
+  @override
+  String get allHands => 'All Hands';
+
+  @override
+  String get departmentUpdate => 'Department Update';
+
+  @override
+  String get companyUpdate => 'Company Update';
+
+  @override
+  String get managementDiscussion => 'Management Discussion';
+
+  @override
+  String get weeklyStandup => 'Weekly Standup';
+
+  @override
+  String get sprintPlanning => 'Sprint Planning';
+
+  @override
+  String get retrospective => 'Retrospective';
+
+  @override
+  String get milestoneOne => 'Milestone 1';
+
+  @override
+  String get milestoneTwo => 'Milestone 2';
+
+  @override
+  String get finalSubmission => 'Final Submission';
+
+  @override
+  String get bugFixDeadline => 'Bug Fix Deadline';
 }

@@ -724,11 +724,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         itemCount:filteredAttendanceDataList.length,
                         itemBuilder: (ctx, i) {
                           final attendance = filteredAttendanceDataList[i];
-                          final searchText = searchController.text.toLowerCase();
-                          if (isSearching &&
-                              !(attendance.name?.toLowerCase().contains(searchText) ?? false)) {
-                            return const SizedBox.shrink();
-                          }
                           if (_selectedOptionIndex != 0) {
                             final status = attendance.status?.toLowerCase();
                             if ((_selectedOptionIndex == 1 && status != 'present') ||
@@ -763,6 +758,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
                           int? earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString());
                           String breakTime = formatMinutes(attendance.breakTime);
+                          final searchText = searchController.text.toLowerCase();
+                          if (isSearching) {
+                            final matchesName = attendance.name?.toLowerCase().contains(searchText) ?? false;
+                            final matchesId = attendance.empId?.toLowerCase().contains(searchText) ?? false;
+
+                            if (!matchesName && !matchesId) {
+                              return const SizedBox.shrink();
+                            }
+                          }
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
