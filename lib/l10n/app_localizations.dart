@@ -3769,6 +3769,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'just now'**
   String get justNow;
+
+  /// No description provided for @clockingNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notifications'**
+  String get clockingNotifications;
+
+  /// No description provided for @clockingNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notification'**
+  String get clockingNotification;
+
+  /// No description provided for @requestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Notification'**
+  String get requestNotification;
+
+  /// No description provided for @workMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Meeting'**
+  String get workMeeting;
+
+  /// No description provided for @celebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Celebration'**
+  String get celebration;
+
+  /// No description provided for @generalMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'General Meeting'**
+  String get generalMeeting;
+
+  /// No description provided for @standup.
+  ///
+  /// In en, this message translates to:
+  /// **'Standup'**
+  String get standup;
+
+  /// No description provided for @taskDeadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Deadlines'**
+  String get taskDeadlines;
+
+  /// No description provided for @teamSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Sync'**
+  String get teamSync;
+
+  /// No description provided for @clientCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Call'**
+  String get clientCall;
+
+  /// No description provided for @projectPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Planning'**
+  String get projectPlanning;
+
+  /// No description provided for @reviewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Session'**
+  String get reviewSession;
+
+  /// No description provided for @strategyMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy Meeting'**
+  String get strategyMeeting;
+
+  /// No description provided for @birthdayParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday Party'**
+  String get birthdayParty;
+
+  /// No description provided for @workAnniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Anniversary'**
+  String get workAnniversary;
+
+  /// No description provided for @achievementCelebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement Celebration'**
+  String get achievementCelebration;
+
+  /// No description provided for @farewellParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Farewell Party'**
+  String get farewellParty;
+
+  /// No description provided for @allHands.
+  ///
+  /// In en, this message translates to:
+  /// **'All Hands'**
+  String get allHands;
+
+  /// No description provided for @departmentUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Department Update'**
+  String get departmentUpdate;
+
+  /// No description provided for @companyUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Company Update'**
+  String get companyUpdate;
+
+  /// No description provided for @managementDiscussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Management Discussion'**
+  String get managementDiscussion;
+
+  /// No description provided for @weeklyStandup.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Standup'**
+  String get weeklyStandup;
+
+  /// No description provided for @sprintPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Sprint Planning'**
+  String get sprintPlanning;
+
+  /// No description provided for @retrospective.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrospective'**
+  String get retrospective;
+
+  /// No description provided for @milestoneOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone 1'**
+  String get milestoneOne;
+
+  /// No description provided for @milestoneTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone 2'**
+  String get milestoneTwo;
+
+  /// No description provided for @finalSubmission.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Submission'**
+  String get finalSubmission;
+
+  /// No description provided for @bugFixDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Bug Fix Deadline'**
+  String get bugFixDeadline;
 }
 
 class _AppLocalizationsDelegate

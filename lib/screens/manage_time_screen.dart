@@ -219,18 +219,60 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                 ]
 
               ],
-              if(_selectedOptionIndex == 0)
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isSearching = true;
-                    });
-                  },
-                  icon: Icon(
-                    Icons.search,
-                    size: 30,
-                    color: Colors.black,
-                  ))
+              if(_selectedOptionIndex == 0)...[
+                if(isSearching == true)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (value) {
+                        setState(() {
+
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.search,
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(color: Colors.black),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () {
+                            setState(() {
+                              isSearching = false;
+                              searchController.clear();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isSearching = true;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.search,
+                      size: 30,
+                      color: Colors.black,
+                    ))
+              ],
             ]),
             SizedBox(height: 20),
             if (_selectedOptionIndex == 0) ...[

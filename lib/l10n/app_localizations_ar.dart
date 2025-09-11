@@ -1855,4 +1855,88 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get justNow => 'الآن';
+
+  @override
+  String get clockingNotifications => 'Clocking Notifications';
+
+  @override
+  String get clockingNotification => 'إشعار التسجيل';
+
+  @override
+  String get requestNotification => 'إشعار الطلب';
+
+  @override
+  String get workMeeting => 'اجتماع عمل';
+
+  @override
+  String get celebration => 'احتفال';
+
+  @override
+  String get generalMeeting => 'اجتماع عام';
+
+  @override
+  String get standup => 'الاجتماع اليومي';
+
+  @override
+  String get taskDeadlines => 'مواعيد المهام';
+
+  @override
+  String get teamSync => 'مزامنة الفريق';
+
+  @override
+  String get clientCall => 'مكالمة مع العميل';
+
+  @override
+  String get projectPlanning => 'تخطيط المشروع';
+
+  @override
+  String get reviewSession => 'جلسة مراجعة';
+
+  @override
+  String get strategyMeeting => 'اجتماع استراتيجي';
+
+  @override
+  String get birthdayParty => 'حفلة عيد ميلاد';
+
+  @override
+  String get workAnniversary => 'ذكرى العمل';
+
+  @override
+  String get achievementCelebration => 'احتفال بالإنجاز';
+
+  @override
+  String get farewellParty => 'حفلة وداع';
+
+  @override
+  String get allHands => 'اجتماع شامل';
+
+  @override
+  String get departmentUpdate => 'تحديث القسم';
+
+  @override
+  String get companyUpdate => 'تحديث الشركة';
+
+  @override
+  String get managementDiscussion => 'مناقشة الإدارة';
+
+  @override
+  String get weeklyStandup => 'الاجتماع الأسبوعي';
+
+  @override
+  String get sprintPlanning => 'تخطيط السبرينت';
+
+  @override
+  String get retrospective => 'اجتماع المراجعة';
+
+  @override
+  String get milestoneOne => 'المرحلة 1';
+
+  @override
+  String get milestoneTwo => 'المرحلة 2';
+
+  @override
+  String get finalSubmission => 'التسليم النهائي';
+
+  @override
+  String get bugFixDeadline => 'الموعد النهائي لإصلاح الأخطاء';
 }

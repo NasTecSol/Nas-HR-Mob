@@ -2,8 +2,8 @@ class SocketModel {
   final String messageEn;
   final String messageAr;
   final String module;
-  final dynamic data; // can be AttendanceLog OR RequestData
-  final dynamic targetAudience; // can be List or Map depending on API
+  final dynamic data;
+  final dynamic targetAudience;
   final DateTime timestamp;
 
   SocketModel({
@@ -39,8 +39,24 @@ class SocketModel {
       timestamp: DateTime.tryParse(json['timestamp'] ?? '') ?? DateTime.now(),
     );
   }
-}
 
+  Map<String, dynamic> toJson() {
+    return {
+      'message': {
+        'en': messageEn,
+        'ar': messageAr,
+      },
+      'module': module,
+      'data': data is AttendanceLog
+          ? {'log': (data as AttendanceLog).toJson()}
+          : data is RequestData
+          ? (data as RequestData).toJson()
+          : null,
+      'targetAudience': targetAudience,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+}
 
 class RequestData {
   final String employeeId;
@@ -106,6 +122,28 @@ class RequestData {
       status: json['status'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'employeeId': employeeId,
+      'employeeName': employeeName,
+      'empId': empId,
+      'companyId': companyId,
+      'branchId': branchId,
+      'policyId': policyId,
+      'requestType': requestType,
+      'subType': subType,
+      'requestData': requestData.map((e) => e.toJson()).toList(),
+      'approvers': approvers.map((e) => e.toJson()).toList(),
+      'reason': reason,
+      'attachments': attachments,
+      '_id': id,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      '__v': v,
+      'status': status,
+    };
+  }
 }
 
 class RequestField {
@@ -119,6 +157,13 @@ class RequestField {
       title: json['title'] ?? '',
       message: json['message'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'message': message,
+    };
   }
 }
 
@@ -149,7 +194,19 @@ class Approver {
       comments: json['comments'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'approverId': approverId,
+      'approverName': approverName,
+      'isRequired': isRequired,
+      'status': status,
+      'timeStamps': timeStamps.toIso8601String(),
+      'comments': comments,
+    };
+  }
 }
+
 class RawBiometric {
   final DateTime timestamp;
   final String type;
@@ -161,6 +218,13 @@ class RawBiometric {
       timestamp: DateTime.parse(json['timestamp']),
       type: json['type'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'timestamp': timestamp.toIso8601String(),
+      'type': type,
+    };
   }
 }
 
@@ -216,5 +280,24 @@ class AttendanceLog {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'empId': empId,
+      'employeeId': employeeId,
+      'employeeName': employeeName,
+      'checkInTime': checkInTime.toIso8601String(),
+      'checkOutTime': checkOutTime.toIso8601String(),
+      'type': type,
+      'totalTime': totalTime,
+      'date': date,
+      'status': status,
+      'lastProcessedRecord': lastProcessedRecord.toIso8601String(),
+      'rawBiometrics': rawBiometrics.map((e) => e.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
@@ -16,6 +17,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'Controller/language_change_controller.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SingletonClass().init();
@@ -23,7 +27,7 @@ void main() async {
 
   if (kDebugMode) {
     print("App is running in Debug mode.");
-    SingletonClass().baseURL = "https://dev.nashrms.com/api";
+    SingletonClass().baseURL = "https://www.nashrms.com/api";
     print("Debug url ${SingletonClass().baseURL}");
   }
 
@@ -128,6 +132,7 @@ class _MyAppState extends State<MyApp> {
         Locale('ar'),
       ],
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       home: const SplashScreen(),
     );
   }
@@ -142,7 +147,15 @@ class NotificationService {
     const ios = DarwinInitializationSettings();
     const settings = InitializationSettings(android: android, iOS: ios);
 
-    await _plugin.initialize(settings);
+    await _plugin.initialize(settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response){
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => const SocketNotificationScreen(),
+          ),
+        );
+      }
+    );
   }
 
   static Future<void> showNotification({

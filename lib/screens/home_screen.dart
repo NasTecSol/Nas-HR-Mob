@@ -17,6 +17,7 @@ import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
+import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
@@ -270,9 +271,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //2ND OverLay
   OverlayEntry? _overlayEntry2;
   OverlayEntry _createViewAllOverlay() {
-    final uiSettings =
-        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final titles = uiSettings.map((e) => e.title?.toString() ?? '').toList();
+    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final hasDocuments =
+    uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+    final hasTeams =
+    uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+    final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
+    final hasAssets =
+    uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasManageShifts =
+    uiSettings.any((e) => e.title == "manageShifts" || e.title == "manageShift");
+    final hasComplaints = uiSettings.any((e) => e.title == "complaints");
+    final hasPenaltiesAndFines =
+    uiSettings.any((e) => e.title == "penaltiesAndFines");
     Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
@@ -348,7 +359,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         child: child,
                       );
                     },
-                    children: quickActions.map((item) {
+                    children: quickActions.where((item) {
+                      if (item["label"] == AppLocalizations.of(context)!.documents && !hasDocuments) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.assets && !hasAssets) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.teams && !hasTeams) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.complaints && !hasComplaints) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.penalties && !hasPenaltiesAndFines) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.biometricCheckIn && !hasTeamClocking) {
+                        return false;
+                      }
+                      if (item["label"] == AppLocalizations.of(context)!.manageShifts && !hasManageShifts) {
+                        return false;
+                      }
+                      return true;
+                    }).map((item) {
                       return GestureDetector(
                         onTap: (){
                           if ( item["label"] == AppLocalizations.of(context)!.documents) {
@@ -483,23 +517,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
     final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-
-    final hasDocuments =
-        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
-    final hasTeams =
-        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+    final hasDocuments = uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+    final hasTeams = uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
     final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
-    final hasAssets =
-        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasAssets = uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasManageShifts = uiSettings.any((e) => e.title == "manageShifts" || e.title == "manageShift");
     final hasComplaints = uiSettings.any((e) => e.title == "complaints");
-    final hasPenaltiesAndFines =
-        uiSettings.any((e) => e.title == "penaltiesAndFines");
-    final hasChatBot =
-        uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
-    final hasNotChatBot =
-        uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
+    final hasPenaltiesAndFines = uiSettings.any((e) => e.title == "penaltiesAndFines");
+    final hasChatBot = uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
+    final hasNotChatBot = uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
-
+    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -692,13 +720,43 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        IconButton(
+                        hasSocket ? IconButton(
                           onPressed: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        const SettingScreen()));
+                                        const SocketNotificationScreen()));
+                          },
+                          icon: Container(
+                            height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  spreadRadius: 5,
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0),
+                              child: Image.asset(
+                                'images/fingerprint.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ) : IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const SettingScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -980,7 +1038,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         return SizedBox();
                                                       }
                                                       if (entry.secondaryStatus == "Late") {
-                                                        return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes}",
+                                                        return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes} ${AppLocalizations.of(context)!.minutes} ",
                                                           style: GoogleFonts.inter(
                                                             fontSize: 10,
                                                             fontWeight: FontWeight.bold,
@@ -989,7 +1047,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         );
                                                       } else if (entry.secondaryStatus == "Early-Out") {
                                                         return Text(
-                                                          "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}",
+                                                          "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}  ${AppLocalizations.of(context)!.minutes}",
                                                           style: GoogleFonts.inter(
                                                             fontSize: 10,
                                                             fontWeight: FontWeight.bold,
@@ -1594,7 +1652,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  if (hasTeamClocking)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -1886,6 +1943,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
+                                  if(hasManageShifts)
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -1935,6 +1993,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ],
                                   ),
                                   const SizedBox(width: 20),
+                                  if(hasTeamClocking)
                                   Column(
                                     children: [
                                       GestureDetector(

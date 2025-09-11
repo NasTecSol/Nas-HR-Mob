@@ -868,7 +868,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                 ),
                                               );
                                             }
-                                            final reversedList = attendanceList.reversed.toList();
+                                            final reversedList = attendanceList.toList();
                                             if (index >= reversedList.length) {
                                               return SizedBox();
                                             }
