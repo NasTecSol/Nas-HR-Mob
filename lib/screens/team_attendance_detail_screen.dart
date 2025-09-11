@@ -888,7 +888,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                 Padding(
                                                   padding: const EdgeInsets.only(top: 15.0),
                                                   child: Text(
-                                                    penalities.lateMinute != null
+                                                     penalities.lateMinute != null
                                                         ? singletonClass.formatMinutes(penalities.lateMinute!, context)
                                                         : "---",
                                                     style: GoogleFonts.inter(

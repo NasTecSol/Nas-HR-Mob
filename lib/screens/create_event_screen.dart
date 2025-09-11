@@ -74,7 +74,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final List<String> _eventCategories = [
     "Work Meeting",
     "Celebration",
-    "General Meetings",
+    "General Meeting",
     "Standup",
     "Task Deadlines"
   ];
@@ -577,14 +577,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             children: [
                               TextButton.icon(
                                 onPressed: () async {
-                                  DateTime? date = await showDatePicker(
+                                  // Pick the date
+                                  DateTime? pickedDate = await showDatePicker(
                                     context: context,
-                                    initialDate:
-                                        _selectedDate ?? DateTime.now(),
+                                    initialDate: _selectedDate ?? DateTime.now(),
                                     firstDate: DateTime(2000),
                                     lastDate: DateTime(2101),
-                                    builder:
-                                        (BuildContext context, Widget? child) {
+                                    builder: (BuildContext context, Widget? child) {
                                       return Theme(
                                         data: ThemeData.light().copyWith(
                                           colorScheme: ColorScheme.light(
@@ -603,10 +602,45 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                       );
                                     },
                                   );
-                                  if (date != null) {
-                                    setState(() {
-                                      _selectedDate = date;
-                                    });
+
+                                  if (pickedDate != null) {
+                                    /// Pick the time
+                                    TimeOfDay? pickedTime = await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay.fromDateTime(_selectedDate ?? DateTime.now()),
+                                      builder: (BuildContext context, Widget? child) {
+                                        return Theme(
+                                          data: ThemeData.light().copyWith(
+                                            colorScheme: ColorScheme.light(
+                                              surface: NasColors.lightBlue,
+                                              primary: Colors.white,
+                                              onPrimary: Colors.black,
+                                              onSurface: Colors.white,
+                                            ),
+                                            textButtonTheme: TextButtonThemeData(
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          child: child!,
+                                        );
+                                      },
+                                    );
+
+                                    if (pickedTime != null) {
+                                      final combinedDateTime = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+
+                                      setState(() {
+                                        _selectedDate = combinedDateTime;
+                                      });
+                                    }
                                   }
                                 },
                                 icon: Icon(
@@ -617,8 +651,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 label: Text(
                                   _selectedDate == null
                                       ? AppLocalizations.of(context)!.selectDate
-                                      : DateFormat('yyyy-MM-dd')
-                                          .format(_selectedDate!),
+                                      : DateFormat('yyyy-MM-dd hh:mm a').format(_selectedDate!),
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.w500,
                                     fontSize: 15,
@@ -648,20 +681,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               elevation: 8,
                               items: _eventCategories.map((category) {
                                 return DropdownMenuItem<String>(
-                                  value: category,
+                                  value: category, // keep the raw key
                                   child: Text(
-                                    category,
-                                    style: const TextStyle(color: Colors.black),
+                                    localizeCategory(category, context),
+                                    style: GoogleFonts.inter(color: Colors.black),
                                   ),
                                 );
                               }).toList(),
                               onChanged: (value) {
-                                if (value != null &&
-                                    _eventData.containsKey(value)) {
+                                if (value != null && _eventData.containsKey(value)) {
                                   setState(() {
                                     _selectedCategory = value;
-                                    _filteredEventTypes =
-                                        _eventData[value] ?? [];
+                                    _filteredEventTypes = _eventData[value] ?? [];
                                     _eventType.clear();
                                   });
                                 }
@@ -673,10 +704,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               value: _selectedCategory,
                               isExpanded: true,
                               iconEnabledColor: Colors.black,
-                              icon:
-                                  const Icon(Icons.keyboard_arrow_down_rounded),
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded),
                               borderRadius: BorderRadius.circular(15),
                               dropdownColor: Colors.white,
+                              selectedItemBuilder: (context) {
+                                return _eventCategories.map((category) {
+                                  return Text(
+                                    localizeCategory(category, context),
+                                    style: GoogleFonts.inter(color: Colors.black),
+                                  );
+                                }).toList();
+                              },
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -706,16 +744,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             },
                             onSelected: (String selection) {
                               _eventType.text = selection;
-                              // Close keyboard on selection
                               FocusScope.of(context).unfocus();
                             },
                             fieldViewBuilder: (context, controller, focusNode,
                                 onEditingComplete) {
                               controller.addListener(() {
-                                // Trigger auto-scroll upward when typing
                                 if (controller.text.isNotEmpty &&
                                     focusNode.hasFocus) {
-                                  // Delay to wait for keyboard and overlay to appear
                                   Future.delayed(
                                       const Duration(milliseconds: 100), () {
                                     Scrollable.ensureVisible(
@@ -732,8 +767,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 controller: controller,
                                 focusNode: focusNode,
                                 onEditingComplete: () {
-                                  FocusScope.of(context)
-                                      .unfocus(); // Close keyboard on Done
+                                  FocusScope.of(context).unfocus();
                                   onEditingComplete();
                                 },
                                 cursorColor: Colors.grey,
@@ -790,7 +824,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                           tileColor: Colors.white,
                                           hoverColor: Colors.grey[200],
                                           title: Text(
-                                            option,
+                                            localizeEvent(context , option),
                                             style: GoogleFonts.inter(
                                                 color: Colors.black),
                                           ),
@@ -827,6 +861,79 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ),
       ),
     );
+  }
+
+  ///Method for localization
+  String localizeCategory(String? category, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (category) {
+      case "Work Meeting":
+        return localizations.workMeeting;
+      case "Celebration":
+        return localizations.celebration;
+      case "General Meeting":
+        return localizations.generalMeeting;
+      case "Standup":
+        return localizations.standup;
+      case "Task Deadlines":
+        return localizations.taskDeadlines;
+      default:
+        return category!;
+    }
+  }
+
+  String localizeEvent(BuildContext context, String event) {
+    switch (event) {
+      case "Team Sync":
+        return AppLocalizations.of(context)!.teamSync;
+      case "Client Call":
+        return AppLocalizations.of(context)!.clientCall;
+      case "Project Planning":
+        return AppLocalizations.of(context)!.projectPlanning;
+      case "Review Session":
+        return AppLocalizations.of(context)!.reviewSession;
+      case "Strategy Meeting":
+        return AppLocalizations.of(context)!.strategyMeeting;
+
+      case "Birthday Party":
+        return AppLocalizations.of(context)!.birthdayParty;
+      case "Work Anniversary":
+        return AppLocalizations.of(context)!.workAnniversary;
+      case "Achievement Celebration":
+        return AppLocalizations.of(context)!.achievementCelebration;
+      case "Farewell Party":
+        return AppLocalizations.of(context)!.farewellParty;
+
+      case "All Hands":
+        return AppLocalizations.of(context)!.allHands;
+      case "Department Update":
+        return AppLocalizations.of(context)!.departmentUpdate;
+      case "Company Update":
+        return AppLocalizations.of(context)!.companyUpdate;
+      case "Management Discussion":
+        return AppLocalizations.of(context)!.managementDiscussion;
+
+      case "Daily Standup":
+        return AppLocalizations.of(context)!.dailyStandup;
+      case "Weekly Standup":
+        return AppLocalizations.of(context)!.weeklyStandup;
+      case "Sprint Planning":
+        return AppLocalizations.of(context)!.sprintPlanning;
+      case "Retrospective":
+        return AppLocalizations.of(context)!.retrospective;
+
+      case "Milestone 1":
+        return AppLocalizations.of(context)!.milestoneOne;
+      case "Milestone 2":
+        return AppLocalizations.of(context)!.milestoneTwo;
+      case "Final Submission":
+        return AppLocalizations.of(context)!.finalSubmission;
+      case "Bug Fix Deadline":
+        return AppLocalizations.of(context)!.bugFixDeadline;
+
+      default:
+        return event;
+    }
   }
 
   //API CALLS
@@ -866,8 +973,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     // API Endpoint
     String url = '${singletonClass.baseURL}/events/create';
-
-    // Prepare API request body
     Map<String, dynamic> data = {
       "eventName": _eventName.text,
       "eventDescription": _eventDiscription.text,
@@ -875,7 +980,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       "createdBy": empID,
       "members": employees,
       "month": DateFormat('MM-yyyy').format(_selectedDate!),
-      "date": DateFormat('yyyy-MM-dd').format(_selectedDate!),
+      "date":DateFormat('yyyy-MM-dd hh:mm a').format(_selectedDate!),
       "category": _selectedCategory,
       "isNotification": true,
       "departmentId": departmentID,
