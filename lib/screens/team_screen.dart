@@ -114,22 +114,22 @@ class _TeamScreenState extends State<TeamScreen> {
       };
     } else {
       for (BranchData branchData in branchDataList) {
-        for (var departmentDetails
-        in branchData.data?.branch?.departmentDetails ?? []) {
+        for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
           for (var department in departmentDetails.departments ?? []) {
             final supervisors = department.supervisors ?? [];
             final teams = department.teams ?? [];
-            if (["L0", "L1", "L2", "L3"].contains(userGrade)) {
+
+            if (["L0", "L1"].contains(userGrade)) {
+              // Supervisor logic for L0 & L1
               bool isUserSupervisorInDepartment =
               supervisors.any((s) => s.empId == reportingManagerId);
+
               if (isUserSupervisorInDepartment) {
-                if (kDebugMode) {
-                  print('✅ User is a supervisor in this department');
-                }
+                if (kDebugMode) print('✅ User is a supervisor in this department');
+
                 ownTeams.add(
                   Teams(
-                    teamId:
-                    'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
                     teamData: supervisors.map<TeamData>((supervisor) {
                       return TeamData(
                         empId: supervisor.empId,
@@ -141,16 +141,65 @@ class _TeamScreenState extends State<TeamScreen> {
                     }).toList(),
                   ),
                 );
-                for (var supervisor in department.supervisors ?? []) {
+
+                for (var supervisor in supervisors) {
                   if (supervisor.empId == reportingManagerId) {
                     for (var team in teams) {
                       if (supervisor.teamId == team.teamId) {
                         if (kDebugMode) {
-                          print('Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                          print(
+                              'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
                         }
                         underTeams.add(team);
                       }
                     }
+                  }
+                }
+              }
+            } else if (["L2", "L3"].contains(userGrade)) {
+              // 🔹 Handle L2 & L3
+              bool isUserSupervisorInDepartment =
+              supervisors.any((s) => s.empId == reportingManagerId);
+
+              if (isUserSupervisorInDepartment) {
+                // Same as L0/L1 supervisor logic
+                if (kDebugMode) print('✅ User (L2/L3) is a supervisor in this department');
+
+                ownTeams.add(
+                  Teams(
+                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                    teamData: supervisors.map<TeamData>((supervisor) {
+                      return TeamData(
+                        empId: supervisor.empId,
+                        employeeId: supervisor.employeeId,
+                        userName: supervisor.userName,
+                        designation: supervisor.designation,
+                        grade: supervisor.grade,
+                      );
+                    }).toList(),
+                  ),
+                );
+
+                for (var supervisor in supervisors) {
+                  if (supervisor.empId == reportingManagerId) {
+                    for (var team in teams) {
+                      if (supervisor.teamId == team.teamId) {
+                        underTeams.add(team);
+                      }
+                    }
+                  }
+                }
+              } else {
+                for (var team in teams) {
+                  bool isUserInTeam = team.teamData
+                      ?.any((member) => member.empId == reportingManagerId) ??
+                      false;
+
+                  if (isUserInTeam) {
+                    if (kDebugMode) {
+                      print('👤 User (L2/L3) is in team ${team.teamId}, adding to ownTeams');
+                    }
+                    ownTeams.add(team);
                   }
                 }
               }
@@ -161,8 +210,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     false;
                 if (isUserInTeam) {
                   if (kDebugMode) {
-                    print(
-                        '👤 User is team member of ${team.teamId}, adding to ownTeams');
+                    print('👤 User is team member of ${team.teamId}, adding to ownTeams');
                   }
                   ownTeams.add(team);
                 }
@@ -171,6 +219,7 @@ class _TeamScreenState extends State<TeamScreen> {
           }
         }
       }
+
       return {
         'ownTeams': ownTeams,
         'underTeams': underTeams,

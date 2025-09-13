@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
@@ -56,21 +57,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedCompanyId;
   String? selectedBranchId;
   bool isLoadingBranches = false;
-  String? _totalWorkedHours;
-
+  Duration _accumulatedWorkedDuration = Duration.zero;
+  DateTime? _currentCheckIn;
+  Timer? _timer;
+  String _displayWorkedHours = '00:00:00';
 
   @override
   void initState() {
     super.initState();
+    calculateTodayWorkedTime();
+    singletonClass.getEmployeeAttendanceData();
+    singletonClass.getClockingData();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
-    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    final uiSettings =
+        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final hasSocket =
+        uiSettings.any((e) => e.title == "socket" && e.hidden == false);
     if (hasSocket) {
       final locale = WidgetsBinding.instance.window.locale.languageCode;
       SocketService().initializeSocket('${singletonClass.tenantId}', locale);
     }
-    totalTimeMethod();
     _draggableScrollableController.addListener(() {
       if (mounted) {
         setState(() {
@@ -82,11 +89,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
   }
 
-  String totalTimeMethod() {
+  void startWorkTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateWorkedTime();
+    });
+  }
+
+  void stopWorkTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _updateWorkedTime() {
+    Duration total = _accumulatedWorkedDuration;
+    if (_currentCheckIn != null) {
+      total += DateTime.now().difference(_currentCheckIn!);
+    }
+
+    _displayWorkedHours = '${total.inHours.toString().padLeft(2, '0')}:'
+        '${(total.inMinutes % 60).toString().padLeft(2, '0')}:'
+        '${(total.inSeconds % 60).toString().padLeft(2, '0')}';
+
+    if (mounted) setState(() {});
+  }
+
+  void calculateTodayWorkedTime() {
     try {
       final today = DateTime.now();
       final dataList = singletonClass.clockingDataList.first.data;
-      if (dataList == null || dataList.isEmpty) return '--:--';
+      if (dataList == null || dataList.isEmpty) return;
+
       final todayEntries = dataList.where((entry) {
         final createdAt = DateTime.tryParse(entry.createdAt ?? '');
         return createdAt != null &&
@@ -95,25 +128,50 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             createdAt.day == today.day;
       }).toList();
 
-      if (todayEntries.isEmpty) return '--:--';
-      final lastEntry = todayEntries.last;
-      if ((lastEntry.checkInTime?.isNotEmpty ?? false) &&
-          (lastEntry.checkOutTime?.isNotEmpty ?? false)) {
-        final checkIn = DateTime.tryParse(lastEntry.checkInTime!);
-        final checkOut = DateTime.tryParse(lastEntry.checkOutTime!);
+      _accumulatedWorkedDuration = Duration.zero;
+      _currentCheckIn = null;
 
-        if (checkIn != null && checkOut != null) {
-          final duration = checkOut.difference(checkIn);
-          final workedHours =
-              '${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}';
-          _totalWorkedHours = workedHours;
-          return workedHours;
+      for (var entry in todayEntries) {
+        // 🔹 Step 1: Get raw biometrics sorted by timestamp
+        final rawList = entry.rawBiometrics ?? [];
+        rawList.sort((a, b) {
+          final t1 = DateTime.tryParse(a.timestamp ?? '') ?? DateTime(1970);
+          final t2 = DateTime.tryParse(b.timestamp ?? '') ?? DateTime(1970);
+          return t1.compareTo(t2);
+        });
+
+        // 🔹 Step 2: Walk through biometric logs
+        for (var bio in rawList) {
+          final timestamp = DateTime.tryParse(bio.timestamp ?? '');
+          final type = (bio.type ?? '').toLowerCase();
+
+          if (timestamp == null) continue;
+
+          if (type == "check-in") {
+            // start new session if not already running
+            _currentCheckIn ??= timestamp;
+          } else if (type == "check-out") {
+            // close session if already checked in
+            if (_currentCheckIn != null &&
+                timestamp.isAfter(_currentCheckIn!)) {
+              _accumulatedWorkedDuration +=
+                  timestamp.difference(_currentCheckIn!);
+              _currentCheckIn = null; // reset
+            }
+          }
         }
       }
 
-      return '--:--';
-    } catch (_) {
-      return '--:--';
+      // 🔹 Step 3: Decide whether to start or stop timer
+      if (_currentCheckIn != null) {
+        startWorkTimer();
+      } else {
+        _updateWorkedTime();
+        stopWorkTimer();
+      }
+    } catch (e) {
+      print("Error in calculateTodayWorkedTime: $e");
+      _displayWorkedHours = '00:00:00';
     }
   }
 
@@ -121,10 +179,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _draggableScrollableController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
-
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -175,7 +232,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true)...[
+                  if (singletonClass.remoteAttendanceModelList.first.data!.first
+                          .isRemoteAttendance ==
+                      true) ...[
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -208,21 +267,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () async {
                       if (!(await _authService.checkBiometricAvailability())) {
                         _removeOverlay();
                         ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(
-                              content: Text(AppLocalizations.of(context)!.pleaseSetupBiometric,
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white
-                                ),
-                              )),
+                          SnackBar(
+                              content: Text(
+                            AppLocalizations.of(context)!.pleaseSetupBiometric,
+                            style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                          )),
                         );
                         return;
                       }
@@ -270,32 +328,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   //2ND OverLay
   OverlayEntry? _overlayEntry2;
+
   OverlayEntry _createViewAllOverlay() {
-    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final uiSettings =
+        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
     final hasDocuments =
-    uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
     final hasTeams =
-    uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
     final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
     final hasAssets =
-    uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
-    final hasManageShifts =
-    uiSettings.any((e) => e.title == "manageShifts" || e.title == "manageShift");
+        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasManageShifts = uiSettings
+        .any((e) => e.title == "manageShifts" || e.title == "manageShift");
     final hasComplaints = uiSettings.any((e) => e.title == "complaints");
     final hasPenaltiesAndFines =
-    uiSettings.any((e) => e.title == "penaltiesAndFines");
+        uiSettings.any((e) => e.title == "penaltiesAndFines");
     Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
       List<Map<String, String>> defaultQuickActions = [
-        {"icon": "images/files.png", "label": AppLocalizations.of(context)!.documents},
-        {"icon": "images/assets.png", "label": AppLocalizations.of(context)!.assets},
-        {"icon": "images/Team.png", "label": AppLocalizations.of(context)!.teams},
-        {"icon": "images/Complain.png", "label": AppLocalizations.of(context)!.complaints},
-        {"icon": "images/Penalties.png", "label": AppLocalizations.of(context)!.penalties},
-        {"icon": "images/attendance.png", "label": AppLocalizations.of(context)!.attendance},
-        {"icon": "images/fingerprint.png", "label": AppLocalizations.of(context)!.biometricCheckIn},
-        {"icon": "images/clock.png", "label": AppLocalizations.of(context)!.manageShifts},
+        {
+          "icon": "images/files.png",
+          "label": AppLocalizations.of(context)!.documents
+        },
+        {
+          "icon": "images/assets.png",
+          "label": AppLocalizations.of(context)!.assets
+        },
+        {
+          "icon": "images/Team.png",
+          "label": AppLocalizations.of(context)!.teams
+        },
+        {
+          "icon": "images/Complain.png",
+          "label": AppLocalizations.of(context)!.complaints
+        },
+        {
+          "icon": "images/Penalties.png",
+          "label": AppLocalizations.of(context)!.penalties
+        },
+        {
+          "icon": "images/attendance.png",
+          "label": AppLocalizations.of(context)!.attendance
+        },
+        {
+          "icon": "images/fingerprint.png",
+          "label": AppLocalizations.of(context)!.biometricCheckIn
+        },
+        {
+          "icon": "images/clock.png",
+          "label": AppLocalizations.of(context)!.manageShifts
+        },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
       if (savedOrder != null && savedOrder.isNotEmpty) {
@@ -308,184 +392,230 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return defaultQuickActions;
     }
 
-
     return OverlayEntry(
-      builder: (context) => FutureBuilder<List<Map<String, String>>>(
-          future: loadQuickActions(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            List<Map<String, String>> quickActions = snapshot.data!;
-            return Positioned.fill(
-          child: GestureDetector(
-          onTap: _removeOverlay,
-          child: Material(
-            color: NasColors.darkBlue.withValues(alpha: 0.8),
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF444658),
-                    Color(0xFF83869B),
-                    Color(0xFFBCC0E7),
-                    Color(0xFF727694),
-                    Color(0xFF444658),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                  child: ReorderableWrap(
-                    spacing: 40,
-                    runSpacing: 40,
-                    alignment: WrapAlignment.center,
-                    runAlignment: WrapAlignment.center,
-                    needsLongPressDraggable: true,
-                    onReorder: (oldIndex, newIndex) async {
-                      final item = quickActions.removeAt(oldIndex);
-                      quickActions.insert(newIndex, item);
-                      final prefs = await SharedPreferences.getInstance();
-                      final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
-                      List<String> labelsOrder = quickActions.map((e) => e["label"]!).toList();
-                      prefs.setStringList("quickActions_$userId", labelsOrder);
-                    },
-                    buildDraggableFeedback: (context, constraints, child) {
-                      return Material(
-                        color: Colors.transparent,
-                        child: child,
-                      );
-                    },
-                    children: quickActions.where((item) {
-                      if (item["label"] == AppLocalizations.of(context)!.documents && !hasDocuments) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.assets && !hasAssets) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.teams && !hasTeams) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.complaints && !hasComplaints) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.penalties && !hasPenaltiesAndFines) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.biometricCheckIn && !hasTeamClocking) {
-                        return false;
-                      }
-                      if (item["label"] == AppLocalizations.of(context)!.manageShifts && !hasManageShifts) {
-                        return false;
-                      }
-                      return true;
-                    }).map((item) {
-                      return GestureDetector(
-                        onTap: (){
-                          if ( item["label"] == AppLocalizations.of(context)!.documents) {
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => DocumentScreen()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.assets){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => AssetsScreen()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.teams){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => TeamScreen()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.complaints){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Complaints()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.penalties){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => PenaltyAndFineScreen()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.attendance){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => TeamAttendanceScreen()),
-                            );
-                          }
-                          else if (item["label"] == AppLocalizations.of(context)!.biometricCheckIn){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => TeamClocking()),
-                            );
-                          } else if (item["label"] == AppLocalizations.of(context)!.manageShifts){
-                            _removeOverlay();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ManageTimeScreen()),
-                            );
-                          }
-                        },
-                        child: Column(
-                          key: ValueKey(item["label"]),
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              height: 75,
-                              width: 75,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Image.asset(
-                                  item["icon"]!,
-                                  width: 35,
-                                  height: 35,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              item["label"]!,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
+        builder: (context) => FutureBuilder<List<Map<String, String>>>(
+            future: loadQuickActions(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              List<Map<String, String>> quickActions = snapshot.data!;
+              return Positioned.fill(
+                child: GestureDetector(
+                  onTap: _removeOverlay,
+                  child: Material(
+                    color: NasColors.darkBlue.withValues(alpha: 0.8),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF444658),
+                            Color(0xFF83869B),
+                            Color(0xFFBCC0E7),
+                            Color(0xFF727694),
+                            Color(0xFF444658),
                           ],
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 40),
+                          child: ReorderableWrap(
+                            spacing: 40,
+                            runSpacing: 40,
+                            alignment: WrapAlignment.center,
+                            runAlignment: WrapAlignment.center,
+                            needsLongPressDraggable: true,
+                            onReorder: (oldIndex, newIndex) async {
+                              final item = quickActions.removeAt(oldIndex);
+                              quickActions.insert(newIndex, item);
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final userId =
+                                  singletonClass.getJWTModel()?.employeeId ??
+                                      "default";
+                              List<String> labelsOrder =
+                                  quickActions.map((e) => e["label"]!).toList();
+                              prefs.setStringList(
+                                  "quickActions_$userId", labelsOrder);
+                            },
+                            buildDraggableFeedback:
+                                (context, constraints, child) {
+                              return Material(
+                                color: Colors.transparent,
+                                child: child,
+                              );
+                            },
+                            children: quickActions.where((item) {
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!.documents &&
+                                  !hasDocuments) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!.assets &&
+                                  !hasAssets) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!.teams &&
+                                  !hasTeams) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .complaints &&
+                                  !hasComplaints) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!.penalties &&
+                                  !hasPenaltiesAndFines) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .biometricCheckIn &&
+                                  !hasTeamClocking) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .manageShifts &&
+                                  !hasManageShifts) {
+                                return false;
+                              }
+                              return true;
+                            }).map((item) {
+                              return GestureDetector(
+                                onTap: () {
+                                  if (item["label"] ==
+                                      AppLocalizations.of(context)!.documents) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              DocumentScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!.assets) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AssetsScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!.teams) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TeamScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .complaints) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Complaints()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!.penalties) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PenaltyAndFineScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .attendance) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              TeamAttendanceScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .biometricCheckIn) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TeamClocking()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .manageShifts) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ManageTimeScreen()),
+                                    );
+                                  }
+                                },
+                                child: Column(
+                                  key: ValueKey(item["label"]),
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      height: 75,
+                                      width: 75,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.15),
+                                            spreadRadius: 1,
+                                            blurRadius: 3,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Image.asset(
+                                          item["icon"]!,
+                                          width: 35,
+                                          height: 35,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      item["label"]!,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ),
-      );})
-    );
+              );
+            }));
   }
-
 
   void _removeOverlay() {
     _overlayEntry?.remove();
@@ -516,18 +646,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
-    final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasDocuments = uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
-    final hasTeams = uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
+    final uiSettings =
+        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
+    final hasDocuments =
+        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
+    final hasTeams =
+        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
     final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
-    final hasAssets = uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
-    final hasManageShifts = uiSettings.any((e) => e.title == "manageShifts" || e.title == "manageShift");
+    final hasAssets =
+        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
+    final hasManageShifts = uiSettings
+        .any((e) => e.title == "manageShifts" || e.title == "manageShift");
     final hasComplaints = uiSettings.any((e) => e.title == "complaints");
-    final hasPenaltiesAndFines = uiSettings.any((e) => e.title == "penaltiesAndFines");
-    final hasChatBot = uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
-    final hasNotChatBot = uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
+    final hasPenaltiesAndFines =
+        uiSettings.any((e) => e.title == "penaltiesAndFines");
+    final hasChatBot =
+        uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
+    final hasNotChatBot =
+        uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
     final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
-    final hasSocket = uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    final hasSocket =
+        uiSettings.any((e) => e.title == "socket" && e.hidden == false);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -558,7 +697,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
                   ),
-                  child: Container(color: Colors.black.withValues(alpha: (opacityAmount * 0.1 * 2))),
+                  child: Container(
+                      color: Colors.black
+                          .withValues(alpha: (opacityAmount * 0.1 * 2))),
                 ),
               ],
             ),
@@ -570,7 +711,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 12, top: 50, left: 10),
+                    padding:
+                        const EdgeInsets.only(right: 12, top: 50, left: 10),
                     child: AnimatedOpacity(
                       opacity: showHeaderContent ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
@@ -663,7 +805,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                         NotificationsScreen()));
+                                        NotificationsScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -720,64 +862,68 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        hasSocket ? IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SocketNotificationScreen()));
-                          },
-                          icon: Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
+                        hasSocket
+                            ? IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SocketNotificationScreen()));
+                                },
+                                icon: Container(
+                                  height: 45,
+                                  width: 45,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.6),
+                                        spreadRadius: 5,
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(9.0),
+                                    child: Image.asset(
+                                      'images/fingerprint.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(9.0),
-                              child: Image.asset(
-                                'images/fingerprint.png',
-                                fit: BoxFit.contain,
+                              )
+                            : IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SettingScreen()));
+                                },
+                                icon: Container(
+                                  height: 45,
+                                  width: 45,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.6),
+                                        spreadRadius: 5,
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.settings,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ) : IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                    const SettingScreen()));
-                          },
-                          icon: Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.settings,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -859,15 +1005,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )
                             ],
                           ),
-                          if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1")
+                          if (singletonClass.getJWTModel()?.grade == "L0" ||
+                              singletonClass.getJWTModel()?.grade == "L1")
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               child: Row(
                                 children: [
                                   /// Company Dropdown
                                   Expanded(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12),
                                       decoration: BoxDecoration(
                                         border: Border.all(color: Colors.grey),
                                         borderRadius: BorderRadius.circular(10),
@@ -879,44 +1028,79 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           value: selectedCompanyId,
                                           hint: Row(
                                             children: [
-                                              Image.asset('images/site.png', width: 15, height: 15),
+                                              Image.asset('images/site.png',
+                                                  width: 15, height: 15),
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
-                                                  (singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)
-                                                      ? singletonClass.companyName!
-                                                      : (singletonClass.companyDataList.first.data?.name ?? "---"),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.inter(fontSize: 15),
+                                                  (singletonClass.companyName !=
+                                                              null &&
+                                                          singletonClass
+                                                              .companyName!
+                                                              .isNotEmpty)
+                                                      ? singletonClass
+                                                          .companyName!
+                                                      : (singletonClass
+                                                              .companyDataList
+                                                              .first
+                                                              .data
+                                                              ?.name ??
+                                                          "---"),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 15),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          items: singletonClass.companiesDataList.isNotEmpty
-                                              ? singletonClass.companiesDataList.first.data?.companies
-                                              ?.map<DropdownMenuItem<String>>((company) {
-                                            return DropdownMenuItem<String>(
-                                              value: company.companyId.toString(),
-                                              child: Text(company.companyName ?? "---"),
-                                            );
-                                          }).toList()
+                                          items: singletonClass
+                                                  .companiesDataList.isNotEmpty
+                                              ? singletonClass.companiesDataList
+                                                  .first.data?.companies
+                                                  ?.map<
+                                                      DropdownMenuItem<
+                                                          String>>((company) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: company.companyId
+                                                        .toString(),
+                                                    child: Text(
+                                                        company.companyName ??
+                                                            "---"),
+                                                  );
+                                                }).toList()
                                               : [],
                                           onChanged: (value) async {
                                             setState(() {
                                               selectedCompanyId = value;
-                                              singletonClass.selectedCompanyId = selectedCompanyId;
-                                              final selectedCompany = singletonClass.companiesDataList.first.data!.companies!
-                                                  .firstWhere((company) => company.companyId.toString() == selectedCompanyId);
-                                              singletonClass.companyName = selectedCompany.companyName ?? '';
-                                              singletonClass.companyDataList.clear();
+                                              singletonClass.selectedCompanyId =
+                                                  selectedCompanyId;
+                                              final selectedCompany =
+                                                  singletonClass
+                                                      .companiesDataList
+                                                      .first
+                                                      .data!
+                                                      .companies!
+                                                      .firstWhere((company) =>
+                                                          company.companyId
+                                                              .toString() ==
+                                                          selectedCompanyId);
+                                              singletonClass.companyName =
+                                                  selectedCompany.companyName ??
+                                                      '';
+                                              singletonClass.companyDataList
+                                                  .clear();
                                               selectedBranchId = null;
                                               isLoadingBranches = true;
                                               singletonClass.branchID = null;
                                               singletonClass.branchName = null;
-                                              singletonClass.branchesDataList.clear();
+                                              singletonClass.branchesDataList
+                                                  .clear();
                                               singletonClass.getCompanyData();
                                             });
-                                            await singletonClass.getBranchesData();
+                                            await singletonClass
+                                                .getBranchesData();
                                             setState(() {
                                               isLoadingBranches = false;
                                             });
@@ -927,10 +1111,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
 
                                   const SizedBox(width: 12),
+
                                   /// Branch Dropdown
                                   Expanded(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12),
                                       decoration: BoxDecoration(
                                         border: Border.all(color: Colors.grey),
                                         borderRadius: BorderRadius.circular(10),
@@ -942,33 +1128,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           value: selectedBranchId,
                                           hint: Text(
                                             isLoadingBranches
-                                                ? AppLocalizations.of(context)!.loading
-                                                : (singletonClass.branchName == null || singletonClass.branchName!.isEmpty)
-                                                ? AppLocalizations.of(context)!.selectBranch
-                                                : singletonClass.branchName!,
+                                                ? AppLocalizations.of(context)!
+                                                    .loading
+                                                : (singletonClass.branchName ==
+                                                            null ||
+                                                        singletonClass
+                                                            .branchName!
+                                                            .isEmpty)
+                                                    ? AppLocalizations.of(
+                                                            context)!
+                                                        .selectBranch
+                                                    : singletonClass
+                                                        .branchName!,
                                           ),
                                           items: !isLoadingBranches &&
-                                              singletonClass.branchesDataList.isNotEmpty
-                                              ? singletonClass.branchesDataList.first.data
-                                              ?.map<DropdownMenuItem<String>>((branch) {
-                                            return DropdownMenuItem<String>(
-                                              value: branch.id.toString(),
-                                              child: Text(branch.branchName ?? "---"),
-                                            );
-                                          }).toList()
+                                                  singletonClass
+                                                      .branchesDataList
+                                                      .isNotEmpty
+                                              ? singletonClass
+                                                  .branchesDataList.first.data
+                                                  ?.map<
+                                                      DropdownMenuItem<
+                                                          String>>((branch) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: branch.id.toString(),
+                                                    child: Text(
+                                                        branch.branchName ??
+                                                            "---"),
+                                                  );
+                                                }).toList()
                                               : [],
                                           onChanged: isLoadingBranches
                                               ? null
                                               : (value) {
-                                            setState(() {
-                                              selectedBranchId = value;
-                                              singletonClass.branchID = selectedBranchId;
-                                              print(singletonClass.branchID);
-                                              final selectedBranch = singletonClass.branchesDataList.first.data!
-                                                  .firstWhere((branch) => branch.id.toString() == selectedBranchId);
-                                              singletonClass.branchName = selectedBranch.branchName ?? '';
-                                            });
-                                          },
+                                                  setState(() {
+                                                    selectedBranchId = value;
+                                                    singletonClass.branchID =
+                                                        selectedBranchId;
+                                                    print(singletonClass
+                                                        .branchID);
+                                                    final selectedBranch =
+                                                        singletonClass
+                                                            .branchesDataList
+                                                            .first
+                                                            .data!
+                                                            .firstWhere((branch) =>
+                                                                branch.id
+                                                                    .toString() ==
+                                                                selectedBranchId);
+                                                    singletonClass.branchName =
+                                                        selectedBranch
+                                                                .branchName ??
+                                                            '';
+                                                  });
+                                                },
                                         ),
                                       ),
                                     ),
@@ -999,12 +1213,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     child: Column(
                                       children: [
-                                        if (singletonClass.clockingDataList.isNotEmpty &&
-                                            singletonClass.clockingDataList.first.data != null &&
-                                            singletonClass.clockingDataList.first.data!.isNotEmpty &&
-                                            singletonClass.clockingDataList.first.data!.first.checkInTime != null &&
-                                            singletonClass.clockingDataList.first.data!.first.checkInTime!.isNotEmpty)
-                                            Container(
+                                        if (singletonClass
+                                                .clockingDataList.isNotEmpty &&
+                                            singletonClass
+                                                    .clockingDataList.first.data !=
+                                                null &&
+                                            singletonClass.clockingDataList
+                                                .first.data!.isNotEmpty &&
+                                            singletonClass
+                                                    .clockingDataList
+                                                    .first
+                                                    .data!
+                                                    .first
+                                                    .checkInTime !=
+                                                null &&
+                                            singletonClass
+                                                .clockingDataList
+                                                .first
+                                                .data!
+                                                .first
+                                                .checkInTime!
+                                                .isNotEmpty)
+                                          Container(
                                               height: 30,
                                               decoration: BoxDecoration(
                                                 borderRadius:
@@ -1012,104 +1242,178 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   topLeft: Radius.circular(15),
                                                   topRight: Radius.circular(15),
                                                 ),
-                                                color: _getContainerColor(),
+                                                color: getTodayStatusColor(),
                                               ),
                                               child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  if (singletonClass.attendanceDataList.isNotEmpty &&
-                                                      singletonClass.attendanceDataList.first.data!.data != null &&
-                                                      singletonClass.attendanceDataList.first.data!.data!.isNotEmpty)
+                                                  if (singletonClass
+                                                          .attendanceDataList
+                                                          .isNotEmpty &&
+                                                      singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data !=
+                                                          null &&
+                                                      singletonClass
+                                                          .attendanceDataList
+                                                          .first
+                                                          .data!
+                                                          .data!
+                                                          .isNotEmpty)
                                                     Builder(builder: (context) {
-                                                      final today = DateTime.now();
+                                                      final today =
+                                                          DateTime.now();
                                                       final dataList =
-                                                          singletonClass.attendanceDataList.first.data!.data!;
+                                                          singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data!;
                                                       Data1? entry;
-                                                      final filteredList = dataList.where((e) {
-                                                        final createdAt = DateTime.tryParse(e.createdAt ?? '');
-                                                        return createdAt != null && createdAt.year == today.year && createdAt.month ==
-                                                                today.month && createdAt.day == today.day;
+                                                      final filteredList =
+                                                          dataList.where((e) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                e.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
                                                       }).toList();
-                                                      if (filteredList.isNotEmpty) {
-                                                        entry = filteredList.first;
+                                                      if (filteredList
+                                                          .isNotEmpty) {
+                                                        entry =
+                                                            filteredList.first;
                                                       }
                                                       if (entry == null) {
                                                         return SizedBox();
                                                       }
-                                                      if (entry.secondaryStatus == "Late") {
-                                                        return Text("${AppLocalizations.of(context)!.late} ${entry.lateMinutes} ${AppLocalizations.of(context)!.minutes} ",
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: NasColors.lateComingText,
-                                                          ),
-                                                        );
-                                                      } else if (entry.secondaryStatus == "Early-Out") {
+                                                      if (entry
+                                                              .secondaryStatus ==
+                                                          "Late") {
                                                         return Text(
-                                                          "${AppLocalizations.of(context)!.earlyLeft} ${entry.earlyCheckOut}  ${AppLocalizations.of(context)!.minutes}",
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: NasColors.onTime,
+                                                          "${AppLocalizations.of(context)!.late} ${entry.lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.lateMinutes! % 60}${AppLocalizations.of(context)!.m}",
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
                                                           ),
                                                         );
-                                                      } else if (entry.secondaryStatus == "OnTime-In") {
-                                                        return Text( AppLocalizations.of(context)!.onTime,
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: NasColors.onTime,
+                                                      } else if (entry
+                                                              .secondaryStatus ==
+                                                          "Early-Out") {
+                                                        return Text(
+                                                          "${AppLocalizations.of(context)!.earlyCheckOut} ${entry.earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.earlyCheckOut! % 60}${AppLocalizations.of(context)!.m}",
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
                                                           ),
                                                         );
                                                       } else {
-                                                        return SizedBox();
+                                                        return Text(
+                                                          _translateSecondaryStatus(
+                                                              entry
+                                                                  .secondaryStatus,
+                                                              context),
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        );
                                                       }
                                                     })
                                                   else
                                                     Text(
                                                       "--:--",
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                        FontWeight.normal,
-                                                        color: Colors.white
-                                                      ),
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                          color: Colors.white),
                                                     ),
                                                 ],
                                               )),
+
+                                        /// 🔹 Check-In Row
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 8.0, left: 15, right: 8, bottom: 8),
+                                          padding: const EdgeInsets.only(
+                                              top: 8.0,
+                                              left: 15,
+                                              right: 8,
+                                              bottom: 8),
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
                                               SizedBox(
                                                 height: 25,
                                                 width: 25,
-                                                child: Image.asset("images/checkIn.png"),
+                                                child: Image.asset(
+                                                    "images/checkIn.png"),
                                               ),
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                      () {
+                                                  () {
                                                     try {
-                                                      final today = DateTime.now();
-                                                      final dataList = singletonClass.clockingDataList.first.data;
-                                                      if (dataList == null || dataList.isEmpty) return '--:--';
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .clockingDataList
+                                                              .first
+                                                              .data;
+                                                      if (dataList == null ||
+                                                          dataList.isEmpty)
+                                                        return '--:--';
 
-                                                      final todayEntries = dataList.where((entry) {
-                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                                        return createdAt != null &&
-                                                            createdAt.year == today.year &&
-                                                            createdAt.month == today.month &&
-                                                            createdAt.day == today.day;
+                                                      final todayEntries =
+                                                          dataList
+                                                              .where((entry) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                entry.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty) return '--:--';
+                                                      if (todayEntries.isEmpty)
+                                                        return '--:--';
 
-                                                      final lastEntry = todayEntries.last;
-                                                      return (lastEntry.checkInTime?.isNotEmpty ?? false)
-                                                          ? singletonClass.formatCheckInTime(lastEntry.checkInTime! , context)
+                                                      final lastEntry =
+                                                          todayEntries.last;
+                                                      return (lastEntry
+                                                                  .checkInTime
+                                                                  ?.isNotEmpty ??
+                                                              false)
+                                                          ? singletonClass
+                                                              .formatCheckInTime(
+                                                                  lastEntry
+                                                                      .checkInTime!,
+                                                                  context)
                                                           : '--:--';
                                                     } catch (_) {
                                                       return '--:--';
@@ -1117,45 +1421,110 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
+
+                                        /// 🔹 Check-Out Row
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 5.0, left: 15, right: 8),
+                                          padding: const EdgeInsets.only(
+                                              top: 5.0, left: 15, right: 8),
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
                                             children: [
                                               SizedBox(
                                                 height: 25,
                                                 width: 25,
-                                                child: Image.asset("images/checkOut.png"),
+                                                child: Image.asset(
+                                                    "images/checkOut.png"),
                                               ),
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                      () {
+                                                  () {
                                                     try {
-                                                      final today = DateTime.now();
-                                                      final dataList = singletonClass.clockingDataList.first.data;
-                                                      if (dataList == null || dataList.isEmpty) return '--:--';
+                                                      final today =
+                                                          DateTime.now();
+                                                      final dataList =
+                                                          singletonClass
+                                                              .clockingDataList
+                                                              .first
+                                                              .data;
+                                                      if (dataList == null ||
+                                                          dataList.isEmpty)
+                                                        return '--:--';
 
-                                                      final todayEntries = dataList.where((entry) {
-                                                        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                                        return createdAt != null &&
-                                                            createdAt.year == today.year &&
-                                                            createdAt.month == today.month &&
-                                                            createdAt.day == today.day;
+                                                      final todayEntries =
+                                                          dataList
+                                                              .where((entry) {
+                                                        final createdAt =
+                                                            DateTime.tryParse(
+                                                                entry.createdAt ??
+                                                                    '');
+                                                        return createdAt !=
+                                                                null &&
+                                                            createdAt.year ==
+                                                                today.year &&
+                                                            createdAt.month ==
+                                                                today.month &&
+                                                            createdAt.day ==
+                                                                today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty) return '--:--';
+                                                      if (todayEntries.isEmpty)
+                                                        return '--:--';
 
-                                                      final lastEntry = todayEntries.last;
-                                                      return (lastEntry.checkOutTime?.isNotEmpty ?? false)
-                                                          ? singletonClass.formatCheckInTime(lastEntry.checkOutTime! , context)
+                                                      final lastEntry =
+                                                          todayEntries.last;
+                                                      final rawList = lastEntry
+                                                              .rawBiometrics ??
+                                                          [];
+
+                                                      if (rawList.isEmpty) {
+                                                        return (lastEntry
+                                                                    .checkOutTime
+                                                                    ?.isNotEmpty ??
+                                                                false)
+                                                            ? singletonClass
+                                                                .formatCheckInTime(
+                                                                    lastEntry
+                                                                        .checkOutTime!,
+                                                                    context)
+                                                            : '--:--';
+                                                      }
+
+                                                      // sort by timestamp
+                                                      rawList.sort((a, b) {
+                                                        final t1 =
+                                                            DateTime.tryParse(
+                                                                    a.timestamp ??
+                                                                        '') ??
+                                                                DateTime(1970);
+                                                        final t2 =
+                                                            DateTime.tryParse(
+                                                                    b.timestamp ??
+                                                                        '') ??
+                                                                DateTime(1970);
+                                                        return t1.compareTo(t2);
+                                                      });
+
+                                                      // get latest record
+                                                      final latest =
+                                                          rawList.last;
+                                                      return (latest.type ?? '')
+                                                                  .toLowerCase() ==
+                                                              "check-out"
+                                                          ? singletonClass
+                                                              .formatCheckInTime(
+                                                                  latest
+                                                                      .timestamp!,
+                                                                  context)
                                                           : '--:--';
                                                     } catch (_) {
                                                       return '--:--';
@@ -1163,14 +1532,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   }(),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontWeight:
+                                                        FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
-
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               top: 8.0,
@@ -1190,8 +1559,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                               const SizedBox(width: 40),
                                               Text(
-                                                singletonClass.attendanceDataList.isNotEmpty &&
-                                                        singletonClass.attendanceDataList.first.data!.data!.isNotEmpty
+                                                singletonClass
+                                                            .attendanceDataList
+                                                            .isNotEmpty &&
+                                                        singletonClass
+                                                            .attendanceDataList
+                                                            .first
+                                                            .data!
+                                                            .data!
+                                                            .isNotEmpty
                                                     ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
                                                     : '--:--',
                                                 style: GoogleFonts.inter(
@@ -1213,7 +1589,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       onTap: () {
                                         Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => ChatScreen()));
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ChatScreen()));
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -1344,12 +1722,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               child: Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  _totalWorkedHours != null
-                                                      ? '${AppLocalizations.of(context)!.worked} ${_totalWorkedHours.toString()}'
-                                                      : '${AppLocalizations.of(context)!.worked} --:--',
+                                                  _displayWorkedHours,
                                                   style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                               ),
@@ -1357,7 +1733,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             SizedBox(
                                               height: 50,
                                               width: 50,
-                                              child: Lottie.asset('images/totalWork.json'),
+                                              child: Lottie.asset(
+                                                  'images/totalWork.json'),
                                             ),
                                           ],
                                         ),
@@ -1377,11 +1754,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    final today = DateTime.now();
-                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
+                                    final dataList = singletonClass
+                                            .clockingDataList.first.data ??
+                                        [];
 
-                                    final todayEntries = dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                    final today = DateTime.now();
+                                    final todayEntries =
+                                        dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
                                       return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
@@ -1389,26 +1770,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     }).toList();
 
                                     final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.length >= 2
                                         ? todayEntries.last
-                                        : todayEntries.first
                                         : null;
 
-                                    final checkInTime = todayData?.checkInTime;
-                                    final checkOutTime = todayData?.checkOutTime;
+                                    String? checkInTime =
+                                        todayData?.checkInTime;
+                                    String? checkOutTime =
+                                        todayData?.checkOutTime;
 
-                                    if ((checkInTime == null || checkInTime.isEmpty) ||
-                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                    // ✅ Use rawBiometrics if available
+                                    String? lastBioType;
+                                    if (todayData?.rawBiometrics != null &&
+                                        todayData!.rawBiometrics!.isNotEmpty) {
+                                      todayData.rawBiometrics!.sort((a, b) =>
+                                          DateTime.parse(a.timestamp!)
+                                              .compareTo(DateTime.parse(
+                                                  b.timestamp!)));
+                                      lastBioType = todayData
+                                          .rawBiometrics!
+                                          .last
+                                          .type; // "Check-In" or "Check-Out"
+                                    }
+
+                                    bool showCheckIn = false;
+                                    bool showCheckOut = false;
+
+                                    if ((checkInTime == null ||
+                                            checkInTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-Out")) {
+                                      showCheckIn = true;
+                                    } else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-In")) {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-In") {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-Out") {
+                                      showCheckIn = true;
+                                    }
+
+                                    if (showCheckIn) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition >
-                                          MediaQuery.of(context).size.width * 0.7) {
+                                          MediaQuery.of(context).size.width *
+                                              0.7) {
                                         _isSliderCompleted = true;
                                       }
-                                    } else if (checkInTime.isNotEmpty &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    } else if (showCheckOut) {
                                       _dragPosition += details.primaryDelta!;
                                       if (_dragPosition <
-                                          -MediaQuery.of(context).size.width * 0.7) {
+                                          -MediaQuery.of(context).size.width *
+                                              0.7) {
                                         _isSliderCompleted = true;
                                       }
                                     }
@@ -1416,11 +1832,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 },
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
+                                    final dataList = singletonClass
+                                            .clockingDataList.first.data ??
+                                        [];
                                     final today = DateTime.now();
-                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
 
-                                    final todayEntries = dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                    final todayEntries =
+                                        dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
                                       return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
@@ -1428,29 +1848,65 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     }).toList();
 
                                     final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.length >= 2
                                         ? todayEntries.last
-                                        : todayEntries.first
                                         : null;
 
-                                    final checkInTime = todayData?.checkInTime;
-                                    final checkOutTime = todayData?.checkOutTime;
+                                    String? checkInTime =
+                                        todayData?.checkInTime;
+                                    String? checkOutTime =
+                                        todayData?.checkOutTime;
 
-                                    if ((checkInTime == null || checkInTime.isEmpty) ||
-                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                    // ✅ Use rawBiometrics if available
+                                    String? lastBioType;
+                                    if (todayData?.rawBiometrics != null &&
+                                        todayData!.rawBiometrics!.isNotEmpty) {
+                                      todayData.rawBiometrics!.sort((a, b) =>
+                                          DateTime.parse(a.timestamp!)
+                                              .compareTo(DateTime.parse(
+                                                  b.timestamp!)));
+                                      lastBioType =
+                                          todayData.rawBiometrics!.last.type;
+                                    }
+
+                                    bool showCheckIn = false;
+                                    bool showCheckOut = false;
+
+                                    if ((checkInTime == null ||
+                                            checkInTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-Out")) {
+                                      showCheckIn = true;
+                                    } else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-In")) {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-In") {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-Out") {
+                                      showCheckIn = true;
+                                    }
+
+                                    if (showCheckIn) {
                                       if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx > 0) {
+                                          details.velocity.pixelsPerSecond.dx >
+                                              0) {
                                         _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context).insert(_overlayEntry!);
+                                        Overlay.of(context)
+                                            .insert(_overlayEntry!);
                                       }
-                                    } else if (checkInTime.isNotEmpty &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    } else if (showCheckOut) {
                                       if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx < 0) {
+                                          details.velocity.pixelsPerSecond.dx <
+                                              0) {
                                         _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context).insert(_overlayEntry!);
+                                        Overlay.of(context)
+                                            .insert(_overlayEntry!);
                                       }
                                     }
+
                                     _dragPosition = 0;
                                     _isSliderCompleted = false;
                                   });
@@ -1458,7 +1914,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Container(
                                   alignment: Alignment.topLeft,
                                   decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(15)),
                                     gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF444658),
@@ -1473,11 +1930,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                   height: 60,
                                   child: (() {
+                                    final dataList = singletonClass
+                                            .clockingDataList.first.data ??
+                                        [];
                                     final today = DateTime.now();
-                                    final dataList = singletonClass.clockingDataList.first.data ?? [];
 
-                                    final todayEntries = dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                    final todayEntries =
+                                        dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(
+                                          entry.createdAt ?? '');
                                       return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
@@ -1485,35 +1946,80 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     }).toList();
 
                                     final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.length >= 2
                                         ? todayEntries.last
-                                        : todayEntries.first
                                         : null;
 
-                                    final checkInTime = todayData?.checkInTime;
-                                    final checkOutTime = todayData?.checkOutTime;
+                                    String? checkInTime =
+                                        todayData?.checkInTime;
+                                    String? checkOutTime =
+                                        todayData?.checkOutTime;
 
-                                    if ((checkInTime != null && checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    String? lastBioType;
+                                    if (todayData?.rawBiometrics != null &&
+                                        todayData!.rawBiometrics!.isNotEmpty) {
+                                      todayData.rawBiometrics!.sort((a, b) =>
+                                          DateTime.parse(a.timestamp!)
+                                              .compareTo(DateTime.parse(
+                                                  b.timestamp!)));
+                                      lastBioType =
+                                          todayData.rawBiometrics!.last.type;
+                                    }
+
+                                    bool showCheckIn = false;
+                                    bool showCheckOut = false;
+
+                                    if ((checkInTime == null ||
+                                            checkInTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-Out")) {
+                                      showCheckIn = true;
+                                    } else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty) &&
+                                        (lastBioType == null ||
+                                            lastBioType == "Check-In")) {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-In") {
+                                      showCheckOut = true;
+                                    } else if (lastBioType == "Check-Out") {
+                                      showCheckIn = true;
+                                    }
+
+                                    if (showCheckOut) {
+                                      // ✅ Already checked in → show checkout button
                                       return Padding(
-                                        padding: const EdgeInsets.only(top: 5.0, left: 30),
+                                        padding: const EdgeInsets.only(
+                                            top: 5.0, left: 30),
                                         child: Row(
                                           children: [
                                             IconButton(
                                               onPressed: () async {
                                                 showDialog(
                                                   context: context,
-                                                  builder: (BuildContext context) => AlertDialog(
-                                                    backgroundColor: Colors.white,
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          AlertDialog(
+                                                    backgroundColor:
+                                                        Colors.white,
                                                     title: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
                                                       children: [
-                                                        const Icon(Icons.warning, color: Colors.yellow),
+                                                        const Icon(
+                                                            Icons.warning,
+                                                            color:
+                                                                Colors.yellow),
                                                         Text(
-                                                          AppLocalizations.of(context)!.areYouSure,
-                                                          style: GoogleFonts.inter(
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .areYouSure,
+                                                          style:
+                                                              GoogleFonts.inter(
                                                             fontSize: 15,
-                                                            fontWeight: FontWeight.w600,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                             color: Colors.black,
                                                           ),
                                                         ),
@@ -1521,41 +2027,74 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                     actions: [
                                                       Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
                                                         children: [
                                                           InkWell(
-                                                            onTap: () => Navigator.of(context).pop(),
+                                                            onTap: () =>
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(),
                                                             child: Row(
                                                               children: [
-                                                                const Icon(Icons.cancel, color: Colors.red),
-                                                                const SizedBox(width: 5),
+                                                                const Icon(
+                                                                    Icons
+                                                                        .cancel,
+                                                                    color: Colors
+                                                                        .red),
+                                                                const SizedBox(
+                                                                    width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(context)!.cancel,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.red,
+                                                                  AppLocalizations.of(
+                                                                          context)!
+                                                                      .cancel,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .red,
                                                                   ),
                                                                 ),
                                                               ],
                                                             ),
                                                           ),
-                                                          const SizedBox(width: 8),
+                                                          const SizedBox(
+                                                              width: 8),
                                                           InkWell(
                                                             onTap: () async {
-                                                              Navigator.pop(context);
+                                                              Navigator.pop(
+                                                                  context);
                                                               await checkOut();
                                                             },
                                                             child: Row(
                                                               children: [
-                                                                const Icon(Icons.logout, color: Colors.black),
-                                                                const SizedBox(width: 5),
+                                                                const Icon(
+                                                                    Icons
+                                                                        .logout,
+                                                                    color: Colors
+                                                                        .black),
+                                                                const SizedBox(
+                                                                    width: 5),
                                                                 Text(
-                                                                  AppLocalizations.of(context)!.yes,
-                                                                  style: GoogleFonts.inter(
-                                                                    fontSize: 15,
-                                                                    fontWeight: FontWeight.w600,
-                                                                    color: Colors.black,
+                                                                  AppLocalizations.of(
+                                                                          context)!
+                                                                      .yes,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .black,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1570,14 +2109,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               icon: SizedBox(
                                                 width: 35,
                                                 height: 35,
-                                                child: Image.asset('images/exit.png'),
+                                                child: Image.asset(
+                                                    'images/exit.png'),
                                               ),
                                             ),
                                             const SizedBox(width: 20),
                                             Align(
                                               alignment: Alignment.center,
                                               child: Text(
-                                                AppLocalizations.of(context)!.pressButtonToCheckOut,
+                                                AppLocalizations.of(context)!
+                                                    .pressButtonToCheckOut,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -1589,6 +2130,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       );
                                     } else {
+                                      // ✅ Show Swipe to Check-In
                                       return Transform.translate(
                                         offset: Offset(_dragPosition, -1),
                                         child: Padding(
@@ -1599,16 +2141,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 width: 60,
                                                 height: 50,
                                                 decoration: const BoxDecoration(
-                                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(15)),
                                                   color: Colors.white,
                                                 ),
-                                                child: Lottie.asset('images/swiper.json'),
+                                                child: Lottie.asset(
+                                                    'images/swiper.json'),
                                               ),
                                               const SizedBox(width: 50),
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  AppLocalizations.of(context)!.swipeToCheckIn,
+                                                  AppLocalizations.of(context)!
+                                                      .swipeToCheckIn,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w600,
@@ -1652,54 +2198,54 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                    Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const TeamAttendanceScreen()));
-                                          },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                'images/attendance.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const TeamAttendanceScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
                                               ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/attendance.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(height: 5),
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .attendance,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .attendance,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(width: 20),
                                   if (hasDocuments)
                                     Column(
@@ -1720,7 +2266,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -1755,7 +2302,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AssetsScreen()));
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const AssetsScreen()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -1863,7 +2414,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               color: Colors.white,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
                                                   spreadRadius: 1,
                                                   blurRadius: 0.5,
                                                   offset: const Offset(0, 0),
@@ -1943,104 +2495,105 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if(hasManageShifts)
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const ManageTimeScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                  if (hasManageShifts)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const ManageTimeScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/clock.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/clock.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .manageShifts,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 20),
-                                  if(hasTeamClocking)
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const TeamClocking()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/fingerprint.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                          AppLocalizations.of(context)!.biometrics,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .manageShifts,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.black,
                                           ),
                                         ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
+                                  const SizedBox(width: 20),
+                                  if (hasTeamClocking)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const TeamClocking()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/fingerprint.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .biometrics,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -2092,18 +2645,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 decoration: BoxDecoration(
                                                   border: Border(
                                                     left: BorderSide(
-                                                      color: NasColors.lightBlue,
+                                                      color:
+                                                          NasColors.lightBlue,
                                                       width: 4.0,
                                                     ),
                                                     right: BorderSide(
-                                                      color: NasColors.lightBlue,
+                                                      color:
+                                                          NasColors.lightBlue,
                                                       width: 2.0,
                                                     ),
                                                   ),
-                                                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(12)),
                                                 ),
                                                 child: Padding(
-                                                  padding: const EdgeInsets.all(5.0),
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
                                                   child: Column(
                                                     children: [
                                                       Row(
@@ -2111,26 +2669,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                               width: 110,
                                                               child: Text(
-                                                                AppLocalizations.of(context)!.annualLeave,
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .annualLeave,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight: FontWeight.w500,
-                                                                    fontSize: 13),
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
                                                               )),
                                                           SizedBox(
                                                             height: 50,
                                                             width: 50,
-                                                            child: Image.asset("images/thisMonthIcon.png"),
+                                                            child: Image.asset(
+                                                                "images/thisMonthIcon.png"),
                                                           )
                                                         ],
                                                       ),
                                                       Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
                                                         children: [
                                                           Text(
                                                             "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(0)}",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight: FontWeight.bold,
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
                                                             ),
                                                           ),
                                                         ],
@@ -2145,11 +2714,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 decoration: BoxDecoration(
                                                   border: Border(
                                                     left: BorderSide(
-                                                      color: NasColors.lightBlue,
+                                                      color:
+                                                          NasColors.lightBlue,
                                                       width: 2.0,
                                                     ),
                                                     right: BorderSide(
-                                                      color: NasColors.lightBlue,
+                                                      color:
+                                                          NasColors.lightBlue,
                                                       width: 2.0,
                                                     ),
                                                   ),
@@ -2263,7 +2834,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement}",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
-                                                                fontWeight: FontWeight.bold),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
                                                           )
                                                         ],
                                                       )
@@ -2279,8 +2852,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     left: BorderSide(
                                                       color:
                                                           NasColors.lightBlue,
-                                                      width:
-                                                          2.0,
+                                                      width: 2.0,
                                                     ),
                                                     right: BorderSide(
                                                       color:
@@ -2301,10 +2873,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         children: [
                                                           SizedBox(
                                                               width: 110,
-                                                              child: Text( AppLocalizations.of(context)!.shortLeaves,
+                                                              child: Text(
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .shortLeaves,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight: FontWeight.w500,
-                                                                    fontSize: 12),
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        12),
                                                               )),
                                                           SizedBox(
                                                             height: 50,
@@ -2320,7 +2898,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                                formatMinutesToHoursAndMinutes(context,singletonClass.employeeDataList.first.data!.leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes!.toInt()),
+                                                            formatMinutesToHoursAndMinutes(
+                                                                context,
+                                                                singletonClass
+                                                                    .employeeDataList
+                                                                    .first
+                                                                    .data!
+                                                                    .leaveBalance!
+                                                                    .shortLeavesMonthlyBal!
+                                                                    .shortLeavesMinutes!
+                                                                    .toInt()),
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 15,
                                                                 fontWeight:
@@ -2365,10 +2952,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           SizedBox(
                                                               width: 110,
                                                               child: Text(
-                                                                AppLocalizations.of(context)!.sickLeave,
+                                                                AppLocalizations.of(
+                                                                        context)!
+                                                                    .sickLeave,
                                                                 style: GoogleFonts.inter(
-                                                                    fontWeight: FontWeight.w500,
-                                                                    fontSize: 13),
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13),
                                                               )),
                                                           SizedBox(
                                                             height: 50,
@@ -2426,16 +3018,95 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  Color _getContainerColor() {
+  String _translateSecondaryStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+    final statuses = status.toLowerCase();
+    switch (statuses) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'late':
+        return localizations.late;
+      case 'leave':
+        return localizations.leave;
+      case 'holiday':
+        return localizations.holiday;
+      case 'dayOFF':
+        return localizations.dayOff;
+      case 'training':
+        return localizations.training;
+      case 'absent with approval':
+        return localizations.absentWithApproval;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      case 'Late':
+        return localizations.late;
+      case 'Pending':
+        return localizations.pending;
+      case 'No-CheckIn':
+        return localizations.noCheckIn;
+      case 'Late-Penality':
+        return localizations.latePenality;
+      case 'Short-Hours':
+        return localizations.shortHours;
+      case 'Missing-CheckIn':
+        return localizations.missingCheckIn;
+      case 'Missing-CheckOut':
+        return localizations.missingCheckOut;
+      case 'Check-In':
+        return localizations.checkIn;
+      case 'Check-Out':
+        return localizations.checkOut;
+      case 'OOS-In':
+        return localizations.oosIn;
+      case 'OOS-Out':
+        return localizations.oosOut;
+      case 'Early-In':
+        return localizations.earlyIn;
+      case 'Early-Left':
+        return localizations.earlyLeft;
+      case 'OnTime-In':
+        return localizations.onTimeIn;
+      case 'OnTime-Out':
+        return localizations.onTimeOut;
+      case 'Late-In':
+        return localizations.lateIn;
+      case 'Late-Out':
+        return localizations.lateOut;
+      case 'SM-In':
+        return localizations.smIn;
+      case 'SM-Out':
+        return localizations.smOut;
+      case 'Break-In':
+        return localizations.breakIn;
+      case 'Break-Out':
+        return localizations.breakOut;
+      case 'slot':
+        return localizations.slot;
+      case 'Out-Off-Shift':
+        return localizations.outOffShift;
+      case 'Full-Day':
+        return localizations.fullDay;
+      default:
+        return status;
+    }
+  }
+
+  Color getTodayStatusColor() {
     try {
       final today = DateTime.now();
-      final dataList = singletonClass.attendanceDataList.first.data!.data;
-      if (dataList == null || dataList.isEmpty) {
-        return NasColors.darkBlue;
-      }
+      final dataList = singletonClass.attendanceDataList.first.data?.data ?? [];
+
+      if (dataList.isEmpty) return NasColors.darkBlue;
+
       final entry = dataList.firstWhere(
-        (entry) {
-          final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+        (e) {
+          final createdAt = DateTime.tryParse(e.createdAt ?? '');
           return createdAt != null &&
               createdAt.year == today.year &&
               createdAt.month == today.month &&
@@ -2443,17 +3114,69 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         },
       );
 
-      if (entry.secondaryStatus == 'Late') {
-        return NasColors.pending.withOpacity(0.25);
-      } else if (entry.secondaryStatus == 'Early-Out') {
-        return NasColors.onTime;
-      } else if (entry.secondaryStatus == 'OnTime-In') {
-        return NasColors.onTime.withOpacity(0.25);
+      if (entry.secondaryStatus == null) {
+        return NasColors.darkBlue;
+      }
+
+      final status = entry.secondaryStatus!.toLowerCase();
+
+      switch (status) {
+        case 'present':
+        case 'ontime-in':
+        case 'ontime-out':
+          return NasColors.green;
+
+        case 'absent':
+          return NasColors.reds;
+
+        case 'absent with approval':
+        case 'pending':
+          return NasColors.yellow;
+
+        case 'early checkout':
+        case 'early-out':
+        case 'early-in':
+          return NasColors.purple;
+
+        case 'late':
+        case 'late-in':
+        case 'late-out':
+          return NasColors.amber;
+
+        case 'check-in':
+          return NasColors.violet;
+
+        case 'check-out':
+          return NasColors.fuchsia;
+
+        case 'oos-in':
+        case 'oos-out':
+          return NasColors.amber;
+
+        case 'sm-in':
+        case 'sm-out':
+          return NasColors.indigo;
+
+        case 'break-in':
+        case 'break-out':
+          return NasColors.zinc;
+
+        case 'slot':
+          return NasColors.warmGray;
+
+        case 'no-checkin':
+          return NasColors.darkGray;
+
+        case 'on-leave':
+        case 'casual leave':
+          return NasColors.blue;
+
+        default:
+          return NasColors.orange;
       }
     } catch (_) {
       return NasColors.darkBlue;
     }
-    return NasColors.darkBlue;
   }
 
   String formatMinutes(dynamic minutes) {
@@ -2468,8 +3191,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-   /// Minutes hours method
-  String formatMinutesToHoursAndMinutes(BuildContext context, int totalMinutes) {
+  /// Minutes hours method
+  String formatMinutesToHoursAndMinutes(
+      BuildContext context, int totalMinutes) {
     final int hours = totalMinutes ~/ 60;
     final int minutes = totalMinutes % 60;
 
@@ -2478,11 +3202,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     return "$hours $hoursLabel $minutes $minutesLabel";
   }
+
   Future<void> checkIn(String type) async {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String currentTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
@@ -2496,7 +3222,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       "deviceIp": deviceIp,
       "deviceName": "Remote",
       "captureTime": currentTime,
-      "timeZone" : timeZoneName
+      "timeZone": timeZoneName
     };
     String body = json.encode(data);
     print("body of check in $body");
@@ -2522,7 +3248,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           singletonClass.getClockingData();
         });
         await singletonClass.getClockingData();
-        // Show success alert
+        await singletonClass.getEmployeeAttendanceData();
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -2532,7 +3258,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        setState(() {});
+        setState(() {
+          calculateTodayWorkedTime();
+          singletonClass.getEmployeeAttendanceData();
+        });
       } else if (response.statusCode == 400) {
         // Show error alert for status code 400
         QuickAlert.show(
@@ -2575,12 +3304,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-   ///CHECK OUT API CALL
+
+  ///CHECK OUT API CALL
   Future<void> checkOut() async {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String currentTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
@@ -2594,7 +3325,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       "deviceIp": deviceIp,
       "deviceName": "Remote",
       "captureTime": currentTime,
-      "timeZone" : timeZoneName
+      "timeZone": timeZoneName
     };
     print(data);
 
@@ -2623,8 +3354,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           singletonClass.getClockingData();
         });
         await singletonClass.getClockingData();
-        await singletonClass.getClockingData();
-        // Show success alert
+        await singletonClass.getEmployeeAttendanceData();
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -2634,7 +3364,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-        setState(() {});
+        setState(() {
+          calculateTodayWorkedTime();
+          singletonClass.getEmployeeAttendanceData();
+        });
       } else if (response.statusCode == 400) {
         // Show error alert for status code 400
         QuickAlert.show(
@@ -2677,7 +3410,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-   ///get time zone
+
+  ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
       for (var addr in interface.addresses) {
@@ -2690,10 +3424,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return 'Unknown';
   }
-   ///Update CALL
+
+  ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
-    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+    String url =
+        '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
     String finalLocation = _openLocation ?? "0.0,0.0";
     Map<String, dynamic> data = {"lastLocation": finalLocation};
     String jsonData = jsonEncode(data);
@@ -2716,7 +3452,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     }
   }
-   /// Current Location
+
+  /// Current Location
   Future<String> getCurrentLatLong() async {
     bool serviceEnabled;
     LocationPermission permission;

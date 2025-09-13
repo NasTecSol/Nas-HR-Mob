@@ -263,7 +263,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           Row(
                             children: [
                               Text(
-                                "${meetingList.length} Meetings",
+                                "${meetingList.length} ${AppLocalizations.of(context)!.meetings}",
                                 style: GoogleFonts.inter(
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold,
@@ -290,7 +290,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             itemCount: meetingList.length,
                             itemBuilder: (BuildContext context, int index) {
                               final meeting = meetingList[index];
-                              String membersList = "No Members Available";
+                              String membersList = "---";
 
                               if (meeting.members != null && meeting.members is List<Members>) {
                                 List<String?> names = meeting.members!.map((e) => e.name).toList();
@@ -305,7 +305,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      meeting.eventName ?? "No Meeting Name",
+                                      meeting.eventName ?? "---",
                                       style: GoogleFonts.inter(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
@@ -325,7 +325,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                       ),
                                       Text(
-                                        meeting.month ?? "No Time",
+                                        singletonClass.formatDateTime(meeting.date!),
                                         style: GoogleFonts.inter(
                                           color: NasColors.darkBlue,
                                           fontSize: 25,

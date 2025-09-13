@@ -1944,4 +1944,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bugFixDeadline => 'Bug Fix Deadline';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get timeTableShift => 'Time Table Shift';
+
+  @override
+  String get fullTime => 'Full Time';
+
+  @override
+  String get flexibleShift => 'Flexible Shift';
 }

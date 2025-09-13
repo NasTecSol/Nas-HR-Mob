@@ -388,7 +388,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                       SizedBox(
                                         width: 100,
                                         child: Text(
-                                          "${employee.shiftInfo?.shiftType ?? '---'}",
+                                          _translateShifts(employee.shiftInfo?.shiftType ?? '---', context),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: true,
@@ -404,6 +404,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
+                                      if (employee.shiftInfo != null && employee.shiftInfo!.shiftType == 'fullTime')
                                       Text(
                                         "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(employee.shiftInfo?.timeFrom)} ${AppLocalizations.of(context)!.to} ${formatIsoTime(employee.shiftInfo?.timeTo)}",
                                         style: GoogleFonts.inter(
@@ -412,6 +413,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                           color: Colors.grey,
                                         ),
                                       ),
+                                      Spacer(),
                                       Builder(
                                         builder: (context) {
                                           return IconButton(
@@ -447,7 +449,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                                             const Icon(Icons.edit, size: 18),
                                                             const SizedBox(width: 8),
                                                             Text(
-                                                              "Update",
+                                                              AppLocalizations.of(context)!.update,
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 13,
                                                                 fontWeight: FontWeight.w600,
@@ -1008,6 +1010,25 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       return DateFormat.jm().format(time);
     } catch (e) {
       return '--:--';
+    }
+  }
+
+  String _translateShifts(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'fullTime':
+        return localizations.fullTime;
+      case 'flexibleShift':
+        return localizations.flexibleShift;
+      case 'timeTableShift':
+        return localizations.timeTableShift;
+      default:
+        return status;
     }
   }
 }
