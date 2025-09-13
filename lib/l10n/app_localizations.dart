@@ -3937,6 +3937,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bug Fix Deadline'**
   String get bugFixDeadline;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @timeTableShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Table Shift'**
+  String get timeTableShift;
+
+  /// No description provided for @fullTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Time'**
+  String get fullTime;
+
+  /// No description provided for @flexibleShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible Shift'**
+  String get flexibleShift;
 }
 
 class _AppLocalizationsDelegate

@@ -738,5 +738,9 @@
     "milestoneOne": "المرحلة 1",
     "milestoneTwo": "المرحلة 2",
     "finalSubmission": "التسليم النهائي",
-    "bugFixDeadline": "الموعد النهائي لإصلاح الأخطاء"
+    "bugFixDeadline": "الموعد النهائي لإصلاح الأخطاء",
+    "update": "تحديث",
+    "timeTableShift": "جدول المناوبة",
+    "fullTime": "دوام كامل",
+    "flexibleShift": "مناوبة مرنة"
 }

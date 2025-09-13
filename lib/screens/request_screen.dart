@@ -2070,7 +2070,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     itemCount: _approver!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      final request = _approver!.reversed.toList()[index];
+                                      final request = _approver!.toList()[index];
                                       final searchText = searchController.text.toLowerCase();
                                       if (isSearching) {
                                         final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;

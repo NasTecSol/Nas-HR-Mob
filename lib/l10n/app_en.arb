@@ -1075,5 +1075,9 @@
   "milestoneOne":"Milestone 1",
   "milestoneTwo":"Milestone 2",
   "finalSubmission":"Final Submission",
-  "bugFixDeadline":"Bug Fix Deadline"
+  "bugFixDeadline":"Bug Fix Deadline",
+  "update":"Update",
+  "timeTableShift":"Time Table Shift",
+  "fullTime":"Full Time",
+  "flexibleShift":"Flexible Shift"
 }
