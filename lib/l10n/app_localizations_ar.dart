@@ -1939,4 +1939,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bugFixDeadline => 'الموعد النهائي لإصلاح الأخطاء';
+
+  @override
+  String get update => 'تحديث';
+
+  @override
+  String get timeTableShift => 'جدول المناوبة';
+
+  @override
+  String get fullTime => 'دوام كامل';
+
+  @override
+  String get flexibleShift => 'مناوبة مرنة';
 }
