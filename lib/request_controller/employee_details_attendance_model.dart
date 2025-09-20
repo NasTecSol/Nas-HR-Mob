@@ -189,15 +189,21 @@ class Data1 {
 }
 
 class Break {
-  dynamic startTime;
-  dynamic endTime;
+  DateTime? startTime;
+  DateTime? endTime;
   dynamic durationMinutes;
 
   Break({this.startTime, this.endTime, this.durationMinutes});
 
   Break.fromJson(Map<String, dynamic> json) {
-    startTime = json["startTime"] != null ? DateTime.parse(json["startTime"]) : null;
-    endTime = json["endTime"] != null ? DateTime.parse(json["endTime"]) : null;
+    startTime = json["startTime"] != null && json["startTime"].toString().isNotEmpty
+        ? DateTime.tryParse(json["startTime"].toString())
+        : null;
+
+    endTime = json["endTime"] != null && json["endTime"].toString().isNotEmpty
+        ? DateTime.tryParse(json["endTime"].toString())
+        : null;
+
     durationMinutes = json["durationMinutes"];
   }
 
@@ -213,3 +219,4 @@ class Break {
     return _data;
   }
 }
+

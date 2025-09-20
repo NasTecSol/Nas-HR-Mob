@@ -1026,63 +1026,32 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ? SizedBox(
                                       height: 220,
                                       child:
-                                          widget.attendanceData?.slots
-                                                      ?.isNotEmpty ==
-                                                  true
+                                          widget.attendanceData?.slots?.isNotEmpty == true
                                               ? ListView.builder(
                                                   padding: EdgeInsets.zero,
-                                                  itemCount: widget
-                                                          .attendanceData
-                                                          ?.slots
-                                                          ?.length ??
-                                                      0,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    final slots = widget
-                                                        .attendanceData!
-                                                        .slots![index];
-
-                                                    DateTime? checkIn =
-                                                        parseTime(slots
-                                                                    .checkInTime
-                                                                    ?.toString() ??
-                                                                '')
-                                                            ?.toLocal();
-                                                    DateTime? checkOut =
-                                                        parseTime(slots
-                                                                    .checkOutTime
-                                                                    ?.toString() ??
-                                                                '')
-                                                            ?.toLocal();
+                                                  itemCount: widget.attendanceData?.slots?.length ?? 0,
+                                                  itemBuilder: (context, index) {
+                                                    final slots = widget.attendanceData!.slots![index];
+                                                    DateTime? checkIn = parseTime(slots.checkInTime?.toString() ?? '')?.toLocal();
+                                                    DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
 
                                                     return Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10),
+                                                      padding: const EdgeInsets.all(10),
                                                       child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.zero,
-                                                          color: NasColors
-                                                              .lightGrey,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.zero,
+                                                          color: NasColors.lightGrey,
                                                           boxShadow: [
                                                             BoxShadow(
-                                                              color: Colors.grey
-                                                                  .withOpacity(
-                                                                      0.4),
+                                                              color: Colors.grey.withOpacity(0.4),
                                                               spreadRadius: 1,
                                                               blurRadius: 1,
-                                                              offset:
-                                                                  const Offset(
-                                                                      0, 3),
+                                                              offset: const Offset(0, 3),
                                                             ),
                                                           ],
                                                         ),
                                                         child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(10.0),
+                                                          padding: const EdgeInsets.all(10.0),
                                                           child: Column(
                                                             children: [
                                                               Row(
@@ -1090,34 +1059,22 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                   Row(
                                                                     children: [
                                                                       const Icon(
-                                                                          Icons
-                                                                              .exit_to_app_outlined,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              Colors.black),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.exit_to_app_outlined,
+                                                                          size: 20,
+                                                                          color: Colors.black),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockIn}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              Colors.black,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
-                                                                        checkIn !=
-                                                                                null
-                                                                            ? "$checkIn"
+                                                                        checkIn != null
+                                                                            ? singletonClass.formatCheckInTime(slots.checkInTime, context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1131,36 +1088,23 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(
-                                                                      width:
-                                                                          20),
+                                                                  const SizedBox(width: 10),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons
-                                                                              .error,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              NasColors.pending),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.error,
+                                                                          size: 20,
+                                                                          color: NasColors.pending),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.late}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              NasColors.pending,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.pending,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         (slots.lateMinutes?.toString().isNotEmpty ??
                                                                                 false)
@@ -1176,31 +1120,19 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               Colors.black,
                                                                         ),
                                                                       ),
-                                                                      SizedBox(
-                                                                          width:
-                                                                              10),
+                                                                      SizedBox(width: 5),
                                                                       Container(
-                                                                        height:
-                                                                            20,
-                                                                        width:
-                                                                            75,
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              getStatusColor(slots.status ?? ''),
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(10),
+                                                                        height: 20,
+                                                                        width: 75,
+                                                                        decoration: BoxDecoration(
+                                                                          color: getStatusColor(slots.status ?? ''),
+                                                                          borderRadius: BorderRadius.circular(10),
                                                                         ),
-                                                                        child:
-                                                                            Center(
-                                                                          child:
-                                                                              Text(
-                                                                            _translateStatus(slots.status ?? '',
-                                                                                context),
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style:
-                                                                                GoogleFonts.inter(
+                                                                        child: Center(
+                                                                          child: Text(
+                                                                            _translateStatus(slots.status ?? '', context),
+                                                                            textAlign: TextAlign.center,
+                                                                            style: GoogleFonts.inter(
                                                                               fontWeight: FontWeight.bold,
                                                                               color: Colors.white,
                                                                               fontSize: 10,
@@ -1226,35 +1158,24 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                         alignment:
                                                                             Alignment.center,
                                                                         child: const Icon(
-                                                                            Icons
-                                                                                .exit_to_app_outlined,
-                                                                            size:
-                                                                                20,
-                                                                            color:
-                                                                                Colors.black),
+                                                                            Icons.exit_to_app_outlined,
+                                                                            size: 20,
+                                                                            color: Colors.black),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockOut}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              Colors.black,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         checkOut !=
                                                                                 null
-                                                                            ? "$checkOut"
+                                                                            ? singletonClass.formatCheckInTime(slots.checkOutTime, context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1268,21 +1189,14 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(
-                                                                      width:
-                                                                          20),
+                                                                  const SizedBox(width: 20),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons
-                                                                              .directions_run_outlined,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              NasColors.onTime),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.directions_run_outlined,
+                                                                          size: 20,
+                                                                          color: NasColors.onTime),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.earlyLeft}:",
                                                                         style: GoogleFonts
@@ -1295,9 +1209,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               NasColors.onTime,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         (slots.earlyCheckOut?.toString().isNotEmpty ??
                                                                                 false)
