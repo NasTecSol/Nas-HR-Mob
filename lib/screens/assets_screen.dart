@@ -162,7 +162,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                         Container(
                                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5), // Set max width
                                           child: Text(
-                                            "${assets.assetName}",
+                                            "${assets.assetName ?? "---"}",
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.bold,
@@ -179,7 +179,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
                                         Text(
-                                          "${assets.assetId}",
+                                          "${assets.assetId ?? "---"}",
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
@@ -191,7 +191,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      "${AppLocalizations.of(context)!.id}# ${assets.assetId}",
+                                      "${AppLocalizations.of(context)!.id}# ${assets.assetId ?? "---"}",
                                       style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -315,7 +315,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                        Row(
                                          children: [
                                            Text(
-                                             "${AppLocalizations.of(context)!.assignedTo}: ${companyAssets.currentAssignedEmpName}",
+                                             "${AppLocalizations.of(context)!.assignedTo}: ${companyAssets.currentAssignedEmpName ?? "---"}",
                                              style: GoogleFonts.inter(
                                                fontSize: 12,
                                                fontWeight: FontWeight.w500,
@@ -347,7 +347,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                        ),
                                        const SizedBox(height: 12),
                                        Text(
-                                         "${AppLocalizations.of(context)!.assignedAt}: ${companyAssets.currentAssignedDate}",
+                                         "${AppLocalizations.of(context)!.assignedAt}: ${companyAssets.currentAssignedDate ?? "---"}",
                                          style: GoogleFonts.inter(
                                            fontSize: 12,
                                            fontWeight: FontWeight.bold,
@@ -455,7 +455,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                            Container(
                                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
                                              child: Text(
-                                               "${assets.assetName}",
+                                               "${assets.assetName ?? "---"}",
                                                style: GoogleFonts.inter(
                                                  fontSize: 15,
                                                  fontWeight: FontWeight.bold,
@@ -472,7 +472,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                          crossAxisAlignment: CrossAxisAlignment.center,
                                          children: [
                                            Text(
-                                             "${assets.assetId}",
+                                             "${assets.assetId ?? "---"}",
                                              style: GoogleFonts.inter(
                                                fontSize: 12,
                                                fontWeight: FontWeight.w500,
@@ -484,7 +484,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                                        ),
                                        const SizedBox(height: 12),
                                        Text(
-                                         "${AppLocalizations.of(context)!.id}# ${assets.assetId}",
+                                         "${AppLocalizations.of(context)!.id}# ${assets.assetId ?? "---"}",
                                          style: GoogleFonts.inter(
                                            fontSize: 12,
                                            fontWeight: FontWeight.bold,

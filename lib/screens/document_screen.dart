@@ -906,8 +906,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.only(
-                            top: 10.0, left: 30, right: 30),
+                        padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           boxShadow: [
@@ -942,7 +941,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.asset(
                                 "images/cnic.png",
-                                height: 60,
+                                height: 50,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                                 alignment: Alignment.topCenter,

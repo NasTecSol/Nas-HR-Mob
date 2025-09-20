@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
-import 'package:nashr/request_controller/employee_details_clocking_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/screens/employee_details_screen_assets.dart';
 import 'package:nashr/singleton_class.dart';
@@ -33,11 +31,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
   late Future<EmployeeDetailsData?> _employeeDetailsFuture;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    getEmployeeAttendanceData();
     _employeeDetailsFuture = getEmployeeDetailsData();
   }
 
@@ -57,6 +55,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                       child: IconButton(
                         onPressed: () {
                           Navigator.pop(context);
+                          singletonClass.employeeDetailsAttendanceDataList.clear();
+                          singletonClass.employeeDetailsDataList.clear();
                         },
                         icon: Container(
                           height: 40,
@@ -92,7 +92,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     ),
                   ],
                 ),
-                FutureBuilder<EmployeeDetailsData?>(
+                isLoading == false ? FutureBuilder<EmployeeDetailsData?>(
                     future: _employeeDetailsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1562,7 +1562,13 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           ],
                         );
                       }
-                    }),
+                    }) : Center(
+                  child: SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Lottie.asset('images/loader.json'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1668,16 +1674,21 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   Future<EmployeeDetailsData?> getEmployeeDetailsData() async {
     String? employeeId = widget.teamData?.empId;
+    setState(() {
+      isLoading = true;
+    });
     var client = http.Client();
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     print(response.body);
+    setState(() {
+      isLoading = false;
+    });
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = EmployeeDetailsData.fromJson(responseBody);
       singletonClass.setEmployeeDetailsData([employeeData]);
-      getEmployeeClocking();
       getEmployeeAttendanceData();
       return employeeData;
     }
@@ -1693,6 +1704,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       ) async {
     String? employeeId =
         singletonClass.employeeDetailsDataList.first.data?.first.id;
+    setState(() {
+      isLoading = true;
+    });
     var client = http.Client();
 
     // Get current date
@@ -1715,6 +1729,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     print(employeeId);
     print(firstDateString);
     print(currentDateString);
+    setState(() {
+      isLoading = false;
+    });
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = EmployeeDetailsAttendanceData.fromJson(responseBody);
@@ -1723,38 +1740,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     }
 
     return null;
-  }
-
-  //EMPLOYEE CLOCKING DATA API CALL
-  Future<EmployeeDetailsClocking?> getEmployeeClocking() async {
-    String? employeeId =
-        singletonClass.employeeDetailsDataList.first.data?.first.id;
-    var client = http.Client();
-    // Get current date
-    DateTime now = DateTime.now();
-
-    // Get the first date of the current month
-    DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
-
-    // Format the dates in 'MM-dd-yyyy' format
-    String firstDateString =
-        '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
-    String currentDateString =
-        '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
-    var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$employeeId&startDate=$firstDateString&endDate=$currentDateString');
-
-    var response = await client.get(uri, headers: singletonClass.getHeaders());
-
-    log("Employee Clock in / out data : ${response.body}");
-
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var employeeClockingData = EmployeeDetailsClocking.fromJson(responseBody);
-      singletonClass.setEmployeeDetailsClocking([employeeClockingData]);
-      return employeeClockingData;
-    }
-    return null; // Print the response body
   }
 
   String _getImageForEventType(String eventType) {

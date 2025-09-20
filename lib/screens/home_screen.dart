@@ -65,9 +65,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    calculateTodayWorkedTime();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
+    calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
     final uiSettings =
@@ -118,7 +118,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final today = DateTime.now();
       final dataList = singletonClass.clockingDataList.first.data;
-      if (dataList == null || dataList.isEmpty) return;
+      if (dataList == null || dataList.isEmpty) {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
+      }
 
       final todayEntries = dataList.where((entry) {
         final createdAt = DateTime.tryParse(entry.createdAt ?? '');
@@ -131,49 +135,80 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       _accumulatedWorkedDuration = Duration.zero;
       _currentCheckIn = null;
 
-      for (var entry in todayEntries) {
-        // 🔹 Step 1: Get raw biometrics sorted by timestamp
-        final rawList = entry.rawBiometrics ?? [];
-        rawList.sort((a, b) {
-          final t1 = DateTime.tryParse(a.timestamp ?? '') ?? DateTime(1970);
-          final t2 = DateTime.tryParse(b.timestamp ?? '') ?? DateTime(1970);
-          return t1.compareTo(t2);
-        });
-
-        // 🔹 Step 2: Walk through biometric logs
-        for (var bio in rawList) {
-          final timestamp = DateTime.tryParse(bio.timestamp ?? '');
-          final type = (bio.type ?? '').toLowerCase();
-
-          if (timestamp == null) continue;
-
-          if (type == "check-in") {
-            // start new session if not already running
-            _currentCheckIn ??= timestamp;
-          } else if (type == "check-out") {
-            // close session if already checked in
-            if (_currentCheckIn != null &&
-                timestamp.isAfter(_currentCheckIn!)) {
-              _accumulatedWorkedDuration +=
-                  timestamp.difference(_currentCheckIn!);
-              _currentCheckIn = null; // reset
-            }
-          }
-        }
-      }
-
-      // 🔹 Step 3: Decide whether to start or stop timer
-      if (_currentCheckIn != null) {
-        startWorkTimer();
-      } else {
-        _updateWorkedTime();
+      if (todayEntries.isEmpty) {
         stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
       }
+
+      final todayData = todayEntries.last;
+      final checkInTime = todayData.checkInTime;
+      final checkOutTime = todayData.checkOutTime;
+
+      // 🔹 Both checkin/checkout empty → no work today
+      if ((checkInTime == null || checkInTime.isEmpty) &&
+          (checkOutTime == null || checkOutTime.isEmpty)) {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
+      }
+
+      // 🔹 Case 1: Only check-in available → running session
+      if (checkInTime != null && checkInTime.isNotEmpty &&
+          (checkOutTime == null || checkOutTime.isEmpty)) {
+        _currentCheckIn = DateTime.tryParse(checkInTime);
+        startWorkTimer();
+        return;
+      }
+
+      // 🔹 Case 2: Only checkout available → no active session
+      if (checkOutTime != null && checkOutTime.isNotEmpty &&
+          (checkInTime == null || checkInTime.isEmpty)) {
+        stopWorkTimer();
+        _updateWorkedTime();
+        return;
+      }
+
+      // 🔹 Case 3: Both checkin & checkout available → check latest raw biometric
+      if (checkInTime != null && checkOutTime != null &&
+          checkInTime.isNotEmpty && checkOutTime.isNotEmpty) {
+        String? lastBioType;
+        DateTime? lastBioTimestamp;
+
+        if (todayData.rawBiometrics != null &&
+            todayData.rawBiometrics!.isNotEmpty) {
+          todayData.rawBiometrics!.sort((a, b) {
+            final t1 = DateTime.tryParse(a.timestamp ?? '') ?? DateTime(1970);
+            final t2 = DateTime.tryParse(b.timestamp ?? '') ?? DateTime(1970);
+            return t1.compareTo(t2);
+          });
+          final lastBio = todayData.rawBiometrics!.last;
+          lastBioType = lastBio.type?.toLowerCase();
+          lastBioTimestamp = DateTime.tryParse(lastBio.timestamp ?? '');
+        }
+
+        if (lastBioType == "check-in" && lastBioTimestamp != null) {
+          _currentCheckIn = lastBioTimestamp;
+          startWorkTimer();
+        } else {
+          stopWorkTimer();
+          _updateWorkedTime();
+        }
+        return;
+      }
+
+      // Default fallback
+      stopWorkTimer();
+      _displayWorkedHours = "00:00:00";
     } catch (e) {
       print("Error in calculateTodayWorkedTime: $e");
       _displayWorkedHours = '00:00:00';
+      stopWorkTimer();
     }
   }
+
+
+
 
   @override
   void dispose() {
@@ -202,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
 
-  //Slider
+  ///Slider
   OverlayEntry? _overlayEntry;
 
   OverlayEntry _createOverlayEntry() {
@@ -326,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  //2ND OverLay
+  ///2ND OverLay
   OverlayEntry? _overlayEntry2;
 
   OverlayEntry _createViewAllOverlay() {
@@ -806,6 +841,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 MaterialPageRoute(
                                     builder: (context) =>
                                         NotificationsScreen()));
+                            // getAddressFromLatLng(28.420262170199948, 36.56318205596275);
                           },
                           icon: Container(
                             height: 45,
@@ -1233,7 +1269,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 .data!
                                                 .first
                                                 .checkInTime!
-                                                .isNotEmpty)
+                                                .isNotEmpty) ...[
                                           Container(
                                               height: 30,
                                               decoration: BoxDecoration(
@@ -1349,6 +1385,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                 ],
                                               )),
+                                        ] else ...[
+                                          Container(
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                topLeft: Radius.circular(15),
+                                                topRight: Radius.circular(15),
+                                              ),
+                                              color: getTodayStatusColor(),
+                                            ),
+                                          ),
+                                        ],
 
                                         /// 🔹 Check-In Row
                                         Padding(
@@ -1400,8 +1449,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty)
+                                                      if (todayEntries
+                                                          .isEmpty) {
                                                         return '--:--';
+                                                      }
 
                                                       final lastEntry =
                                                           todayEntries.last;
@@ -1757,8 +1808,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     final dataList = singletonClass
                                             .clockingDataList.first.data ??
                                         [];
-
                                     final today = DateTime.now();
+
                                     final todayEntries =
                                         dataList.where((entry) {
                                       final createdAt = DateTime.tryParse(
@@ -1778,7 +1829,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     String? checkOutTime =
                                         todayData?.checkOutTime;
 
-                                    // ✅ Use rawBiometrics if available
+                                    // ✅ last biometrics type
                                     String? lastBioType;
                                     if (todayData?.rawBiometrics != null &&
                                         todayData!.rawBiometrics!.isNotEmpty) {
@@ -1786,31 +1837,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           DateTime.parse(a.timestamp!)
                                               .compareTo(DateTime.parse(
                                                   b.timestamp!)));
-                                      lastBioType = todayData
-                                          .rawBiometrics!
-                                          .last
-                                          .type; // "Check-In" or "Check-Out"
+                                      lastBioType =
+                                          todayData.rawBiometrics!.last.type;
                                     }
 
                                     bool showCheckIn = false;
                                     bool showCheckOut = false;
 
+                                    // CASE 1: No check-in & no check-out → Swipe to Check-In
                                     if ((checkInTime == null ||
                                             checkInTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-Out")) {
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       showCheckIn = true;
-                                    } else if ((checkInTime != null &&
+                                    }
+                                    // CASE 2: Check-in available but no check-out → Show Check-Out
+                                    else if ((checkInTime != null &&
                                             checkInTime.isNotEmpty) &&
                                         (checkOutTime == null ||
-                                            checkOutTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-In")) {
+                                            checkOutTime.isEmpty)) {
                                       showCheckOut = true;
-                                    } else if (lastBioType == "Check-In") {
-                                      showCheckOut = true;
-                                    } else if (lastBioType == "Check-Out") {
-                                      showCheckIn = true;
+                                    }
+                                    // CASE 3: Both available → Follow last biometric
+                                    else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime != null &&
+                                            checkOutTime.isNotEmpty)) {
+                                      if (lastBioType == "Check-In") {
+                                        showCheckOut = true;
+                                      } else if (lastBioType == "Check-Out") {
+                                        showCheckIn = true;
+                                      }
                                     }
 
                                     if (showCheckIn) {
@@ -1856,7 +1913,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     String? checkOutTime =
                                         todayData?.checkOutTime;
 
-                                    // ✅ Use rawBiometrics if available
                                     String? lastBioType;
                                     if (todayData?.rawBiometrics != null &&
                                         todayData!.rawBiometrics!.isNotEmpty) {
@@ -1873,20 +1929,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                                     if ((checkInTime == null ||
                                             checkInTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-Out")) {
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       showCheckIn = true;
                                     } else if ((checkInTime != null &&
                                             checkInTime.isNotEmpty) &&
                                         (checkOutTime == null ||
-                                            checkOutTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-In")) {
+                                            checkOutTime.isEmpty)) {
                                       showCheckOut = true;
-                                    } else if (lastBioType == "Check-In") {
-                                      showCheckOut = true;
-                                    } else if (lastBioType == "Check-Out") {
-                                      showCheckIn = true;
+                                    } else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime != null &&
+                                            checkOutTime.isNotEmpty)) {
+                                      if (lastBioType == "Check-In") {
+                                        showCheckOut = true;
+                                      } else if (lastBioType == "Check-Out") {
+                                        showCheckIn = true;
+                                      }
                                     }
 
                                     if (showCheckIn) {
@@ -1970,20 +2029,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                                     if ((checkInTime == null ||
                                             checkInTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-Out")) {
+                                        (checkOutTime == null ||
+                                            checkOutTime.isEmpty)) {
                                       showCheckIn = true;
                                     } else if ((checkInTime != null &&
                                             checkInTime.isNotEmpty) &&
                                         (checkOutTime == null ||
-                                            checkOutTime.isEmpty) &&
-                                        (lastBioType == null ||
-                                            lastBioType == "Check-In")) {
+                                            checkOutTime.isEmpty)) {
                                       showCheckOut = true;
-                                    } else if (lastBioType == "Check-In") {
-                                      showCheckOut = true;
-                                    } else if (lastBioType == "Check-Out") {
-                                      showCheckIn = true;
+                                    } else if ((checkInTime != null &&
+                                            checkInTime.isNotEmpty) &&
+                                        (checkOutTime != null &&
+                                            checkOutTime.isNotEmpty)) {
+                                      if (lastBioType == "Check-In") {
+                                        showCheckOut = true;
+                                      } else if (lastBioType == "Check-Out") {
+                                        showCheckIn = true;
+                                      }
                                     }
 
                                     if (showCheckOut) {
@@ -3479,5 +3541,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         desiredAccuracy: LocationAccuracy.high);
 
     return '${position.latitude}|${position.longitude}';
+  }
+
+  ///test case
+  Future<String?> getAddressFromLatLng(double lat, double lng) async {
+    const accessToken = "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA";
+    final url =
+        "https://api.mapbox.com/geocoding/v5/mapbox.places/$lng,$lat.json?access_token=$accessToken";
+
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      log("address response :${response.body}");
+      if (data["features"] != null && data["features"].isNotEmpty) {
+        return data["features"][0]["place_name"];
+      }
+    }
+    return null;
   }
 }

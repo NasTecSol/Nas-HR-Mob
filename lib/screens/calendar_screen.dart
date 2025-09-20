@@ -287,6 +287,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
+                            padding: EdgeInsets.zero,
                             itemCount: meetingList.length,
                             itemBuilder: (BuildContext context, int index) {
                               final meeting = meetingList[index];
@@ -300,8 +301,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 }
                               }
                               return Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const SizedBox(height: 50),
+                                  const SizedBox(height: 30),
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
@@ -313,7 +315,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 50),
+                                  const SizedBox(height: 30),
                                   Row(
                                     children: <Widget>[
                                       const Expanded(
@@ -325,10 +327,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ),
                                       ),
                                       Text(
-                                        singletonClass.formatDateTime(meeting.date!),
+                                        singletonClass.formatWithDateTime(meeting.date!),
                                         style: GoogleFonts.inter(
                                           color: NasColors.darkBlue,
-                                          fontSize: 25,
+                                          fontSize: 22,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
