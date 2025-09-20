@@ -1393,7 +1393,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     )
                   ],
                   const SizedBox(height: 10),
-                  if (widget.selectedRequest!.requestType  == "leaveRequest") ...[
                     Text(
                       AppLocalizations.of(context)!.days,
                       style: GoogleFonts.inter(
@@ -1410,7 +1409,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                         fontSize: 16,
                       ),
                     ),
-                  ],
                   const SizedBox(height: 10),
                   if (widget.selectedRequest!.requestType  == 'loanRequest') ...[
                     Text(
@@ -1590,7 +1588,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       onPressed: () async {
                         FilePickerResult? result =
                         await FilePicker.platform.pickFiles(
-                          type: FileType.image,
+                          type: FileType.any,
                         );
 
                         if (result != null &&
@@ -2501,7 +2499,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       onPressed: () async {
                         FilePickerResult? result =
                         await FilePicker.platform.pickFiles(
-                          type: FileType.image,
+                          type: FileType.any,
                         );
                         if (result != null &&
                             result.files.single.path != null) {
