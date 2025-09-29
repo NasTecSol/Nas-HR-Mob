@@ -439,7 +439,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     },
                     child: Container(
                       width: 55,
-                      margin: const EdgeInsets.symmetric(horizontal: 5),
                       decoration: BoxDecoration(
                         color: selected ? NasColors.darkBlue : Colors.transparent,
                         borderRadius: BorderRadius.circular(35),

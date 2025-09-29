@@ -811,21 +811,22 @@ class _TeamClockingState extends State<TeamClocking> {
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [
-                                      Text(
-                                        team.checkInTime != null
-                                            ? singletonClass.formatCheckInTime(
-                                                team.checkInTime!, context)
-                                            : '--:--',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                      SizedBox(
+                                        width:70,
+                                        child: Text(
+                                          team.checkInTime != null
+                                              ? singletonClass.formatCheckInTime(
+                                                  team.checkInTime!, context)
+                                              : '--:--',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(width: 5),
                                       Transform(
                                         transform: Matrix4.rotationY(math.pi),
-                                        // Flip horizontally
                                         alignment: Alignment.center,
                                         child: const Icon(
                                           Icons.exit_to_app_outlined,
@@ -856,18 +857,18 @@ class _TeamClockingState extends State<TeamClocking> {
                                       SizedBox(
                                         width: 70,
                                         child: Text(
-                                          team.checkOutTime != null
-                                              ? singletonClass
-                                                  .formatCheckInTime(
-                                                      team.checkOutTime!,
-                                                      context)
-                                              : '--:--',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
+                                            team.checkOutTime != null
+                                                ? singletonClass
+                                                    .formatCheckInTime(
+                                                        team.checkOutTime!,
+                                                        context)
+                                                : '--:--',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
                                           ),
-                                        ),
                                       ),
                                       const Icon(
                                         Icons.exit_to_app_outlined,

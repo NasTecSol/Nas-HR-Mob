@@ -67,7 +67,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.only(top: 48.0, left: 20, right: 20),
+        padding: const EdgeInsets.only(top: 48.0, left: 15, right: 15),
         child: Column(
           children: [
             Row(
@@ -129,7 +129,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
             ),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: EdgeInsets.only(left: 5, right: 5),
                 children: [
                   SizedBox(height: 20),
                   Row(
@@ -259,21 +259,22 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              Spacer(),
                               Icon(
                                 Icons.error,
                                 size: 25,
                                 color: NasColors.pending,
                               ),
+                              SizedBox(width: 8),
                               Text(
-                                AppLocalizations.of(context)!.late,
+                                "${AppLocalizations.of(context)!.late}:",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              SizedBox(width: 8),
                               Text(
                                 lateMinutes,
                                 style: GoogleFonts.inter(
@@ -310,21 +311,21 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              Spacer(),
                               Icon(
                                 Icons.directions_run_outlined,
                                 size: 25,
                                 color: NasColors.onTime,
                               ),
                               Text(
-                                AppLocalizations.of(context)!.earlyLeft,
+                               "${ AppLocalizations.of(context)!.earlyLeft}:",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 1),
                               Text(
                                 earlyMinutes,
                                 style: GoogleFonts.inter(
@@ -363,6 +364,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  ///Break
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -753,6 +755,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  ///Penalities
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -790,7 +793,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                 color: Colors.red,
                                 size: 40,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 15),
                               Text(
                                 AppLocalizations.of(context)!.penalties,
                                 style: GoogleFonts.inter(
@@ -799,7 +802,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 15),
                               Container(
                                 padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
@@ -824,7 +827,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                           SizedBox(height: 20),
                           if (_penalitiesExpanded) ...[
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   AppLocalizations.of(context)!.category,
@@ -834,7 +836,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                               Spacer(),
                                 Text(
                                   AppLocalizations.of(context)!.details,
                                   style: GoogleFonts.inter(
@@ -843,6 +845,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
+                                Spacer(),
                                 Text(
                                   AppLocalizations.of(context)!.value,
                                   style: GoogleFonts.inter(
@@ -868,7 +871,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                             padding: const EdgeInsets.only(
                                                 bottom: 10.0),
                                             child:Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Padding(
                                                   padding: const EdgeInsets.only(top: 15.0),
@@ -884,7 +886,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                     textAlign: TextAlign.center,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 5),
+                                                Spacer(),
                                                 Padding(
                                                   padding: const EdgeInsets.only(top: 15.0),
                                                   child: Text(
@@ -899,7 +901,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                     textAlign: TextAlign.center,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 5),
+                                                Spacer(),
                                                 Padding(
                                                   padding: const EdgeInsets.only(top: 10.0),
                                                   child: Text(
@@ -949,6 +951,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  ///Slots
                   if (widget.attendanceData!.shiftInfo!.shiftType == 'timeTableShift') ...[
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -988,7 +991,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   width: 30,
                                   height: 30,
                                 ),
-                                SizedBox(width: 5),
+                                SizedBox(width: 35),
                                 Text(
                                   AppLocalizations.of(context)!.slots,
                                   style: GoogleFonts.inter(
@@ -997,7 +1000,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
-                                SizedBox(width: 5),
+                                SizedBox(width: 35),
                                 Container(
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
@@ -1036,7 +1039,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                     DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
 
                                                     return Padding(
-                                                      padding: const EdgeInsets.all(10),
+                                                      padding: const EdgeInsets.all(5),
                                                       child: Container(
                                                         decoration: BoxDecoration(
                                                           borderRadius: BorderRadius.zero,
@@ -1120,34 +1123,36 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               Colors.black,
                                                                         ),
                                                                       ),
-                                                                      SizedBox(width: 5),
+                                                                      SizedBox(width: 4),
                                                                       Container(
-                                                                        height: 20,
-                                                                        width: 75,
+                                                                        height: 25,
+                                                                        width: 80,
                                                                         decoration: BoxDecoration(
                                                                           color: getStatusColor(slots.status ?? ''),
                                                                           borderRadius: BorderRadius.circular(10),
                                                                         ),
                                                                         child: Center(
-                                                                          child: Text(
-                                                                            _translateStatus(slots.status ?? '', context),
-                                                                            textAlign: TextAlign.center,
-                                                                            style: GoogleFonts.inter(
-                                                                              fontWeight: FontWeight.bold,
-                                                                              color: Colors.white,
-                                                                              fontSize: 10,
+                                                                          child: FittedBox(
+                                                                            fit: BoxFit.scaleDown, // scales text if too large
+                                                                            child: Text(
+                                                                              _translateStatus(slots.status ?? '', context),
+                                                                              textAlign: TextAlign.center,
+                                                                              maxLines: 1,
+                                                                              overflow: TextOverflow.ellipsis, // adds "..." if clipped
+                                                                              style: GoogleFonts.inter(
+                                                                                fontWeight: FontWeight.bold,
+                                                                                color: Colors.white,
+                                                                                fontSize: 8,
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                      ),
+                                                                      )
                                                                     ],
                                                                   ),
                                                                 ],
                                                               ),
-                                                              Divider(
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .shade400),
+                                                              Divider(color: Colors.grey.shade400),
                                                               Row(
                                                                 children: [
                                                                   Row(
@@ -1302,6 +1307,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                     SizedBox(height: 20),
                   ],
+                  ///Leave information
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -1335,14 +1341,14 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                             Image.asset(
                               'images/time.png',
                               fit: BoxFit.contain,
-                              width: 30,
-                              height: 30,
+                              width: 27,
+                              height: 27,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 2),
                             Text(
                               AppLocalizations.of(context)!.leaveInfo,
                               style: GoogleFonts.inter(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.normal,
                                 color: NasColors.darkBlue,
                               ),
@@ -1368,6 +1374,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   const SizedBox(height: 30),
+                  ///Remarks Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1552,7 +1559,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
       int remainingMinutes = totalMinutes % 60;
 
       if (hours > 0) {
-        return '$hours ${AppLocalizations.of(context)!.h} $remainingMinutes ${AppLocalizations.of(context)!.m}';
+        return '$hours${AppLocalizations.of(context)!.h} $remainingMinutes${AppLocalizations.of(context)!.m}';
       } else {
         return '$remainingMinutes ${AppLocalizations.of(context)!.m}';
       }

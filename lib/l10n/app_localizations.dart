@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @fileComplain.
   ///
   /// In en, this message translates to:
-  /// **'File Complain'**
+  /// **'File Complaint'**
   String get fileComplain;
 
   /// No description provided for @areYouSureToLogout.

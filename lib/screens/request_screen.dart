@@ -777,7 +777,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
                                                                 : AppLocalizations
                                                                         .of(context)!
                                                                     .noData,
@@ -795,7 +795,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     request
                                                                         .requestData!
                                                                         .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
+                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
                                                                 : AppLocalizations
                                                                         .of(context)!
                                                                     .noData,
@@ -1525,7 +1525,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -1545,7 +1545,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -2301,7 +2301,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -2321,7 +2321,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -3371,6 +3371,7 @@ class _RequestScreenState extends State<RequestScreen> {
         "allowance_Increment",
         "documentRequest",
         "specialLeaveRequest",
+        "payrollRequest"
       ],
     };
 

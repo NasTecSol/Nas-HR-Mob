@@ -375,15 +375,17 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    Text( clock.checkInTime != null ?
-                                    singletonClass.formatCheckInTime(clock.checkInTime! , context) : '--:--',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    SizedBox(
+                                      width:70,
+                                      child: Text( clock.checkInTime != null ?
+                                      singletonClass.formatCheckInTime(clock.checkInTime! , context) : '--:--',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(width: 5),
                                     Transform(
                                       transform: Matrix4.rotationY(math.pi),
                                       // Flip horizontally
@@ -414,17 +416,17 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
-                                    SizedBox(
-                                      width: 70,
-                                      child: Text( clock.checkOutTime != null ?
-                                      singletonClass.formatCheckInTime(clock.checkOutTime! ,context) : '--:--',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                     SizedBox(
+                                       width:70,
+                                       child: Text( clock.checkOutTime != null ?
+                                        singletonClass.formatCheckInTime(clock.checkOutTime! ,context) : '--:--',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ),
+                                     ),
                                     const Icon(
                                       Icons.exit_to_app_outlined,
                                       size: 20,
