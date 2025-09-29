@@ -551,7 +551,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myComplaints => 'My Complaints';
 
   @override
-  String get fileComplain => 'File Complain';
+  String get fileComplain => 'File Complaint';
 
   @override
   String get areYouSureToLogout => 'Are you sure to logout?';
