@@ -569,11 +569,9 @@ class SingletonClass {
 
   String formatWithDateTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) return '--';
-
     try {
       DateTime parsed = DateTime.parse(dateTimeString).toLocal();
       return DateFormat('dd MMM yyyy, h:mm a').format(parsed);
-      // Example output: "24 Jul 2025, 1:21 PM"
     } catch (e) {
       return '---';
     }

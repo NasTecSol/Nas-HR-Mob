@@ -304,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                       ? employeeProfile!.profession!
                                                       : "---",
                                                   style: GoogleFonts.inter(
-                                                    fontSize: 18,
+                                                    fontSize: 15,
                                                     fontWeight: FontWeight.w400,
                                                     color: Colors.white,
                                                   ),
