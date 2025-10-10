@@ -40,6 +40,7 @@ import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
+import 'package:nashr/request_controller/slack_model.dart';
 import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
@@ -109,6 +110,7 @@ class SingletonClass {
   List<BranchesModel> branchesModelDataList = [];
   List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
   List<SocketModel> socketDataList = [];
+  List<SlackModel> slackDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
@@ -118,6 +120,8 @@ class SingletonClass {
   String? companyName;
   String? branchID;
   String? branchName;
+  String? activeChatRoomId;
+
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -457,6 +461,19 @@ class SingletonClass {
       }
       return '--:--';
     }
+  }
+  /// API METHODS
+  Future<SlackModel?> getChats() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    var client = http.Client();
+    var uri = Uri.parse(
+        'https://dev.nashrms.com/api/chat-system/user-chats/$employeeId');
+    var response = await client.get(uri, headers: getHeaders());
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      return SlackModel.fromJson(responseBody);
+    }
+    return null;
   }
   ///ATTENDANCE API CALL
   Future<AttendanceData?> getEmployeeAttendanceData({

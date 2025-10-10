@@ -97,157 +97,170 @@ class _SocketNotificationScreenState extends State<SocketNotificationScreen> {
               ],
             ),
             Expanded(
-              child: singletonClass.socketDataList.isEmpty
-                  ? Center(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/empty.json'),
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.noData,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-                  : ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: singletonClass.socketDataList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final socketData =
-                  singletonClass.socketDataList.reversed.toList()[index];
+              child: () {
+                // Filter out chat-only notifications
+                final filteredList = singletonClass.socketDataList
+                    .where((socketData) => socketData.module != "chat")
+                    .toList()
+                    .reversed
+                    .toList();
 
-                  final message = isArabic
-                      ? socketData.messageAr
-                      : socketData.messageEn;
-
-                  return Dismissible(
-                    key: Key(socketData.timestamp.toString()),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) {
-                      setState(() {
-                        singletonClass.socketDataList.removeAt(index);
-                      });
-                    },
-                    background: Container(
-                      decoration: BoxDecoration(
-                        borderRadius:
-                        const BorderRadius.all(Radius.circular(15)),
-                        color: Colors.red,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 2,
-                            offset: const Offset(3, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Icon(Icons.delete_outline_rounded,
-                              color: Colors.white),
+                if (filteredList.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/empty.json'),
                         ),
-                      ),
-                    ),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius:
-                        const BorderRadius.all(Radius.circular(15)),
-                        color: const Color(0xffF4F7FA),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 2,
-                            offset: const Offset(3, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        leading: SizedBox(
-                          height: 50,
-                          width: 50,
-                          child: Image.asset(
-                              _getNotificationImage(socketData.module)),
-                        ),
-                        title: Text(
-                          socketData.module == 'attendance' ? AppLocalizations.of(context)!.clockingNotification : socketData.module == "request" ? AppLocalizations.of(context)!.requestNotification : socketData.module,
+                        Text(
+                          AppLocalizations.of(context)!.noData,
                           style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: NasColors.darkBlue,
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              message,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              formatRelativeTime(
-                                  socketData.timestamp.toIso8601String()),
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: filteredList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final socketData = filteredList[index];
+
+                    final message = isArabic
+                        ? socketData.messageAr
+                        : socketData.messageEn;
+
+                    return Dismissible(
+                      key: Key(socketData.timestamp.toString()),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) {
+                        setState(() {
+                          singletonClass.socketDataList.removeWhere(
+                                (item) => item.timestamp == socketData.timestamp,
+                          );
+                        });
+                      },
+                      background: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                          color: Colors.red,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 2,
+                              offset: const Offset(3, 3),
                             ),
                           ],
                         ),
-                        onTap: () {
-                          final module = socketData.module.toLowerCase();
-                          if (module.contains('attendance')) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                  const TeamAttendanceScreen()),
-                            );
-                          } else if (module.contains('complain')) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                  const Complaints()),
-                            );
-                          } else if (module.contains('penalty') ||
-                              module.contains('fine')) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                  const PenaltyAndFineScreen()),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      MainScreen(index: 2)),
-                            );
-                          }
-                        },
+                        child: const Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Icon(Icons.delete_outline_rounded,
+                                color: Colors.white),
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                          color: const Color(0xffF4F7FA),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 2,
+                              offset: const Offset(3, 3),
+                            ),
+                          ],
+                        ),
+                        child: ListTile(
+                          leading: SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: Image.asset(
+                              _getNotificationImage(socketData.module),
+                            ),
+                          ),
+                          title: Text(
+                            socketData.module == 'attendance'
+                                ? AppLocalizations.of(context)!.clockingNotification
+                                : socketData.module == "request"
+                                ? AppLocalizations.of(context)!.requestNotification
+                                : socketData.module,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                message,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Text(
+                                formatRelativeTime(socketData.timestamp.toIso8601String()),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            final module = socketData.module.toLowerCase();
+                            if (module.contains('attendance')) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const TeamAttendanceScreen()),
+                              );
+                            } else if (module.contains('complain')) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Complaints()),
+                              );
+                            } else if (module.contains('penalty') ||
+                                module.contains('fine')) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const PenaltyAndFineScreen()),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MainScreen(index: 2)),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }(),
             )
           ],
         ),

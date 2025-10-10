@@ -1956,4 +1956,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flexibleShift => 'Flexible Shift';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get chatBox => 'Chat Box';
+
+  @override
+  String get directChat => 'Direct Chats';
+
+  @override
+  String get groups => 'Groups';
+
+  @override
+  String get s => 's';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get noMessageYet => 'No message yet';
+
+  @override
+  String get typeAMessage => 'Type a message here';
+
+  @override
+  String get me => 'me';
 }
