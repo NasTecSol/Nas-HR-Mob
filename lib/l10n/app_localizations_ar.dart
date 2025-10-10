@@ -1950,4 +1950,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get flexibleShift => 'وردية مرنة';
+
+  @override
+  String get chat => 'دردشة';
+
+  @override
+  String get chatBox => 'صندوق المحادثة';
+
+  @override
+  String get directChat => 'المحادثات المباشرة';
+
+  @override
+  String get groups => 'المجموعات';
+
+  @override
+  String get s => 'ث';
+
+  @override
+  String get yesterday => 'أمس';
+
+  @override
+  String get noMessageYet => 'لا توجد رسائل بعد';
+
+  @override
+  String get typeAMessage => 'اكتب رسالة هنا';
+
+  @override
+  String get me => 'أنا';
 }

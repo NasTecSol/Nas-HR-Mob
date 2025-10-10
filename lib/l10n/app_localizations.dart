@@ -3961,6 +3961,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flexible Shift'**
   String get flexibleShift;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @chatBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat Box'**
+  String get chatBox;
+
+  /// No description provided for @directChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct Chats'**
+  String get directChat;
+
+  /// No description provided for @groups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groups;
+
+  /// No description provided for @s.
+  ///
+  /// In en, this message translates to:
+  /// **'s'**
+  String get s;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @noMessageYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No message yet'**
+  String get noMessageYet;
+
+  /// No description provided for @typeAMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message here'**
+  String get typeAMessage;
+
+  /// No description provided for @me.
+  ///
+  /// In en, this message translates to:
+  /// **'me'**
+  String get me;
 }
 
 class _AppLocalizationsDelegate

@@ -28,7 +28,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   void initState() {
     super.initState();
    setState(() {
-
    });
   }
   @override

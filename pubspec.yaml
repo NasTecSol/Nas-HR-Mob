@@ -83,7 +83,7 @@ dependencies:
   flutter_local_notifications: ^19.4.0
   reorderables: ^0.6.0
   background_fetch: ^1.4.0
-
+  overlay_support: ^2.1.0
 
 
 dev_dependencies:
@@ -113,7 +113,7 @@ flutter:
   assets:
      - images/
      - images/fonts/
-
+     - assets/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

@@ -741,5 +741,15 @@
     "update": "تحديث",
     "timeTableShift": "جدول الوردية",
     "fullTime": "دوام كامل",
-    "flexibleShift":"وردية مرنة"
+    "flexibleShift":"وردية مرنة",
+    "chat": "دردشة",
+    "chatBox":"صندوق المحادثة",
+    "directChat": "المحادثات المباشرة",
+    "groups": "المجموعات",
+    "s": "ث",
+    "yesterday": "أمس",
+    "noMessageYet": "لا توجد رسائل بعد",
+    "typeAMessage": "اكتب رسالة هنا",
+    "today": "اليوم",
+    "me": "أنا"
 }

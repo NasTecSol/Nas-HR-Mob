@@ -219,7 +219,6 @@ class _TeamScreenState extends State<TeamScreen> {
           }
         }
       }
-
       return {
         'ownTeams': ownTeams,
         'underTeams': underTeams,
