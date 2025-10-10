@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -27,7 +28,7 @@ void main() async {
 
   if (kDebugMode) {
     print("App is running in Debug mode.");
-    SingletonClass().baseURL = "https://www.nashrms.com/api";
+    SingletonClass().baseURL = "https://dev.nashrms.com/api";
     print("Debug url ${SingletonClass().baseURL}");
   }
 
@@ -92,7 +93,8 @@ void main() async {
       ],
       child: Consumer<LanguageChangeController>(
         builder: (context, provider, child) {
-          return MyApp(provider: provider);
+          return OverlaySupport.global(
+              child: MyApp(provider: provider));
         },
       ),
     ),

@@ -1079,5 +1079,16 @@
   "update":"Update",
   "timeTableShift":"Time Table Shift",
   "fullTime":"Full Time",
-  "flexibleShift":"Flexible Shift"
+  "flexibleShift":"Flexible Shift",
+  "chat":"Chat",
+  "chatBox":"Chat Box",
+  "directChat":"Direct Chats",
+  "groups":"Groups",
+  "s":"s",
+  "yesterday":"Yesterday",
+  "noMessageYet":"No message yet",
+  "typeAMessage":"Type a message here",
+  "today":"Today",
+  "me":"me"
+
 }

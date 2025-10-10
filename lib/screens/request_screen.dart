@@ -133,7 +133,7 @@ class _RequestScreenState extends State<RequestScreen> {
     }
   }
 
-//Overlay
+///Overlay
 
   OverlayEntry? _overlayEntry;
 
@@ -462,8 +462,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       buildOptionsCard(0, AppLocalizations.of(context)!.requests),
-                      buildOptionsCard(
-                          1, AppLocalizations.of(context)!.approvals),
+                      buildOptionsCard(1, AppLocalizations.of(context)!.approvals),
                     ],
                   ),
                 ),
@@ -768,45 +767,49 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   ),
                                                   const SizedBox(height: 10),
                                                   Align(
-                                                    alignment: Alignment.topLeft,
-                                                    child: request.requestType ==
-                                                            "loanRequest"
+                                                    alignment:
+                                                    Alignment.topLeft,
+                                                    child: request.requestType == "loanRequest"
                                                         ? Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
-                                                                : AppLocalizations
-                                                                        .of(context)!
-                                                                    .noData,
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          )
+                                                      request.requestData !=
+                                                          null &&
+                                                          request
+                                                              .requestData!
+                                                              .isNotEmpty
+                                                          ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                                                          : AppLocalizations.of(
+                                                          context)!
+                                                          .noData,
+                                                      style: GoogleFonts
+                                                          .inter(
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color:
+                                                        Colors.black,
+                                                        fontSize: 15,
+                                                      ),
+                                                    )
                                                         : Text(
-                                                            request.requestData !=
-                                                                        null &&
-                                                                    request
-                                                                        .requestData!
-                                                                        .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
-                                                                : AppLocalizations
-                                                                        .of(context)!
-                                                                    .noData,
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
+                                                      request.requestData !=
+                                                          null &&
+                                                          request
+                                                              .requestData!
+                                                              .isNotEmpty
+                                                          ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
+                                                          : AppLocalizations.of(
+                                                          context)!
+                                                          .noData,
+                                                      style: GoogleFonts
+                                                          .inter(
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color:
+                                                        Colors.grey,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
                                                   ),
                                                   if (_expandedIndex ==
                                                       index) ...[
@@ -1525,7 +1528,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -1545,7 +1548,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -1555,8 +1558,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                     FontWeight
                                                                         .bold,
                                                                 color:
-                                                                    Colors.black,
-                                                                fontSize: 15,
+                                                                    Colors.grey,
+                                                                fontSize: 13,
                                                               ),
                                                             ),
                                                     ),
@@ -2080,6 +2083,10 @@ class _RequestScreenState extends State<RequestScreen> {
                                           return const SizedBox.shrink();
                                         }
                                       }
+                                      final allApproved = request.approvers != null &&
+                                          request.approvers!.isNotEmpty &&
+                                          request.approvers!.every((approver) =>
+                                          approver.status?.toLowerCase() == 'approved');
                                       String formatDate(String updatedAt) {
                                         DateTime updatedAtDateTime = DateTime.parse(updatedAt);
                                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
@@ -2289,55 +2296,53 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         )
                                                       ],
                                                     ),
+                                                    SizedBox(height: 10),
                                                     Align(
                                                       alignment:
-                                                          Alignment.topLeft,
-                                                      child: request
-                                                                  .requestType ==
-                                                              "loanRequest"
+                                                      Alignment.topLeft,
+                                                      child: request.requestType == "loanRequest"
                                                           ? Text(
-                                                              request.requestData !=
-                                                                          null &&
-                                                                      request
-                                                                          .requestData!
-                                                                          .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"}"
-                                                                  : AppLocalizations.of(
-                                                                          context)!
-                                                                      .noData,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.black,
-                                                                fontSize: 15,
-                                                              ),
-                                                            )
+                                                        request.requestData !=
+                                                            null &&
+                                                            request
+                                                                .requestData!
+                                                                .isNotEmpty
+                                                            ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                                                            : AppLocalizations.of(
+                                                            context)!
+                                                            .noData,
+                                                        style: GoogleFonts
+                                                            .inter(
+                                                          fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                          color:
+                                                          Colors.black,
+                                                          fontSize: 15,
+                                                        ),
+                                                      )
                                                           : Text(
-                                                              request.requestData !=
-                                                                          null &&
-                                                                      request
-                                                                          .requestData!
-                                                                          .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.duration ?? "---"}"
-                                                                  : AppLocalizations.of(
-                                                                          context)!
-                                                                      .noData,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.black,
-                                                                fontSize: 15,
-                                                              ),
-                                                            ),
+                                                        request.requestData !=
+                                                            null &&
+                                                            request
+                                                                .requestData!
+                                                                .isNotEmpty
+                                                            ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
+                                                            : AppLocalizations.of(
+                                                            context)!
+                                                            .noData,
+                                                        style: GoogleFonts
+                                                            .inter(
+                                                          fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                          color:
+                                                          Colors.grey,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
                                                     ),
-                                                    if (_expandedIndex ==
-                                                        index) ...[
+                                                    if (_expandedIndex == index) ...[
                                                       const SizedBox(height: 10),
                                                       Align(
                                                         alignment:
@@ -2369,89 +2374,14 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                       ),
                                                       const SizedBox(height: 10),
-                                                      if (request.requestType ==
-                                                          'leaveRequest') ...[
+                                                      if (request.requestType == 'loanRequest') ...[
                                                         const SizedBox(
                                                             height: 10),
                                                         Align(
                                                           alignment:
                                                               Alignment.topLeft,
                                                           child: Text(
-                                                            AppLocalizations.of(
-                                                                    context)!
-                                                                .balanceToDate,
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.w500,
-                                                              color: Colors.grey,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 5),
-                                                        Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Text(
-                                                            "25 ${AppLocalizations.of(context)!.days}",
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 10),
-                                                        Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Text(
-                                                            AppLocalizations.of(
-                                                                    context)!
-                                                                .balanceToEndOfYear,
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.w500,
-                                                              color: Colors.grey,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 5),
-                                                        Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Text(
-                                                            "15",
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              color: Colors.black,
-                                                              fontSize: 15,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 10),
-                                                      ],
-                                                      const SizedBox(height: 10),
-                                                      if (request.requestType ==
-                                                          'loanRequest') ...[
-                                                        const SizedBox(
-                                                            height: 10),
-                                                        Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Text(
-                                                            AppLocalizations.of(
-                                                                    context)!
-                                                                .totalLoanAmount,
+                                                            AppLocalizations.of(context)!.totalLoanAmount,
                                                             style:
                                                                 GoogleFonts.inter(
                                                               fontWeight:
@@ -2571,8 +2501,163 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             )),
                                                       ],
                                                       const SizedBox(height: 10),
-                                                      if (request.status ==
-                                                          'pending') ...[
+                                                      SingleChildScrollView(
+                                                        scrollDirection:Axis.horizontal,
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            Column(
+                                                              children: [
+                                                                Stack(
+                                                                  alignment: Alignment.center,
+                                                                  children: [
+                                                                    Container(
+                                                                      height: 25,
+                                                                      width: 25,
+                                                                      decoration: BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: NasColors.onTime,
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                      height: 10,
+                                                                      width: 10,
+                                                                      decoration: const BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: Colors.white,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Text(
+                                                                  "➡️",
+                                                                  style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Colors.black,
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+
+                                                            // Line after Req
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(bottom: 20.0),
+                                                              child: Container(
+                                                                width: 40,
+                                                                height: 2,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            ),
+                                                            ...[
+                                                              if (request.approvers != null && request.approvers!.isNotEmpty)
+                                                                for (int i = 0; i < request.approvers!.length; i++) ...[
+                                                                  Column(
+                                                                    children: [
+                                                                      Stack(
+                                                                        alignment: Alignment.center,
+                                                                        children: [
+                                                                          Container(
+                                                                            height: 25,
+                                                                            width: 25,
+                                                                            decoration: BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: _getColorForApproverStatus(
+                                                                                  request.approvers![i].status),
+                                                                            ),
+                                                                          ),
+                                                                          Container(
+                                                                            height: 10,
+                                                                            width: 10,
+                                                                            decoration: const BoxDecoration(
+                                                                              shape: BoxShape.circle,
+                                                                              color: Colors.white,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      const SizedBox(height: 5),
+                                                                      Text(
+                                                                        request.approvers![i].approverName ?? '---',
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 12,
+                                                                          fontWeight: FontWeight.w500,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  if (i != request.approvers!.length - 1)
+                                                                    Padding(
+                                                                      padding: const EdgeInsets.only(bottom: 20.0),
+                                                                      child: Container(
+                                                                        width: 40,
+                                                                        height: 2,
+                                                                        color: Colors.grey,
+                                                                      ),
+                                                                    ),
+                                                                ]
+                                                              else
+                                                                Text(
+                                                                  '---',
+                                                                  style: GoogleFonts.inter(
+                                                                    fontSize: 15,
+                                                                    color: Colors.grey,
+                                                                    fontWeight: FontWeight.w500,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                            // Line before CEO
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(bottom: 20.0),
+                                                              child: Container(
+                                                                width: 40,
+                                                                height: 2,
+                                                                color: Colors.grey,
+                                                              ),
+                                                            ),
+                                                            // CEO
+                                                            Column(
+                                                              children: [
+                                                                Stack(
+                                                                  alignment: Alignment.center,
+                                                                  children: [
+                                                                    Container(
+                                                                      height: 25,
+                                                                      width: 25,
+                                                                      decoration: BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: allApproved ? NasColors.onTime : NasColors.pending,
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                      height: 10,
+                                                                      width: 10,
+                                                                      decoration: const BoxDecoration(
+                                                                        shape: BoxShape.circle,
+                                                                        color: Colors.white,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Text(
+                                                                  allApproved ? "✅" : "⏳",
+                                                                  style: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Colors.black,
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 10),
+                                                      if (request.approvers!.firstWhere(
+                                                            (approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,
+                                                      ).status == 'pending') ...[
                                                         Padding(
                                                           padding:
                                                               const EdgeInsets
@@ -2910,7 +2995,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         child: GestureDetector(
                           onTap: () {
                             if (_currentPage != index) {
-                              _fetchApproverData(index); // Send 0, 1, 2...
+                              _fetchApproverData(index);
                             }
                           },
                           child: Container(

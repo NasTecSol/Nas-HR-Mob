@@ -73,6 +73,8 @@ class SocketService {
       print("🧹 Socket disposed");
     }
   }
+
+
   Future<void> _handleBroadcastEvent(dynamic data, String languageCode) async {
     try {
       if (data == null) return;
@@ -82,9 +84,7 @@ class SocketService {
 
       final module = data['module'];
       final targetAudience = data['targetAudience'];
-      final dynamic log = (module == "request")
-          ? data['data']
-          :  data['data'];
+      final dynamic log = data['data'];
 
       final String? grade = singletonClass.getJWTModel()?.grade;
       final String? empId = singletonClass.getJWTModel()?.employeeId;
@@ -92,40 +92,86 @@ class SocketService {
 
       bool shouldNotify = false;
 
-      if (grade == "L4") {
-        final String? logEmpId = log?['employeeId'];
-        if (logEmpId != null && empId != null && logEmpId == empId) {
-          shouldNotify = true;
-        }
-      } else if (["L0", "L1", "L2", "L3"].contains(grade)) {
-        String? supervisorId;
-        String? targetBranchId;
-        final String? logEmpId = log?['employeeId'];
-        if (logEmpId != null && empId != null && logEmpId == empId) {
-          shouldNotify = true;
-        }
-        if (targetAudience is Map<String, dynamic>) {
-          supervisorId = targetAudience['supervisors']?.toString();
-          targetBranchId = targetAudience['branchId']?.toString();
-        } else if (targetAudience is List) {
-          for (var item in targetAudience) {
-            if (item is Map<String, dynamic>) {
-              supervisorId ??= item['approverId']?.toString();
-              targetBranchId ??= item['branchId']?.toString();
+      if (module == "attendance") {
+        // ✅ Attendance flow (unchanged)
+        if (grade == "L4") {
+          final String? logEmpId = log?['employeeId'];
+          if (logEmpId != null && empId != null && logEmpId == empId) {
+            shouldNotify = true;
+          }
+        } else if (["L0", "L1", "L2", "L3"].contains(grade)) {
+          String? supervisorId;
+          String? targetBranchId;
+          final String? logEmpId = log?['employeeId'];
+          if (logEmpId != null && empId != null && logEmpId == empId) {
+            shouldNotify = true;
+          }
+
+          if (targetAudience is Map<String, dynamic>) {
+            supervisorId = targetAudience['supervisors']?.toString();
+            targetBranchId = targetAudience['branchId']?.toString();
+          } else if (targetAudience is List) {
+            for (var item in targetAudience) {
+              if (item is Map<String, dynamic>) {
+                supervisorId ??= item['approverId']?.toString();
+                targetBranchId ??= item['branchId']?.toString();
+              }
+            }
+          }
+
+          if (supervisorId != null &&
+              targetBranchId != null &&
+              empId != null &&
+              branchId != null) {
+            if (supervisorId == empId && targetBranchId == branchId) {
+              shouldNotify = true;
             }
           }
         }
-
-        if (supervisorId != null &&
-            targetBranchId != null &&
-            empId != null &&
-            branchId != null) {
-          if (supervisorId == empId && targetBranchId == branchId) {
+      } else if (module == "request") {
+        if (grade == "L4") {
+          final String? logEmpId = log?['employeeId'];
+          if (logEmpId != null && empId != null && logEmpId == empId) {
             shouldNotify = true;
+            print("notifcation sex");
+          }
+        } else if (["L0", "L1", "L2", "L3"].contains(grade)) {
+          String? supervisorId;
+          final String? logEmpId = log?['employeeId'];
+          if (logEmpId != null && empId != null && logEmpId == empId) {
+            shouldNotify = true;
+            print("notifcation sex");
+          }
+
+          if (targetAudience is Map<String, dynamic>) {
+            supervisorId = targetAudience['approverId']?.toString();
+          } else if (targetAudience is List) {
+            for (var item in targetAudience) {
+              if (item is Map<String, dynamic>) {
+                supervisorId ??= item['approverId']?.toString();
+              }
+            }
+          }
+
+          if (supervisorId != null &&
+              empId != null) {
+            if (supervisorId == empId) {
+              shouldNotify = true;
+            }
+          }
+        }
+      } else {
+        final currentUserId = singletonClass.getJWTModel()?.employeeId;
+        if (targetAudience is Map<String, dynamic>) {
+          final participants = targetAudience['participants'];
+          if (participants is List && currentUserId != null) {
+            if (participants.contains(currentUserId)) {
+              shouldNotify = true;
+              debugPrint("✅ Notification triggered for user: $currentUserId");
+            }
           }
         }
       }
-
 
       if (shouldNotify) {
         NotificationService.showNotification(

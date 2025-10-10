@@ -18,6 +18,7 @@ import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
+import 'package:nashr/screens/slack_screen.dart';
 import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
@@ -70,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
+    SocketService2().initSocket();
     final uiSettings =
         singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
     final hasSocket =
@@ -960,6 +962,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                    const SlackScreen()));
+                          },
+                          icon: Container(
+                            height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  spreadRadius: 5,
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(9.0),
+                              child: Image.asset(
+                                'images/Comments.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -995,7 +1028,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             onPointerMove: (PointerMoveEvent event) {},
             child: DraggableScrollableSheet(
               controller: _draggableScrollableController,
-              initialChildSize: isExpanded ? 0.65 : 0.2,
+              initialChildSize: isExpanded ? 0.62 : 0.2,
               minChildSize: 0.2,
               maxChildSize: 0.7,
               expand: true,
