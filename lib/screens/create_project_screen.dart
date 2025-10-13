@@ -165,6 +165,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                           SizedBox(
                             height: 60,
                             child: ListView.builder(
+                              padding: EdgeInsets.zero,
                               scrollDirection: Axis.horizontal,
                               itemCount: _selectedEmployees.length,
                               itemBuilder: (context, index) {
@@ -286,6 +287,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: TextFormField(
+                                cursorColor: Colors.grey,
                                 controller: _searchController,
                                 decoration: InputDecoration(
                                   hintText:
@@ -330,6 +332,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                           SizedBox(
                             height: 200, // Adjust as needed
                             child: ListView.builder(
+                              padding: EdgeInsets.zero,
                               itemCount: _employeeSearchResults.length,
                               itemBuilder: (context, index) {
                                 var employee = _employeeSearchResults[index];
@@ -955,6 +958,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   ///API Calls
   void createProject() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
+    String? empName = singletonClass.getJWTModel()?.userName;
+    String? designation = singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation;
     List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
       return {
         "empId": employee!.empId,
@@ -965,6 +970,15 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       };
     }).toList();
 
+    if (employeeId != null && empName != null) {
+      employees.add({
+        "empId": employeeId,
+        "name": empName,
+        "employeeId": employeeId,
+        "designation": designation ?? "",
+        "accessLevels": "admin"
+      });
+    }
     String url = '${singletonClass.baseURL}/kanban-project/create';
     Map<String, dynamic> data = {
       "name": _projectName.text,
@@ -989,7 +1003,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     };
 
     String jsonData = jsonEncode(data);
-    log(jsonData);
+    log("project json $jsonData");
     setState(() {
       isLoading = true;
     });
@@ -1020,7 +1034,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           );
           if (!mounted) return;
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MainScreen()));
+              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1)));
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),
@@ -1051,7 +1065,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         );
       }
     } catch (error) {
-      if (!mounted) return; // 👈 Important here too
+      if (!mounted) return;
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,
@@ -1092,7 +1106,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       print(">>>>$result");
       setState(() {
-        // Only add if not already in the list
         final exists = _employeeSearchResults.any((e) => e.empId == result.empId);
 
         if (!exists) {

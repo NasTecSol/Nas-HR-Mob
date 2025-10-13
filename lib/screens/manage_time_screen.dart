@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -36,6 +37,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     super.initState();
     _teamCheck();
     _shiftFuture = fetchAndSetShiftDetails();
+    getShiftsFromBranches();
   }
 
   void _teamCheck(){
@@ -78,7 +80,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.manageTime,
+                  AppLocalizations.of(context)!.manageShifts,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -118,9 +120,9 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                     (branch) => branch.branchCompanyId == value);
                             singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
                             _isChecked = false;
-
                             /// UPDATE _shiftFuture so FutureBuilder gets refreshed
                             _shiftFuture = fetchAndSetShiftDetails();
+                            getShiftsFromBranches();
                           });
                         },
                         itemBuilder: (BuildContext context) {
@@ -156,7 +158,6 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                               const SizedBox(width: 8),
                               Image.asset(
                                 'images/site.png',
-                                // <-- Replace with your actual image path
                                 height: 14,
                                 width: 14,
                               ),
@@ -166,8 +167,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   singletonClass.branchName != null &&
                                       singletonClass.branchName!.isNotEmpty
                                       ? singletonClass.branchName!
-                                      : AppLocalizations.of(context)!
-                                      .selectBranch,
+                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -209,6 +209,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   singletonClass.branchID = null;
                                   singletonClass.branchName = null;
                                   _shiftFuture = fetchAndSetShiftDetails();
+                                  getShiftsFromBranches();
                                 }
                               });
                             } : null ),
@@ -218,14 +219,17 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                 ]
 
               ],
-              if (isSearching == true)
+              if(_selectedOptionIndex == 0)...[
+                if(isSearching == true)
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
                       controller: searchController,
                       onChanged: (value) {
-                        setState(() {});
+                        setState(() {
+
+                        });
                       },
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.search,
@@ -242,8 +246,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
-                          borderSide:
-                          const BorderSide(color: Colors.black, width: 1.5),
+                          borderSide: const BorderSide(color: Colors.black, width: 1.5),
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(Icons.close),
@@ -258,17 +261,18 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                     ),
                   ),
                 ),
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isSearching = true;
-                    });
-                  },
-                  icon: Icon(
-                    Icons.search,
-                    size: 30,
-                    color: Colors.black,
-                  ))
+                IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isSearching = true;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.search,
+                      size: 30,
+                      color: Colors.black,
+                    ))
+              ],
             ]),
             SizedBox(height: 20),
             if (_selectedOptionIndex == 0) ...[
@@ -286,7 +290,13 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         );
                       } else if (snapshot.hasError) {
                         return Center(
-                          child: Text('Error: ${snapshot.error}'),
+                          child: Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/error.json'),
+                            ),
+                          ),
                         );
                       } else  {
                         final employees = singletonClass.branchShiftsDataList.first.data?.employees ?? [];
@@ -323,7 +333,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                             final searchText = searchController.text.toLowerCase();
 
                             if (isSearching &&
-                                !(employee.userName?.toLowerCase().contains(searchText) ?? false)) {
+                                !((employee.userName?.toLowerCase().contains(searchText) ?? false) ||
+                                    (employee.employeeInfo!.first.empId?.toLowerCase().contains(searchText) ?? false))) {
                               return const SizedBox.shrink();
                             }
 
@@ -377,7 +388,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                       SizedBox(
                                         width: 100,
                                         child: Text(
-                                          "${employee.shiftInfo?.shiftType ?? '---'}",
+                                          _translateShifts(employee.shiftInfo?.shiftType ?? '---', context),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: true,
@@ -393,6 +404,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
+                                      if (employee.shiftInfo != null && employee.shiftInfo!.shiftType == 'fullTime')
                                       Text(
                                         "• ${AppLocalizations.of(context)!.time} ${formatIsoTime(employee.shiftInfo?.timeFrom)} ${AppLocalizations.of(context)!.to} ${formatIsoTime(employee.shiftInfo?.timeTo)}",
                                         style: GoogleFonts.inter(
@@ -401,6 +413,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                           color: Colors.grey,
                                         ),
                                       ),
+                                      Spacer(),
                                       Builder(
                                         builder: (context) {
                                           return IconButton(
@@ -436,7 +449,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                                             const Icon(Icons.edit, size: 18),
                                                             const SizedBox(width: 8),
                                                             Text(
-                                                              "Update",
+                                                              AppLocalizations.of(context)!.update,
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 13,
                                                                 fontWeight: FontWeight.w600,
@@ -566,7 +579,15 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                             height: 200, width: 200),
                       );
                     } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(
+                        child: Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/error.json'),
+                          ),
+                        ),
+                      );
                     } else if (!snapshot.hasData ||
                         singletonClass.timeTableShiftsDataList.isEmpty ||
                         singletonClass.timeTableShiftsDataList.first.data == null ||
@@ -797,9 +818,14 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
           _selectedOptionIndex = index;
           if (index == 0) {
             _shiftFuture = fetchAndSetShiftDetails();
+            getShiftsFromBranches();
             isSearching = false;
           } else {
             isSearching = true;
+            final employee = timeTableShiftEmployees[0];
+            print(employee['employeeId']);
+            selectedEMPID = employee['employeeId'];
+            timeTableFuture = getTimeTable(selectedEMPID!);
           }
         });
       },
@@ -902,7 +928,9 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
         : jwt?.branchId;
 
     if (companyId == null || branchId == null) {
-      print("Company ID or Branch ID is missing");
+      if (kDebugMode) {
+        print("Company ID or Branch ID is missing");
+      }
       return null;
     }
 
@@ -911,8 +939,11 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     );
 
     final response = await http.get(uri, headers: singletonClass.getHeaders());
-    print("time table uri $uri");
-    print("TIME TABLE RESPONSE ${response.body}");
+    if (kDebugMode) {
+      print("time table uri $uri");
+      print("TIME TABLE RESPONSE ${response.body}");
+    }
+
 
     if (response.statusCode == 200) {
       final timeTable = TimeTableShiftModel.fromJson(json.decode(response.body));
@@ -940,7 +971,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     final uri =
     Uri.parse('${singletonClass.baseURL}/branches/branchId/$branchId');
     final response = await http.get(uri, headers: singletonClass.getHeaders());
-    print("shift data ${response.body}");
+    print("shift data update${response.body}");
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
@@ -979,6 +1010,25 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       return DateFormat.jm().format(time);
     } catch (e) {
       return '--:--';
+    }
+  }
+
+  String _translateShifts(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'fullTime':
+        return localizations.fullTime;
+      case 'flexibleShift':
+        return localizations.flexibleShift;
+      case 'timeTableShift':
+        return localizations.timeTableShift;
+      default:
+        return status;
     }
   }
 }

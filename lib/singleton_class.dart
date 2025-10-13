@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
@@ -39,6 +40,7 @@ import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
+import 'package:nashr/request_controller/slack_model.dart';
 import 'package:nashr/request_controller/socket_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
@@ -108,6 +110,7 @@ class SingletonClass {
   List<BranchesModel> branchesModelDataList = [];
   List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
   List<SocketModel> socketDataList = [];
+  List<SlackModel> slackDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
@@ -117,6 +120,8 @@ class SingletonClass {
   String? companyName;
   String? branchID;
   String? branchName;
+  String? activeChatRoomId;
+  String? activeScreen;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -297,6 +302,7 @@ class SingletonClass {
     String? employeeId =  getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/notification-data/getNotificationData/$employeeId');
+    print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -373,6 +379,7 @@ class SingletonClass {
         : getJWTModel()?.branchId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/branches/branchId/$branchId');
+    print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
@@ -455,6 +462,19 @@ class SingletonClass {
       return '--:--';
     }
   }
+  /// API METHODS
+  Future<SlackModel?> getChats() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    var client = http.Client();
+    var uri = Uri.parse(
+        'https://dev.nashrms.com/api/chat-system/user-chats/$employeeId');
+    var response = await client.get(uri, headers: getHeaders());
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      return SlackModel.fromJson(responseBody);
+    }
+    return null;
+  }
   ///ATTENDANCE API CALL
   Future<AttendanceData?> getEmployeeAttendanceData({
     int limit = 31,
@@ -524,9 +544,23 @@ class SingletonClass {
     return DateFormat('hh:mm a').format(createdDate);
   }
 
-  String formatDate2(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('dd-MM-yyyy').format(createdDate);
+  String formatDate2(String createdAt , context) {
+    try{
+      DateTime updatedAtDateTime = DateTime.parse(createdAt);
+      final locale = Localizations.localeOf(context).languageCode;
+      if (locale == 'ar'){
+        final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
+        return arabicFormatter.format(updatedAtDateTime);
+      }else{
+        final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+        return formattedTime;
+      }
+    } catch (e){
+      if (kDebugMode) {
+        print("Error formatting time: $e");
+      }
+      return '--:--';
+    }
   }
 
   String formatDateTime(String dateTime) {
@@ -538,10 +572,10 @@ class SingletonClass {
     }
   }
 
-  String formatMinutes(int totalMinutes) {
+  String formatMinutes(int totalMinutes, context) {
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
-    return "$hours h $minutes min";
+    return "$hours ${AppLocalizations.of(context)!.h} $minutes ${AppLocalizations.of(context)!.m}";
   }
 
   bool isToday(String? datetimeString) {
@@ -552,13 +586,11 @@ class SingletonClass {
 
   String formatWithDateTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) return '--';
-
     try {
       DateTime parsed = DateTime.parse(dateTimeString).toLocal();
       return DateFormat('dd MMM yyyy, h:mm a').format(parsed);
-      // Example output: "24 Jul 2025, 1:21 PM"
     } catch (e) {
-      return '--';
+      return '---';
     }
   }
   ///Header for api call
@@ -566,7 +598,7 @@ class SingletonClass {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" : tenantId.toString()
+      "x-tenant-id" : "2002"
     };
   }
 }

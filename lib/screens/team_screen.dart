@@ -112,24 +112,24 @@ class _TeamScreenState extends State<TeamScreen> {
         'ownTeams': ownTeams,
         'underTeams': [],
       };
-    } else{
+    } else {
       for (BranchData branchData in branchDataList) {
-        for (var departmentDetails
-        in branchData.data?.branch?.departmentDetails ?? []) {
+        for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
           for (var department in departmentDetails.departments ?? []) {
             final supervisors = department.supervisors ?? [];
             final teams = department.teams ?? [];
-            if (["L0", "L1", "L2", "L3"].contains(userGrade)) {
+
+            if (["L0", "L1"].contains(userGrade)) {
+              // Supervisor logic for L0 & L1
               bool isUserSupervisorInDepartment =
               supervisors.any((s) => s.empId == reportingManagerId);
+
               if (isUserSupervisorInDepartment) {
-                if (kDebugMode) {
-                  print('✅ User is a supervisor in this department');
-                }
+                if (kDebugMode) print('✅ User is a supervisor in this department');
+
                 ownTeams.add(
                   Teams(
-                    teamId:
-                    'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
                     teamData: supervisors.map<TeamData>((supervisor) {
                       return TeamData(
                         empId: supervisor.empId,
@@ -141,16 +141,65 @@ class _TeamScreenState extends State<TeamScreen> {
                     }).toList(),
                   ),
                 );
-                for (var supervisor in department.supervisors ?? []) {
+
+                for (var supervisor in supervisors) {
                   if (supervisor.empId == reportingManagerId) {
                     for (var team in teams) {
                       if (supervisor.teamId == team.teamId) {
                         if (kDebugMode) {
-                          print('Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
+                          print(
+                              'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
                         }
                         underTeams.add(team);
                       }
                     }
+                  }
+                }
+              }
+            } else if (["L2", "L3"].contains(userGrade)) {
+              // 🔹 Handle L2 & L3
+              bool isUserSupervisorInDepartment =
+              supervisors.any((s) => s.empId == reportingManagerId);
+
+              if (isUserSupervisorInDepartment) {
+                // Same as L0/L1 supervisor logic
+                if (kDebugMode) print('✅ User (L2/L3) is a supervisor in this department');
+
+                ownTeams.add(
+                  Teams(
+                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                    teamData: supervisors.map<TeamData>((supervisor) {
+                      return TeamData(
+                        empId: supervisor.empId,
+                        employeeId: supervisor.employeeId,
+                        userName: supervisor.userName,
+                        designation: supervisor.designation,
+                        grade: supervisor.grade,
+                      );
+                    }).toList(),
+                  ),
+                );
+
+                for (var supervisor in supervisors) {
+                  if (supervisor.empId == reportingManagerId) {
+                    for (var team in teams) {
+                      if (supervisor.teamId == team.teamId) {
+                        underTeams.add(team);
+                      }
+                    }
+                  }
+                }
+              } else {
+                for (var team in teams) {
+                  bool isUserInTeam = team.teamData
+                      ?.any((member) => member.empId == reportingManagerId) ??
+                      false;
+
+                  if (isUserInTeam) {
+                    if (kDebugMode) {
+                      print('👤 User (L2/L3) is in team ${team.teamId}, adding to ownTeams');
+                    }
+                    ownTeams.add(team);
                   }
                 }
               }
@@ -161,8 +210,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     false;
                 if (isUserInTeam) {
                   if (kDebugMode) {
-                    print(
-                        '👤 User is team member of ${team.teamId}, adding to ownTeams');
+                    print('👤 User is team member of ${team.teamId}, adding to ownTeams');
                   }
                   ownTeams.add(team);
                 }
@@ -228,6 +276,28 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ),
                 ),
+                if(singletonClass.getJWTModel()?.grade == 'L4')...[
+                  SizedBox(width: 5),
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
                 const Spacer(),
               ],
             ),
@@ -276,8 +346,7 @@ class _TeamScreenState extends State<TeamScreen> {
             const SizedBox(height: 20),
             if (singletonClass.getJWTModel()?.grade == "L0" ||
                 singletonClass.getJWTModel()?.grade == "L1" ||
-                singletonClass.getJWTModel()?.grade == "L2" ||
-                singletonClass.getJWTModel()?.grade == "L3") ...[
+                singletonClass.getJWTModel()?.grade == "L2") ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -293,10 +362,7 @@ class _TeamScreenState extends State<TeamScreen> {
                           filteredTeams.clear();
                           singletonClass.teamBranchDataList.clear();
                           singletonClass.branchID = value;
-                          final branch = singletonClass
-                              .branchesDataList.first.data
-                              ?.firstWhere(
-                                  (branch) => branch.branchCompanyId == value);
+                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
                           singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
                           if (kDebugMode) {
                             print('Selected Branch ID: $value');
@@ -308,8 +374,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         await initData();
                       },
                       itemBuilder: (context) {
-                        final branchList =
-                            singletonClass.branchesDataList.first.data ?? [];
+                        final branchList = singletonClass.branchesDataList.first.data ?? [];
                         return branchList.map((branch) {
                           return PopupMenuItem<String>(
                             value: branch.branchCompanyId,
@@ -339,7 +404,7 @@ class _TeamScreenState extends State<TeamScreen> {
                             Flexible(
                               child: Text(
                                 singletonClass.branchName ??
-                                    AppLocalizations.of(context)!.selectBranch,
+                                    singletonClass.branchDataList.first.data!.branch!.branchName,
                                 style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold, fontSize: 15),
                                 overflow: TextOverflow.ellipsis,
@@ -378,8 +443,12 @@ class _TeamScreenState extends State<TeamScreen> {
                     ],
                   ),
                 ],
-              ),
+              ),],
               SizedBox(height: 5),
+            if (singletonClass.getJWTModel()?.grade == "L0" ||
+                singletonClass.getJWTModel()?.grade == "L1" ||
+                singletonClass.getJWTModel()?.grade == "L2" ||
+                singletonClass.getJWTModel()?.grade == "L3")...[
               Row(
                 children: [
                   if(_isTeamChecked == true && singletonClass.branchID == null)...[
@@ -396,274 +465,281 @@ class _TeamScreenState extends State<TeamScreen> {
                 if (isLoading)
                   Expanded(
                       child: Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/loader.json'),
-                    ),
-                  ))
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
+                        ),
+                      ))
                 else ...[
-                  filteredTeams.isNotEmpty
-                      ? Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(5),
-                            itemCount: filteredTeams.first.teamData!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final team = filteredTeams.first.teamData![index];
-                              String imageUrl = images[index % images.length];
-                              if (singletonClass.getJWTModel()?.employeeId == team.employeeId) {
-                                return SizedBox.shrink();
-                              }
-                              final searchText = searchController.text.toLowerCase();
-                              if (isSearching && !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
-                                return const SizedBox.shrink();
-                              }
-                              return Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              EmployeeProfileScreen(
-                                            teamData: team,
-                                            isTeamMate: true,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: NasColors.containerColor,
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              height: 50,
-                                              width: 60,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                image: DecorationImage(
-                                                  image: NetworkImage(imageUrl),
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "${team.userName}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width:270,
-                                                  child: Text(
-                                                    "${team.designation}",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Divider(
-                                    thickness: 1,
-                                    color: Colors.grey[300],
-                                  ),
-                                ],
-                              );
-                            },
+                  (filteredTeams.isEmpty ||
+                      (filteredTeams.first.teamData?.where((member) => member.employeeId != singletonClass.getJWTModel()?.employeeId).isEmpty ?? true))
+                      ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/empty.json'),
                           ),
-                        )
-                      : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
                             ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                  )
+                      : Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(5),
+                      itemCount: filteredTeams.first.teamData!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final team = filteredTeams.first.teamData![index];
+                        String imageUrl = images[index % images.length];
+                        if (singletonClass.getJWTModel()?.employeeId == team.employeeId) {
+                          return SizedBox.shrink();
+                        }
+                        final searchText = searchController.text.toLowerCase();
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink();
+                          }
+                        }
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EmployeeProfileScreen(
+                                          teamData: team,
+                                          isTeamMate: false,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: NasColors.containerColor,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 50,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: NetworkImage(imageUrl),
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${team.userName}",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: NasColors.darkBlue,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width:270,
+                                            child: Text(
+                                              "${team.designation}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
                 ],
               ],
               if (_selectedOptionIndex == 1) ...[
                 if (isLoading)
                   Expanded(
                       child: Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/loader.json'),
-                    ),
-                  ))
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
+                        ),
+                      ))
                 else ...[
-                  filteredUnderTeams.isNotEmpty
+                  filteredUnderTeams.isNotEmpty &&
+                      filteredUnderTeams.first.teamData!.isNotEmpty
                       ? Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(5),
-                            itemCount:
-                                filteredUnderTeams.first.teamData!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final team =
-                                  filteredUnderTeams.first.teamData![index];
-                              String imageUrl = images[index % images.length];
-                              if (singletonClass.getJWTModel()?.employeeId ==
-                                  team.employeeId) {
-                                return SizedBox.shrink();
-                              }
-                              final searchText =
-                                  searchController.text.toLowerCase();
-                              if (isSearching &&
-                                  !(team.userName
-                                          ?.toLowerCase()
-                                          .contains(searchText) ??
-                                      false)) {
-                                return const SizedBox.shrink();
-                              }
-                              return Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              EmployeeProfileScreen(
-                                            teamData: team,
-                                            isTeamMate: true,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(5),
+                      itemCount:
+                      filteredUnderTeams.first.teamData!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final team =
+                        filteredUnderTeams.first.teamData![index];
+                        String imageUrl = images[index % images.length];
+                        if (singletonClass.getJWTModel()?.employeeId ==
+                            team.employeeId) {
+                          return SizedBox.shrink();
+                        }
+                        final searchText = searchController.text.toLowerCase();
+
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink();
+                          }
+                        }
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EmployeeProfileScreen(
+                                          teamData: team,
+                                          isTeamMate: true,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: NasColors.containerColor,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 50,
+                                        width: 60,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: NetworkImage(imageUrl),
+                                            fit: BoxFit.fill,
                                           ),
                                         ),
-                                      );
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: NasColors.containerColor,
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Row(
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                           children: [
-                                            Container(
-                                              height: 50,
-                                              width: 60,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                image: DecorationImage(
-                                                  image: NetworkImage(imageUrl),
-                                                  fit: BoxFit.fill,
-                                                ),
+                                            Text(
+                                              "${team.userName}",
+                                              maxLines: 2,
+                                              softWrap: true,
+                                              overflow:
+                                              TextOverflow.ellipsis,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight:
+                                                FontWeight.bold,
+                                                color: NasColors.darkBlue,
                                               ),
                                             ),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "${team.userName}",
-                                                    maxLines: 2,
-                                                    softWrap: true,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: NasColors.darkBlue,
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width:270,
-                                                    child: Text(
-                                                      "${team.designation}",
-                                                      maxLines: 2,
-                                                      softWrap: true,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
+                                            SizedBox(
+                                              width:270,
+                                              child: Text(
+                                                "${team.designation}",
+                                                maxLines: 2,
+                                                softWrap: true,
+                                                overflow:
+                                                TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight:
+                                                  FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  Divider(
-                                    thickness: 1,
-                                    color: Colors.grey[300],
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        )
+                                ),
+                              ),
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
                       : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
                             ),
                           ),
-                        ),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ],
               if (_selectedOptionIndex == 2) ...[
@@ -677,7 +753,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         ),
                       ))
                 else ...[
-                  filteredTeams.isNotEmpty
+                  filteredTeams.first.teamData!.isNotEmpty
                       ? Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(5),
@@ -689,8 +765,13 @@ class _TeamScreenState extends State<TeamScreen> {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
-                        if (isSearching && !(team.userName?.toLowerCase().contains(searchText) ?? false)) {
-                          return const SizedBox.shrink();
+                        if (isSearching) {
+                          final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                          if (!matchesName && !matchesId) {
+                            return const SizedBox.shrink(); // hide if neither matches
+                          }
                         }
                         return Column(
                           children: [
@@ -805,7 +886,7 @@ class _TeamScreenState extends State<TeamScreen> {
                   ),
                 ))
               else ...[
-                filteredTeams.isNotEmpty
+                filteredTeams.first.teamData!.isNotEmpty
                     ? Expanded(
                         child: ListView.builder(
                           padding: const EdgeInsets.all(5),
@@ -817,14 +898,14 @@ class _TeamScreenState extends State<TeamScreen> {
                                 team.employeeId) {
                               return SizedBox.shrink();
                             }
-                            final searchText =
-                                searchController.text.toLowerCase();
-                            if (isSearching &&
-                                !(team.userName
-                                        ?.toLowerCase()
-                                        .contains(searchText) ??
-                                    false)) {
-                              return const SizedBox.shrink();
+                            final searchText = searchController.text.toLowerCase();
+                            if (isSearching) {
+                              final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
+                              final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                              if (!matchesName && !matchesId) {
+                                return const SizedBox.shrink(); // hide if neither matches
+                              }
                             }
                             return Column(
                               children: [
@@ -836,7 +917,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                         builder: (context) =>
                                             EmployeeProfileScreen(
                                           teamData: team,
-                                          isTeamMate: true,
+                                          isTeamMate: false,
                                         ),
                                       ),
                                     );
@@ -1023,7 +1104,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length -1: 0}', // Request List Notification count
+                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length: 0}', // Request List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

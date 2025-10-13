@@ -1,4 +1,3 @@
-
 class NotificationModel {
   int? statusCode;
   String? statusMessage;
@@ -41,7 +40,21 @@ class Data {
   String? updatedAt;
   int? v;
 
-  Data({this.id, this.notificationType, this.message, this.title, this.metaData, this.from, this.to, this.notificationMessage, this.status, this.requestId, this.createdAt, this.updatedAt, this.v});
+  Data({
+    this.id,
+    this.notificationType,
+    this.message,
+    this.title,
+    this.metaData,
+    this.from,
+    this.to,
+    this.notificationMessage,
+    this.status,
+    this.requestId,
+    this.createdAt,
+    this.updatedAt,
+    this.v,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -49,8 +62,17 @@ class Data {
     message = json["message"];
     title = json["title"];
     metaData = json["metaData"];
-    from = json["from"] == null ? null : (json["from"] as List).map((e) => From.fromJson(e)).toList();
-    to = json["to"] == null ? null : (json["to"] as List).map((e) => To.fromJson(e)).toList();
+    if (json["from"] is List) {
+      from = (json["from"] as List)
+          .map((e) => e is Map<String, dynamic> ? From.fromJson(e) : From(email: e.toString()))
+          .toList();
+    }
+    if (json["to"] is List) {
+      to = (json["to"] as List)
+          .map((e) => e is Map<String, dynamic> ? To.fromJson(e) : To(email: e.toString()))
+          .toList();
+    }
+
     notificationMessage = json["notificationMessage"];
     status = json["status"];
     requestId = json["requestId"];
@@ -66,10 +88,10 @@ class Data {
     _data["message"] = message;
     _data["title"] = title;
     _data["metaData"] = metaData;
-    if(from != null) {
+    if (from != null) {
       _data["from"] = from?.map((e) => e.toJson()).toList();
     }
-    if(to != null) {
+    if (to != null) {
       _data["to"] = to?.map((e) => e.toJson()).toList();
     }
     _data["notificationMessage"] = notificationMessage;
@@ -81,6 +103,7 @@ class Data {
     return _data;
   }
 }
+
 
 class To {
   String? email;

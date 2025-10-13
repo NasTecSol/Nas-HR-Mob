@@ -45,16 +45,10 @@ class _TaskScreenState extends State<TaskScreen> {
     }
 
     List<Dattaa> newFilteredTaskList = [];
-
-    // Loop through TaskModel list
     for (TaskModel taskModel in singletonClass.taskModelList) {
-      // Check if the taskModel has data
       if (taskModel.data != null) {
-        // Loop through the task data inside each taskModel
         for (var task in taskModel.data!) {
-          // Compare the projectId from the task with the projectId from widget.projectData
           if (task.projectId == widget.projectData?.id) {
-            // If task is not already in the newFilteredTaskList, add it
             if (!newFilteredTaskList.any((existingTask) => existingTask.id == task.id)) {
               newFilteredTaskList.add(task);
             }
@@ -63,7 +57,6 @@ class _TaskScreenState extends State<TaskScreen> {
       }
     }
 
-    // Only update filteredTaskList if new tasks were found
     if (newFilteredTaskList.isNotEmpty) {
       setState(() {
         filteredTaskList = newFilteredTaskList;
@@ -80,7 +73,7 @@ class _TaskScreenState extends State<TaskScreen> {
     /// Filter tasks by status
     List<Dattaa> toDoTasks = filteredTaskList.where((task) => task.status == "TODO").toList();
     List<Dattaa> inProgressTask = filteredTaskList.where((task) => task.status == "InProgress").toList();
-    List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "completed").toList();
+    List<Dattaa> completedTask = filteredTaskList.where((task) => task.status == "Completed").toList();
 
     /// Get the total number of tasks for each status
     int totalToDoTasks = toDoTasks.length;
@@ -106,7 +99,7 @@ class _TaskScreenState extends State<TaskScreen> {
     for (var task in inProgressTask) {
       totalInProgressAssignees += task.assignTo!.length;
       if (task.tag != null) {
-        inProgressTags += ("${task.tag!}, ");
+        inProgressTags += ("${task.tag!},");
       }
     }
     if (inProgressTags.isNotEmpty) {
@@ -187,17 +180,6 @@ class _TaskScreenState extends State<TaskScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      height: 520,
-                      width: 20, // Adjusted the width for visibility
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(15),
-                          bottomLeft: Radius.circular(15),
-                        ),
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 15),

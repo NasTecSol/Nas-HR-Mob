@@ -121,54 +121,6 @@ class _ComplaintsState extends State<Complaints> {
                   ),
                 ),
                 const Spacer(),
-                if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                    singletonClass.getJWTModel()?.grade == 'L1') ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 0.0),
-                    child: _selectedOptionIndex == 1 ? TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const FileComplaintsScreen()));
-                            },
-                            child: SizedBox(
-                              height: 30,
-                              width: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    AppLocalizations.of(context)!.fileComplain,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ) : SizedBox.shrink()
-                  ),
-                ],
-                if (singletonClass.getJWTModel()?.grade == 'L2' ||
-                    singletonClass.getJWTModel()?.grade == 'L3') ...[
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -208,7 +160,6 @@ class _ComplaintsState extends State<Complaints> {
                     ),
                   ),
                 ]
-              ],
             ),
             if (singletonClass.getJWTModel()?.grade == 'L0' ||
                 singletonClass.getJWTModel()?.grade == 'L1'  ||
@@ -241,7 +192,13 @@ class _ComplaintsState extends State<Complaints> {
                           );
                         } else if (snapshot.hasError) {
                           return Center(
-                            child: Text('Error: ${snapshot.error}'),
+                            child: Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/error.json'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasData) {
                           return _request!.isEmpty ? Center(
@@ -284,19 +241,17 @@ class _ComplaintsState extends State<Complaints> {
                                   color: NasColors.containerColor,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey
-                                          .withValues(alpha: 0.3),
+                                      color: Colors.grey.withValues(alpha: 0.3),
                                       spreadRadius: 2,
                                       blurRadius: 8,
-                                      offset: const Offset(0,
-                                          0), // changes position of shadow
+                                      offset: const Offset(0, 0),
                                     ),
                                   ],
                                 ),
                                 child: Row(
                                   children: [
                                     Container(
-                                        height: 140,
+                                        height: 160,
                                         width:
                                         20,
                                         decoration: locale == "ar" ? BoxDecoration(
@@ -321,7 +276,7 @@ class _ComplaintsState extends State<Complaints> {
                                             Row(
                                               children: [
                                                 Text(
-                                                  singletonClass.formatDate2(request.createdAt!),
+                                                  singletonClass.formatDate2(request.createdAt! , context),
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
@@ -495,7 +450,13 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else if (snapshot.hasData) {
                             return  _request!.isEmpty ? Center(
@@ -550,9 +511,8 @@ class _ComplaintsState extends State<Complaints> {
                                       child: Row(
                                         children: [
                                           Container(
-                                              height: 140,
-                                              width:
-                                              20, // Adjusted the width for visibility
+                                              height: 160,
+                                              width: 20,
                                               decoration: locale == "ar" ? BoxDecoration(
                                                 borderRadius: const BorderRadius.only(
                                                   topRight: Radius.circular(15),
@@ -575,7 +535,7 @@ class _ComplaintsState extends State<Complaints> {
                                                   Row(
                                                     children: [
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt!, context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 15,
                                                           fontWeight:
@@ -672,7 +632,6 @@ class _ComplaintsState extends State<Complaints> {
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 10),
                                                 ],
                                               ),
                                             ),
@@ -759,7 +718,13 @@ class _ComplaintsState extends State<Complaints> {
                             );
                           } else if (snapshot.hasError) {
                             return Center(
-                              child: Text('Error: ${snapshot.error}'),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Lottie.asset('images/error.json'),
+                                ),
+                              ),
                             );
                           } else {
                             return _approver!.isEmpty ? Center(
@@ -836,7 +801,7 @@ class _ComplaintsState extends State<Complaints> {
                                                   Row(
                                                     children: [
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt!, context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 15,
                                                           fontWeight:
@@ -931,7 +896,7 @@ class _ComplaintsState extends State<Complaints> {
                                                       ),
                                                       const Spacer(),
                                                       Text(
-                                                        singletonClass.formatDate2(request.createdAt!),
+                                                        singletonClass.formatDate2(request.createdAt! , context),
                                                         style: GoogleFonts.inter(
                                                           fontSize: 12,
                                                           fontWeight: FontWeight.bold,
@@ -1346,7 +1311,7 @@ class _ComplaintsState extends State<Complaints> {
 
   // GET CALL
 
-  Future<ComplaintsModel?> getComplaintsData({int page = 0, int limit = 10}) async {
+  Future<ComplaintsModel?> getComplaintsData({int page = 0, int limit = 20}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
 
     // Request body with the required parameter

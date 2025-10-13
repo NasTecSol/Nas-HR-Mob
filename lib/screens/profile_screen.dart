@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -16,7 +15,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:signature/signature.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../request_controller/profile_response_model.dart';
 import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
@@ -97,9 +95,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
 
     try {
-      await singletonClass.getEmployeeData(); // Fetch updated employee data
+      await singletonClass.getEmployeeData();
       setState(() {
-        // Update UI with the latest data
         isLoading = false;
       });
     } catch (e) {
@@ -118,7 +115,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     final bankInfo = singletonClass.employeeDataList.first.data!.bankingInfo;
     final salaryInfo = singletonClass.employeeDataList.first.data!.salaryInfo;
     final familyInfo = singletonClass.employeeDataList.first.data!.familyInfo;
-    final documentInfo = singletonClass.employeeDataList.first.data!.documentsInfo;
     final shiftInfo = singletonClass.employeeDataList.first.data!.employeeInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
@@ -157,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 2)...[
                           Text(
-                            AppLocalizations.of(context)!.documents,
+                            AppLocalizations.of(context)!.loans,
                             style: GoogleFonts.inter(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -167,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 3)...[
                           Text(
-                            AppLocalizations.of(context)!.loans,
+                            AppLocalizations.of(context)!.familyInfo,
                             style: GoogleFonts.inter(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -177,16 +173,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if(_selectedOptionIndex2 == 4)...[
                           Text(
-                            AppLocalizations.of(context)!.familyInfo,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 5)...[
-                          Text(
                             AppLocalizations.of(context)!.shiftInfo,
                             style: GoogleFonts.inter(
                               fontSize: 25,
@@ -195,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ],
-                        if(_selectedOptionIndex2 == 6)...[
+                        if(_selectedOptionIndex2 == 5)...[
                           Text(
                             AppLocalizations.of(context)!.signature,
                             style: GoogleFonts.inter(
@@ -206,8 +192,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ],
                         const Spacer(),
-
-                        // Display the Settings button for "Profile" tab (index 0)
                         if (_selectedOptionIndex2 == 0)
                           IconButton(
                             onPressed: () {
@@ -244,11 +228,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         children: [
                           buildOptionsCard2(0, AppLocalizations.of(context)!.profile),
                           buildOptionsCard2(1, AppLocalizations.of(context)!.bankAccounts),
-                          buildOptionsCard2(2, AppLocalizations.of(context)!.documents),
-                          buildOptionsCard2(3, AppLocalizations.of(context)!.loans),
-                          buildOptionsCard2(4, AppLocalizations.of(context)!.familyInfo),
-                          buildOptionsCard2(5, AppLocalizations.of(context)!.shiftInfo),
-                          buildOptionsCard2(6, AppLocalizations.of(context)!.signature),
+                          buildOptionsCard2(2, AppLocalizations.of(context)!.loans),
+                          buildOptionsCard2(3, AppLocalizations.of(context)!.familyInfo),
+                          buildOptionsCard2(4, AppLocalizations.of(context)!.shiftInfo),
+                          buildOptionsCard2(5, AppLocalizations.of(context)!.signature),
                         ],
                       ),
                     ),
@@ -274,15 +257,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   child: GestureDetector(
                                     onTap: () => _toggleExpand(),
                                     child: AnimatedContainer(
-                                      duration:
-                                      const Duration(milliseconds: 300),
-                                      height: _expanded ? 300 : 180,
-                                      // Adjust height based on expanded state
+                                      duration: const Duration(milliseconds: 700),
+                                      height: _expanded ? 220 : 125,
                                       width: 400,
                                       margin: const EdgeInsets.only(top: 30),
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(25),
-                                        color: NasColors.darkBlue,
+                                        color: NasColors.darkBlue.withOpacity(_expanded ? 1 : 0.9), // fade effect
+                                        borderRadius: BorderRadius.circular(_expanded ? 30 : 60), // round animation
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.grey.withOpacity(0.4),
@@ -298,15 +279,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           padding:
                                           const EdgeInsets.only(top: 35),
                                           child: Column(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  '${employeeProfile?.firstName} ${employeeProfile?.middleName} ${employeeProfile?.lastName}',
+                                                  (employeeProfile?.firstName?.isNotEmpty == true ||
+                                                      employeeProfile?.middleName?.isNotEmpty == true ||
+                                                      employeeProfile?.lastName?.isNotEmpty == true)
+                                                      ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                      : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -317,9 +300,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  '${employeeProfile?.profession}',
+                                                  (employeeProfile?.profession?.isNotEmpty == true)
+                                                      ? employeeProfile!.profession!
+                                                      : "---",
                                                   style: GoogleFonts.inter(
-                                                    fontSize: 18,
+                                                    fontSize: 15,
                                                     fontWeight: FontWeight.w400,
                                                     color: Colors.white,
                                                   ),
@@ -330,11 +315,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.depName}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.depName?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.depName!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -343,11 +331,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.workDomain}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.workDomain?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.workDomain!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -356,11 +347,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    '${employeeProfile?.employeeInfo?.first.grade}',
+                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile?.employeeInfo?.first.grade?.isNotEmpty ==
+                                                            true))
+                                                        ? employeeProfile!.employeeInfo!.first.grade!
+                                                        : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.w500,
+                                                      fontWeight: FontWeight.w500,
                                                       color: Colors.white,
                                                     ),
                                                   ),
@@ -378,33 +372,76 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 (MediaQuery.of(context).size.width - 100) /
                                     2,
                                 child: Stack(children: [
-                                  Container(
-                                    height: 100,
-                                    width: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width:
-                                        2, // Adjust border width as needed
+                                  GestureDetector(
+                                    onTap: (){
+                                      String url = "${employeeProfile?.profilePic ?? ''}".toLowerCase();
+                                      if (url.endsWith(".png") ||
+                                          url.endsWith(".jpg") ||
+                                          url.endsWith(".jpeg")) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Dialog(
+                                              backgroundColor: Colors.transparent,
+                                              child: Container(
+                                                width: MediaQuery.of(context).size.width * 0.8,
+                                                height: MediaQuery.of(context).size.height * 0.4,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  borderRadius: BorderRadius.circular(12.0),
+                                                ),
+                                                child: Image.network(
+                                                  employeeProfile?.profilePic ?? '',
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.error),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width:
+                                          2, // Adjust border width as needed
+                                        ),
                                       ),
-                                    ),
-                                    child: ClipOval(
-                                      child: Image.network(
-                                        employeeProfile?.profilePic ?? '',
-                                        fit: BoxFit.cover,
-                                        width: 100,
-                                        height: 100,
-                                        errorBuilder: (BuildContext context,
-                                            Object exception,
-                                            StackTrace? stackTrace) {
-                                          return Image.asset(
-                                            'images/DP.png',
-                                            fit: BoxFit.cover,
-                                            width: 100,
-                                            height: 100,
-                                          );
-                                        },
+                                      child: ClipOval(
+                                        child: (employeeProfile?.profilePic != null &&
+                                            employeeProfile!.profilePic!.isNotEmpty)
+                                            ? Image.network(
+                                          employeeProfile!.profilePic!,
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return const Center(
+                                              child: CircularProgressIndicator(),
+                                            );
+                                          },
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Image.asset(
+                                              'images/DP.png',
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100,
+                                            );
+                                          },
+                                        )
+                                            : Image.asset(
+                                          'images/DP.png',
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -413,48 +450,43 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     right: -5,
                                     child: IconButton(
                                       icon: Container(
-                                        height: 30,
-                                        width: 30,
+                                        height: 35,
+                                        width: 35,
                                         decoration: BoxDecoration(
                                             borderRadius:
-                                            BorderRadius.circular(10),
+                                            BorderRadius.circular(15),
                                             color: Colors.white,
                                             border: Border.all(
                                                 color: Colors.black, width: 1)),
                                         child: const Icon(
                                           Icons.camera_alt_outlined,
                                           color: Colors.black,
+                                            size: 27,
                                         ),
                                       ),
                                       onPressed: () async {
                                         FilePickerResult? result =
                                         await FilePicker.platform.pickFiles(
                                           type: FileType
-                                              .image, // Ensures only image files are allowed
+                                              .image,
                                         );
 
                                         if (result != null &&
                                             result.files.single.path != null) {
                                           PlatformFile file =
                                               result.files.single;
-
-                                          // Save the file data for sending in the API call
                                           setState(() {
                                             selectedFile = file;
                                           });
 
                                           print('Selected file: ${file.name}');
-
-                                          // Show confirmation dialog before uploading
-                                          _showConfirmationDialog(
-                                              file); // Upload the selected file to the API
+                                          _showConfirmationDialog(file);
                                         } else {
-                                          // User canceled the file picker
                                           print('File selection canceled.');
                                         }
                                       },
                                       color: Colors
-                                          .green, // Adjust icon color as needed
+                                          .green,
                                     ),
                                   ),
                                 ]),
@@ -646,8 +678,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       alignment: Alignment.topLeft,
                                       child: Text(
                                         (employeeProfile?.phoneNumber?.isNotEmpty == true &&
-                                            (employeeProfile?.phoneNumber?.first.mobileNumber?.trim().isNotEmpty ?? false))
-                                            ? employeeProfile!.phoneNumber!.first.mobileNumber!
+                                            (employeeProfile?.phoneNumber?.first.mobileNumber?.toString().isNotEmpty ?? false))
+                                            ? employeeProfile!.phoneNumber!.first.mobileNumber!.toString()
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -712,8 +744,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.passport?.id?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.passport!.id!
+                                        (employeeProfile?.passport?.id != null &&
+                                            employeeProfile!.passport!.id.toString().isNotEmpty)
+                                            ? employeeProfile.passport!.id.toString()
                                             : "---",
                                         maxLines: 2,
                                         style: GoogleFonts.inter(
@@ -757,129 +790,116 @@ class _ProfileScreenState extends State<ProfileScreen>
                             Column(
                               children: [
                                 ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: bankInfo?.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      final bank = bankInfo![index];
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                              BorderRadius.circular(25),
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.4),
-                                                  spreadRadius: 5,
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: bankInfo?.length ?? 0,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final bank = bankInfo?[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(25),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.4),
+                                              spreadRadius: 5,
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 3),
                                             ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  height: 165,
-                                                  width: 80,
-                                                  // Adjusted the width for visibility
-                                                  decoration:
-                                                  const BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius.only(
-                                                      topLeft:
-                                                      Radius.circular(15),
-                                                      bottomLeft:
-                                                      Radius.circular(15),
-                                                    ),
-                                                    color: Colors.white,
-                                                    image: DecorationImage(
-                                                      image: AssetImage(
-                                                          "images/bankicon.png"),
-                                                      // Use a method to get the appropriate image
-                                                      fit: BoxFit.contain,
-                                                    ),
-                                                  ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              height: 165,
+                                              width: 80,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(15),
+                                                  bottomLeft: Radius.circular(15),
                                                 ),
-                                                Column(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                                  crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                color: Colors.white,
+                                                image: DecorationImage(
+                                                  image: AssetImage("images/bankicon.png"),
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${bank.title}",
+                                                        (bank?.title?.isNotEmpty == true) ? bank!.title! : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 18,
-                                                          fontWeight:
-                                                          FontWeight.bold,
+                                                          fontWeight: FontWeight.bold,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${employeeProfile!.firstName} ${employeeProfile.middleName} ${employeeProfile.lastName}",
+                                                        ((employeeProfile?.firstName?.isNotEmpty == true) ||
+                                                            (employeeProfile?.middleName?.isNotEmpty == true) ||
+                                                            (employeeProfile?.lastName?.isNotEmpty == true))
+                                                            ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                            : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        maskAccountNumber(
-                                                            "${bank.accountNumber}"),
-                                                        // Call the method to mask the account number
+                                                        (bank?.accountNumber?.isNotEmpty == true)
+                                                            ? maskAccountNumber(bank!.accountNumber!)
+                                                            : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Align(
-                                                      alignment:
-                                                      Alignment.topLeft,
+                                                      alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        "${bank.bankName}",
+                                                        (bank?.bankName?.isNotEmpty == true) ? bank!.bankName! : "---",
                                                         maxLines: 2,
-                                                        style:
-                                                        GoogleFonts.inter(
+                                                        style: GoogleFonts.inter(
                                                           fontSize: 15,
-                                                          fontWeight:
-                                                          FontWeight.normal,
+                                                          fontWeight: FontWeight.normal,
                                                           color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                   ],
-                                                )
-                                              ],
-                                            )),
-                                      );
-                                    })
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
                               ],
                             ),
                           if (_selectedOptionIndex == 1)
@@ -952,134 +972,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               Expanded(
                 child: Container(
                   color: Colors.white,
-                  child: ListView(
-                    children: [ Column(
-                      children: [
-                        documentInfo!.isNotEmpty
-                            ? ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          itemCount: documentInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final documents = documentInfo[index];
-                            final fileType = documents.format?.split('.').last.toLowerCase(); // Null check for documents.type
-                            final isImage = fileType != null && ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-                            final isPdf = fileType == 'pdf';
-
-                            return Transform.translate(
-                              offset: Offset(0, index == 0 ? 0 : -10),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (isImage || isPdf) {
-                                    if (await canLaunch(documents.url)) {
-                                      await launch(documents.url);
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Could not open the document!')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Unsupported file type!')),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.only(top: 10.0, left: 30, right: 30),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      if (index != 0)
-                                        const BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          spreadRadius: 10,
-                                          offset: Offset(0, -6),
-                                        ),
-                                      const BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${documents.type}",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: isImage
-                                            ? Image.network(
-                                          documents.url,
-                                          height: 60,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.topCenter,
-                                        )
-                                            : Icon(
-                                          isPdf ? Icons.picture_as_pdf : Icons.insert_drive_file,
-                                          size: 60,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                            : Center(
-            child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-            children: [
-            Center(
-            child: SizedBox(
-            height: 200,
-            width: 200,
-            child: Lottie.asset('images/empty.json'),
-            ),
-            ),
-            Text(
-            AppLocalizations.of(context)!.noData,
-            style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: NasColors.darkBlue,
-            ),
-            ),
-            ],
-            ),
-            ),
-            )
-                      ],
-                    ),
-            ]
-                  )
-                ),
-              ),
-            ],
-            if (_selectedOptionIndex2 == 3)...[
-              Expanded(
-                child: Container(
-                  color: Colors.white,
                   child: const LoanScreen(),
                 ),
               ),
             ],
-            if (_selectedOptionIndex2 == 4)...[
+            if (_selectedOptionIndex2 == 3)...[
               Expanded(
                 child: Container(
                     color: Colors.white,
@@ -1112,8 +1009,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.center,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .familyInfo,
+                                          AppLocalizations.of(context)!.familyInfo,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1121,11 +1017,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           ),
                                         ),
                                       ),
+
+                                      // Father Name
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .fatherName,
+                                          AppLocalizations.of(context)!.fatherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1136,7 +1033,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.fatherName}",
+                                          (familyInfo?.fatherName?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.fatherName.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1145,11 +1044,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Mother Name
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .motherName,
+                                          AppLocalizations.of(context)!.motherName,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1160,7 +1060,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.motherName}",
+                                          (familyInfo?.motherName?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.motherName.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1169,6 +1071,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Address
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1183,7 +1087,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.streetAddress}",
+                                          (familyInfo?.familyAddress?.streetAddress?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.streetAddress.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1192,6 +1098,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Country
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1206,7 +1114,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.country}",
+                                          (familyInfo?.familyAddress?.country?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.country.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1215,6 +1125,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // City
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1229,7 +1141,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyAddress?.city}",
+                                          (familyInfo?.familyAddress?.city?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyAddress!.city.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1238,11 +1152,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Family Phone No
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .familyPhoneNo,
+                                          AppLocalizations.of(context)!.familyPhoneNo,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1253,7 +1168,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.familyContactNumber}",
+                                          (familyInfo?.familyContactNumber?.toString().isNotEmpty ?? false)
+                                              ? familyInfo!.familyContactNumber.toString()
+                                              : "---",
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -1262,11 +1179,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Emergency Contact
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .emergencyContact,
+                                          AppLocalizations.of(context)!.emergencyContact,
                                           style: GoogleFonts.inter(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
@@ -1275,11 +1193,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Relation
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          AppLocalizations.of(context)!
-                                              .relation,
+                                          AppLocalizations.of(context)!.relation,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -1290,7 +1209,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.emergencyContactInfo?.first.relationType}",
+                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                              ? (familyInfo!.emergencyContactInfo!.first.relationType?.toString().isNotEmpty ?? false
+                                              ? familyInfo.emergencyContactInfo!.first.relationType.toString()
+                                              : "---")
+                                              : "---",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
@@ -1300,6 +1223,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 10),
+
+                                      // Emergency Contact Number
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
@@ -1314,7 +1239,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Text(
-                                          "${familyInfo?.emergencyContactInfo?.first.relationContactNumber}",
+                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                              ? (familyInfo!.emergencyContactInfo!.first.relationContactNumber?.toString().isNotEmpty ?? false
+                                              ? familyInfo.emergencyContactInfo!.first.relationContactNumber.toString()
+                                              : "---")
+                                              : "---",
                                           maxLines: 2,
                                           style: GoogleFonts.inter(
                                             fontSize: 18,
@@ -1334,7 +1263,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     )),
               ),
             ],
-            if (_selectedOptionIndex2 == 5)...[
+            if (_selectedOptionIndex2 == 4)...[
               Expanded(
                 child: Container(
                   color: Colors.white,
@@ -1585,85 +1514,95 @@ class _ProfileScreenState extends State<ProfileScreen>
               )
 
             ],
-            if (_selectedOptionIndex2 == 6)...[
+            if (_selectedOptionIndex2 == 5)...[
               Expanded(
                 child: Container(
                     color: Colors.white,
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                        Stack(
-                          children: [
-                            // Signature Display or Placeholder
-                            Column(
-                              children: [
-                                _isEditing
-                                    ? Column(
-                                  children: [
-                                    Signature(
-                                      controller: _controller,
-                                      height: MediaQuery.of(context).size.height * 0.5,
-                                      backgroundColor: Colors.grey[200]!,
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed: _resetSignature,
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                          child: Text(AppLocalizations.of(context)!.cancel,
-                                            style: GoogleFonts.inter(
-                                              color: Colors.white
-                                            ),
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: _saveSignature,
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                          child: Text(AppLocalizations.of(context)!.save,
-                                            style: GoogleFonts.inter(
+                    child: RefreshIndicator(
+                      color: NasColors.darkBlue,
+                      backgroundColor: Colors.white,
+                      onRefresh: fetchLatestProfileData,
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          Stack(
+                            children: [
+                              Column(
+                                children: [
+                                  _isEditing
+                                      ? Column(
+                                    children: [
+                                      Signature(
+                                        controller: _controller,
+                                        height: MediaQuery.of(context).size.height * 0.5,
+                                        backgroundColor: Colors.grey[200]!,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: _resetSignature,
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                            child: Text(AppLocalizations.of(context)!.cancel,
+                                              style: GoogleFonts.inter(
                                                 color: Colors.white
+                                              ),
                                             ),
                                           ),
+                                          ElevatedButton(
+                                            onPressed: _saveSignature,
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                            child: Text(AppLocalizations.of(context)!.save,
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                      : Column(
+                                    children: [
+                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
+                                          singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
+                                          ? Center(
+                                            child: Image.network(
+                                              singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
+                                              height: 250,
+                                            ),
+                                          )
+                                          : Container(
+                                        height: 250,
+                                        alignment: Alignment.center,
+                                        color: Colors.grey[200],
+                                        child: Text(AppLocalizations.of(context)!.noSignature,
+                                            style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                )
-                                    : Column(
-                                  children: [
-                                    singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
-                                        singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
-                                        ? Image.network(
-                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
-                                      height: 250,
-                                    )
-                                        : Container(
-                                      height: 250,
-                                      alignment: Alignment.center,
-                                      color: Colors.grey[200],
-                                      child: Text('No signature available'),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: IconButton(
-                                onPressed: _startEditing,
-                                icon: Icon(
-                                  _signatureImageFile != null ? Icons.edit : Icons.add,
-                                  color: Colors.black,
-                                ),
-                                tooltip: _signatureImageFile != null ? 'Edit Signature' : 'Add Signature',
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton(
+                                  onPressed: _startEditing,
+                                  icon: Icon(
+                                    _signatureImageFile != null ? Icons.edit : Icons.add,
+                                    color: Colors.black,
+                                  ),
+                                  tooltip: _signatureImageFile != null ? AppLocalizations.of(context)!.editSignature : AppLocalizations.of(context)!.addSignature,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     )),
               ),
             ],
@@ -1736,7 +1675,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-  // Cards
   Widget buildOptionsCard2(int index, String title) {
     return GestureDetector(
       onTap: () {
@@ -1780,6 +1718,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
+  ///Upload profile methods
   void _showConfirmationDialog(PlatformFile file) {
     showDialog(
       context: context,
@@ -1931,7 +1870,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-
   ///Signature CALL
   Future<void> _uploadSignatureToApi(Uint8List data) async {
     var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
@@ -1961,8 +1899,8 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
-        SignatureModel profileResponse = SignatureModel.fromJson(decodedJson);
-        singletonClass.signatureModelList = [profileResponse];
+        SignatureModel signatureResponse = SignatureModel.fromJson(decodedJson);
+        singletonClass.signatureModelList = [signatureResponse];
 
         updateSignature();
         singletonClass.getEmployeeData();
@@ -1990,43 +1928,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     var uri = Uri.parse('${singletonClass.baseURL}/employee/$employeeId');
     Map<String, dynamic> employeeData = {
-      "userName": singletonClass.employeeDataList.first.data!.userName,
-      "password": singletonClass.employeeDataList.first.data!.password,
-      "email": singletonClass.employeeDataList.first.data!.email,
-      "firstName": singletonClass.employeeDataList.first.data!.firstName,
-      "middleName": singletonClass.employeeDataList.first.data!.middleName,
-      "lastName": singletonClass.employeeDataList.first.data!.lastName,
-      "martialStatus": singletonClass.employeeDataList.first.data!.martialStatus,
-      "religion": singletonClass.employeeDataList.first.data!.religion,
-      "address": singletonClass.employeeDataList.first.data!.address,
-      "NIC": singletonClass.employeeDataList.first.data!.nic,
-      "iqamaNumber": singletonClass.employeeDataList.first.data!.iqamaNumber,
-      "passport": singletonClass.employeeDataList.first.data!.passport,
-      "imigrationSatus": singletonClass.employeeDataList.first.data!..imigrationSatus,
-      "DOB": singletonClass.employeeDataList.first.data!.dob,
-      "age": singletonClass.employeeDataList.first.data!.age,
-      "phoneNumber": singletonClass.employeeDataList.first.data!.phoneNumber,
-      "gender": singletonClass.employeeDataList.first.data!.gender,
-      "role": singletonClass.employeeDataList.first.data!.role,
-      "profession": singletonClass.employeeDataList.first.data!.profession,
-      "nationality": singletonClass.employeeDataList.first.data!.nationality,
       "profilePic": singletonClass.profileResponseDataList.first.data!.url,
-      "familyInfo": singletonClass.employeeDataList.first.data!.familyInfo,
-      "educationInfo":
-          singletonClass.employeeDataList.first.data!.educationInfo,
-      "experienceBackground":
-          singletonClass.employeeDataList.first.data!.experienceBackground,
-      "bankingInfo": singletonClass.employeeDataList.first.data!.bankingInfo,
-      "employeeInfo": singletonClass.employeeDataList.first.data!.employeeInfo,
-      "salaryInfo": singletonClass.employeeDataList.first.data!.salaryInfo,
-      "socialLinks": singletonClass.employeeDataList.first.data!.socialLinks,
-      "loanInfo": singletonClass.employeeDataList.first.data!.loanInfo,
-      "assetsInfo": singletonClass.employeeDataList.first.data!.assetsInfo,
-      "approvals": singletonClass.employeeDataList.first.data!.approvals,
-      "contractInfo": singletonClass.employeeDataList.first.data!.contractInfo,
-      "documentsInfo":
-          singletonClass.employeeDataList.first.data!.documentsInfo,
-      "createdBy": singletonClass.employeeDataList.first.data!.createdBy,
     };
 
     try {
@@ -2035,7 +1937,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         headers: singletonClass.getHeaders(),
         body: json.encode(employeeData),
       );
-      print("DATA ><><>< $employeeData");
+      log("DATA ><><>< $employeeData");
       if (response.statusCode == 200) {
         print('Employee data updated successfully');
       } else {

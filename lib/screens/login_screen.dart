@@ -70,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _isTokenSaved = token != null && token.isNotEmpty;
     });
 
-    // If a token is found, decode it
     if (token != null && token.isNotEmpty) {
       decodeJwt(token);
     }
@@ -96,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final isBiometricsAvailable = await _localAuth.canCheckBiometrics;
       if (isBiometricsAvailable) {
         final isAuthenticated = await _localAuth.authenticate(
-          localizedReason: 'Please authenticate to access this feature',
+          localizedReason: AppLocalizations.of(context)!.pleaseAuthenticate,
           options: const AuthenticationOptions(
             biometricOnly: true,
           ),
@@ -113,27 +112,47 @@ class _LoginScreenState extends State<LoginScreen> {
           });
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
+            MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication failed'),
+             SnackBar(
+              content:  Text(AppLocalizations.of(context)!.biometricAuthenticationFailed,
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    fontSize: 15
+                ),
+              )
             ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Biometrics not available or not enrolled'),
+           SnackBar(
+            content: Text(AppLocalizations.of(context)!.biometricNotAvailable,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                  fontSize: 15
+              ),
+            )
           ),
         );
       }
     } catch (e) {
-      print('Error during biometric authentication: $e');
+      if (kDebugMode) {
+        print('Error during biometric authentication: $e');
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred during authentication'),
+         SnackBar(
+          content: Text(AppLocalizations.of(context)!.anErrorOccurredDuringAuthentication,
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: 15
+            ),
+          )
         ),
       );
     }
@@ -158,8 +177,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (kDebugMode)
-                          Text("You're in Debug mode"),
+                        if(singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)...[
+                          Container(
+                            height:8,
+                            width: 8,
+                            decoration: BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            singletonClass.companyName ?? "None",
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                         IconButton(onPressed: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
                         }, icon: Icon(Icons.apartment_outlined,
@@ -192,6 +227,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             }),
                       ],
                     ),
+                    if(kDebugMode)...[
+                      Text(
+                        "You're in debug mode",
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -273,15 +317,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
+                   Container(
+                    decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: NasColors.lightGrey,
                   ),
                   child: TextFormField(
                     controller: _password,
                     obscureText: _obscurePassword,
-                    obscuringCharacter: '*',
+                    obscuringCharacter: '•',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                    ),
                     cursorColor: Colors.grey,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -439,7 +486,7 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
             );
           }
         } else if (loginResponse.statusCode == 400 || loginResponse.statusCode == 500) {
@@ -451,7 +498,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title:  AppLocalizations.of(context)!.passwordOrPhoneNo,
+            title:  AppLocalizations.of(context)!.passwordOrUsernameIncorrect,
             type: QuickAlertType.error,
           );
         } else {

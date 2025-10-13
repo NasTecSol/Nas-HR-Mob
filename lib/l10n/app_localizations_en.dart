@@ -129,7 +129,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get announcements => 'Announcements';
 
   @override
-  String get halfToOne => '2/1';
+  String get totalRecord => 'Total Record';
 
   @override
   String get seventyFive => '75';
@@ -216,7 +216,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get breaks => 'Break';
 
   @override
-  String get breakOut => 'Break-Out';
+  String get breakOut => 'Break Out';
 
   @override
   String get clockOut => 'Clock-Out';
@@ -539,7 +539,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get location => 'Location';
 
   @override
-  String get biometricCheckIn => 'Biometric Check-in';
+  String get biometricCheckIn => 'Biometric Checkin\'s';
 
   @override
   String get logout => 'Logout';
@@ -551,7 +551,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myComplaints => 'My Complaints';
 
   @override
-  String get fileComplain => 'File Complain';
+  String get fileComplain => 'File Complaint';
 
   @override
   String get areYouSureToLogout => 'Are you sure to logout?';
@@ -1056,7 +1056,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectRequestType => 'Select a Request Type';
 
   @override
-  String get passwordOrPhoneNo => 'Password or Phone number is incorrect';
+  String get passwordOrUsernameIncorrect => 'Password or username is incorrect';
 
   @override
   String get pleaseEnterNotes => 'Please enter a note';
@@ -1714,4 +1714,273 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get maternityLeave => 'Maternity Leave';
+
+  @override
+  String get taskDetails => 'Task Details';
+
+  @override
+  String get teamRequests => 'Team Request';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get timeStamp => 'Time Stamp';
+
+  @override
+  String get srNo => 'Sr No';
+
+  @override
+  String get h => 'h';
+
+  @override
+  String get m => 'm';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get value => 'Value';
+
+  @override
+  String get dayOff => 'Day Off';
+
+  @override
+  String get absentWithApproval => 'Absent with Approval';
+
+  @override
+  String get noCheckIn => 'No Check-In';
+
+  @override
+  String get latePenality => 'Late Penalty';
+
+  @override
+  String get shortHours => 'Short Hours';
+
+  @override
+  String get missingCheckIn => 'Missing Check-In';
+
+  @override
+  String get missingCheckOut => 'Missing Check-Out';
+
+  @override
+  String get oosIn => 'OOS In';
+
+  @override
+  String get oosOut => 'OOS Out';
+
+  @override
+  String get earlyIn => 'Early In';
+
+  @override
+  String get onTimeIn => 'OnTime In';
+
+  @override
+  String get onTimeOut => 'OnTime Out';
+
+  @override
+  String get lateIn => 'Late In';
+
+  @override
+  String get lateOut => 'Late Out';
+
+  @override
+  String get smIn => 'SM In';
+
+  @override
+  String get smOut => 'SM Out';
+
+  @override
+  String get breakIn => 'Break In';
+
+  @override
+  String get slot => 'Slot';
+
+  @override
+  String get outOffShift => 'Out Off Shift';
+
+  @override
+  String get fullDay => 'Full Day';
+
+  @override
+  String get pleaseSetupBiometric =>
+      'Please set up biometrics in your device settings';
+
+  @override
+  String get pleaseAuthenticate => 'Please authenticate to access this feature';
+
+  @override
+  String get biometricAuthenticationFailed => 'Biometric authentication failed';
+
+  @override
+  String get biometricAuthenticationDisabled =>
+      'Biometric authentication disabled';
+
+  @override
+  String get biometricAuthenticationEnabled =>
+      'Biometric authentication enabled';
+
+  @override
+  String get notificationEnabled => 'Notification Enabled';
+
+  @override
+  String get notificationsDisabled => 'Notification Disabled';
+
+  @override
+  String get anErrorOccurredDuringAuthentication =>
+      'An error occurred during authentication';
+
+  @override
+  String get biometricNotAvailable =>
+      'Biometrics not available or not enrolled';
+
+  @override
+  String get manageShifts => 'Manage Shifts';
+
+  @override
+  String get noSignature => 'No signature available';
+
+  @override
+  String get editSignature => 'Edit Signature';
+
+  @override
+  String get addSignature => 'Add Signature';
+
+  @override
+  String get myProjects => 'My Projects';
+
+  @override
+  String get member => 'member';
+
+  @override
+  String get d => 'd';
+
+  @override
+  String get ago => 'ago';
+
+  @override
+  String get justNow => 'just now';
+
+  @override
+  String get clockingNotifications => 'Clocking Notifications';
+
+  @override
+  String get clockingNotification => 'Clocking Notification';
+
+  @override
+  String get requestNotification => 'Request Notification';
+
+  @override
+  String get workMeeting => 'Work Meeting';
+
+  @override
+  String get celebration => 'Celebration';
+
+  @override
+  String get generalMeeting => 'General Meeting';
+
+  @override
+  String get standup => 'Standup';
+
+  @override
+  String get taskDeadlines => 'Task Deadlines';
+
+  @override
+  String get teamSync => 'Team Sync';
+
+  @override
+  String get clientCall => 'Client Call';
+
+  @override
+  String get projectPlanning => 'Project Planning';
+
+  @override
+  String get reviewSession => 'Review Session';
+
+  @override
+  String get strategyMeeting => 'Strategy Meeting';
+
+  @override
+  String get birthdayParty => 'Birthday Party';
+
+  @override
+  String get workAnniversary => 'Work Anniversary';
+
+  @override
+  String get achievementCelebration => 'Achievement Celebration';
+
+  @override
+  String get farewellParty => 'Farewell Party';
+
+  @override
+  String get allHands => 'All Hands';
+
+  @override
+  String get departmentUpdate => 'Department Update';
+
+  @override
+  String get companyUpdate => 'Company Update';
+
+  @override
+  String get managementDiscussion => 'Management Discussion';
+
+  @override
+  String get weeklyStandup => 'Weekly Standup';
+
+  @override
+  String get sprintPlanning => 'Sprint Planning';
+
+  @override
+  String get retrospective => 'Retrospective';
+
+  @override
+  String get milestoneOne => 'Milestone 1';
+
+  @override
+  String get milestoneTwo => 'Milestone 2';
+
+  @override
+  String get finalSubmission => 'Final Submission';
+
+  @override
+  String get bugFixDeadline => 'Bug Fix Deadline';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get timeTableShift => 'Time Table Shift';
+
+  @override
+  String get fullTime => 'Full Time';
+
+  @override
+  String get flexibleShift => 'Flexible Shift';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get chatBox => 'Chat Box';
+
+  @override
+  String get directChat => 'Direct Chats';
+
+  @override
+  String get groups => 'Groups';
+
+  @override
+  String get s => 's';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get noMessageYet => 'No message yet';
+
+  @override
+  String get typeAMessage => 'Type a message here';
+
+  @override
+  String get me => 'me';
 }

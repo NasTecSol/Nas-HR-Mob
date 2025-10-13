@@ -75,6 +75,7 @@ class TeamAttendanceData {
   List<Penalties>? penalties;
   dynamic leaveDetails;
   dynamic shift;
+  ShiftInfo? shiftInfo;
   List<Slots>? slots;
   dynamic workingHoursPerday;
   dynamic earlyCheckOut;
@@ -83,7 +84,7 @@ class TeamAttendanceData {
   dynamic updatedAt;
   int? v;
 
-  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status,this.secondaryStatus ,this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.slots, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
+  TeamAttendanceData({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status,this.secondaryStatus ,this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails ,this.shift,this.shiftInfo ,this.slots, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
 
   TeamAttendanceData.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -107,6 +108,7 @@ class TeamAttendanceData {
         : (json["penalties"] as List).whereType<Map<String, dynamic>>().map((e) => Penalties.fromJson(e)).toList();
     leaveDetails = json["leaveDetails"];
     shift = json["shift"];
+    shiftInfo = json["shiftInfo"] == null ? null : ShiftInfo.fromJson(json["shiftInfo"]);
     slots = json["slots"] == null
         ? null
         : (json["slots"] as List).whereType<Map<String, dynamic>>().map((e) => Slots.fromJson(e)).toList();
@@ -143,6 +145,9 @@ class TeamAttendanceData {
     }
     _data["leaveDetails"] = leaveDetails;
     _data["shift"] = shift;
+    if(shiftInfo != null) {
+      _data["shiftInfo"] = shiftInfo?.toJson();
+    }
     if(slots != null) {
       _data["slots"] = slots?.map((e) => e.toJson()).toList();
     }
@@ -152,6 +157,31 @@ class TeamAttendanceData {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    return _data;
+  }
+}
+
+class ShiftInfo {
+  String? timefrom;
+  String? timeTo;
+  String? shiftName;
+  String? shiftType;
+
+  ShiftInfo({this.timefrom, this.timeTo, this.shiftName, this.shiftType});
+
+  ShiftInfo.fromJson(Map<String, dynamic> json) {
+    timefrom = json["timefrom"];
+    timeTo = json["timeTo"];
+    shiftName = json["shiftName"];
+    shiftType = json["shiftType"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["timefrom"] = timefrom;
+    _data["timeTo"] = timeTo;
+    _data["shiftName"] = shiftName;
+    _data["shiftType"] = shiftType;
     return _data;
   }
 }
@@ -210,7 +240,7 @@ class Penalties {
     uniqueId = json["uniqueId"];
     action = json["action"];
     percentage = json["percentage"];
-    lateMinute = json["lateMinute"];
+    lateMinute = json["lateMinutes"];
     occurrence = json["occurrence"];
   }
 
@@ -219,7 +249,7 @@ class Penalties {
     _data["uniqueId"] = uniqueId;
     _data["action"] = action;
     _data["percentage"] = percentage;
-    _data["lateMinute"] = lateMinute;
+    _data["lateMinutes"] = lateMinute;
     _data["occurrence"] = occurrence;
     return _data;
   }

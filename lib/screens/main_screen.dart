@@ -10,7 +10,8 @@ import '../widgets/colors.dart';
 import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int index;
+  const MainScreen({super.key, required this.index});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -41,6 +42,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _loadData();
     setState(() {
+      _currentIndex = widget.index;
       _loadData();
     });
   }
@@ -91,8 +93,8 @@ class _MainScreenState extends State<MainScreen> {
             ?  Padding(
               padding: const EdgeInsets.only(top: 45.0),
               child: Center(
-                        child:SizedBox(
-              child: Lottie.asset(
+                child:SizedBox(
+                  child: Lottie.asset(
                   'images/mainLoader.json'
               ),),
               ),
@@ -118,43 +120,40 @@ class _MainScreenState extends State<MainScreen> {
                 itemCount: imageIconList.length + 1,
                 tabBuilder: (int index, bool isActive) {
                   if (index == imageIconList.length) {
-                    final hasProfilePic = singletonClass.employeeDataList.isNotEmpty &&
-                        singletonClass.employeeDataList.first.data?.profilePic != null &&
-                        singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty;
-
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        width: 70,
-                        alignment: Alignment.center,
-                        decoration: index == 3
-                            ? BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: NasColors.darkBlue,
-                        )
-                            : null,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 35,
-                          child: ClipOval(
-                            child: hasProfilePic
-                                ? Image.network(
-                              singletonClass.employeeDataList.first.data!.profilePic!,
+                    return CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 25,
+                      child: ClipOval(
+                        child: (singletonClass.employeeDataList.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data?.profilePic != null &&
+                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            ? Image.network(
+                          singletonClass.employeeDataList.first.data!.profilePic!,
+                          fit: BoxFit.cover,
+                          width: 60,
+                          height: 60,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: NasColors.darkBlue,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'images/DP.png',
                               fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return  Center(child: CircularProgressIndicator(
-                                  color: NasColors.darkBlue,
-                                ));
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset('images/DP.png', fit: BoxFit.cover);
-                              },
-                            )
-                                : Image.asset('images/DP.png', fit: BoxFit.cover),
-                          ),
+                              width: 60,
+                              height: 60,
+                            );
+                          },
+                        )
+                            : Image.asset(
+                          'images/DP.png',
+                          fit: BoxFit.cover,
+                          width: 60,
+                          height: 60,
                         ),
                       ),
                     );

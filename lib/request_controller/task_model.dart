@@ -36,7 +36,7 @@ class Dattaa {
   String? estimatedDuration;
   String? type;
   List<String>? tag;
-  List<String>? assignTo;
+  List<AssignTo>? assignTo;
   List<ReportedTo>? reportedTo;
   List<LogDuration>? logDuration;
   List<String>? subTask;
@@ -58,7 +58,7 @@ class Dattaa {
     estimatedDuration = json["estimatedDuration"];
     type = json["type"];
     tag = json["tag"] == null ? null : List<String>.from(json["tag"]);
-    assignTo = json["assignTo"] == null ? null : List<String>.from(json["assignTo"]);
+    assignTo = json["assignTo"] == null ? null : (json["assignTo"] as List).map((e) => AssignTo.fromJson(e)).toList();
     reportedTo = json["reportedTo"] == null ? null : (json["reportedTo"] as List).map((e) => ReportedTo.fromJson(e)).toList();
     logDuration = json["logDuration"] == null ? null : (json["logDuration"] as List).map((e) => LogDuration.fromJson(e)).toList();
     subTask = json["subTask"] == null ? null : List<String>.from(json["subTask"]);
@@ -83,7 +83,7 @@ class Dattaa {
       _data["tag"] = tag;
     }
     if(assignTo != null) {
-      _data["assignTo"] = assignTo;
+      _data["assignTo"] = assignTo?.map((e) => e.toJson()).toList();
     }
     if(reportedTo != null) {
       _data["reportedTo"] = reportedTo?.map((e) => e.toJson()).toList();
@@ -163,6 +163,25 @@ class ReportedTo {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["manager"] = manager;
+    return _data;
+  }
+}
+
+class AssignTo {
+  String? userId;
+  String? userName;
+
+  AssignTo({this.userId, this.userName});
+
+  AssignTo.fromJson(Map<String, dynamic> json) {
+    userId = json["userId"];
+    userName = json["userName"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["userId"] = userId;
+    _data["userName"] = userName;
     return _data;
   }
 }

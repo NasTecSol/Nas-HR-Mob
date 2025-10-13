@@ -338,11 +338,11 @@ abstract class AppLocalizations {
   /// **'Announcements'**
   String get announcements;
 
-  /// No description provided for @halfToOne.
+  /// No description provided for @totalRecord.
   ///
   /// In en, this message translates to:
-  /// **'2/1'**
-  String get halfToOne;
+  /// **'Total Record'**
+  String get totalRecord;
 
   /// No description provided for @seventyFive.
   ///
@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @breakOut.
   ///
   /// In en, this message translates to:
-  /// **'Break-Out'**
+  /// **'Break Out'**
   String get breakOut;
 
   /// No description provided for @clockOut.
@@ -1157,7 +1157,7 @@ abstract class AppLocalizations {
   /// No description provided for @biometricCheckIn.
   ///
   /// In en, this message translates to:
-  /// **'Biometric Check-in'**
+  /// **'Biometric Checkin\'s'**
   String get biometricCheckIn;
 
   /// No description provided for @logout.
@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @fileComplain.
   ///
   /// In en, this message translates to:
-  /// **'File Complain'**
+  /// **'File Complaint'**
   String get fileComplain;
 
   /// No description provided for @areYouSureToLogout.
@@ -2186,11 +2186,11 @@ abstract class AppLocalizations {
   /// **'Select a Request Type'**
   String get selectRequestType;
 
-  /// No description provided for @passwordOrPhoneNo.
+  /// No description provided for @passwordOrUsernameIncorrect.
   ///
   /// In en, this message translates to:
-  /// **'Password or Phone number is incorrect'**
-  String get passwordOrPhoneNo;
+  /// **'Password or username is incorrect'**
+  String get passwordOrUsernameIncorrect;
 
   /// No description provided for @pleaseEnterNotes.
   ///
@@ -3487,6 +3487,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maternity Leave'**
   String get maternityLeave;
+
+  /// No description provided for @taskDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Details'**
+  String get taskDetails;
+
+  /// No description provided for @teamRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Request'**
+  String get teamRequests;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @timeStamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Stamp'**
+  String get timeStamp;
+
+  /// No description provided for @srNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Sr No'**
+  String get srNo;
+
+  /// No description provided for @h.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get h;
+
+  /// No description provided for @m.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get m;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @value.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get value;
+
+  /// No description provided for @dayOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Day Off'**
+  String get dayOff;
+
+  /// No description provided for @absentWithApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent with Approval'**
+  String get absentWithApproval;
+
+  /// No description provided for @noCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'No Check-In'**
+  String get noCheckIn;
+
+  /// No description provided for @latePenality.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Penalty'**
+  String get latePenality;
+
+  /// No description provided for @shortHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Hours'**
+  String get shortHours;
+
+  /// No description provided for @missingCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Check-In'**
+  String get missingCheckIn;
+
+  /// No description provided for @missingCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing Check-Out'**
+  String get missingCheckOut;
+
+  /// No description provided for @oosIn.
+  ///
+  /// In en, this message translates to:
+  /// **'OOS In'**
+  String get oosIn;
+
+  /// No description provided for @oosOut.
+  ///
+  /// In en, this message translates to:
+  /// **'OOS Out'**
+  String get oosOut;
+
+  /// No description provided for @earlyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Early In'**
+  String get earlyIn;
+
+  /// No description provided for @onTimeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'OnTime In'**
+  String get onTimeIn;
+
+  /// No description provided for @onTimeOut.
+  ///
+  /// In en, this message translates to:
+  /// **'OnTime Out'**
+  String get onTimeOut;
+
+  /// No description provided for @lateIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Late In'**
+  String get lateIn;
+
+  /// No description provided for @lateOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Late Out'**
+  String get lateOut;
+
+  /// No description provided for @smIn.
+  ///
+  /// In en, this message translates to:
+  /// **'SM In'**
+  String get smIn;
+
+  /// No description provided for @smOut.
+  ///
+  /// In en, this message translates to:
+  /// **'SM Out'**
+  String get smOut;
+
+  /// No description provided for @breakIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Break In'**
+  String get breakIn;
+
+  /// No description provided for @slot.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot'**
+  String get slot;
+
+  /// No description provided for @outOffShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Out Off Shift'**
+  String get outOffShift;
+
+  /// No description provided for @fullDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Day'**
+  String get fullDay;
+
+  /// No description provided for @pleaseSetupBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set up biometrics in your device settings'**
+  String get pleaseSetupBiometric;
+
+  /// No description provided for @pleaseAuthenticate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please authenticate to access this feature'**
+  String get pleaseAuthenticate;
+
+  /// No description provided for @biometricAuthenticationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication failed'**
+  String get biometricAuthenticationFailed;
+
+  /// No description provided for @biometricAuthenticationDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication disabled'**
+  String get biometricAuthenticationDisabled;
+
+  /// No description provided for @biometricAuthenticationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication enabled'**
+  String get biometricAuthenticationEnabled;
+
+  /// No description provided for @notificationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Enabled'**
+  String get notificationEnabled;
+
+  /// No description provided for @notificationsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Disabled'**
+  String get notificationsDisabled;
+
+  /// No description provided for @anErrorOccurredDuringAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred during authentication'**
+  String get anErrorOccurredDuringAuthentication;
+
+  /// No description provided for @biometricNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics not available or not enrolled'**
+  String get biometricNotAvailable;
+
+  /// No description provided for @manageShifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Shifts'**
+  String get manageShifts;
+
+  /// No description provided for @noSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'No signature available'**
+  String get noSignature;
+
+  /// No description provided for @editSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Signature'**
+  String get editSignature;
+
+  /// No description provided for @addSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Signature'**
+  String get addSignature;
+
+  /// No description provided for @myProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'My Projects'**
+  String get myProjects;
+
+  /// No description provided for @member.
+  ///
+  /// In en, this message translates to:
+  /// **'member'**
+  String get member;
+
+  /// No description provided for @d.
+  ///
+  /// In en, this message translates to:
+  /// **'d'**
+  String get d;
+
+  /// No description provided for @ago.
+  ///
+  /// In en, this message translates to:
+  /// **'ago'**
+  String get ago;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
+
+  /// No description provided for @clockingNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notifications'**
+  String get clockingNotifications;
+
+  /// No description provided for @clockingNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocking Notification'**
+  String get clockingNotification;
+
+  /// No description provided for @requestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Notification'**
+  String get requestNotification;
+
+  /// No description provided for @workMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Meeting'**
+  String get workMeeting;
+
+  /// No description provided for @celebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Celebration'**
+  String get celebration;
+
+  /// No description provided for @generalMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'General Meeting'**
+  String get generalMeeting;
+
+  /// No description provided for @standup.
+  ///
+  /// In en, this message translates to:
+  /// **'Standup'**
+  String get standup;
+
+  /// No description provided for @taskDeadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Deadlines'**
+  String get taskDeadlines;
+
+  /// No description provided for @teamSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Sync'**
+  String get teamSync;
+
+  /// No description provided for @clientCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Call'**
+  String get clientCall;
+
+  /// No description provided for @projectPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Planning'**
+  String get projectPlanning;
+
+  /// No description provided for @reviewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Session'**
+  String get reviewSession;
+
+  /// No description provided for @strategyMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy Meeting'**
+  String get strategyMeeting;
+
+  /// No description provided for @birthdayParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday Party'**
+  String get birthdayParty;
+
+  /// No description provided for @workAnniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Anniversary'**
+  String get workAnniversary;
+
+  /// No description provided for @achievementCelebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement Celebration'**
+  String get achievementCelebration;
+
+  /// No description provided for @farewellParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Farewell Party'**
+  String get farewellParty;
+
+  /// No description provided for @allHands.
+  ///
+  /// In en, this message translates to:
+  /// **'All Hands'**
+  String get allHands;
+
+  /// No description provided for @departmentUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Department Update'**
+  String get departmentUpdate;
+
+  /// No description provided for @companyUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Company Update'**
+  String get companyUpdate;
+
+  /// No description provided for @managementDiscussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Management Discussion'**
+  String get managementDiscussion;
+
+  /// No description provided for @weeklyStandup.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Standup'**
+  String get weeklyStandup;
+
+  /// No description provided for @sprintPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Sprint Planning'**
+  String get sprintPlanning;
+
+  /// No description provided for @retrospective.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrospective'**
+  String get retrospective;
+
+  /// No description provided for @milestoneOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone 1'**
+  String get milestoneOne;
+
+  /// No description provided for @milestoneTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone 2'**
+  String get milestoneTwo;
+
+  /// No description provided for @finalSubmission.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Submission'**
+  String get finalSubmission;
+
+  /// No description provided for @bugFixDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Bug Fix Deadline'**
+  String get bugFixDeadline;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @timeTableShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Table Shift'**
+  String get timeTableShift;
+
+  /// No description provided for @fullTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Time'**
+  String get fullTime;
+
+  /// No description provided for @flexibleShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible Shift'**
+  String get flexibleShift;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @chatBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat Box'**
+  String get chatBox;
+
+  /// No description provided for @directChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct Chats'**
+  String get directChat;
+
+  /// No description provided for @groups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groups;
+
+  /// No description provided for @s.
+  ///
+  /// In en, this message translates to:
+  /// **'s'**
+  String get s;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @noMessageYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No message yet'**
+  String get noMessageYet;
+
+  /// No description provided for @typeAMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message here'**
+  String get typeAMessage;
+
+  /// No description provided for @me.
+  ///
+  /// In en, this message translates to:
+  /// **'me'**
+  String get me;
 }
 
 class _AppLocalizationsDelegate

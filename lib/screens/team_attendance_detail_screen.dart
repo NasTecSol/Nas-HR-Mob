@@ -67,7 +67,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.only(top: 48.0, left: 20, right: 20),
+        padding: const EdgeInsets.only(top: 48.0, left: 15, right: 15),
         child: Column(
           children: [
             Row(
@@ -114,7 +114,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ),
                         Text(
                           singletonClass
-                              .formatDate2(widget.attendanceData!.createdAt!),
+                              .formatDate2(widget.attendanceData!.createdAt! , context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -129,7 +129,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
             ),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: EdgeInsets.only(left: 5, right: 5),
                 children: [
                   SizedBox(height: 20),
                   Row(
@@ -188,7 +188,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
 
                           if (widget.attendanceData!.secondaryStatus != null)
                             Container(
-                              height: widget.attendanceData!.secondaryStatus == "Missing CheckIn/Out" ? 60 : 40,
+                              height: widget.attendanceData!.secondaryStatus == "Missing-CheckOut" ? 60 : 40,
                               width: 120,
                               decoration: BoxDecoration(
                                 color: getStatusColor(widget.attendanceData!.secondaryStatus!),
@@ -196,7 +196,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               child: Center(
                                 child: Text(
-                                  _translateStatus(widget.attendanceData!.secondaryStatus!, context),
+                                  translateSecondaryStatus(widget.attendanceData!.secondaryStatus!, context),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -259,21 +259,22 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              Spacer(),
                               Icon(
                                 Icons.error,
                                 size: 25,
                                 color: NasColors.pending,
                               ),
+                              SizedBox(width: 8),
                               Text(
-                                AppLocalizations.of(context)!.late,
+                                "${AppLocalizations.of(context)!.late}:",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 20),
+                              SizedBox(width: 8),
                               Text(
                                 lateMinutes,
                                 style: GoogleFonts.inter(
@@ -310,21 +311,21 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              Spacer(),
                               Icon(
                                 Icons.directions_run_outlined,
                                 size: 25,
                                 color: NasColors.onTime,
                               ),
                               Text(
-                                AppLocalizations.of(context)!.earlyLeft,
+                               "${ AppLocalizations.of(context)!.earlyLeft}:",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 1),
                               Text(
                                 earlyMinutes,
                                 style: GoogleFonts.inter(
@@ -349,7 +350,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               ),
                               SizedBox(width: 10),
                               Text(
-                                "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
+                                "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -363,6 +364,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  ///Break
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -753,6 +755,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+                  ///Penalities
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -790,7 +793,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                 color: Colors.red,
                                 size: 40,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 15),
                               Text(
                                 AppLocalizations.of(context)!.penalties,
                                 style: GoogleFonts.inter(
@@ -799,7 +802,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   color: NasColors.darkBlue,
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 15),
                               Container(
                                 padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
@@ -824,26 +827,27 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                           SizedBox(height: 20),
                           if (_penalitiesExpanded) ...[
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Category",
+                                  AppLocalizations.of(context)!.category,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
+                               Spacer(),
                                 Text(
-                                  "Detail",
+                                  AppLocalizations.of(context)!.details,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
+                                Spacer(),
                                 Text(
-                                  "Value",
+                                  AppLocalizations.of(context)!.value,
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
                                     fontWeight: FontWeight.normal,
@@ -866,126 +870,52 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                           return Padding(
                                             padding: const EdgeInsets.only(
                                                 bottom: 10.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
+                                            child:Row(
                                               children: [
-                                                Container(
-                                                  height: 50,
-                                                  width: 80,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 15.0),
-                                                    child: Text(
-                                                      "${penalities.action}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 15.0),
+                                                  child: Text(
+                                                    maxLines: 3,
+                                                    overflow: TextOverflow.fade,
+                                                    (penalities.action?.isNotEmpty ?? false) ? "${penalities.action}" : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 5),
-                                                Container(
-                                                  height: 50,
-                                                  width: 80,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 15.0),
-                                                    child: Text(
-                                                      "${penalities.lateMinute}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                Spacer(),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 15.0),
+                                                  child: Text(
+                                                     penalities.lateMinute != null
+                                                        ? singletonClass.formatMinutes(penalities.lateMinute!, context)
+                                                        : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 5),
-                                                Container(
-                                                  height: 50,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    color: NasColors.lightGrey,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withValues(
-                                                                alpha: 0.4),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 10.0),
-                                                    child: Text(
-                                                      "${penalities.percentage}",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        color:
-                                                            NasColors.darkBlue,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                Spacer(),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 10.0),
+                                                  child: Text(
+                                                    penalities.percentage != null ? "${penalities.percentage} SAR" : "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.normal,
+                                                      color: NasColors.darkBlue,
                                                     ),
+                                                    textAlign: TextAlign.center,
                                                   ),
                                                 ),
                                               ],
-                                            ),
+                                            )
                                           );
                                         }),
                                   )
@@ -1021,7 +951,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
-                  if (widget.attendanceData!.shift == 'timeTableShift') ...[
+                  ///Slots
+                  if (widget.attendanceData!.shiftInfo!.shiftType == 'timeTableShift') ...[
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 400,
@@ -1031,10 +962,9 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
-                            // Shadow color
                             spreadRadius: 1,
                             blurRadius: 6,
-                            offset: Offset(0, 3), // Shadow position (x, y)
+                            offset: Offset(0, 3),
                           ),
                         ],
                       ),
@@ -1061,7 +991,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   width: 30,
                                   height: 30,
                                 ),
-                                SizedBox(width: 5),
+                                SizedBox(width: 35),
                                 Text(
                                   AppLocalizations.of(context)!.slots,
                                   style: GoogleFonts.inter(
@@ -1070,7 +1000,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
-                                SizedBox(width: 5),
+                                SizedBox(width: 35),
                                 Container(
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
@@ -1083,7 +1013,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ),
                                   child: Text(
                                     '${widget.attendanceData!.slots!.isNotEmpty && widget.attendanceData!.slots != null ? widget.attendanceData!.slots!.length : 0}',
-                                    // Approver List Notification count
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
@@ -1100,63 +1029,32 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ? SizedBox(
                                       height: 220,
                                       child:
-                                          widget.attendanceData?.slots
-                                                      ?.isNotEmpty ==
-                                                  true
+                                          widget.attendanceData?.slots?.isNotEmpty == true
                                               ? ListView.builder(
                                                   padding: EdgeInsets.zero,
-                                                  itemCount: widget
-                                                          .attendanceData
-                                                          ?.slots
-                                                          ?.length ??
-                                                      0,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    final slots = widget
-                                                        .attendanceData!
-                                                        .slots![index];
-
-                                                    DateTime? checkIn =
-                                                        parseTime(slots
-                                                                    .checkInTime
-                                                                    ?.toString() ??
-                                                                '')
-                                                            ?.toLocal();
-                                                    DateTime? checkOut =
-                                                        parseTime(slots
-                                                                    .checkOutTime
-                                                                    ?.toString() ??
-                                                                '')
-                                                            ?.toLocal();
+                                                  itemCount: widget.attendanceData?.slots?.length ?? 0,
+                                                  itemBuilder: (context, index) {
+                                                    final slots = widget.attendanceData!.slots![index];
+                                                    DateTime? checkIn = parseTime(slots.checkInTime?.toString() ?? '')?.toLocal();
+                                                    DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
 
                                                     return Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10),
+                                                      padding: const EdgeInsets.all(5),
                                                       child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.zero,
-                                                          color: NasColors
-                                                              .lightGrey,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.zero,
+                                                          color: NasColors.lightGrey,
                                                           boxShadow: [
                                                             BoxShadow(
-                                                              color: Colors.grey
-                                                                  .withOpacity(
-                                                                      0.4),
+                                                              color: Colors.grey.withOpacity(0.4),
                                                               spreadRadius: 1,
                                                               blurRadius: 1,
-                                                              offset:
-                                                                  const Offset(
-                                                                      0, 3),
+                                                              offset: const Offset(0, 3),
                                                             ),
                                                           ],
                                                         ),
                                                         child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(10.0),
+                                                          padding: const EdgeInsets.all(10.0),
                                                           child: Column(
                                                             children: [
                                                               Row(
@@ -1164,34 +1062,22 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                   Row(
                                                                     children: [
                                                                       const Icon(
-                                                                          Icons
-                                                                              .exit_to_app_outlined,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              Colors.black),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.exit_to_app_outlined,
+                                                                          size: 20,
+                                                                          color: Colors.black),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockIn}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              Colors.black,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
-                                                                        checkIn !=
-                                                                                null
-                                                                            ? "$checkIn"
+                                                                        checkIn != null
+                                                                            ? singletonClass.formatCheckInTime(slots.checkInTime, context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1205,36 +1091,23 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(
-                                                                      width:
-                                                                          20),
+                                                                  const SizedBox(width: 10),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons
-                                                                              .error,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              NasColors.pending),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.error,
+                                                                          size: 20,
+                                                                          color: NasColors.pending),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.late}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              NasColors.pending,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: NasColors.pending,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         (slots.lateMinutes?.toString().isNotEmpty ??
                                                                                 false)
@@ -1250,46 +1123,36 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               Colors.black,
                                                                         ),
                                                                       ),
-                                                                      SizedBox(
-                                                                          width:
-                                                                              10),
+                                                                      SizedBox(width: 4),
                                                                       Container(
-                                                                        height:
-                                                                            20,
-                                                                        width:
-                                                                            75,
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              getStatusColor(slots.status ?? ''),
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(10),
+                                                                        height: 25,
+                                                                        width: 80,
+                                                                        decoration: BoxDecoration(
+                                                                          color: getStatusColor(slots.status ?? ''),
+                                                                          borderRadius: BorderRadius.circular(10),
                                                                         ),
-                                                                        child:
-                                                                            Center(
-                                                                          child:
-                                                                              Text(
-                                                                            _translateStatus(slots.status ?? '',
-                                                                                context),
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style:
-                                                                                GoogleFonts.inter(
-                                                                              fontWeight: FontWeight.bold,
-                                                                              color: Colors.white,
-                                                                              fontSize: 10,
+                                                                        child: Center(
+                                                                          child: FittedBox(
+                                                                            fit: BoxFit.scaleDown, // scales text if too large
+                                                                            child: Text(
+                                                                              _translateStatus(slots.status ?? '', context),
+                                                                              textAlign: TextAlign.center,
+                                                                              maxLines: 1,
+                                                                              overflow: TextOverflow.ellipsis, // adds "..." if clipped
+                                                                              style: GoogleFonts.inter(
+                                                                                fontWeight: FontWeight.bold,
+                                                                                color: Colors.white,
+                                                                                fontSize: 8,
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                      ),
+                                                                      )
                                                                     ],
                                                                   ),
                                                                 ],
                                                               ),
-                                                              Divider(
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .shade400),
+                                                              Divider(color: Colors.grey.shade400),
                                                               Row(
                                                                 children: [
                                                                   Row(
@@ -1300,35 +1163,24 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                         alignment:
                                                                             Alignment.center,
                                                                         child: const Icon(
-                                                                            Icons
-                                                                                .exit_to_app_outlined,
-                                                                            size:
-                                                                                20,
-                                                                            color:
-                                                                                Colors.black),
+                                                                            Icons.exit_to_app_outlined,
+                                                                            size: 20,
+                                                                            color: Colors.black),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockOut}:",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              13,
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          color:
-                                                                              Colors.black,
+                                                                        style: GoogleFonts.inter(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w500,
+                                                                          color: Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         checkOut !=
                                                                                 null
-                                                                            ? "$checkOut"
+                                                                            ? singletonClass.formatCheckInTime(slots.checkOutTime, context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1342,21 +1194,14 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(
-                                                                      width:
-                                                                          20),
+                                                                  const SizedBox(width: 20),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons
-                                                                              .directions_run_outlined,
-                                                                          size:
-                                                                              20,
-                                                                          color:
-                                                                              NasColors.onTime),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                          Icons.directions_run_outlined,
+                                                                          size: 20,
+                                                                          color: NasColors.onTime),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.earlyLeft}:",
                                                                         style: GoogleFonts
@@ -1369,9 +1214,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               NasColors.onTime,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              4),
+                                                                      const SizedBox(width: 4),
                                                                       Text(
                                                                         (slots.earlyCheckOut?.toString().isNotEmpty ??
                                                                                 false)
@@ -1464,6 +1307,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                     SizedBox(height: 20),
                   ],
+                  ///Leave information
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     width: 400,
@@ -1497,14 +1341,14 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                             Image.asset(
                               'images/time.png',
                               fit: BoxFit.contain,
-                              width: 30,
-                              height: 30,
+                              width: 27,
+                              height: 27,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 2),
                             Text(
                               AppLocalizations.of(context)!.leaveInfo,
                               style: GoogleFonts.inter(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.normal,
                                 color: NasColors.darkBlue,
                               ),
@@ -1530,6 +1374,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   const SizedBox(height: 30),
+                  ///Remarks Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1612,6 +1457,87 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
     }
   }
 
+  ///secondary status translation
+  String translateSecondaryStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'late':
+        return localizations.late;
+      case 'leave':
+        return localizations.leave;
+      case 'holiday':
+        return localizations.holiday;
+      case 'dayOFF':
+        return localizations.dayOff;
+      case 'training':
+        return localizations.training;
+      case 'absent with approval':
+        return localizations.absentWithApproval;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      case 'Late':
+        return localizations.late;
+      case 'Pending':
+        return localizations.pending;
+      case 'No-CheckIn':
+        return localizations.noCheckIn;
+      case 'Late-Penality':
+        return localizations.latePenality;
+      case 'Short-Hours':
+        return localizations.shortHours;
+      case 'Missing-CheckIn':
+        return localizations.missingCheckIn;
+      case 'Missing-CheckOut':
+        return localizations.missingCheckOut;
+      case 'Check-In':
+        return localizations.checkIn;
+      case 'Check-Out':
+        return localizations.checkOut;
+      case 'OOS-In':
+        return localizations.oosIn;
+      case 'OOS-Out':
+        return localizations.oosOut;
+      case 'Early-In':
+        return localizations.earlyIn;
+      case 'Early-Left':
+        return localizations.earlyLeft;
+      case 'OnTime-In':
+        return localizations.onTimeIn;
+      case 'OnTime-Out':
+        return localizations.onTimeOut;
+      case 'Late-In':
+        return localizations.lateIn;
+      case 'Late-Out':
+        return localizations.lateOut;
+      case 'SM-In':
+        return localizations.smIn;
+      case 'SM-Out':
+        return localizations.smOut;
+      case 'Break-In':
+        return localizations.breakIn;
+      case 'Break-Out':
+        return localizations.breakOut;
+      case 'slot':
+        return localizations.slot;
+      case 'Out-Off-Shift':
+        return localizations.outOffShift;
+      case 'Full-Day':
+        return localizations.fullDay;
+      default:
+        return status;
+    }
+  }
+
+
   DateTime? parseTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) return null;
     DateTime dateTime = DateTime.parse(dateTimeString);
@@ -1633,9 +1559,9 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
       int remainingMinutes = totalMinutes % 60;
 
       if (hours > 0) {
-        return '$hours h $remainingMinutes min';
+        return '$hours${AppLocalizations.of(context)!.h} $remainingMinutes${AppLocalizations.of(context)!.m}';
       } else {
-        return '$remainingMinutes min';
+        return '$remainingMinutes ${AppLocalizations.of(context)!.m}';
       }
     } catch (e) {
       if (kDebugMode) {
