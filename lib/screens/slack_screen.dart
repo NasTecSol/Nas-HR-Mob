@@ -1,0 +1,972 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:nashr/request_controller/slack_model.dart';
+import 'package:nashr/screens/chat_screen.dart';
+import 'package:nashr/screens/project_screen.dart';
+import 'package:nashr/screens/slack_chat_detail_screen.dart';
+import 'package:nashr/singleton_class.dart';
+import 'package:nashr/widgets/colors.dart';
+import 'package:nashr/l10n/app_localizations.dart';
+import '../main.dart';
+import '../request_controller/search_employee_model.dart' hide Data;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+class SlackScreen extends StatefulWidget {
+  const SlackScreen({super.key});
+
+  @override
+  State<SlackScreen> createState() => _SlackScreenState();
+}
+
+class _SlackScreenState extends State<SlackScreen> {
+  final SingletonClass singletonClass = SingletonClass();
+  final TextEditingController searchController = TextEditingController();
+  final TextEditingController groupNameController = TextEditingController();
+
+  bool isCreating = false;
+  bool isLoading = false;
+  bool _showSearchResult = false;
+  bool _noDataFound = false;
+
+  final List<SearchedResults> _employeeSearchResults = [];
+  final List<SearchedResults> _selectedEmployees = [];
+  SlackModel? _chatData;
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    singletonClass.activeScreen = "SlackScreen";
+    _fetchChats();
+    SocketService2().socket!.on('receiveMessage', (data) async {
+      try {
+        _fetchChats();
+        log("🔄 Chats refreshed after receiving new message");
+      } catch (e) {
+        log("⚠️ Error refreshing chats: $e");
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    singletonClass.activeScreen = null;
+    super.dispose();
+  }
+
+
+  Future<void> _fetchChats() async {
+    final chats = await singletonClass.getChats();
+    if (!mounted) return;
+    setState(() {
+      _chatData = chats;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: NasColors.backGround,
+        body: Padding(
+          padding: const EdgeInsets.only(
+              top: 50.0, left: 20.0, right: 10.0, bottom: 15),
+          child: Column(
+            children: [
+              /// Header
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.4),
+                            spreadRadius: 5,
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_outlined,
+                          color: Colors.black),
+                    ),
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!.chatBox,
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isCreating = !isCreating;
+                        _showSearchResult = false;
+                        _employeeSearchResults.clear();
+                        searchController.clear();
+                        _noDataFound = false;
+                      });
+                    },
+                    icon: Icon(isCreating ? Icons.close : Icons.create),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+      
+              /// Search Mode
+              if (isCreating) ...[
+                Container(
+                  height: 50,
+                  width: MediaQuery.of(context).size.width - 50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          onChanged: (value) {
+                            if (value.trim().isNotEmpty) {
+                              getSearchEmployeeData();
+                            } else {
+                              setState(() {
+                                _showSearchResult = false;
+                                _employeeSearchResults.clear();
+                                _noDataFound = false;
+                              });
+                            }
+                          },
+                          cursorColor: NasColors.darkBlue,
+                          style: GoogleFonts.inter(color: NasColors.darkBlue),
+                          decoration: InputDecoration(
+                            hintText:
+                            '${AppLocalizations.of(context)!.search}...',
+                            hintStyle: GoogleFonts.inter(color: Colors.black.withOpacity(0.5)),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.search, color: Colors.grey),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 25),
+                /// Selected employees preview (chips)
+                if (_selectedEmployees.isNotEmpty)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _selectedEmployees.map((emp) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: NasColors.darkBlue.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(emp.employeeName ?? "",
+                                  style: GoogleFonts.inter(
+                                      color: NasColors.darkBlue,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(width: 5),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedEmployees.remove(emp);
+                                  });
+                                },
+                                child: Icon(Icons.close,
+                                    size: 16, color: NasColors.darkBlue),
+                              )
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+      
+                const SizedBox(height: 15),
+                if (isLoading)
+                   Expanded(
+                      child: Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
+                        ),
+                      ))
+                else if (_noDataFound)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  )
+                else if (_showSearchResult)
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: _employeeSearchResults.length,
+                        itemBuilder: (context, index) {
+                          final employee = _employeeSearchResults[index];
+                          final name = employee.employeeName ?? "---";
+                          final designation = employee.designation ?? "";
+      
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blueAccent,
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : "?",
+                                style: GoogleFonts.inter(color: Colors.white),
+                              ),
+                            ),
+                            title: Text(name,
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600, fontSize: 16)),
+                            subtitle: Text(designation,
+                                style: GoogleFonts.inter(
+                                    fontSize: 14, color: Colors.grey[700])),
+                            trailing: Checkbox(
+                              value: _selectedEmployees.any((e) => e.employeeId == employee.employeeId),
+                              onChanged: (checked) {
+                                setState(() {
+                                  if (checked == true) {
+                                    if (!_selectedEmployees.any((e) => e.employeeId == employee.employeeId)) {
+                                      _selectedEmployees.add(employee);
+                                    }
+                                  } else {
+                                    _selectedEmployees.removeWhere((e) => e.employeeId == employee.employeeId);
+                                  }
+                                });
+                              },
+                              activeColor: NasColors.darkBlue,
+                              checkColor: Colors.white,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                /// Action Buttons
+                if (_selectedEmployees.length == 1) ...[
+                  FutureBuilder<bool>(
+                    future:
+                    _checkExistingChat(_selectedEmployees.first.employeeId!),
+                    builder: (context, snapshot) {
+                      final exists = snapshot.data ?? false;
+                      return Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: NasColors.darkBlue,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            if (exists) {
+                              _openExistingChat(
+                                  _selectedEmployees.first.employeeId!);
+                            } else {
+                              createChat(_selectedEmployees.first);
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              exists
+                                  ? "Open"
+                                  : "Start Chat",
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ] else if (_selectedEmployees.length > 1) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextField(
+                      controller: groupNameController,
+                      cursorColor: NasColors.darkBlue,
+                      style: GoogleFonts.inter(color: NasColors.darkBlue),
+                      decoration: InputDecoration(
+                        hintText: "Enter a group name",
+                        hintStyle: GoogleFonts.inter(color: NasColors.darkBlue.withOpacity(0.5)),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: NasColors.darkBlue),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: NasColors.darkBlue, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: NasColors.darkBlue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: createGroupChat,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          "Create a group",
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ),
+                ]
+              ] else ...[
+                /// Normal Chat List
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                          child: Text(
+                            AppLocalizations.of(context)!.nassMudeer,
+                            textAlign: TextAlign.left,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(),
+                          ),
+                        ).then((_) => _fetchChats());
+                      },
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.orange,
+                        child: Icon(Icons.group, color: Colors.white),
+                      ),
+                      title: Text(
+                        AppLocalizations.of(context)!.nassMudeer,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    backgroundColor: Colors.white,
+                    color: NasColors.darkBlue,
+                    onRefresh: _fetchChats,
+                    child: _chatData == null
+                        ? Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/loader.json'),
+                      ),
+                    )
+                        : _chatData!.data == null || _chatData!.data!.isEmpty
+                        ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json')),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                        : ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        // --- Direct Chats ---
+                        if (_chatData!.data!
+                            .where((c) => c.roomType == "direct")
+                            .isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                            child: Text(
+                              AppLocalizations.of(context)!.directChat,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ...(_chatData!.data!
+                              .where((c) => c.roomType == "direct")
+                              .toList()
+                            ..sort((a, b) {
+                              final aTime = a.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              final bTime = b.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              return bTime.compareTo(aTime); // latest first
+                            }))
+                              .map((chat) => _buildChatTile(chat, isGroup: false))
+                              .toList(),
+                        ],
+      
+                        // --- Group Chats ---
+                        if (_chatData!.data!
+                            .where((c) => c.roomType == "group")
+                            .isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                            child: Text(
+                              AppLocalizations.of(context)!.groups,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ...(_chatData!.data!
+                              .where((c) => c.roomType == "group")
+                              .toList()
+                            ..sort((a, b) {
+                              final aTime = a.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              final bTime = b.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              return bTime.compareTo(aTime); // latest first
+                            }))
+                              .map((chat) => _buildChatTile(chat, isGroup: true))
+                              .toList(),
+                        ],
+                      ],
+                    ),
+                  ),
+                )
+              ]
+            ],
+          ),
+        ),
+    );
+  }
+
+  Widget _buildChatTile(Data chat, {required bool isGroup}) {
+    final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
+
+    String displayName = "---";
+    String initial = "?";
+    bool? isOnline;
+
+    if (!isGroup &&
+        chat.participants != null &&
+        chat.participants!.isNotEmpty) {
+      final other = chat.participants!.firstWhere(
+              (p) => p.id.toString() != currentUserId,
+          orElse: () => chat.participants!.first);
+      displayName = other.name ?? "---";
+      initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : "?";
+      isOnline = other.isOnline;
+    }
+
+    // --- NEW: Count unread messages (only for direct chats) ---
+    final unreadCount =  chat.chatHistory
+        ?.where((msg) =>
+    msg.senderId.toString() != currentUserId &&
+        (msg.isRead == false || msg.isRead == null))
+        .length;
+    // -----------------------------------------------------------
+
+    // last message
+    String message = AppLocalizations.of(context)!.noMessageYet;
+    DateTime? lastMsgTime;
+    if (chat.chatHistory != null && chat.chatHistory!.isNotEmpty) {
+      final lastMsg = chat.chatHistory!.last;
+      message = lastMsg.senderId?.toString() == currentUserId
+          ? "${AppLocalizations.of(context)!.me}: ${lastMsg.content ?? ""}"
+          : (lastMsg.content ?? "");
+      if (lastMsg.timestamp != null) {
+        lastMsgTime = DateTime.tryParse(lastMsg.timestamp!)?.toLocal();
+      }
+    }
+
+    return ListTile(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SlackChatDetailScreen(chatHistory: chat),
+          ),
+        ).then((_) => _fetchChats());
+      },
+      leading: isGroup
+          ? const CircleAvatar(
+        backgroundColor: Colors.orange,
+        child: Icon(Icons.group, color: Colors.white),
+      )
+          : CircleAvatar(
+        backgroundColor: Colors.teal,
+        child:
+        Text(initial, style: GoogleFonts.inter(color: Colors.white)),
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              isGroup ? (chat.chatName ?? "Group") : displayName,
+              style:
+              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (!isGroup)
+            Container(
+              height: 12,
+              width: 12,
+              margin: const EdgeInsets.only(left: 6),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isOnline == true ? Colors.green : Colors.grey,
+              ),
+            ),
+        ],
+      ),
+      subtitle: Text(
+        message,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            lastMsgTime != null ? formatChatTime(context, lastMsgTime) : "",
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+          ),
+          // --- Show badge only for direct chats ---
+          if (unreadCount! > 0)...[
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                unreadCount.toString(),
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ] else ...[
+            SizedBox(height: 20,)
+          ]
+        ],
+      ),
+    );
+  }
+
+
+  /// Format Chat Time
+  String formatChatTime(BuildContext context, DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final isArabic = localeCode == "ar";
+
+    if (diff.inSeconds <= 1) {
+      return AppLocalizations.of(context)!.justNow;
+    }
+    if (diff.inSeconds < 60) {
+      return "${diff.inSeconds}${AppLocalizations.of(context)!.s} ${AppLocalizations.of(context)!.ago}";
+    }
+    if (diff.inMinutes < 60) {
+      return "${diff.inMinutes}${AppLocalizations.of(context)!.m} ${AppLocalizations.of(context)!.ago}";
+    }
+    if (diff.inHours < 24) {
+      return DateFormat('h:mm a', isArabic ? "ar" : "en").format(dateTime);
+    }
+    if (diff.inDays == 1) {
+      return AppLocalizations.of(context)!.yesterday;
+    }
+    if (diff.inDays < 7) {
+      return DateFormat("EEEE", isArabic ? "ar" : "en").format(dateTime);
+    }
+    return DateFormat("dd MMM yyyy", isArabic ? "ar" : "en").format(dateTime);
+  }
+
+  /// Search Employee
+  Future<void> getSearchEmployeeData() async {
+    final employeeId = searchController.text.trim().toUpperCase();
+    if (employeeId.isEmpty) return;
+
+    setState(() {
+      isLoading = true;
+      _employeeSearchResults.clear();
+      _showSearchResult = false;
+      _noDataFound = false;
+    });
+
+    try {
+      var client = http.Client();
+      var uri = Uri.parse(
+          '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+      var response =
+      await client.get(uri, headers: singletonClass.getHeaders());
+
+      setState(() => isLoading = false);
+
+      if (response.statusCode == 200) {
+        var responseBody = json.decode(response.body);
+        var employeeData = SearchEmployeeData.fromJson(responseBody);
+
+        if (employeeData.data != null &&
+            employeeData.data!.isNotEmpty) {
+          final emp = employeeData.data!.first;
+          final empInfo = emp.employeeInfo != null &&
+              emp.employeeInfo!.isNotEmpty
+              ? emp.employeeInfo!.first
+              : null;
+
+          if (empInfo != null) {
+            final result = SearchedResults(
+              empId: empInfo.empId,
+              employeeName: emp.userName ?? "Unknown",
+              employeeId: emp.id,
+              designation: empInfo.designation,
+            );
+
+            setState(() {
+              _employeeSearchResults.add(result);
+              _showSearchResult = true;
+            });
+          } else {
+            setState(() => _noDataFound = true);
+          }
+        } else {
+          setState(() => _noDataFound = true);
+        }
+      } else {
+        setState(() => _noDataFound = true);
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        _noDataFound = true;
+      });
+    }
+  }
+
+  /// Create direct chat
+  Future<void> createChat(SearchedResults employee) async {
+    String? currentUserId = singletonClass.getJWTModel()?.employeeId;
+    if (currentUserId == null) return;
+
+    final participants = [
+      {
+        "id": currentUserId,
+        "name": singletonClass.employeeDataList.first.data?.userName ?? "You",
+        "designation": singletonClass.employeeDataList.first.data?.employeeInfo?.first.designation ?? "",
+        "isOnline": true,
+        "lastSeen": ""
+      },
+      {
+        "id": employee.employeeId,
+        "name": employee.employeeName,
+        "designation": employee.designation,
+        "isOnline": false,
+        "lastSeen": ""
+      }
+    ];
+
+    final body = {
+      "chatName": "directMessage",
+      "roomType": "direct",
+      "participants": participants
+    };
+
+    try {
+      var client = http.Client();
+      var uri = Uri.parse("https://dev.nashrms.com/api/chat-system/create");
+      var response = await client.post(uri,
+          headers: {...singletonClass.getHeaders(), "Content-Type": "application/json"},
+          body: jsonEncode(body));
+      log("create chat data ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = jsonDecode(response.body);
+        final createdChat = Data.fromJson(responseBody['data']);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SlackChatDetailScreen(chatHistory: createdChat)))
+            .then((_) => _fetchChats());
+        setState(() => isCreating = false);
+      }
+    } catch (e) {
+      log("Chat creation failed: $e");
+    }
+  }
+
+  /// Create group chat
+  Future<void> createGroupChat() async {
+    String? currentUserId = singletonClass.getJWTModel()?.employeeId;
+    if (currentUserId == null || groupNameController.text.trim().isEmpty) return;
+
+    final participants = [
+      {
+        "id": currentUserId,
+        "name": singletonClass.employeeDataList.first.data?.userName ?? "You",
+        "designation": singletonClass.employeeDataList.first.data?.employeeInfo?.first.designation ?? "",
+        "isOnline": true,
+        "lastSeen": ""
+      },
+      ..._selectedEmployees.map((e) => {
+        "id": e.employeeId,
+        "name": e.employeeName,
+        "designation": e.designation,
+        "isOnline": false,
+        "lastSeen": ""
+      })
+    ];
+
+    final body = {
+      "chatName": groupNameController.text.trim(),
+      "roomType": "group",
+      "participants": participants
+    };
+
+    try {
+      var client = http.Client();
+      var uri = Uri.parse("https://dev.nashrms.com/api/chat-system/create");
+      var response = await client.post(uri,
+          headers: {...singletonClass.getHeaders(), "Content-Type": "application/json"},
+          body: jsonEncode(body));
+      log("create group chat data ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = jsonDecode(response.body);
+        final createdChat = Data.fromJson(responseBody['data']);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SlackChatDetailScreen(chatHistory: createdChat)))
+            .then((_) => _fetchChats());
+        setState(() => isCreating = false);
+      }
+    } catch (e) {
+      log("Group Chat creation failed: $e");
+    }
+  }
+
+  Future<bool> _checkExistingChat(String empId) async {
+    if (_chatData == null || _chatData!.data == null) return false;
+    final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
+    return _chatData!.data!.any((chat) =>
+    chat.roomType == "direct" &&
+        chat.participants!.any((p) => p.id.toString() == empId) &&
+        chat.participants!.any((p) => p.id.toString() == currentUserId));
+  }
+
+  void _openExistingChat(String empId) {
+    final chat = _chatData!.data!.firstWhere((c) =>
+    c.roomType == "direct" &&
+        c.participants!.any((p) => p.id.toString() == empId));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SlackChatDetailScreen(chatHistory: chat)),
+    ).then((_) => _fetchChats());
+    setState(() => isCreating = false);
+  }
+}
+
+
+class SocketService2 {
+  static final SocketService2 _instance = SocketService2._internal();
+  factory SocketService2() => _instance;
+
+  IO.Socket? socket;
+
+
+  SocketService2._internal();
+
+  SingletonClass singletonClass = SingletonClass();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  Future<void> _playReceiveSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('recieve.mp3'));
+    } catch (e) {
+      debugPrint("🔊 Receive sound error: $e");
+    }
+  }
+  void initSocket() {
+    if (socket != null && socket!.connected){
+      print("⚡ Socket already connected, skipping re-init");
+      return;
+    }
+
+    String? userId =  singletonClass.getJWTModel()?.employeeId;
+    String? tenantId = singletonClass.tenantId;
+
+
+    log("🚀 Connecting socket with userId=$userId, tenantId=$tenantId");
+
+
+
+    log("🚀 Connecting global socket...");
+    socket = IO.io(
+      "https://dev.nashrms.com/chat",
+      IO.OptionBuilder()
+          .setTransports(["websocket", "polling"])
+          .disableAutoConnect()
+          .setQuery({ "tenantId": tenantId, "userId": userId,})
+          .setPath("/socket.io")
+          .enableReconnection()
+          .setReconnectionAttempts(5)
+          .setReconnectionDelay(1000)
+          .build(),
+    );
+
+    socket!.on("chatNotification", (data) {
+      debugPrint("🔔 Notification: $data");
+      _handleBroadcastEvent(data);
+    });
+
+    socket!.on('receiveMessage', (data) async {
+      log("💬 Incoming message: $data");
+
+      try {
+        final msg = ChatHistory.fromJson(data);
+        final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
+        final currentChatId = singletonClass.activeChatRoomId;
+        String? incomingRoomId = data["_id"]?.toString();
+        print("CDCD${currentChatId}");
+        print("XDXDXD${incomingRoomId}");
+        // Only show banner if message is from another user
+        if (msg.senderId != currentUserId && incomingRoomId != currentChatId) {
+          _playReceiveSound();
+        }
+      } catch (e) {
+        log("⚠️ Error parsing message: $e");
+      }
+    });
+
+    socket!.connect();
+    socket!.onConnect((_) {
+      log("✅ Global socket connected: ${socket!.id}");
+    });
+
+    socket!.onDisconnect((reason) {
+      log("❌ Socket disconnected: $reason");
+    });
+
+    socket!.onConnectError((err) {
+      log("⚠️ Socket connect error: $err");
+    });
+
+    socket!.onError((err) {
+      log("⚠️ Socket general error: $err");
+    });
+
+  }
+
+  Future<void> _handleBroadcastEvent(dynamic data) async {
+    try {
+      if (data == null) return;
+
+      final message = data['message'] ?? 'New Broadcast Event';
+      final title = data['name'] ?? 'New Broadcast Event';
+
+      NotificationService.showNotification(
+        title: title,
+        body: message,
+      );
+    } catch (e, st) {
+      debugPrint('❌ Error in _handleBroadcastEvent: $e\n$st');
+    }
+  }
+
+  IO.Socket? getSocket() => socket;
+}

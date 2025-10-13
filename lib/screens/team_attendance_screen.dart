@@ -30,14 +30,13 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   String? selectedEmployeeId;
   DateTime? _selectedDate;
   int? _selectedDateIndex;
-  final List<DateTime> _dates = [];
   Set<String> selectedBranchIds = {};
   DateTime? _startDate;
   DateTime? _endDate;
   int _selectedOptionIndex = 0;
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
-
+  late List<DateTime> _dates;
   @override
    void initState() {
     super.initState();
@@ -54,7 +53,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
     filteredUnderTeams = filteredData['underTeams']!;
     log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
-
+    final today = DateTime.now();
+    _dates = List.generate(today.day, (index) {
+      return DateTime(today.year, today.month, index + 1);
+    });
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
     loadData();
@@ -245,9 +247,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     log("📨 TEAM DATA BODY: ${response.body}");
 
     if (response.statusCode == 200) {
+      singletonClass.teamAttendanceDataList.clear();
       final responseBody = json.decode(response.body);
       final attendance = TeamAttendanceModel.fromJson(responseBody);
-      singletonClass.teamAttendanceDataList.clear();
       singletonClass.teamAttendanceDataList.add(attendance);
       log("✅ Attendance data successfully fetched and saved");
       return attendance;
@@ -284,10 +286,43 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   }
 
 
-  String _getDayOfWeek(DateTime date) {
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  String _getDayOfWeek(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return [
+        "الإثنين", // Monday
+        "الثلاثاء", // Tuesday
+        "الأربعاء", // Wednesday
+        "الخميس", // Thursday
+        "الجمعة", // Friday
+        "السبت", // Saturday
+        "الأحد", // Sunday
+      ][date.weekday - 1];
+    } else {
+      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+    }
   }
 
+  String formatDay(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    if (locale == "ar") {
+      return _toArabicNumber(date.day);
+    } else {
+      return date.day.toString();
+    }
+  }
+
+
+  String _toArabicNumber(int number) {
+    const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return number
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[int.parse(digit)])
+        .join('');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +439,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                     },
                     child: Container(
                       width: 55,
-                      margin: const EdgeInsets.symmetric(horizontal: 5),
                       decoration: BoxDecoration(
                         color: selected ? NasColors.darkBlue : Colors.transparent,
                         borderRadius: BorderRadius.circular(35),
@@ -412,12 +446,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("${date.day}",
+                          Text(formatDay(context, date),
                               style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: selected ? Colors.white : Colors.grey)),
-                          Text(_getDayOfWeek(date),
+                          Text(_getDayOfWeek(context,date),
                               style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -453,9 +487,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             if (kDebugMode) {
                               print('Selected Branch ID: $value');
                             }
-                            loadData();
                             _isTeamChecked = false ;
                             _isChecked = false ;
+                            loadData();
                           });
                         },
                         itemBuilder: (BuildContext context) {
@@ -497,7 +531,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 child: Text(
                                   singletonClass.branchName != null && singletonClass.branchName!.isNotEmpty
                                       ? singletonClass.branchName!
-                                      : AppLocalizations.of(context)!.selectBranch,
+                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -526,7 +560,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 _isChecked = false;
                                 _isTeamChecked = value ?? false;
                                 selectedBranchIds.clear();
-                                _setDefaultDates();
+                                // _setDefaultDates();
                                 _initDates(start: _startDate!, end: _endDate!);
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
@@ -556,7 +590,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               if (_isChecked == false) {
                                 singletonClass.teamAttendanceDataList.clear();
                                 _isTeamChecked = true;
-                                _setDefaultDates();
                                 selectedBranchIds.clear();
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
@@ -564,7 +597,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                 loadData();
                               } else {
                                 singletonClass.teamAttendanceDataList.clear();
-                                _setDefaultDates();
                                 selectedBranchIds.clear();
                                 singletonClass.branchID = null;
                                 singletonClass.branchName = null;
@@ -669,12 +701,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         );
                       }
                       final hasMatchingData = filteredAttendanceDataList.any((attendance) {
+                        final status = attendance.status?.toLowerCase() ?? '';
+
                         if (_selectedOptionIndex == 0) return true;
-                        if (_selectedOptionIndex == 1) return attendance.status?.toLowerCase() == 'present';
-                        if (_selectedOptionIndex == 2) return attendance.status?.toLowerCase() == 'absent';
-                        if (_selectedOptionIndex == 3) return attendance.status?.toLowerCase() == 'missing checkin/out';
+                        if (_selectedOptionIndex == 1) return status == 'present';
+                        if (_selectedOptionIndex == 2) return status == 'absent';
+                        if (_selectedOptionIndex == 3) {
+                          final normalized = status.replaceAll('-', ' ');
+                          return normalized == 'missing checkin/out' ||
+                              normalized == 'missing checkin' ||
+                              normalized == 'missing checkout';
+                        }
                         if (_selectedOptionIndex == 4) return (attendance.lateMinutes ?? 0) > 0;
                         if (_selectedOptionIndex == 5) return (attendance.earlyCheckOut ?? 0) > 0;
+
                         return false;
                       });
                       return  hasMatchingData
@@ -683,16 +723,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         itemCount:filteredAttendanceDataList.length,
                         itemBuilder: (ctx, i) {
                           final attendance = filteredAttendanceDataList[i];
-                          final searchText = searchController.text.toLowerCase();
-                          if (isSearching &&
-                              !(attendance.name?.toLowerCase().contains(searchText) ?? false)) {
-                            return const SizedBox.shrink();
-                          }
                           if (_selectedOptionIndex != 0) {
                             final status = attendance.status?.toLowerCase();
                             if ((_selectedOptionIndex == 1 && status != 'present') ||
                                 (_selectedOptionIndex == 2 && status != 'absent') ||
-                                (_selectedOptionIndex == 3 && status != 'missing checkin/out') ||
+                                (_selectedOptionIndex == 3 && !['missing checkin/out', 'missing checkin', 'missing checkout']
+                                    .contains(status.replaceAll('-', ' '))) ||
                                 (_selectedOptionIndex == 4 && (attendance.lateMinutes ?? 0) <= 0) ||
                                 (_selectedOptionIndex == 5 && (attendance.earlyCheckOut ?? 0) <= 0)) {
                               return const SizedBox.shrink();
@@ -700,13 +736,36 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           }
 
                           String formatDate(String updatedAt) {
-                            DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                            return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                            try{
+                              DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                              final locale = Localizations.localeOf(context).languageCode;
+                              if (locale == 'ar'){
+                                final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
+                                return arabicFormatter.format(updatedAtDateTime);
+                              }else{
+                                final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                return formattedTime;
+                              }
+                            } catch (e){
+                              if (kDebugMode) {
+                                print("Error formatting time: $e");
+                              }
+                              return '--:--';
+                            }
                           }
                           String date = formatDate(attendance.updatedAt!);
                           int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
-                          int? earlyCheckOut = int.tryParse(attendance.lateMinutes.toString());
+                          int? earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString());
                           String breakTime = formatMinutes(attendance.breakTime);
+                          final searchText = searchController.text.toLowerCase();
+                          if (isSearching) {
+                            final matchesName = attendance.name?.toLowerCase().contains(searchText) ?? false;
+                            final matchesId = attendance.empId?.toLowerCase().contains(searchText) ?? false;
+
+                            if (!matchesName && !matchesId) {
+                              return const SizedBox.shrink();
+                            }
+                          }
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -731,6 +790,26 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               ),
                               child: Column(
                                 children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        attendance.empId ?? "___",
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(date,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          )),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
                                   Row(
                                     children: [
                                       ClipOval(
@@ -797,7 +876,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                               ),
                                               child: Center(
                                                 child: Text(
-                                                  _translateStatus(attendance.secondaryStatus!, context),
+                                                  _translateSecondaryStatus(attendance.secondaryStatus!, context),
                                                   textAlign: TextAlign.center,
                                                   style: GoogleFonts.inter(
                                                     fontWeight: FontWeight.bold,
@@ -817,7 +896,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Text(
-                                        attendance.empId ?? "___",
+                                        AppLocalizations.of(context)!.shifts,
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -833,7 +912,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                         return Column(
                                           children: [
                                             Text(
-                                              "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
+                                              "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
@@ -865,12 +944,76 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                   SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Text(date,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          )),
+                                      Column(
+                                        children: [
+                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'fullTime')...[
+                                            Text(
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.timefrom != null &&
+                                                  attendance.shiftInfo!.timeTo != null
+                                                  ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            Text(
+                                              maxLines: 5,
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.shiftName != null
+                                                  ? "${attendance.shiftInfo!.shiftName}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'flexibleShift')...[
+                                            Text(
+                                              maxLines: 5,
+                                              attendance.shiftInfo != null &&
+                                                  attendance.shiftInfo!.shiftName != null
+                                                  ? "${attendance.shiftInfo!.shiftName}"
+                                                  : "---",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                          if (attendance.shiftInfo != null &&
+                                              attendance.shiftInfo!.shiftType == 'timeTableShift') ...[
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: attendance.slots!.take(2).map<Widget>((slot) {
+                                                final start = DateTime.tryParse(slot.slotStart ?? '')?.toLocal();
+                                                final end = DateTime.tryParse(slot.slotEnd ?? '')?.toLocal();
+                                                final startTime = start != null ? DateFormat.jm().format(start) : '--:--';
+                                                final endTime = end != null ? DateFormat.jm().format(end) : '--:--';
+
+                                                return Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        "$startTime - $endTime",
+                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }).toList(),
+                                            )
+                                          ],
+                                        ],
+                                      ),
                                       const Spacer(),
                                       Text(
                                         "$breakTime ${AppLocalizations.of(context)!.minutes}",
@@ -955,7 +1098,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             ),
                                             SizedBox(height: 5),
                                             Text(
-                                              "${lateMinutes! ~/ 60}h ${lateMinutes % 60}m",
+                                              "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
@@ -977,8 +1120,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             ),
                                             SizedBox(height: 5),
                                             Text(
-                                              "${earlyCheckOut! ~/ 60}h ${earlyCheckOut % 60}m",
-                                              style: GoogleFonts.inter(
+                                              "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
+                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold,
                                                 color: NasColors.onTime,
@@ -1037,8 +1180,89 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         return localizations.present;
       case 'Quarterly':
         return localizations.quarterly;
+      case 'Pending':
+        return localizations.pending;
       case 'Missing CheckIn/Out':
         return localizations.missingCheckInOut;
+      default:
+        return status;
+    }
+  }
+/// secondary status
+  String _translateSecondaryStatus(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    if (status == null || status.isEmpty) {
+      return localizations.noData;
+    }
+
+    switch (status) {
+      case 'Absent':
+        return localizations.absent;
+      case 'Present':
+        return localizations.present;
+      case 'late':
+        return localizations.late;
+      case 'leave':
+        return localizations.leave;
+      case 'holiday':
+        return localizations.holiday;
+      case 'dayOFF':
+        return localizations.dayOff;
+      case 'training':
+        return localizations.training;
+      case 'absent with approval':
+        return localizations.absentWithApproval;
+      case 'Missing CheckIn/Out':
+        return localizations.missingCheckInOut;
+      case 'Late':
+        return localizations.late;
+      case 'Pending':
+        return localizations.pending;
+      case 'No-CheckIn':
+        return localizations.noCheckIn;
+      case 'Late-Penality':
+        return localizations.latePenality;
+      case 'Short-Hours':
+        return localizations.shortHours;
+      case 'Missing-CheckIn':
+        return localizations.missingCheckIn;
+      case 'Missing-CheckOut':
+        return localizations.missingCheckOut;
+      case 'Check-In':
+        return localizations.checkIn;
+      case 'Check-Out':
+        return localizations.checkOut;
+      case 'OOS-In':
+        return localizations.oosIn;
+      case 'OOS-Out':
+        return localizations.oosOut;
+      case 'Early-In':
+        return localizations.earlyIn;
+      case 'Early-Left':
+        return localizations.earlyLeft;
+      case 'OnTime-In':
+        return localizations.onTimeIn;
+      case 'OnTime-Out':
+        return localizations.onTimeOut;
+      case 'Late-In':
+        return localizations.lateIn;
+      case 'Late-Out':
+        return localizations.lateOut;
+      case 'SM-In':
+        return localizations.smIn;
+      case 'SM-Out':
+        return localizations.smOut;
+      case 'Break-In':
+        return localizations.breakIn;
+      case 'Break-Out':
+        return localizations.breakOut;
+      case 'slot':
+        return localizations.slot;
+      case 'Out-Off-Shift':
+        return localizations.outOffShift;
+      case 'Full-Day':
+        return localizations.fullDay;
       default:
         return status;
     }

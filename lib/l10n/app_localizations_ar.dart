@@ -12,10 +12,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dashboard => 'لوحة التحكم';
 
   @override
-  String get approvals => 'الموافقات';
+  String get approvals => 'طلبات الفريق';
 
   @override
-  String get teamMates => 'زملاء الفريق';
+  String get teamMates => 'أعضاء الفريق';
 
   @override
   String get manageTime => 'إدارة الوقت';
@@ -69,7 +69,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get todaysHours => 'ساعات اليوم';
 
   @override
-  String get clockInButton => 'تسجيل الحضور';
+  String get clockInButton => 'تسجيل الدخول';
 
   @override
   String get annualVacations => 'الإجازات السنوية';
@@ -93,10 +93,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mySchedule => 'جدولي';
 
   @override
-  String get absentEmployees => 'الموظفون الغائبون';
+  String get absentEmployees => 'الغيابات';
 
   @override
-  String get notClockedInYet => 'لم يتم تسجيل الحضور بعد';
+  String get notClockedInYet => 'لم يتم تسجيل الدخول بعد';
 
   @override
   String get whosOnWorkingRemotely => 'من يعمل عن بُعد';
@@ -129,7 +129,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get announcements => 'الإعلانات';
 
   @override
-  String get halfToOne => '2/1';
+  String get totalRecord => 'إجمالي السجلات';
 
   @override
   String get seventyFive => '75';
@@ -138,7 +138,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get january => 'يناير';
 
   @override
-  String get dailyStandup => 'اجتماع الوقوف اليومي';
+  String get dailyStandup => 'الاجتماع اليومي';
 
   @override
   String get budgetReview => 'مراجعة الميزانية';
@@ -216,7 +216,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get breaks => 'إستراحة';
 
   @override
-  String get breakOut => 'استراحة خروج';
+  String get breakOut => 'نهاية استراحة';
 
   @override
   String get clockOut => 'تسجيل الخروج';
@@ -246,7 +246,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lateComings => 'التأخرات';
 
   @override
-  String get onRemote => 'عن بُعد';
+  String get onRemote => 'يعمل عن بُعد';
 
   @override
   String get selectBranch => 'اختر الفرع';
@@ -267,7 +267,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get gender => 'الجنس';
 
   @override
-  String get yourTeamRequest => 'طلب فريقك';
+  String get yourTeamRequest => 'طلبات فريقك';
 
   @override
   String get viewApprovals => 'عرض الموافقات';
@@ -282,7 +282,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get insuranceInfo => 'معلومات التأمين';
 
   @override
-  String get complainsForEmployee => 'شكاوى ضد الموظف';
+  String get complainsForEmployee => 'شكاوى الموظفين';
 
   @override
   String get companyNotifications => 'إشعارات الشركة';
@@ -312,7 +312,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get annualLeaveThreeDays => 'إجازة سنوية (3 أيام)';
 
   @override
-  String get complainForEmployee => 'شكوى ضد الموظف';
+  String get complainForEmployee => 'شكوى على موظف';
 
   @override
   String get insuranceInfoDetail => 'معلومات التأمين';
@@ -337,7 +337,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get orgChart =>
-      'من خلال هذا الرسم البياني، يمكنك بسهولة تحديد العلاقات التنظيمية، أعضاء الفريق، وهياكل الأقسام. يمكنك أيضًا الوصول إلى الملفات الشخصية لكل عضو فريق مباشرة من المخطط التنظيمي.';
+      'المخطط التنظيمي: من خلاله يمكنك تحديد العلاقات التنظيمية، أعضاء الفريق، وهياكل الأقسام، مع إمكانية الوصول إلى الملفات الشخصية لكل عضو مباشرة.';
 
   @override
   String get lets => 'لنبدأ';
@@ -371,16 +371,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
 
   @override
-  String get checkIn => 'تسجيل الدخول';
+  String get checkIn => 'تسجيل دخول';
 
   @override
-  String get checkOut => 'تسجيل الخروج';
+  String get checkOut => 'تسجيل خروج';
 
   @override
-  String get worked => 'عمل لمدة';
+  String get worked => 'مدة العمل';
 
   @override
-  String get swipeToCheckIn => 'مرر لتسجيل الحضور';
+  String get swipeToCheckIn => 'اسحب لتسجيل الحضور';
 
   @override
   String get loans => 'القروض';
@@ -398,7 +398,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inProgress => 'قيد التنفيذ';
 
   @override
-  String get pending => 'معلق';
+  String get pending => 'قيد الانتظار';
 
   @override
   String get completed => 'مكتمل';
@@ -425,7 +425,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bankAccounts => 'الحسابات البنكية';
 
   @override
-  String get familyInfo => 'معلومات الأسرة';
+  String get familyInfo => 'معلومات العائلة';
 
   @override
   String get personalInformation => 'المعلومات الشخصية';
@@ -467,13 +467,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get country => 'الدولة';
 
   @override
-  String get familyPhoneNo => 'رقم هاتف الأسرة';
+  String get familyPhoneNo => 'رقم هاتف العائلة';
 
   @override
   String get emergencyContact => 'جهة اتصال الطوارئ';
 
   @override
-  String get relation => 'العلاقة';
+  String get relation => 'صلة القرابة';
 
   @override
   String get settings => 'الإعدادات';
@@ -482,7 +482,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get biometrics => 'البصمة الحيوية';
 
   @override
-  String get myClocking => 'اوقاتي';
+  String get myClocking => 'سجلات حضوري';
 
   @override
   String get payroll => 'الرواتب';
@@ -500,13 +500,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get status => 'الحالة';
 
   @override
-  String get assignedAssets => 'الأصول المعينة';
+  String get assignedAssets => 'الأصول المخصصة';
 
   @override
   String get myDocuments => 'مستنداتي';
 
   @override
-  String get loginSuccess => 'تم تسجيل الدخول بنجاح';
+  String get loginSuccess => 'تم تسجيل الدخول ';
 
   @override
   String get complaints => 'الشكاوى';
@@ -515,10 +515,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get teamClocking => 'تسجيل حضور الفريق';
 
   @override
-  String get success => 'نجاح';
+  String get success => 'تم';
 
   @override
-  String get checkOutSuccess => 'تم تسجيل الخروج بنجاح!';
+  String get checkOutSuccess => 'تم تسجيل الخروج !';
 
   @override
   String get yes => 'نعم';
@@ -539,7 +539,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get location => 'الموقع';
 
   @override
-  String get biometricCheckIn => 'تسجيل الحضور بالبصمة الحيوية';
+  String get biometricCheckIn => 'تسجيل الدخول بالبصمة';
 
   @override
   String get logout => 'تسجيل الخروج';
@@ -557,10 +557,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get areYouSureToLogout => 'هل أنت متأكد من تسجيل الخروج؟';
 
   @override
-  String get checkInComplete => 'تم تسجيل الحضور بنجاح!';
+  String get checkInComplete => 'تم تسجيل الحضور !';
 
   @override
-  String get checkOutComplete => 'تم تسجيل الخروج بنجاح!';
+  String get checkOutComplete => 'تم تسجيل الخروج !';
 
   @override
   String get internalServerError => 'خطأ في الخادم الداخلي!';
@@ -602,7 +602,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get earlyCheckOut => 'الخروج المبكر';
 
   @override
-  String get earlyLeft => 'انصراف مبكر';
+  String get earlyLeft => 'خروج مبكر';
 
   @override
   String get comment => 'إضافة تعليق';
@@ -635,7 +635,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get complainDetails => 'تفاصيل الشكوى';
 
   @override
-  String get payrollMonth => 'شهر الرواتب';
+  String get payrollMonth => 'مسير الرواتب هذا الشهر';
 
   @override
   String get employeeSalary => 'راتب الموظف';
@@ -650,7 +650,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejected => 'تم الرفض';
 
   @override
-  String get pendingRequest => 'طلب معلق';
+  String get pendingRequest => 'طلب قيد الانتظار';
 
   @override
   String get requestDate => 'تاريخ الطلب';
@@ -662,7 +662,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get startDate => 'تاريخ البدء';
 
   @override
-  String get noPendingRequests => 'لا توجد طلبات معلقة';
+  String get noPendingRequests => 'لا توجد طلبات قيد الانتظار';
 
   @override
   String get noUpcomingEvents => 'لا توجد أحداث قادمة';
@@ -680,10 +680,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get save => 'حفظ';
 
   @override
-  String get editSuccess => 'تم التعديل بنجاح!';
+  String get editSuccess => 'تم التعديل !';
 
   @override
-  String get successUpdate => 'تم تحديث الملف الشخصي بنجاح!';
+  String get successUpdate => 'تم تحديث الملف الشخصي !';
 
   @override
   String get bio => 'السيرة الذاتية';
@@ -728,7 +728,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get clearAll => 'مسح الكل';
 
   @override
-  String get leaveRequests => 'طلبات الإجازة';
+  String get leaveRequests => 'طلب الإجازة';
 
   @override
   String get leaveTaken => 'تم أخذ الإجازة';
@@ -740,7 +740,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get previousLeaves => 'الإجازات السابقة';
 
   @override
-  String get employeeDetails => 'تفاصيل الموظف';
+  String get employeeDetails => 'بيانات الموظف';
 
   @override
   String get department => 'القسم';
@@ -806,34 +806,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employee => 'الموظف';
 
   @override
-  String get admin => 'المسؤول';
+  String get admin => 'مسؤول';
 
   @override
-  String get superAdmin => 'المسؤول الأعلى';
+  String get superAdmin => 'المسؤول العام';
 
   @override
-  String get feedback => 'التغذية الراجعة';
+  String get feedback => 'الملاحظات';
 
   @override
-  String get sendFeedback => 'إرسال تغذية راجعة';
+  String get sendFeedback => 'إرسال ملاحظات';
 
   @override
-  String get feedbackSubmitted => 'تم إرسال التغذية الراجعة';
+  String get feedbackSubmitted => 'تم إرسال الملاحظات';
 
   @override
-  String get feedbackError => 'خطأ في التغذية الراجعة';
+  String get feedbackError => 'خطأ في إرسال الملاحظات';
 
   @override
   String get leaveType => 'نوع الإجازة';
 
   @override
-  String get noticePeriod => 'فترة الإخطار';
+  String get noticePeriod => 'فترة الإشعار';
 
   @override
   String get lateCheckIn => 'تسجيل دخول متأخر';
 
   @override
-  String get workFromHome => 'العمل من المنزل';
+  String get workFromHome => 'العمل عن بُعد';
 
   @override
   String get select => 'اختيار';
@@ -917,13 +917,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get grossSalary => 'الراتب الإجمالي';
 
   @override
-  String get insurance => 'التأمين';
+  String get insurance => 'ا لتأمين';
 
   @override
   String get tax => 'الضرائب';
 
   @override
-  String get deductions => 'الخصومات';
+  String get deductions => 'Deductions';
 
   @override
   String get salaryStructure => 'هيكل الراتب';
@@ -1046,7 +1046,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get leave => 'إجازة';
 
   @override
-  String get overTime => 'ساعات إضافية';
+  String get overTime => 'العمل الإضافي';
 
   @override
   String get training => 'تدريب';
@@ -1055,14 +1055,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectRequestType => 'اختر نوع الطلب';
 
   @override
-  String get passwordOrPhoneNo => 'كلمة المرور أو رقم الهاتف غير صحيح';
+  String get passwordOrUsernameIncorrect =>
+      'اسم المستخدم أو كلمة المرور غير صحيح';
 
   @override
   String get pleaseEnterNotes => 'يرجى إدخال ملاحظة';
 
   @override
-  String get enterToAndFromDate =>
-      'يرجى تحديد كل من تاريخ البداية وتاريخ النهاية';
+  String get enterToAndFromDate => 'يرجى تحديد تاريخ البداية وتاريخ النهاية';
 
   @override
   String get selectSubType => 'نوع الإجازة';
@@ -1080,7 +1080,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get againstMe => 'ضدي';
 
   @override
-  String get teams => 'الفرق';
+  String get teams => 'الفريق';
 
   @override
   String get applyRequests => 'تقديم الطلب';
@@ -1116,7 +1116,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get amount => 'المبلغ';
 
   @override
-  String get selectSeverityOfEmployee => 'اختر شدة الموظف';
+  String get selectSeverityOfEmployee => 'اختر مستوى المخالفة';
 
   @override
   String get low => 'منخفض';
@@ -1144,7 +1144,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get youHaveNotCheckedInYet =>
-      'لم تقم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.';
+      'لم يتم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.';
 
   @override
   String get currentLocationNotAvailable => 'الموقع الحالي غير متاح.';
@@ -1218,7 +1218,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get jobTitle => 'المسمى الوظيفي';
 
   @override
-  String get jobDescription => 'وصف الوظيفة';
+  String get jobDescription => 'الوصف الوظيفي';
 
   @override
   String get reportingManager => 'المدير المباشر';
@@ -1227,7 +1227,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employeeShift => 'وردية الموظف';
 
   @override
-  String get createAnIssue => 'إنشاء مشكلة';
+  String get createAnIssue => 'إنشاء بلاغ';
 
   @override
   String get tdo => 'للعمل';
@@ -1242,7 +1242,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get description => 'الوصف';
 
   @override
-  String get type => 'نوع';
+  String get type => 'النوع';
 
   @override
   String get comments => 'التعليقات';
@@ -1266,10 +1266,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addAttachments => 'إضافة مرفقات';
 
   @override
-  String get typeYourSubject => 'اكتب موضوعك هنا!';
+  String get typeYourSubject => 'أدخل موضوعك هنا';
 
   @override
-  String get typeYourDescription => 'اكتب وصفك هنا!';
+  String get typeYourDescription => 'أدخل وصفك هنا';
 
   @override
   String get create => 'إنشاء';
@@ -1281,7 +1281,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get projectName => 'اسم المشروع';
 
   @override
-  String get projectKey => 'مفتاح المشروع';
+  String get projectKey => 'رمز المشروع';
 
   @override
   String get teamName => 'اسم الفريق';
@@ -1293,22 +1293,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addLogo => 'إضافة شعار';
 
   @override
-  String get typeYourProjectNameHere => 'اكتب اسم مشروعك هنا';
+  String get typeYourProjectNameHere => 'أدخل اسم المشروع هنا';
 
   @override
-  String get typeYourProjectDescriptionHere => 'اكتب وصف مشروعك هنا';
+  String get typeYourProjectDescriptionHere => 'أدخل وصف المشروع هنا';
 
   @override
-  String get typeYourProjectKeyHere => 'اكتب مفتاح مشروعك هنا';
+  String get typeYourProjectKeyHere => 'أدخل رمز المشروع هنا';
 
   @override
-  String get typeYourTeamNameHere => 'اكتب اسم فريقك هنا';
+  String get typeYourTeamNameHere => 'أدخل اسم الفريق هنا';
 
   @override
   String get project => 'مشروع';
 
   @override
-  String get myTeams => 'فريقي';
+  String get myTeams => 'فرقي';
 
   @override
   String get requestAndApproval => 'الطلبات والموافقات';
@@ -1377,7 +1377,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get moon => 'قمر';
 
   @override
-  String get badBehaviour => 'سلوك سيئ';
+  String get badBehaviour => 'سلوك غير لائق';
 
   @override
   String get yourSelf => 'نفسك';
@@ -1386,13 +1386,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createAEvent => 'إنشاء حدث';
 
   @override
-  String get typeEventNameHere => 'اكتب اسم الحدث هنا';
+  String get typeEventNameHere => 'أدخل اسم الحدث هنا';
 
   @override
   String get eventDescription => 'وصف الحدث';
 
   @override
-  String get typeEventDescriptionHere => 'اكتب وصف الحدث هنا';
+  String get typeEventDescriptionHere => 'أدخل وصف الحدث هنا';
 
   @override
   String get eventCategory => 'فئة الحدث';
@@ -1405,7 +1405,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get typeEventTypeOrSelectFromList =>
-      'اكتب نوع الحدث أو اختر من القائمة';
+      'أدخل نوع الحدث أو اختر من القائمة';
 
   @override
   String get pleaseFillAllFields => 'يرجى ملء جميع الحقول';
@@ -1417,13 +1417,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quarterly => 'ربع سنوي';
 
   @override
-  String get missingCheckInOut => 'لم يتم تسجيل الخروج';
+  String get missingCheckInOut => 'لم يتم تسجيل دخول/خروج';
 
   @override
-  String get advanceExpense => 'نفقة مقدمة';
+  String get advanceExpense => 'مصروف مقدم';
 
   @override
-  String get businessExpense => 'نفقة تجارية';
+  String get businessExpense => 'مصروف تجارية';
 
   @override
   String get leaveRequestBottom => 'نوع الإجازة';
@@ -1444,10 +1444,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signature => 'التوقيع';
 
   @override
-  String get selectComplaintType => 'اختار نوع الشكوى';
+  String get selectComplaintType => 'اختر نوع الشكوى';
 
   @override
-  String get complaintAgainstColleague => 'شكوى ضد الزميل';
+  String get complaintAgainstColleague => 'شكوى ضد زميل';
 
   @override
   String get complaintAgainstSupervisor => 'شكوى ضد المشرف';
@@ -1462,19 +1462,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enterLetterSubjectHere => 'أدخل موضوع الخطاب هنا...!';
 
   @override
-  String get enterLetterBodyHere => 'أدخل محتوى الخطاب هنا...!';
+  String get enterLetterBodyHere => 'أدخل نص الخطاب هنا...';
 
   @override
   String get previewLetter => 'معاينة الخطاب';
 
   @override
-  String get pleaseEnterLetterBody => 'يرجى إدخال محتوى الخطاب';
+  String get pleaseEnterLetterBody => 'يرجى إدخال نص الخطاب';
 
   @override
   String get pleaseEnterLetterSubject => 'يرجى إدخال موضوع الخطاب';
 
   @override
-  String get letterBody => 'محتوى الخطاب';
+  String get letterBody => 'نص الخطاب';
 
   @override
   String get onTime => 'في الوقت المحدد';
@@ -1489,13 +1489,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get remoteDaysThisMonth => 'أيام العمل عن بُعد هذا الشهر';
 
   @override
-  String get sickDaysThisMonth => 'أيام المرض هذا الشهر';
+  String get sickDaysThisMonth => 'أيام الإجازات المرضية هذا الشهر';
 
   @override
   String get hey => 'مرحبًا';
 
   @override
-  String get whatsOnYourMindToday => 'ما الذي يشغل بالك اليوم؟';
+  String get whatsOnYourMindToday => 'ما الذي يشغلك اليوم؟';
 
   @override
   String get tellMeAboutDocuments => 'أخبرني عن المستندات';
@@ -1565,7 +1565,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get missingCheckInAndCheckOut =>
-      'وقت تسجيل الخروج مفقود، تم التحديث تلقائيًا بواسطة النظام';
+      'لم يتم تسجيل الدخول أو الخروج تم التحديث تلقائيًا بواسطة النظام';
 
   @override
   String get allBranch => 'جميع الفروع';
@@ -1577,13 +1577,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get attendanceHistory => 'سجل الحضور';
 
   @override
-  String get onlyMe => 'فقط أنا';
+  String get onlyMe => 'أنا فقط';
 
   @override
-  String get assetsDetails => 'تفاصيل الأصل';
+  String get assetsDetails => 'تفاصيل الأصول';
 
   @override
-  String get documentNotification => 'إشعار المستند';
+  String get documentNotification => 'إشعارات المستندات';
 
   @override
   String get shifts => 'الورديات';
@@ -1598,7 +1598,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shortLeaves => 'إجازات قصيرة';
 
   @override
-  String get loading => 'جارٍ التحميل';
+  String get loading => 'جاري التحميل';
 
   @override
   String get assignedAt => 'تم التعيين في';
@@ -1610,10 +1610,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get specialLeaveRequest => 'طلب إجازة خاصة';
 
   @override
-  String get specialLeaveRequestBottom => 'نوع طلب إجازة خاصة';
+  String get specialLeaveRequestBottom => 'نوع الإجازة الخاصة';
 
   @override
-  String get approvalDocumentRequestBottom => 'نوع الموافقة على طلب المستند';
+  String get approvalDocumentRequestBottom => 'نوع الموافقة على المستند';
 
   @override
   String get approvalDocumentRequest => 'الموافقة على طلب المستند';
@@ -1658,13 +1658,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get meetingName => 'اسم الاجتماع';
 
   @override
-  String get typeMeetingNameHere => 'اكتب اسم الاجتماع هنا';
+  String get typeMeetingNameHere => 'أدخل اسم الاجتماع هنا';
 
   @override
   String get meetingDescription => 'وصف الاجتماع';
 
   @override
-  String get typeMeetingDescriptionHere => 'اكتب وصف الاجتماع هنا';
+  String get typeMeetingDescriptionHere => 'أدخل وصف الاجتماع هنا';
 
   @override
   String get meetingCategory => 'فئة الاجتماع';
@@ -1674,22 +1674,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get typeMeetingTypeOrSelectFromList =>
-      'اكتب نوع الاجتماع أو اختر من القائمة';
+      'أدخل نوع الاجتماع أو اختر من القائمة';
 
   @override
-  String get createATask => 'إنشاء المهام';
+  String get createATask => 'إنشاء مهمة';
 
   @override
   String get taskName => 'اسم المهمة';
 
   @override
-  String get typeTaskNameHere => 'اكتب اسم المهمة هنا';
+  String get typeTaskNameHere => 'أدخل اسم المهمة هنا';
 
   @override
   String get taskDescription => 'وصف المهمة';
 
   @override
-  String get typeTaskDescriptionHere => 'اكتب وصف المهمة هنا';
+  String get typeTaskDescriptionHere => 'أدخل وصف المهمة هنا';
 
   @override
   String get taskCategory => 'فئة المهمة';
@@ -1699,7 +1699,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get typeTaskTypeOrSelectFromList =>
-      'اكتب نوع المهمة أو اختر من القائمة';
+      'أدخل نوع المهمة أو اختر من القائمة';
 
   @override
   String get next => 'التالي';
@@ -1712,4 +1712,269 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get maternityLeave => 'إجازة الأمومة';
+
+  @override
+  String get taskDetails => 'تفاصيل المهمة';
+
+  @override
+  String get teamRequests => 'طلبات الفريق';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get timeStamp => 'الطابع الزمني';
+
+  @override
+  String get srNo => 'الرقم التسلسلي';
+
+  @override
+  String get h => 'س';
+
+  @override
+  String get m => 'د';
+
+  @override
+  String get category => 'الفئة';
+
+  @override
+  String get value => 'القيمة';
+
+  @override
+  String get dayOff => 'يوم عطلة';
+
+  @override
+  String get absentWithApproval => 'غياب بموافقة';
+
+  @override
+  String get noCheckIn => 'لم يتم تسجيل الدخول';
+
+  @override
+  String get latePenality => 'عقوبة التأخير';
+
+  @override
+  String get shortHours => 'ساعات ناقصة';
+
+  @override
+  String get missingCheckIn => 'لم يتم تسجيل دخول';
+
+  @override
+  String get missingCheckOut => 'لم يتم تسجيل خروج';
+
+  @override
+  String get oosIn => 'تسجيل دخول خارج أوقات الدوام';
+
+  @override
+  String get oosOut => 'تسجيل خروج خارج أوقات الدوام';
+
+  @override
+  String get earlyIn => 'دخول مبكر';
+
+  @override
+  String get onTimeIn => 'دخول في الوقت';
+
+  @override
+  String get onTimeOut => 'خروج في الوقت';
+
+  @override
+  String get lateIn => 'دخول متأخر';
+
+  @override
+  String get lateOut => 'خروج متأخر';
+
+  @override
+  String get smIn => 'SM دخول';
+
+  @override
+  String get smOut => 'SM خروج';
+
+  @override
+  String get breakIn => 'بداية استراحة';
+
+  @override
+  String get slot => 'فترة';
+
+  @override
+  String get outOffShift => 'خارج أوقات الدوام';
+
+  @override
+  String get fullDay => 'يوم كامل';
+
+  @override
+  String get pleaseSetupBiometric => 'يرجى إعداد البصمة في إعدادات جهازك';
+
+  @override
+  String get pleaseAuthenticate => 'يرجى المصادقة للوصول إلى هذه الميزة';
+
+  @override
+  String get biometricAuthenticationFailed => 'فشلت عملية المصادقة الحيوية';
+
+  @override
+  String get biometricAuthenticationDisabled => 'تم تعطيل المصادقة الحيوية';
+
+  @override
+  String get biometricAuthenticationEnabled => 'المصادقة البيومترية مفعلة';
+
+  @override
+  String get notificationEnabled => 'الإشعارات مفعلة';
+
+  @override
+  String get notificationsDisabled => 'الإشعارات معطلة';
+
+  @override
+  String get anErrorOccurredDuringAuthentication => 'حدث خطأ أثناء المصادقة';
+
+  @override
+  String get biometricNotAvailable =>
+      'المصادقة البيومترية غير متوفرة أو غير مسجلة';
+
+  @override
+  String get manageShifts => 'إدارة الورديات';
+
+  @override
+  String get noSignature => 'لا يوجد توقيع';
+
+  @override
+  String get editSignature => 'تعديل التوقيع';
+
+  @override
+  String get addSignature => 'إضافة توقيع';
+
+  @override
+  String get myProjects => 'مشاريعي';
+
+  @override
+  String get member => 'عضو';
+
+  @override
+  String get d => 'اليوم';
+
+  @override
+  String get ago => 'منذ';
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String get clockingNotifications => 'Clocking Notifications';
+
+  @override
+  String get clockingNotification => 'إشعار التسجيل';
+
+  @override
+  String get requestNotification => 'إشعار الطلب';
+
+  @override
+  String get workMeeting => 'اجتماع عمل';
+
+  @override
+  String get celebration => 'احتفال';
+
+  @override
+  String get generalMeeting => 'اجتماع عام';
+
+  @override
+  String get standup => 'الاجتماع اليومي';
+
+  @override
+  String get taskDeadlines => 'مواعيد تسليم المهام';
+
+  @override
+  String get teamSync => 'مزامنة الفريق';
+
+  @override
+  String get clientCall => 'مكالمة مع العميل';
+
+  @override
+  String get projectPlanning => 'تخطيط المشروع';
+
+  @override
+  String get reviewSession => 'جلسة مراجعة';
+
+  @override
+  String get strategyMeeting => 'اجتماع استراتيجي';
+
+  @override
+  String get birthdayParty => 'حفلة عيد ميلاد';
+
+  @override
+  String get workAnniversary => 'ذكرى العمل';
+
+  @override
+  String get achievementCelebration => 'احتفال بالإنجاز';
+
+  @override
+  String get farewellParty => 'حفلة وداع';
+
+  @override
+  String get allHands => 'اجتماع شامل';
+
+  @override
+  String get departmentUpdate => 'تحديث القسم';
+
+  @override
+  String get companyUpdate => 'تحديث الشركة';
+
+  @override
+  String get managementDiscussion => 'مناقشة الإدارة';
+
+  @override
+  String get weeklyStandup => 'الاجتماع الأسبوعي';
+
+  @override
+  String get sprintPlanning => 'تخطيط السبرينت';
+
+  @override
+  String get retrospective => 'اجتماع المراجعة';
+
+  @override
+  String get milestoneOne => 'المرحلة الأولى';
+
+  @override
+  String get milestoneTwo => 'المرحلة الثانية';
+
+  @override
+  String get finalSubmission => 'التسليم النهائي';
+
+  @override
+  String get bugFixDeadline => 'الموعد النهائي لإصلاح الأخطاء';
+
+  @override
+  String get update => 'تحديث';
+
+  @override
+  String get timeTableShift => 'جدول الوردية';
+
+  @override
+  String get fullTime => 'دوام كامل';
+
+  @override
+  String get flexibleShift => 'وردية مرنة';
+
+  @override
+  String get chat => 'دردشة';
+
+  @override
+  String get chatBox => 'صندوق المحادثة';
+
+  @override
+  String get directChat => 'المحادثات المباشرة';
+
+  @override
+  String get groups => 'المجموعات';
+
+  @override
+  String get s => 'ث';
+
+  @override
+  String get yesterday => 'أمس';
+
+  @override
+  String get noMessageYet => 'لا توجد رسائل بعد';
+
+  @override
+  String get typeAMessage => 'اكتب رسالة هنا';
+
+  @override
+  String get me => 'أنا';
 }

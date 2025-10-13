@@ -345,7 +345,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -379,7 +379,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon: Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 fromDate == null
                                     ? AppLocalizations.of(context)!.fromDate
                                     : DateFormat('yyyy-MM-dd')
@@ -390,12 +395,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
-                            ),
-                            TextButton(
+                            TextButton.icon(
                               onPressed: () async {
                                 DateTime? date = await showDatePicker(
                                   context: context,
@@ -438,7 +438,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   });
                                 }
                               },
-                              child: Text(
+                              icon:  Icon(
+                                Icons.calendar_month_outlined,
+                                size: 30,
+                                color: NasColors.darkBlue,
+                              ),
+                              label: Text(
                                 toDate == null
                                     ? AppLocalizations.of(context)!.toDate
                                     : DateFormat('yyyy-MM-dd')
@@ -448,11 +453,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                   color: Colors.black,
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 30,
-                              color: NasColors.darkBlue,
                             ),
                           ],
                         ),
@@ -478,7 +478,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         GestureDetector(
                           onTap: () async {
                             FilePickerResult? result = await FilePicker.platform.pickFiles(
-                              type: FileType.any,
+                              type: FileType.image,
                             );
 
                             if (result != null && result.files.single.path != null) {
@@ -604,7 +604,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          title: const Text('Confirm Upload'),
+          title: Text(AppLocalizations.of(context)!.confirmUpload),
           content:
               Text('${AppLocalizations.of(context)!.areYouSureYouWantToUploadThisFile}: ${file.name}?'),
           actions: [
@@ -681,7 +681,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       final responseBody = await response.stream.bytesToString();
       print("API Response Body: $responseBody");
       setState(() {
-        isLoading = false; // Corrected to set isLoading to true
+        isLoading = false;
       });
 
       if (response.statusCode == 200) {
@@ -698,12 +698,17 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
+
+  String generateTaskId(String projectKey, int number) {
+    return "$projectKey-${number.toString().padLeft(2, '0')}";
+  }
+
   void createTask() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     String url = '${singletonClass.baseURL}/kanban-task/create';
     Map<String, dynamic> data = {
       "projectId": widget.projectData!.id,
-      "taskId": "task001",
+      "taskId": generateTaskId("${widget.projectData!.projectKey}", 1),
       "subject": _subject.text,
       "description": _description.text,
       "attachments": singletonClass.taskAttachmentDataList.isNotEmpty
@@ -713,7 +718,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       "estimatedDuration": totalDays.toString(),
       "type": _selectedType,
       "tag": "urgent",
-      "assignTo": [_selectedOption!.empId],
+      "assignTo":  [
+        {
+          "userId": _selectedOption!.empId,
+          "userName": _selectedOption!.name,
+        }
+      ],
       "reportedTo": {"manager": employeeId},
       "logDuration": [
         {
@@ -724,17 +734,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         }
       ],
       "subTask": [""],
-      "comments": [
-        {
-          "comments": "",
-          "commentedBy": "",
-          "commentedAt": ""
-        }
-      ]
+      "comments": []
     };
-    // Convert data to JSON string
     String jsonData = jsonEncode(data);
-    // print(data);
     log(jsonData);
     setState(() {
       isLoading = true;
@@ -761,7 +763,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             type: QuickAlertType.success,
           );
 
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen(index: 1,)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(

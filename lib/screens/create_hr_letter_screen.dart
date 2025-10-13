@@ -249,7 +249,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                         TextButton(
                             onPressed: () {
                               setState(() {
-                                _employeeSearchResults.clear();
+                                _showSearchResult = false;
                               });
                             },
                             child: Text(
@@ -304,14 +304,29 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                                 ),
                               ],
                             ),
-                            trailing: GestureDetector(
+                            trailing: (_selectedEmployees.contains(employee) && _employeeSearchResults.contains(employee)) ? GestureDetector(
                               onTap: () {
-                                setState(() {
+                                setState((){
                                   if (_selectedEmployees.contains(employee)) {
                                     _selectedEmployees.remove(employee);
-                                  } else {
-                                    _selectedEmployees.add(employee);
                                   }
+                                });
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red,
+                                ),
+                                padding: const EdgeInsets.all(8.0),
+                                child: const Icon(
+                                  Icons.remove,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ) : GestureDetector(
+                              onTap: () {
+                                setState((){
+                                  _selectedEmployees.add(employee);
                                 });
                               },
                               child: Container(
@@ -498,7 +513,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 
   //Search Call
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim();
+    String employeeId = _searchController.text.trim().toUpperCase();
     if (employeeId.isEmpty) return;
 
     setState(() {
@@ -545,10 +560,17 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     }
   }
 
-  //API CALL
+  ///API CALL
   Future<void> getTemplate() async {
+    setState(() {
+      _isLoading = true;
+    });
     final response =
         await http.get(Uri.parse('${singletonClass.baseURL}/documents'),headers: singletonClass.getHeaders());
+    log(response.body);
+    setState(() {
+      _isLoading = false;
+    });
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final templates = jsonData['data']?['data'] as List<dynamic>?;
