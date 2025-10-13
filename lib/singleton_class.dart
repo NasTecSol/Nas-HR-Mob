@@ -121,7 +121,7 @@ class SingletonClass {
   String? branchID;
   String? branchName;
   String? activeChatRoomId;
-
+  String? activeScreen;
 
   init() async {
     _singleton ??= SingletonClass._();

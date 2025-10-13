@@ -38,21 +38,41 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
+  @override
   void initState() {
     super.initState();
+    singletonClass.activeScreen = 'SlackChatDetailScreen';
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
     messages = widget.chatHistory?.chatHistory ?? [];
 
-    // ✅ use global socket
+    // ✅ Use global socket
     socket = SocketService2().getSocket();
 
     _setupChatListeners();
     _joinRoom();
+
+    final currentUserId = singletonClass.getJWTModel()?.employeeId?.toString();
+
+    // ✅ Mark unread messages from other users as read (for both direct & group chats)
+    if (messages.isNotEmpty) {
+      final hasUnreadMessages = messages.any((msg) =>
+      msg.senderId.toString() != currentUserId && msg.isRead != true);
+
+      if (hasUnreadMessages) {
+        socket!.emit("markAsRead", {
+          "_id": widget.chatHistory!.id,
+          "userId": singletonClass.getJWTModel()?.employeeId,
+          "tenantId": singletonClass.tenantId,
+        });
+      }
+    }
+
     setState(() {
       singletonClass.activeChatRoomId = widget.chatHistory!.id;
     });
   }
+
 
   void _setupChatListeners() {
     socket!.on("receiveMessage", (data) async {
@@ -65,9 +85,6 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
       if (msg.senderId.toString() != currentUserId) {
         _playReceiveSound();
       }
-    });
-    socket!.on("chatNotification", (data) {
-      debugPrint("🔔 Notification: $data");
     });
   }
 
@@ -127,6 +144,7 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
   @override
   void dispose() {
     _audioPlayer.dispose();
+     singletonClass.activeScreen = null;
     _scrollController.dispose();
     _messageController.dispose();
     _focusNode.dispose();
@@ -135,7 +153,7 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
   }
 
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(Duration(milliseconds: 1), () {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }

@@ -14,7 +14,7 @@ import 'package:nashr/screens/slack_chat_detail_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
-import 'package:overlay_support/overlay_support.dart';
+import '../main.dart';
 import '../request_controller/search_employee_model.dart' hide Data;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -43,6 +43,7 @@ class _SlackScreenState extends State<SlackScreen> {
   @override
   void initState() {
     super.initState();
+    singletonClass.activeScreen = "SlackScreen";
     _fetchChats();
     SocketService2().socket!.on('receiveMessage', (data) async {
       try {
@@ -57,6 +58,7 @@ class _SlackScreenState extends State<SlackScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    singletonClass.activeScreen = null;
     super.dispose();
   }
 
@@ -72,461 +74,458 @@ class _SlackScreenState extends State<SlackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(
-            top: 50.0, left: 20.0, right: 10.0, bottom: 15),
-        child: Column(
-          children: [
-            /// Header
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.4),
-                          spreadRadius: 5,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
+        backgroundColor: NasColors.backGround,
+        body: Padding(
+          padding: const EdgeInsets.only(
+              top: 50.0, left: 20.0, right: 10.0, bottom: 15),
+          child: Column(
+            children: [
+              /// Header
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.4),
+                            spreadRadius: 5,
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_outlined,
+                          color: Colors.black),
+                    ),
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!.chatBox,
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isCreating = !isCreating;
+                        _showSearchResult = false;
+                        _employeeSearchResults.clear();
+                        searchController.clear();
+                        _noDataFound = false;
+                      });
+                    },
+                    icon: Icon(isCreating ? Icons.close : Icons.create),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+      
+              /// Search Mode
+              if (isCreating) ...[
+                Container(
+                  height: 50,
+                  width: MediaQuery.of(context).size.width - 50,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          onChanged: (value) {
+                            if (value.trim().isNotEmpty) {
+                              getSearchEmployeeData();
+                            } else {
+                              setState(() {
+                                _showSearchResult = false;
+                                _employeeSearchResults.clear();
+                                _noDataFound = false;
+                              });
+                            }
+                          },
+                          cursorColor: NasColors.darkBlue,
+                          style: GoogleFonts.inter(color: NasColors.darkBlue),
+                          decoration: InputDecoration(
+                            hintText:
+                            '${AppLocalizations.of(context)!.search}...',
+                            hintStyle: GoogleFonts.inter(color: Colors.black.withOpacity(0.5)),
+                            border: InputBorder.none,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: const Icon(Icons.arrow_back_ios_new_outlined,
-                        color: Colors.black),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.search, color: Colors.grey),
+                    ],
                   ),
                 ),
-                Text(
-                  AppLocalizations.of(context)!.chatBox,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isCreating = !isCreating;
-                      _showSearchResult = false;
-                      _employeeSearchResults.clear();
-                      searchController.clear();
-                      _noDataFound = false;
-                    });
-                  },
-                  icon: Icon(isCreating ? Icons.close : Icons.create),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            /// Search Mode
-            if (isCreating) ...[
-              Container(
-                height: 50,
-                width: MediaQuery.of(context).size.width - 50,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                const SizedBox(height: 25),
+                /// Selected employees preview (chips)
+                if (_selectedEmployees.isNotEmpty)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _selectedEmployees.map((emp) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: NasColors.darkBlue.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(emp.employeeName ?? "",
+                                  style: GoogleFonts.inter(
+                                      color: NasColors.darkBlue,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(width: 5),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedEmployees.remove(emp);
+                                  });
+                                },
+                                child: Icon(Icons.close,
+                                    size: 16, color: NasColors.darkBlue),
+                              )
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
+                  ),
+      
+                const SizedBox(height: 15),
+                if (isLoading)
+                   Expanded(
+                      child: Center(
+                        child: SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset('images/loader.json'),
+                        ),
+                      ))
+                else if (_noDataFound)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  )
+                else if (_showSearchResult)
                     Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) {
-                          if (value.trim().isNotEmpty) {
-                            getSearchEmployeeData();
-                          } else {
-                            setState(() {
-                              _showSearchResult = false;
-                              _employeeSearchResults.clear();
-                              _noDataFound = false;
-                            });
-                          }
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: _employeeSearchResults.length,
+                        itemBuilder: (context, index) {
+                          final employee = _employeeSearchResults[index];
+                          final name = employee.employeeName ?? "---";
+                          final designation = employee.designation ?? "";
+      
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blueAccent,
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : "?",
+                                style: GoogleFonts.inter(color: Colors.white),
+                              ),
+                            ),
+                            title: Text(name,
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600, fontSize: 16)),
+                            subtitle: Text(designation,
+                                style: GoogleFonts.inter(
+                                    fontSize: 14, color: Colors.grey[700])),
+                            trailing: Checkbox(
+                              value: _selectedEmployees.any((e) => e.employeeId == employee.employeeId),
+                              onChanged: (checked) {
+                                setState(() {
+                                  if (checked == true) {
+                                    if (!_selectedEmployees.any((e) => e.employeeId == employee.employeeId)) {
+                                      _selectedEmployees.add(employee);
+                                    }
+                                  } else {
+                                    _selectedEmployees.removeWhere((e) => e.employeeId == employee.employeeId);
+                                  }
+                                });
+                              },
+                              activeColor: NasColors.darkBlue,
+                              checkColor: Colors.white,
+                            ),
+                          );
                         },
-                        cursorColor: NasColors.darkBlue,
-                        style: GoogleFonts.inter(color: NasColors.darkBlue),
-                        decoration: InputDecoration(
-                          hintText:
-                          '${AppLocalizations.of(context)!.search}...',
-                          hintStyle: GoogleFonts.inter(color: Colors.black.withOpacity(0.5)),
-                          border: InputBorder.none,
+                      ),
+                    ),
+                /// Action Buttons
+                if (_selectedEmployees.length == 1) ...[
+                  FutureBuilder<bool>(
+                    future:
+                    _checkExistingChat(_selectedEmployees.first.employeeId!),
+                    builder: (context, snapshot) {
+                      final exists = snapshot.data ?? false;
+                      return Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: NasColors.darkBlue,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            if (exists) {
+                              _openExistingChat(
+                                  _selectedEmployees.first.employeeId!);
+                            } else {
+                              createChat(_selectedEmployees.first);
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              exists
+                                  ? "Open"
+                                  : "Start Chat",
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ] else if (_selectedEmployees.length > 1) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextField(
+                      controller: groupNameController,
+                      cursorColor: NasColors.darkBlue,
+                      style: GoogleFonts.inter(color: NasColors.darkBlue),
+                      decoration: InputDecoration(
+                        hintText: "Enter a group name",
+                        hintStyle: GoogleFonts.inter(color: NasColors.darkBlue.withOpacity(0.5)),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: NasColors.darkBlue),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: NasColors.darkBlue, width: 2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Icon(Icons.search, color: Colors.grey),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: NasColors.darkBlue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: createGroupChat,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          "Create a group",
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ),
+                ]
+              ] else ...[
+                /// Normal Chat List
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                          child: Text(
+                            AppLocalizations.of(context)!.nassMudeer,
+                            textAlign: TextAlign.left,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(),
+                          ),
+                        ).then((_) => _fetchChats());
+                      },
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.orange,
+                        child: Icon(Icons.group, color: Colors.white),
+                      ),
+                      title: Text(
+                        AppLocalizations.of(context)!.nassMudeer,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 25),
-              /// Selected employees preview (chips)
-              if (_selectedEmployees.isNotEmpty)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _selectedEmployees.map((emp) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: NasColors.darkBlue.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(emp.employeeName ?? "",
-                                style: GoogleFonts.inter(
-                                    color: NasColors.darkBlue,
-                                    fontWeight: FontWeight.w600)),
-                            const SizedBox(width: 5),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedEmployees.remove(emp);
-                                });
-                              },
-                              child: Icon(Icons.close,
-                                  size: 16, color: NasColors.darkBlue),
-                            )
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-              const SizedBox(height: 15),
-              if (isLoading)
-                 Expanded(
-                    child: Center(
+                Expanded(
+                  child: RefreshIndicator(
+                    backgroundColor: Colors.white,
+                    color: NasColors.darkBlue,
+                    onRefresh: _fetchChats,
+                    child: _chatData == null
+                        ? Center(
                       child: SizedBox(
                         height: 200,
                         width: 200,
                         child: Lottie.asset('images/loader.json'),
                       ),
-                    ))
-              else if (_noDataFound)
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.noData,
-                      style: GoogleFonts.inter(
-                          fontSize: 16, fontWeight: FontWeight.w500),
+                    )
+                        : _chatData!.data == null || _chatData!.data!.isEmpty
+                        ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json')),
+                          Text(
+                            AppLocalizations.of(context)!.noData,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                        : ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        // --- Direct Chats ---
+                        if (_chatData!.data!
+                            .where((c) => c.roomType == "direct")
+                            .isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                            child: Text(
+                              AppLocalizations.of(context)!.directChat,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ...(_chatData!.data!
+                              .where((c) => c.roomType == "direct")
+                              .toList()
+                            ..sort((a, b) {
+                              final aTime = a.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              final bTime = b.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              return bTime.compareTo(aTime); // latest first
+                            }))
+                              .map((chat) => _buildChatTile(chat, isGroup: false))
+                              .toList(),
+                        ],
+      
+                        // --- Group Chats ---
+                        if (_chatData!.data!
+                            .where((c) => c.roomType == "group")
+                            .isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                            child: Text(
+                              AppLocalizations.of(context)!.groups,
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ...(_chatData!.data!
+                              .where((c) => c.roomType == "group")
+                              .toList()
+                            ..sort((a, b) {
+                              final aTime = a.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              final bTime = b.chatHistory?.isNotEmpty == true
+                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
+                                  ?.millisecondsSinceEpoch ??
+                                  0
+                                  : 0;
+                              return bTime.compareTo(aTime); // latest first
+                            }))
+                              .map((chat) => _buildChatTile(chat, isGroup: true))
+                              .toList(),
+                        ],
+                      ],
                     ),
                   ),
                 )
-              else if (_showSearchResult)
-                  Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: _employeeSearchResults.length,
-                      itemBuilder: (context, index) {
-                        final employee = _employeeSearchResults[index];
-                        final name = employee.employeeName ?? "---";
-                        final designation = employee.designation ?? "";
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blueAccent,
-                            child: Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : "?",
-                              style: GoogleFonts.inter(color: Colors.white),
-                            ),
-                          ),
-                          title: Text(name,
-                              style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600, fontSize: 16)),
-                          subtitle: Text(designation,
-                              style: GoogleFonts.inter(
-                                  fontSize: 14, color: Colors.grey[700])),
-                          trailing: Checkbox(
-                            value: _selectedEmployees.any((e) => e.employeeId == employee.employeeId),
-                            onChanged: (checked) {
-                              setState(() {
-                                if (checked == true) {
-                                  if (!_selectedEmployees.any((e) => e.employeeId == employee.employeeId)) {
-                                    _selectedEmployees.add(employee);
-                                  }
-                                } else {
-                                  _selectedEmployees.removeWhere((e) => e.employeeId == employee.employeeId);
-                                }
-                              });
-                            },
-                            activeColor: NasColors.darkBlue,
-                            checkColor: Colors.white,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-              /// Action Buttons
-              if (_selectedEmployees.length == 1) ...[
-                FutureBuilder<bool>(
-                  future:
-                  _checkExistingChat(_selectedEmployees.first.employeeId!),
-                  builder: (context, snapshot) {
-                    final exists = snapshot.data ?? false;
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NasColors.darkBlue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        onPressed: () {
-                          if (exists) {
-                            _openExistingChat(
-                                _selectedEmployees.first.employeeId!);
-                          } else {
-                            createChat(_selectedEmployees.first);
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            exists
-                                ? "Open"
-                                : "Start Chat",
-                            style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ] else if (_selectedEmployees.length > 1) ...[
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextField(
-                    controller: groupNameController,
-                    cursorColor: NasColors.darkBlue,
-                    style: GoogleFonts.inter(color: NasColors.darkBlue),
-                    decoration: InputDecoration(
-                      hintText: "Enter a group name",
-                      hintStyle: GoogleFonts.inter(color: NasColors.darkBlue.withOpacity(0.5)),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: NasColors.darkBlue),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: NasColors.darkBlue, width: 2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: NasColors.darkBlue,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: createGroupChat,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        "Create a group",
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ),
               ]
-            ] else ...[
-              /// Normal Chat List
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                        child: Text(
-                          AppLocalizations.of(context)!.nassMudeer,
-                          textAlign: TextAlign.left,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(),
-                        ),
-                      ).then((_) => _fetchChats());
-                    },
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.orange,
-                      child: Icon(Icons.group, color: Colors.white),
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context)!.nassMudeer,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      "",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  backgroundColor: Colors.white,
-                  color: NasColors.darkBlue,
-                  onRefresh: _fetchChats,
-                  child: _chatData == null
-                      ? Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/loader.json'),
-                    ),
-                  )
-                      : _chatData!.data == null || _chatData!.data!.isEmpty
-                      ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/empty.json')),
-                        Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: NasColors.darkBlue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                      : ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      // --- Direct Chats ---
-                      if (_chatData!.data!
-                          .where((c) => c.roomType == "direct")
-                          .isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                          child: Text(
-                            AppLocalizations.of(context)!.directChat,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-
-                        ...(_chatData!.data!
-                            .where((c) => c.roomType == "direct")
-                            .toList()
-                          ..sort((a, b) {
-                            final aTime = a.chatHistory?.isNotEmpty == true
-                                ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
-                                ?.millisecondsSinceEpoch ??
-                                0
-                                : 0;
-                            final bTime = b.chatHistory?.isNotEmpty == true
-                                ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
-                                ?.millisecondsSinceEpoch ??
-                                0
-                                : 0;
-                            return bTime.compareTo(aTime); // latest first
-                          }))
-                            .map((chat) => _buildChatTile(chat, isGroup: false))
-                            .toList(),
-                      ],
-
-
-                      // --- Group Chats ---
-                      if (_chatData!.data!
-                          .where((c) => c.roomType == "group")
-                          .isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                          child: Text(
-                            AppLocalizations.of(context)!.groups,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-
-                        ...(_chatData!.data!
-                            .where((c) => c.roomType == "group")
-                            .toList()
-                          ..sort((a, b) {
-                            final aTime = a.chatHistory?.isNotEmpty == true
-                                ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
-                                ?.millisecondsSinceEpoch ??
-                                0
-                                : 0;
-                            final bTime = b.chatHistory?.isNotEmpty == true
-                                ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
-                                ?.millisecondsSinceEpoch ??
-                                0
-                                : 0;
-                            return bTime.compareTo(aTime); // latest first
-                          }))
-                            .map((chat) => _buildChatTile(chat, isGroup: true))
-                            .toList(),
-                      ],
-                    ],
-                  ),
-                ),
-              )
-            ]
-          ],
+            ],
+          ),
         ),
-      ),
     );
   }
 
@@ -548,8 +547,16 @@ class _SlackScreenState extends State<SlackScreen> {
       isOnline = other.isOnline;
     }
 
+    // --- NEW: Count unread messages (only for direct chats) ---
+    final unreadCount =  chat.chatHistory
+        ?.where((msg) =>
+    msg.senderId.toString() != currentUserId &&
+        (msg.isRead == false || msg.isRead == null))
+        .length;
+    // -----------------------------------------------------------
+
     // last message
-    String message =  AppLocalizations.of(context)!.noMessageYet;
+    String message = AppLocalizations.of(context)!.noMessageYet;
     DateTime? lastMsgTime;
     if (chat.chatHistory != null && chat.chatHistory!.isNotEmpty) {
       final lastMsg = chat.chatHistory!.last;
@@ -582,18 +589,22 @@ class _SlackScreenState extends State<SlackScreen> {
       ),
       title: Row(
         children: [
-          Text(
-            isGroup ? (chat.chatName ?? "Group") : displayName,
-            style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+          Expanded(
+            child: Text(
+              isGroup ? (chat.chatName ?? "Group") : displayName,
+              style:
+              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          SizedBox(width: 10),
           if (!isGroup)
             Container(
               height: 12,
               width: 12,
+              margin: const EdgeInsets.only(left: 6),
               decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isOnline == true ? Colors.green : Colors.grey
+                shape: BoxShape.circle,
+                color: isOnline == true ? Colors.green : Colors.grey,
               ),
             ),
         ],
@@ -604,12 +615,39 @@ class _SlackScreenState extends State<SlackScreen> {
         overflow: TextOverflow.ellipsis,
         style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
       ),
-      trailing: Text(
-        lastMsgTime != null ? formatChatTime(context,lastMsgTime) : "",
-        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            lastMsgTime != null ? formatChatTime(context, lastMsgTime) : "",
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+          ),
+          // --- Show badge only for direct chats ---
+          if (unreadCount! > 0)...[
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                unreadCount.toString(),
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ] else ...[
+            SizedBox(height: 20,)
+          ]
+        ],
       ),
     );
   }
+
 
   /// Format Chat Time
   String formatChatTime(BuildContext context, DateTime dateTime) {
@@ -871,6 +909,11 @@ class SocketService2 {
           .build(),
     );
 
+    socket!.on("chatNotification", (data) {
+      debugPrint("🔔 Notification: $data");
+      _handleBroadcastEvent(data);
+    });
+
     socket!.on('receiveMessage', (data) async {
       log("💬 Incoming message: $data");
 
@@ -884,44 +927,6 @@ class SocketService2 {
         // Only show banner if message is from another user
         if (msg.senderId != currentUserId && incomingRoomId != currentChatId) {
           _playReceiveSound();
-
-          showSimpleNotification(
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.orange,
-                  child: Icon(Icons.group, color: Colors.white),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "New Message",
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        msg.content ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(color: Colors.white70,
-                          fontSize: 20
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            background: Colors.black.withOpacity(0.9),
-            autoDismiss: true,
-            duration: const Duration(seconds: 3),
-            slideDismissDirection: DismissDirection.up,
-          );
         }
       } catch (e) {
         log("⚠️ Error parsing message: $e");
@@ -944,6 +949,23 @@ class SocketService2 {
     socket!.onError((err) {
       log("⚠️ Socket general error: $err");
     });
+
+  }
+
+  Future<void> _handleBroadcastEvent(dynamic data) async {
+    try {
+      if (data == null) return;
+
+      final message = data['message'] ?? 'New Broadcast Event';
+      final title = data['name'] ?? 'New Broadcast Event';
+
+      NotificationService.showNotification(
+        title: title,
+        body: message,
+      );
+    } catch (e, st) {
+      debugPrint('❌ Error in _handleBroadcastEvent: $e\n$st');
+    }
   }
 
   IO.Socket? getSocket() => socket;
