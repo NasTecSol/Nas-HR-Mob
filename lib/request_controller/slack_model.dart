@@ -73,15 +73,17 @@ class ChatHistory {
   String? messageId;
   String? senderId;
   String? content;
+  bool? isRead;
   dynamic parentMessageId;
   String? timestamp;
 
-  ChatHistory({this.messageId, this.senderId, this.content, this.parentMessageId, this.timestamp});
+  ChatHistory({this.messageId, this.senderId, this.content, this.parentMessageId, this.timestamp , this.isRead});
 
   ChatHistory.fromJson(Map<String, dynamic> json) {
     messageId = json["messageId"];
     senderId = json["senderId"];
     content = json["content"];
+    isRead = json["isRead"];
     parentMessageId = json["parentMessageId"];
     timestamp = json["timestamp"];
   }
@@ -91,6 +93,7 @@ class ChatHistory {
     _data["messageId"] = messageId;
     _data["senderId"] = senderId;
     _data["content"] = content;
+    _data["isRead"] = isRead;
     _data["parentMessageId"] = parentMessageId;
     _data["timestamp"] = timestamp;
     return _data;
