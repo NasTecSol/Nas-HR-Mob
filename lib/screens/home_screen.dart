@@ -967,8 +967,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                    const SlackScreen()));
+                                    builder: (context) => const SlackScreen()));
                           },
                           icon: Container(
                             height: 45,
@@ -3592,4 +3591,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return null;
   }
+
+  ///Notifications handle Helper method
+
 }

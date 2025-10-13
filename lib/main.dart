@@ -5,9 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
-import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -93,8 +91,7 @@ void main() async {
       ],
       child: Consumer<LanguageChangeController>(
         builder: (context, provider, child) {
-          return OverlaySupport.global(
-              child: MyApp(provider: provider));
+          return  MyApp(provider: provider);
         },
       ),
     ),
@@ -151,11 +148,6 @@ class NotificationService {
 
     await _plugin.initialize(settings,
       onDidReceiveNotificationResponse: (NotificationResponse response){
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => const SocketNotificationScreen(),
-          ),
-        );
       }
     );
   }
@@ -168,6 +160,12 @@ class NotificationService {
     final isEnabled = prefs.getBool('notifications_enabled') ?? true;
 
     if (!isEnabled) return;
+
+    final currentScreen = SingletonClass().activeScreen;
+    if (currentScreen == "SlackScreen" || currentScreen == "SlackChatDetailScreen") {
+      print("🔕 Notification suppressed on Slack screens");
+      return;
+    }
 
     const androidDetails = AndroidNotificationDetails(
       'socket_channel',
