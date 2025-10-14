@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -84,8 +86,40 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
       final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
       if (msg.senderId.toString() != currentUserId) {
         _playReceiveSound();
+        socket!.emit("markAsRead", {
+          "_id": widget.chatHistory!.id,
+          "userId": singletonClass.getJWTModel()?.employeeId,
+          "tenantId": singletonClass.tenantId,
+        });
       }
     });
+    socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        log("🔄 messagesMarkedAsRead event received: $data");
+
+        if (!mounted) return;
+
+        final myUserId = singletonClass.getJWTModel()?.employeeId?.toString();
+        final senderId = data["userId"]?.toString();
+
+        // only act if this event isn't from me
+        if (senderId != myUserId) {
+          setState(() {
+            // Mark only the last received message as read (not all)
+            if (messages.isNotEmpty) {
+              messages.last.isRead = true;
+            }
+          });
+          log("✅ Last message marked as read (triggered by $senderId)");
+        } else {
+          log("🟦 Ignored self markAsRead event");
+        }
+      } catch (e, st) {
+        log("⚠️ Error refreshing messages after markAsRead: $e\n$st");
+      }
+    });
+
+
   }
 
   void _joinRoom() {
@@ -328,7 +362,7 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isMe
-                                      ? NasColors.green
+                                      ? Colors.grey[400]
                                       : (roomType == "group"
                                       ? senderColor.withOpacity(0.8)
                                       : NasColors.onTime),
@@ -348,9 +382,23 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                                       style: GoogleFonts.inter(fontSize: 16, color: Colors.white),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      timeLabel,
-                                      style: GoogleFonts.inter(fontSize: 10, color: Colors.white70),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          timeLabel,
+                                          style: GoogleFonts.inter(fontSize: 10, color: Colors.white70),
+                                        ),
+                                        if (isMe) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            msg.isRead == true ? Icons.done_all : Icons.done,
+                                            size: 14,
+                                            color: msg.isRead == true ? Colors.blue : Colors.white70,
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),

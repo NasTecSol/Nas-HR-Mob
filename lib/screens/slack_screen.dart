@@ -53,6 +53,14 @@ class _SlackScreenState extends State<SlackScreen> {
         log("⚠️ Error refreshing chats: $e");
       }
     });
+    SocketService2().socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        _fetchChats();
+        log("🔄 Chats refreshed after mark as read  new message");
+      } catch (e) {
+        log("⚠️ Error refreshing chats: $e");
+      }
+    });
   }
 
   @override
@@ -84,7 +92,10 @@ class _SlackScreenState extends State<SlackScreen> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: (){
+                      Navigator.pop(context);
+                      singletonClass.getChats();
+                    },
                     icon: Container(
                       height: 40,
                       width: 40,
@@ -540,29 +551,34 @@ class _SlackScreenState extends State<SlackScreen> {
         chat.participants != null &&
         chat.participants!.isNotEmpty) {
       final other = chat.participants!.firstWhere(
-              (p) => p.id.toString() != currentUserId,
-          orElse: () => chat.participants!.first);
+            (p) => p.id.toString() != currentUserId,
+        orElse: () => chat.participants!.first,
+      );
       displayName = other.name ?? "---";
       initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : "?";
       isOnline = other.isOnline;
     }
 
-    // --- NEW: Count unread messages (only for direct chats) ---
-    final unreadCount =  chat.chatHistory
+    // --- Count unread messages (only for direct chats) ---
+    final unreadCount = chat.chatHistory
         ?.where((msg) =>
     msg.senderId.toString() != currentUserId &&
         (msg.isRead == false || msg.isRead == null))
-        .length;
-    // -----------------------------------------------------------
+        .length ??
+        0;
+    // ------------------------------------------------------
 
-    // last message
+    // --- Last message ---
     String message = AppLocalizations.of(context)!.noMessageYet;
     DateTime? lastMsgTime;
+    bool isSentByMe = false;
+    bool? isRead;
+
     if (chat.chatHistory != null && chat.chatHistory!.isNotEmpty) {
       final lastMsg = chat.chatHistory!.last;
-      message = lastMsg.senderId?.toString() == currentUserId
-          ? "${AppLocalizations.of(context)!.me}: ${lastMsg.content ?? ""}"
-          : (lastMsg.content ?? "");
+      isSentByMe = lastMsg.senderId?.toString() == currentUserId;
+      isRead = lastMsg.isRead;
+      message = lastMsg.content ?? "";
       if (lastMsg.timestamp != null) {
         lastMsgTime = DateTime.tryParse(lastMsg.timestamp!)?.toLocal();
       }
@@ -584,16 +600,14 @@ class _SlackScreenState extends State<SlackScreen> {
       )
           : CircleAvatar(
         backgroundColor: Colors.teal,
-        child:
-        Text(initial, style: GoogleFonts.inter(color: Colors.white)),
+        child: Text(initial, style: GoogleFonts.inter(color: Colors.white)),
       ),
       title: Row(
         children: [
           Expanded(
             child: Text(
               isGroup ? (chat.chatName ?? "Group") : displayName,
-              style:
-              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -609,11 +623,28 @@ class _SlackScreenState extends State<SlackScreen> {
             ),
         ],
       ),
-      subtitle: Text(
-        message,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+      subtitle: Row(
+        children: [
+          // --- Ticks for sender only ---
+          if (isSentByMe && !isGroup)
+            Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: Icon(
+                isRead == true ? Icons.done_all : Icons.check,
+                size: 18,
+                color: isRead == true ? Colors.blue : Colors.grey,
+              ),
+            ),
+          // --- Message text ---
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+            ),
+          ),
+        ],
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -622,8 +653,7 @@ class _SlackScreenState extends State<SlackScreen> {
             lastMsgTime != null ? formatChatTime(context, lastMsgTime) : "",
             style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
           ),
-          // --- Show badge only for direct chats ---
-          if (unreadCount! > 0)...[
+          if (unreadCount > 0 && !isGroup) ...[
             Container(
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -640,13 +670,13 @@ class _SlackScreenState extends State<SlackScreen> {
                 ),
               ),
             ),
-          ] else ...[
-            SizedBox(height: 20,)
-          ]
+          ] else
+            const SizedBox(height: 20),
         ],
       ),
     );
   }
+
 
 
   /// Format Chat Time
@@ -913,8 +943,16 @@ class SocketService2 {
       debugPrint("🔔 Notification: $data");
       _handleBroadcastEvent(data);
     });
-
+    socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        singletonClass.getChats();
+        log("🔄 Chats refreshed after mark as read  new message");
+      } catch (e) {
+        log("⚠️ Error refreshing chats: $e");
+      }
+    });
     socket!.on('receiveMessage', (data) async {
+      await singletonClass.getChats();
       log("💬 Incoming message: $data");
 
       try {
@@ -931,6 +969,25 @@ class SocketService2 {
       } catch (e) {
         log("⚠️ Error parsing message: $e");
       }
+
+      if (singletonClass.slackDataList.isEmpty ||
+          singletonClass.slackDataList.first.data == null ||
+          singletonClass.slackDataList.first.data!.isEmpty) {
+        debugPrint("⚠️ No chat data available in singleton");
+         singletonClass.unreadCount = 0;
+        return;
+      }
+
+      // ✅ Just get the current list of chats
+      final allChats = singletonClass.slackDataList.first.data!;
+      final unreadChats = allChats.where((chat) {
+        final messages = chat.chatHistory ?? [];
+        return messages.any((m) => m.isRead == false);
+      }).toList();
+
+        singletonClass.unreadCount = unreadChats.length;
+
+      debugPrint("✅ Chats with unread socket messages: ${unreadChats.length}");
     });
 
     socket!.connect();
