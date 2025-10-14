@@ -80,6 +80,7 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getEmployeeAttendanceData(),
      singletonClass.getNotifications(),
      singletonClass.getBranchesData(),
+     singletonClass.getChats(),
     ]);
   }
 

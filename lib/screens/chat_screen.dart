@@ -14,6 +14,8 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 import '../Controller/language_change_controller.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -246,18 +248,71 @@ class _ChatScreenState extends State<ChatScreen> {
                                     color: isUser ? NasColors.onTime : Colors.grey.shade300,
                                     borderRadius: BorderRadius.circular(18),
                                   ),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: isUser ? Colors.white : Colors.black,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // 💬 Main text
+                                      RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: isUser ? Colors.white : Colors.black,
+                                          ),
+                                          children: _parseMarkdown(message['text'] ?? ""),
+                                        ),
                                       ),
-                                      children: _parseMarkdown(message['text'] ?? ""),
-                                    ),
-                                  ),
 
+                                      // 📎 Attachment (if any)
+                                      if (!isUser && message['attachment'] != null) ...[
+                                        const SizedBox(height: 10),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            try {
+                                              final attachment = jsonDecode(message['attachment']!);
+                                              final url = attachment['filedownloadlink'];
+                                              if (await canLaunchUrl(Uri.parse(url))) {
+                                                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                                              }
+                                            } catch (e) {
+                                              debugPrint('Error opening attachment: $e');
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(0.9),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(color: Colors.grey.shade400),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.insert_drive_file, color: Colors.blueAccent, size: 22),
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    jsonDecode(message['attachment']!)['fileName'] ?? 'Download File',
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                const Icon(Icons.download, color: Colors.blueAccent, size: 18),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                               ),
+
                               if (isUser) const SizedBox(width: 8),
                               if (isUser)
                                 CircleAvatar(
@@ -445,23 +500,27 @@ class _ChatScreenState extends State<ChatScreen> {
     _addUserMessage(userMessage);
     _messageController.clear();
   }
-
+  var uuid = const Uuid();
+  var v1 = uuid.v1();
   String? employeeID = singletonClass.getJWTModel()?.empId;
+  String? tenantID = singletonClass.tenantId;
   final currentLang = Provider.of<LanguageChangeController>(context, listen: false).appLocale?.languageCode ?? 'en';
 
 
-  Map<String, dynamic> data = {
-      "request": {
-        "employee_id": employeeID,
+    final payload = {
+      "chatInput": jsonEncode({
+        "tenantID": tenantID,
+        "empID": employeeID,
+        "userLang": currentLang,
         "message": userMessage,
-        "language": currentLang,
-      },
+      }),
+      "sessionId": v1,
     };
 
-    String body = json.encode(data);
+    String body = json.encode(payload);
     debugPrint("Request JSON POST: $body");
 
-    var uri = Uri.parse('https://madir.nashrms.com/chat');
+    var uri = Uri.parse('https://n8n.nashrms.com/webhook/c6728eb9-031c-4d3a-994f-e5340e3bddb7/chat');
 
     try {
       setState(() {
@@ -470,11 +529,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final response = await http.post(
         uri,
-        body: body,
         headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
+          'Content-Type': 'application/json',
         },
+        body: jsonEncode(payload),
       );
 
       final decodedResponse = json.decode(utf8.decode(response.bodyBytes));
@@ -484,12 +542,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (responseCode == 200) {
         String? botReply = decodedResponse['response'];
+        Map<String, dynamic>? attachment = decodedResponse['attachment'];
+
         if (botReply != null && botReply.isNotEmpty) {
-          _addBotMessage(botReply);
+          // 🧠 Save message and attachment together
+          setState(() {
+            _messages.add({
+              'sender': 'bot',
+              'text': botReply,
+              if (attachment != null && attachment['filedownloadlink'] != null)
+                'attachment': jsonEncode(attachment),
+            });
+          });
+          _scrollToBottom();
         } else {
           _addBotMessage("Sorry, I couldn't understand that.");
         }
-      } else {
+      }
+      else {
         _addBotMessage("Something went wrong. Please try again later.");
       }
     } catch (e) {
