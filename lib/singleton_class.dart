@@ -66,6 +66,7 @@ class SingletonClass {
 
   bool initialized = false;
   String? baseURL;
+  int unreadCount = 0;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
@@ -258,7 +259,6 @@ class SingletonClass {
     var uri = Uri.parse('$baseURL/policies/$policyId');
     var response = await client.get(uri,
         headers: getHeaders());
-    log("POLICY DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var policyData = PolicyModel.fromJson(responseBody);
@@ -470,8 +470,12 @@ class SingletonClass {
         'https://dev.nashrms.com/api/chat-system/user-chats/$employeeId');
     var response = await client.get(uri, headers: getHeaders());
     if (response.statusCode == 200) {
+      print("CHAT'S RESPONSE${response.body}");
+      slackDataList.clear();
       var responseBody = json.decode(response.body);
-      return SlackModel.fromJson(responseBody);
+      var chats = SlackModel.fromJson(responseBody);
+      slackDataList.addAll([chats]);
+      return  chats;
     }
     return null;
   }
@@ -491,11 +495,7 @@ class SingletonClass {
         '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri,headers: getHeaders());
-    if (kDebugMode) {
-      print(employeeId);
-      print(firstDateString);
-      print(currentDateString);
-    }
+
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
@@ -516,7 +516,6 @@ class SingletonClass {
 
     /// Convert data to JSON string
     String jsonData = jsonEncode(data);
-    log("///$jsonData");
     try {
       final response = await http.patch(
         Uri.parse(url),

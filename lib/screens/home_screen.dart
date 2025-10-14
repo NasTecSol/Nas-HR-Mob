@@ -63,15 +63,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Timer? _timer;
   String _displayWorkedHours = '00:00:00';
 
+
+
   @override
   void initState() {
     super.initState();
+    singletonClass.getChats();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
     SocketService2().initSocket();
+    setState(() {
+      singletonClass.getChats();
+      _calculateUnreadCount();
+    });
     final uiSettings =
         singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
     final hasSocket =
@@ -90,6 +97,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     });
   }
+
+  void _calculateUnreadCount() {
+    try {
+      if (singletonClass.slackDataList.isEmpty ||
+          singletonClass.slackDataList.first.data == null ||
+          singletonClass.slackDataList.first.data!.isEmpty) {
+        debugPrint("⚠️ No chat data available in singleton");
+        setState(() => singletonClass.unreadCount = 0);
+        return;
+      }
+
+      // ✅ Just get the current list of chats
+      final allChats = singletonClass.slackDataList.first.data!;
+      final unreadChats = allChats.where((chat) {
+        final messages = chat.chatHistory ?? [];
+        return messages.any((m) => m.isRead == false);
+      }).toList();
+
+      setState(() {
+        singletonClass.unreadCount = unreadChats.length;
+      });
+
+      debugPrint("✅ Chats with unread socket messages: ${unreadChats.length}");
+    } catch (e) {
+      debugPrint("⚠️ Error counting unread chats: $e");
+      setState(() => singletonClass.unreadCount = 0);
+    }
+  }
+
+
+
 
   void startWorkTimer() {
     _timer?.cancel();
@@ -962,36 +1000,68 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const SlackScreen()));
-                          },
-                          icon: Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SlackScreen()),
+                                );
+                                // Recalculate when returning back from Slack screen
+                                _calculateUnreadCount();
+                              },
+                              icon: Container(
+                                height: 45,
+                                width: 45,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                      spreadRadius: 5,
+                                      blurRadius: 10,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(9.0),
-                              child: Image.asset(
-                                'images/Comments.png',
-                                fit: BoxFit.contain,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(9.0),
+                                  child: Image.asset(
+                                    'images/Comments.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+
+                            // 🔴 Badge for unread count
+                            if (singletonClass.unreadCount > 0)
+                              Positioned(
+                                right: 4,
+                                top: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    singletonClass.unreadCount > 99
+                                        ? '99+'
+                                        : singletonClass.unreadCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                          ],
+                        )
                       ],
                     ),
                   ),
