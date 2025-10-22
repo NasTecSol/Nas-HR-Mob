@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -33,7 +34,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   late FlutterSoundRecorder _recorder;
-  bool _isRecording = false;
+  final bool _isRecording = false;
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
@@ -265,47 +266,90 @@ class _ChatScreenState extends State<ChatScreen> {
                                       // 📎 Attachment (if any)
                                       if (!isUser && message['attachment'] != null) ...[
                                         const SizedBox(height: 10),
-                                        GestureDetector(
-                                          onTap: () async {
+                                        Builder(
+                                          builder: (context) {
                                             try {
                                               final attachment = jsonDecode(message['attachment']!);
                                               final url = attachment['filedownloadlink'];
-                                              if (await canLaunchUrl(Uri.parse(url))) {
-                                                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                                              }
+                                              final fileName = attachment['fileName'] ?? 'Document';
+
+                                              return Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.9),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(color: Colors.grey.shade400),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    // Tap anywhere except the download icon → open file viewer
+                                                    Expanded(
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          if (url != null && url.isNotEmpty) {
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder: (context) => FileViewerScreen(
+                                                                  url: url,
+                                                                  fileName: fileName,
+                                                                ),
+                                                              ),
+                                                            );
+                                                          } else {
+                                                            debugPrint('Invalid attachment URL');
+                                                          }
+                                                        },
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(Icons.insert_drive_file,
+                                                                color: Colors.blueAccent, size: 22),
+                                                            const SizedBox(width: 8),
+                                                            Expanded(
+                                                              child: Text(
+                                                                fileName,
+                                                                style: const TextStyle(
+                                                                  color: Colors.black87,
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.w500,
+                                                                  decoration: TextDecoration.underline,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    const SizedBox(width: 8),
+
+                                                    // 🔽 Download button
+                                                    GestureDetector(
+                                                      onTap: () async {
+                                                        if (url != null && url.isNotEmpty) {
+                                                          final uri = Uri.parse(url);
+                                                          if (await canLaunchUrl(uri)) {
+                                                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                          } else {
+                                                            debugPrint('Could not launch $url');
+                                                          }
+                                                        } else {
+                                                          debugPrint('Invalid download URL');
+                                                        }
+                                                      },
+                                                      child: const Icon(Icons.download,
+                                                          color: Colors.blueAccent, size: 22),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
                                             } catch (e) {
-                                              debugPrint('Error opening attachment: $e');
+                                              debugPrint('Error parsing attachment: $e');
+                                              return const SizedBox.shrink();
                                             }
                                           },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.9),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: Colors.grey.shade400),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.insert_drive_file, color: Colors.blueAccent, size: 22),
-                                                const SizedBox(width: 8),
-                                                Flexible(
-                                                  child: Text(
-                                                    jsonDecode(message['attachment']!)['fileName'] ?? 'Download File',
-                                                    style: const TextStyle(
-                                                      color: Colors.black87,
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.w500,
-                                                      decoration: TextDecoration.underline,
-                                                    ),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                const Icon(Icons.download, color: Colors.blueAccent, size: 18),
-                                              ],
-                                            ),
-                                          ),
                                         ),
                                       ],
                                     ],
@@ -371,8 +415,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             focusNode: _focusNode,
                             controller: _messageController,
                             cursorColor: Colors.grey,
-                            decoration: const InputDecoration(
-                              hintText: "Type a message...",
+                            decoration:  InputDecoration(
+                              hintText: AppLocalizations.of(context)!.typeAMessage,
                               border: InputBorder.none,
                             ),
                             onSubmitted: (_) => postMessages(_messageController.text),
@@ -416,10 +460,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         isBotTyping
                             ? IconButton(
-                          icon: Image.asset(
-                            'images/send.png',
-                            height: 24,
-                            width: 24,
+                          icon: Icon(
+                            Icons.stop_circle_outlined,
+                            size: 28,
                             color: Colors.grey,
                           ),
                           onPressed: null,
@@ -496,16 +539,20 @@ class _ChatScreenState extends State<ChatScreen> {
   ///CHAT API CALL
   Future<void> postMessages(String text) async {
     String userMessage = text.trim();
-  if (userMessage.isNotEmpty) {
-    _addUserMessage(userMessage);
-    _messageController.clear();
-  }
-  var uuid = const Uuid();
-  var v1 = uuid.v1();
-  String? employeeID = singletonClass.getJWTModel()?.empId;
-  String? tenantID = singletonClass.tenantId;
-  final currentLang = Provider.of<LanguageChangeController>(context, listen: false).appLocale?.languageCode ?? 'en';
+    if (userMessage.isNotEmpty) {
+      _addUserMessage(userMessage);
+      _messageController.clear();
+    }
 
+    var uuid = const Uuid();
+    var v1 = uuid.v1();
+    String? employeeID = singletonClass.getJWTModel()?.empId;
+    String? tenantID = singletonClass.tenantId;
+    final currentLang =
+        Provider.of<LanguageChangeController>(context, listen: false)
+            .appLocale
+            ?.languageCode ??
+            'en';
 
     final payload = {
       "chatInput": jsonEncode({
@@ -517,10 +564,10 @@ class _ChatScreenState extends State<ChatScreen> {
       "sessionId": v1,
     };
 
-    String body = json.encode(payload);
-    debugPrint("Request JSON POST: $body");
+    debugPrint("Request JSON POST: ${json.encode(payload)}");
 
-    var uri = Uri.parse('https://n8n.nashrms.com/webhook/c6728eb9-031c-4d3a-994f-e5340e3bddb7/chat');
+    var uri = Uri.parse(
+        'https://n8n.nashrms.com/webhook/c6728eb9-031c-4d3a-994f-e5340e3bddb7/chat');
 
     try {
       setState(() {
@@ -529,9 +576,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final response = await http.post(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
 
@@ -539,38 +584,59 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint("MESSAGE RESPONSE: $decodedResponse");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
+      if (responseCode == 200 || decodedResponse.containsKey('output')) {
+        final output = decodedResponse['output'] ?? decodedResponse;
 
-      if (responseCode == 200) {
-        String? botReply = decodedResponse['response'];
-        Map<String, dynamic>? attachment = decodedResponse['attachment'];
+        String? botReply = output?['response'];
+
+        // ✅ FIX: Handle attachment as Map or List safely
+        dynamic attachment = output?['attachment'];
+        List<dynamic>? suggestions = output?['suggestion'];
 
         if (botReply != null && botReply.isNotEmpty) {
-          // 🧠 Save message and attachment together
           setState(() {
-            _messages.add({
-              'sender': 'bot',
-              'text': botReply,
-              if (attachment != null && attachment['filedownloadlink'] != null)
-                'attachment': jsonEncode(attachment),
-            });
+            final message = {'sender': 'bot', 'text': botReply};
+
+            if (attachment != null) {
+              if (attachment is Map<String, dynamic> &&
+                  attachment['filedownloadlink'] != null) {
+                message['attachment'] = jsonEncode(attachment);
+              } else if (attachment is List &&
+                  attachment.isNotEmpty &&
+                  attachment.first is Map &&
+                  attachment.first['filedownloadlink'] != null) {
+                // ✅ handle case where attachments is a list of files
+                message['attachment'] = jsonEncode(attachment.first);
+              }
+            }
+
+            _messages.add(message);
+
+            if (suggestions != null && suggestions.isNotEmpty) {
+              _suggestedMessages =
+                  suggestions.map((s) => s.toString()).toList();
+            }
           });
+
           _scrollToBottom();
         } else {
           _addBotMessage("Sorry, I couldn't understand that.");
         }
-      }
-      else {
+      } else {
         _addBotMessage("Something went wrong. Please try again later.");
       }
     } catch (e) {
       debugPrint("POST MESSAGE ERROR: $e");
       _addBotMessage("Network error. Please try again.");
     } finally {
-      setState(() {
-        isBotTyping = false;
-      });
+      if (mounted) {
+        setState(() {
+          isBotTyping = false;
+        });
+      }
     }
   }
+
 
   //RICH TEXT METHOD
   List<TextSpan> _parseMarkdown(String text) {

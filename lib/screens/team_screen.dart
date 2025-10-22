@@ -362,8 +362,9 @@ class _TeamScreenState extends State<TeamScreen> {
                           filteredTeams.clear();
                           singletonClass.teamBranchDataList.clear();
                           singletonClass.branchID = value;
-                          final branch = singletonClass.branchesDataList.first.data?.firstWhere((branch) => branch.branchCompanyId == value);
-                          singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
+                          final selectedBranch = singletonClass.availableBranches
+                              .firstWhere((branch) => branch.branchId.toString() == value);
+                          singletonClass.branchName = selectedBranch.branchName ?? '';
                           if (kDebugMode) {
                             print('Selected Branch ID: $value');
                           }
@@ -373,14 +374,17 @@ class _TeamScreenState extends State<TeamScreen> {
                         });
                         await initData();
                       },
-                      itemBuilder: (context) {
-                        final branchList = singletonClass.branchesDataList.first.data ?? [];
-                        return branchList.map((branch) {
-                          return PopupMenuItem<String>(
-                            value: branch.branchCompanyId,
-                            child: Text(branch.branchName ?? "Unknown Branch"),
-                          );
-                        }).toList();
+                      itemBuilder: (BuildContext context) {
+                        final branchList = singletonClass.availableBranches.isNotEmpty
+                            ? singletonClass.availableBranches : [];
+                        if (branchList.isEmpty) {
+                          return [];
+                        }
+
+                        return branchList.map((branch) => PopupMenuItem<String>(
+                          value: branch.branchId,
+                          child: Text(branch.branchName ?? "---"),
+                        )).toList();
                       },
                       child: Container(
                         height: 60,

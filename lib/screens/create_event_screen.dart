@@ -1059,7 +1059,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Future<void> getSearchEmployeeData() async {
     String employeeId = _searchController.text.trim().toUpperCase();
-    ;
     if (employeeId.isEmpty) return;
     setState(() {
       isLoading = true;

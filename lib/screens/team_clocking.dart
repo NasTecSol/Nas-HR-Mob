@@ -391,12 +391,9 @@ class _TeamClockingState extends State<TeamClocking> {
                         onSelected: (value) {
                           setState(() {
                             singletonClass.branchID = value;
-                            final branch = singletonClass
-                                .branchesDataList.first.data
-                                ?.firstWhere((branch) =>
-                                    branch.branchCompanyId == value);
-                            singletonClass.branchName =
-                                branch?.branchName ?? "Unknown Branch";
+                            final selectedBranch = singletonClass.availableBranches
+                                .firstWhere((branch) => branch.branchId.toString() == value);
+                            singletonClass.branchName = selectedBranch.branchName ?? '';
                             if (kDebugMode) {
                               print('Selected Branch ID: $value');
                             }
@@ -407,19 +404,16 @@ class _TeamClockingState extends State<TeamClocking> {
                           });
                         },
                         itemBuilder: (BuildContext context) {
-                          final branchList =
-                              singletonClass.branchesDataList.first.data;
-                          if (branchList == null || branchList.isEmpty) {
+                          final branchList = singletonClass.availableBranches.isNotEmpty
+                              ? singletonClass.availableBranches : [];
+                          if (branchList.isEmpty) {
                             return [];
                           }
 
-                          return branchList
-                              .map((branch) => PopupMenuItem<String>(
-                                    value: branch.branchCompanyId,
-                                    child: Text(
-                                        branch.branchName ?? "Unknown Branch"),
-                                  ))
-                              .toList();
+                          return branchList.map((branch) => PopupMenuItem<String>(
+                            value: branch.branchId,
+                            child: Text(branch.branchName ?? "---"),
+                          )).toList();
                         },
                         child: Container(
                           height: 60,
