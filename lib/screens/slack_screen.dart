@@ -493,7 +493,7 @@ class _SlackScreenState extends State<SlackScreen> {
                               return bTime.compareTo(aTime); // latest first
                             }))
                               .map((chat) => _buildChatTile(chat, isGroup: false))
-                              .toList(),
+                              ,
                         ],
       
                         // --- Group Chats ---
@@ -527,7 +527,7 @@ class _SlackScreenState extends State<SlackScreen> {
                               return bTime.compareTo(aTime); // latest first
                             }))
                               .map((chat) => _buildChatTile(chat, isGroup: true))
-                              .toList(),
+                              ,
                         ],
                       ],
                     ),
@@ -960,8 +960,8 @@ class SocketService2 {
         final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
         final currentChatId = singletonClass.activeChatRoomId;
         String? incomingRoomId = data["_id"]?.toString();
-        print("CDCD${currentChatId}");
-        print("XDXDXD${incomingRoomId}");
+        print("CDCD$currentChatId");
+        print("XDXDXD$incomingRoomId");
         // Only show banner if message is from another user
         if (msg.senderId != currentUserId && incomingRoomId != currentChatId) {
           _playReceiveSound();
@@ -974,20 +974,30 @@ class SocketService2 {
           singletonClass.slackDataList.first.data == null ||
           singletonClass.slackDataList.first.data!.isEmpty) {
         debugPrint("⚠️ No chat data available in singleton");
-         singletonClass.unreadCount = 0;
+        singletonClass.unreadCount = 0;
         return;
       }
 
-      // ✅ Just get the current list of chats
       final allChats = singletonClass.slackDataList.first.data!;
+      final userId = singletonClass.getJWTModel()?.employeeId;
+
       final unreadChats = allChats.where((chat) {
+        // Only consider direct rooms
+        if (chat.roomType != "direct") return false;
+
+        // Ensure chat has messages
         final messages = chat.chatHistory ?? [];
-        return messages.any((m) => m.isRead == false);
+
+        // Only count if there is at least one unread message not sent by the user
+        return messages.any((m) =>
+        m.isRead == false &&
+            m.senderId != userId);
       }).toList();
 
-        singletonClass.unreadCount = unreadChats.length;
+      singletonClass.unreadCount = unreadChats.length;
 
-      debugPrint("✅ Chats with unread socket messages: ${unreadChats.length}");
+      debugPrint("✅ Direct chats with unread messages: ${unreadChats.length}");
+
     });
 
     socket!.connect();
