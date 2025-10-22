@@ -71,6 +71,7 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _loadInitialData() async {
     await Future.wait([
      singletonClass.getCompaniesData(),
+     singletonClass.getRoleAndAccessData(),
      singletonClass.getUISettingsData(),
      singletonClass.getEmployeeData(),
      singletonClass.getClockingData(),

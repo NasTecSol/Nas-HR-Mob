@@ -38,6 +38,7 @@ import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
+import 'package:nashr/request_controller/role_and_access_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/slack_model.dart';
@@ -70,6 +71,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<RoleAndAccessModel> roleAndAccessModelDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
   List<DocumentNotificationModel> documentNotificationDataList = [];
@@ -123,6 +125,7 @@ class SingletonClass {
   String? branchName;
   String? activeChatRoomId;
   String? activeScreen;
+  List<dynamic> availableBranches = [];
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -252,6 +255,48 @@ class SingletonClass {
     }
     return null ; // Print the response body
   }
+
+  ///Role and Access Api Call
+  Future<RoleAndAccessModel?> getRoleAndAccessData() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    String? grade = getJWTModel()?.grade;
+
+    var uri = Uri.parse('$baseURL/ui-modules/get-ui-settings/$employeeId/$grade');
+    var response = await http.get(uri, headers: getHeaders());
+
+    if (response.statusCode == 200) {
+
+      try {
+        var jsonBody = jsonDecode(response.body);
+        log("🔍 data field type: ${jsonBody['data'].runtimeType}");
+        if (jsonBody['data'] is Map) {
+          log("✅ data is a Map");
+        } else if (jsonBody['data'] is List) {
+          log("✅ data is a List — length: ${(jsonBody['data'] as List).length}");
+        }
+
+        var roleAndAccessData = RoleAndAccessModel.fromJson(jsonBody);
+
+        roleAndAccessModelDataList
+          ..clear()
+          ..add(roleAndAccessData);
+
+        log("✅ RoleAndAccessModel parsed successfully");
+        log("✅ UI Modules Count: ${roleAndAccessData.data?.uiSettings?.uiModules?.length ?? 0}");
+        return roleAndAccessData;
+      } catch (e, st) {
+        log("❌ Error loading Role & Access data: $e");
+        log(st.toString());
+      }
+    } else {
+      log("❌ API Error: ${response.statusCode}");
+    }
+
+    return null;
+  }
+
+
+
 
   Future<PolicyModel?> getPolicyData() async {
     String? policyId =  companyDataList.first.data!.policies!.first.policyId;

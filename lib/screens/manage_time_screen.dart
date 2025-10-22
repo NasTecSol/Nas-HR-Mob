@@ -116,9 +116,9 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                           setState(() {
                             timeTableShiftEmployees.clear();
                             singletonClass.branchID = value;
-                            final branch = singletonClass.branchesDataList.first.data?.firstWhere(
-                                    (branch) => branch.branchCompanyId == value);
-                            singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
+                            final selectedBranch = singletonClass.availableBranches
+                                .firstWhere((branch) => branch.branchId.toString() == value);
+                            singletonClass.branchName = selectedBranch.branchName ?? '';
                             _isChecked = false;
                             /// UPDATE _shiftFuture so FutureBuilder gets refreshed
                             _shiftFuture = fetchAndSetShiftDetails();
@@ -126,17 +126,16 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                           });
                         },
                         itemBuilder: (BuildContext context) {
-                          final branchList = singletonClass.branchesDataList.first.data;
-                          if (branchList == null || branchList.isEmpty) {
+                          final branchList = singletonClass.availableBranches.isNotEmpty
+                              ? singletonClass.availableBranches : [];
+                          if (branchList.isEmpty) {
                             return [];
                           }
-                          return branchList
-                              .map((branch) => PopupMenuItem<String>(
-                            value: branch.branchCompanyId,
-                            child: Text(
-                                branch.branchName ?? "Unknown Branch"),
-                          ))
-                              .toList();
+
+                          return branchList.map((branch) => PopupMenuItem<String>(
+                            value: branch.branchId,
+                            child: Text(branch.branchName ?? "---"),
+                          )).toList();
                         },
                         child: Container(
                           height: 49,
@@ -816,19 +815,29 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       onTap: () {
         setState(() {
           _selectedOptionIndex = index;
+
           if (index == 0) {
             _shiftFuture = fetchAndSetShiftDetails();
             getShiftsFromBranches();
             isSearching = false;
           } else {
             isSearching = true;
-            final employee = timeTableShiftEmployees[0];
-            print(employee['employeeId']);
-            selectedEMPID = employee['employeeId'];
-            timeTableFuture = getTimeTable(selectedEMPID!);
+
+            // ✅ Only proceed if we actually have employees
+            if (timeTableShiftEmployees.isNotEmpty) {
+              final employee = timeTableShiftEmployees[0];
+              print(employee['employeeId']);
+              selectedEMPID = employee['employeeId'];
+              timeTableFuture = getTimeTable(selectedEMPID!);
+            } else {
+              print("⚠️ No employees found in timeTableShiftEmployees");
+              selectedEMPID = null;
+              timeTableFuture = null;
+            }
           }
         });
       },
+
       child: SizedBox(
         height: 70,
         width: 140,
