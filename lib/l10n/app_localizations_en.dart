@@ -1983,4 +1983,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get me => 'me';
+
+  @override
+  String get goodMorning => '👋 Good Morning!';
+
+  @override
+  String get howCanIAssistYouToday => 'How can I assist you today?';
 }

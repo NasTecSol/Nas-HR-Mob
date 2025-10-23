@@ -1089,6 +1089,8 @@
   "noMessageYet":"No message yet",
   "typeAMessage":"Type a message here",
   "today":"Today",
-  "me":"me"
+  "me":"me",
+  "goodMorning":"👋 Good Morning!",
+  "howCanIAssistYouToday":"How can I assist you today?"
 
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/language_screen.dart';
+import 'package:nashr/screens/slack_screen.dart';
+import 'package:nashr/screens/socket_screen.dart';
 import 'package:nashr/screens/splash_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -69,6 +71,10 @@ class _SettingScreenState extends State<SettingScreen> {
     singletonClass.branchShiftsDataList.clear();
     singletonClass.branchID = null;
     singletonClass.branchName = null;
+    singletonClass.chatMessages.clear();
+    singletonClass.hasShownGreeting = false;
+    SocketService2().socket!.disconnect();
+    SocketService().socket!.disconnect();
   }
 
   /// Notifications
