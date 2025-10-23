@@ -751,5 +751,7 @@
     "noMessageYet": "لا توجد رسائل بعد",
     "typeAMessage": "اكتب رسالة هنا",
     "today": "اليوم",
-    "me": "أنا"
+    "me": "أنا",
+    "goodMorning":"👋 صباح الخير!",
+    "howCanIAssistYouToday":"كيف يمكنني مساعدتك اليوم؟"
 }
