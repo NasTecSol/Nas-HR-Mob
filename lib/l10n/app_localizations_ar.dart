@@ -1977,4 +1977,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get me => 'أنا';
+
+  @override
+  String get goodMorning => '👋 صباح الخير!';
+
+  @override
+  String get howCanIAssistYouToday => 'كيف يمكنني مساعدتك اليوم؟';
 }

@@ -28,34 +28,46 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, String>> _messages = [];
-  SingletonClass singletonClass = SingletonClass();
-  bool isBotTyping = false;
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+
+  late SingletonClass singletonClass;
+  bool isBotTyping = false;
+  List<String> _suggestedMessages = [];
+
+  // Audio + speech
   late FlutterSoundRecorder _recorder;
-  final bool _isRecording = false;
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
-  List<String> _suggestedMessages = [];
   late stt.SpeechToText _speech;
   bool _isListening = false;
+  final bool _isRecording = false;
 
   @override
   void initState() {
     super.initState();
+    singletonClass = SingletonClass();
+
     _recorder = FlutterSoundRecorder();
     _player = FlutterSoundPlayer();
     _initializeAudio();
-    _scrollToBottom();
-    Future.delayed(Duration(milliseconds: 300), () {
-      FocusScope.of(context).requestFocus(_focusNode);
-    });
-    Future.delayed(Duration.zero, () async {
-      await postMessages("");
-    });
     _speech = stt.SpeechToText();
+
+    // 🧠 If chat is empty and greeting not shown → greet user
+    if (singletonClass.chatMessages.isEmpty && !singletonClass.hasShownGreeting) {
+      singletonClass.chatMessages.add({
+        'sender': 'bot',
+        'text': '${AppLocalizations.of(context)!.goodMorning} ${AppLocalizations.of(context)!.howCanIAssistYouToday}',
+      });
+      singletonClass.hasShownGreeting = true;
+    }
+
+    // focus cursor and scroll
+    Future.delayed(const Duration(milliseconds: 300), () {
+      FocusScope.of(context).requestFocus(_focusNode);
+      _scrollToBottom();
+    });
   }
 
   @override
@@ -78,6 +90,30 @@ class _ChatScreenState extends State<ChatScreen> {
     _player.closePlayer();
     super.dispose();
   }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  void _addUserMessage(String message) {
+    setState(() {
+      singletonClass.chatMessages.add({'sender': 'user', 'text': message});
+    });
+    _scrollToBottom();
+  }
+
+  void _addBotMessage(String message) {
+    setState(() {
+      singletonClass.chatMessages.add({'sender': 'bot', 'text': message});
+    });
+    _scrollToBottom();
+  }
+
+
 
   Future<void> _initializeAudio() async {
     await Permission.microphone.request();
@@ -119,30 +155,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
   }
-
-  void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
-  }
-
-  void _addUserMessage(String message) {
-    setState(() {
-      _messages.add({'sender': 'user', 'text': message});
-    });
-    _scrollToBottom();
-  }
-
-  void _addBotMessage(String message) {
-    setState(() {
-      _messages.add({'sender': 'bot', 'text': message});
-    });
-    _scrollToBottom();
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -198,9 +210,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       controller: _scrollController,
-                      itemCount: _messages.length + (isBotTyping ? 1 : 0),
+                      itemCount: singletonClass.chatMessages.length + (isBotTyping ? 1 : 0),
                       itemBuilder: (context, index) {
-                        if (isBotTyping && index == _messages.length) {
+                        if (isBotTyping && index ==  singletonClass.chatMessages.length) {
                           return Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -224,7 +236,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           );
                         }
 
-                        final message = _messages[index];
+                        final message = singletonClass.chatMessages[index];
                         final isUser = message['sender'] == 'user';
 
                         return Align(
@@ -372,29 +384,30 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                     ),
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-                          child: Wrap(
-                            spacing: 5,
-                            runSpacing: 5,
-                            children: _suggestedMessages.map((suggestion) {
-                              return ActionChip(
-                                label: Text(suggestion),
-                                backgroundColor: Colors.grey.shade200,
-                                onPressed: () {
-                                  postMessages(suggestion);
-                                },
-                              );
-                            }).toList(),
+                  if (_suggestedMessages.isNotEmpty)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                            child: Wrap(
+                              spacing: 5,
+                              runSpacing: 5,
+                              children: _suggestedMessages.map((suggestion) {
+                                return ActionChip(
+                                  label: Text(suggestion),
+                                  backgroundColor: Colors.grey.shade200,
+                                  onPressed: () {
+                                    postMessages(suggestion);
+                                  },
+                                );
+                              }).toList(),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -543,7 +556,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _addUserMessage(userMessage);
       _messageController.clear();
     }
-
+    if (userMessage.isEmpty) return;
     var uuid = const Uuid();
     var v1 = uuid.v1();
     String? employeeID = singletonClass.getJWTModel()?.empId;
@@ -610,11 +623,12 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             }
 
-            _messages.add(message);
+            singletonClass.chatMessages.add(message);
 
             if (suggestions != null && suggestions.isNotEmpty) {
-              _suggestedMessages =
-                  suggestions.map((s) => s.toString()).toList();
+              _suggestedMessages = suggestions.map((s) => s.toString()).toList();
+            } else {
+              _suggestedMessages = [];
             }
           });
 

@@ -4015,6 +4015,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'me'**
   String get me;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'👋 Good Morning!'**
+  String get goodMorning;
+
+  /// No description provided for @howCanIAssistYouToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I assist you today?'**
+  String get howCanIAssistYouToday;
 }
 
 class _AppLocalizationsDelegate
