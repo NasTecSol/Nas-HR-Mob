@@ -126,6 +126,7 @@ class SingletonClass {
   String? activeChatRoomId;
   String? activeScreen;
   List<dynamic> availableBranches = [];
+  
 
   init() async {
     _singleton ??= SingletonClass._();
