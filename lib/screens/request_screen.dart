@@ -12,7 +12,6 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/approver_request_data_model.dart';
 import '../request_controller/request_data_model.dart';
-import '../request_controller/ui_settings_model.dart';
 import '../widgets/colors.dart';
 
 
@@ -33,8 +32,6 @@ class _RequestScreenState extends State<RequestScreen> {
   bool isLoading = false;
   int? _expandedIndex;
   String? _selectedRequestType;
-  List<String> requestType = [];
-  List<String> subTypeList = [];
   int? totalDays;
   int? installmentAmount;
   String? totalMonths;
@@ -48,15 +45,6 @@ class _RequestScreenState extends State<RequestScreen> {
   @override
   void initState() {
     super.initState();
-    if (singletonClass.companyDataList.isNotEmpty &&
-        singletonClass.companyDataList.first.data != null &&
-        singletonClass.companyDataList.first.data!.request != null) {
-      requestType = singletonClass.companyDataList.first.data!.request!
-          .map((request) => request.requestType)
-          .where((type) => type != null)
-          .cast<String>()
-          .toList();
-    }
     _fetchRequestData(0);
     _fetchApproverData(0);
     getRequestData();
@@ -171,34 +159,45 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemCount: singletonClass.companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass.companyDataList.first.data!.request![index];
-
-                          // Collect all allowed titles from "Approval" submenu
+                          /// ✅ Step 1: Collect all submenu titles under "Approval"
                           final allowedRequestNames = <String>{};
-                          final uiSettings = singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-
+                          final uiSettings = singletonClass.roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ?? [];
                           for (var module in uiSettings) {
-                            if (module.title == 'Approval') {
-                              for (var sub in module.subMenu ?? []) {
-                                if (sub is Map && sub["title"] != null) {
-                                  allowedRequestNames.add(sub["title"]);
-                                } else if (sub is MobileModules && sub.title != null) {
-                                  allowedRequestNames.add(sub.title!);
+                            final moduleTitle = (module is Map)
+                                ? module.title?.toString()
+                                : module.title?.toString();
+                            if ((moduleTitle ?? '').trim().toLowerCase() == 'approval') {
+                              final subMenus = (module is Map) ? (module.subMenu ?? []) : (module.subMenu ?? []);
+                              for (var sub in subMenus) {
+                                final subTitle = (sub is Map) ? sub.title.toString() : sub.title?.toString();
+                                if (subTitle != null && subTitle.trim().isNotEmpty) {
+                                  allowedRequestNames.add(subTitle.trim());
                                 }
                               }
                             }
                           }
 
-                          final requestName = request.requestName?.toLowerCase() ?? '';
-                          final requestType = request.requestType?.toLowerCase() ?? '';
+                          /// ✅ Step 2: Normalize both submenu title & request name for flexible matching
+                          final requestName = (request.requestName ?? '').trim();
 
+                          String normalizeTitle(String text) {
+                            return text
+                                .trim()
+                                .toLowerCase()
+                                .replaceAll('requests', 'request')
+                                .replaceAll(RegExp(r'\s+'), ' ');
+                          }
+
+                          /// ✅ Step 3: Loose matching (case-insensitive + singular/plural)
                           final isAllowed = allowedRequestNames.any((allowed) {
-                            final allowedLower = allowed.toLowerCase();
-                            return requestName.contains(allowedLower) ||
-                                allowedLower.contains(requestName) ||
-                                requestType.contains(allowedLower) ||
-                                allowedLower.contains(requestType);
+                            final allowedNormalized = normalizeTitle(allowed);
+                            final requestNormalized = normalizeTitle(requestName);
+                            return allowedNormalized == requestNormalized ||
+                                allowedNormalized.contains(requestNormalized) ||
+                                requestNormalized.contains(allowedNormalized);
                           });
 
+                          /// ✅ Step 4: Hide request if not allowed
                           if (!isAllowed) {
                             return const SizedBox.shrink();
                           }
@@ -409,6 +408,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     ),
                   ],
                   const Spacer(),
+                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e) => e.title == 'Approval' && e.accessType!.write == true))
                   Padding(
                     padding: const EdgeInsets.only(top: 15.0),
                     child: TextButton(

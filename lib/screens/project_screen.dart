@@ -42,6 +42,21 @@ class _ProjectScreenState extends State<ProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+
+    final canCreateProject = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Task Board" || sub.title == "Task Board") &&
+            sub.accessType!.write == true) ??
+            false;
+      }
+      return false;
+    });
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
@@ -68,12 +83,8 @@ class _ProjectScreenState extends State<ProjectScreen> {
                     ),
                   ),
                   const Spacer(),
-                  if(singletonClass
-                      .getJWTModel()
-                      ?.grade == 'L0' || singletonClass
-                      .getJWTModel()
-                      ?.grade == 'L1')...[
-                    Padding(
+                  if (canCreateProject)
+                      Padding(
                       padding: const EdgeInsets.only(top: 10.0),
                       child: IconButton(
                         icon: Icon(
@@ -86,9 +97,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                         },
                       ),
                     ),
-                  ]
-
-                ],
+                  ],
               ),
               const SizedBox(height: 20),
               if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" )...[

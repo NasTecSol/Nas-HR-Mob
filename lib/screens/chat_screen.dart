@@ -54,15 +54,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _initializeAudio();
     _speech = stt.SpeechToText();
 
-    // 🧠 If chat is empty and greeting not shown → greet user
-    if (singletonClass.chatMessages.isEmpty && !singletonClass.hasShownGreeting) {
-      singletonClass.chatMessages.add({
-        'sender': 'bot',
-        'text': '${AppLocalizations.of(context)!.goodMorning} ${AppLocalizations.of(context)!.howCanIAssistYouToday}',
-      });
-      singletonClass.hasShownGreeting = true;
-    }
-
     // focus cursor and scroll
     Future.delayed(const Duration(milliseconds: 300), () {
       FocusScope.of(context).requestFocus(_focusNode);
@@ -73,7 +64,14 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
+    // ✅ Moved here: use context safely for localization
+    if (singletonClass.chatMessages.isEmpty && !singletonClass.hasShownGreeting) {
+      singletonClass.chatMessages.add({
+        'sender': 'bot',
+        'text':
+        '${AppLocalizations.of(context)!.goodMorning} ${AppLocalizations.of(context)!.howCanIAssistYouToday}',
+      });
+      singletonClass.hasShownGreeting = true;
     _suggestedMessages = [
       AppLocalizations.of(context)!.tellMeAboutDocuments,
       AppLocalizations.of(context)!.showMyInfo,
@@ -81,6 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
       AppLocalizations.of(context)!.myDepartment,
       AppLocalizations.of(context)!.whoIsDeveloper,
     ];
+   }
   }
 
   @override

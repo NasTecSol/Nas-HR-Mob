@@ -35,6 +35,8 @@ class _TeamClockingState extends State<TeamClocking> {
   late List<DateTime> _dates;
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
+  bool showDropdown = false;
+  bool showTeamCheckbox = false;
 
   @override
   void initState() {
@@ -56,13 +58,77 @@ class _TeamClockingState extends State<TeamClocking> {
   }
 
   void _teamCheck() {
-    if (singletonClass.branchID != null &&
-        singletonClass.branchID!.isNotEmpty) {
-      _isTeamChecked = false;
-      extractAllEmployeeIdsForBranch(singletonClass.branchID);
-      loadData();
+    /// Safely find the dashboard module
+    final dashboardModule = singletonClass
+        .roleAndAccessModelDataList
+        .first
+        .data!
+        .uiSettings!
+        .uiModules!
+        .firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+
+    /// Default flags
+    showDropdown = false;
+    showTeamCheckbox = false;
+    _isTeamChecked = false;
+
+    if (dashboardModule != null) {
+      final access = dashboardModule.accessLevel;
+      final companies = access?.companies ?? [];
+
+      final hasCompanies = companies.isNotEmpty;
+      final hasBranches =
+          hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
+      final teamEnabled = access?.team == true;
+
+      /// 🧩 CASE 1:
+      /// Companies + branches available + team == true
+      if (hasCompanies && hasBranches && teamEnabled) {
+        showDropdown = true;
+        showTeamCheckbox = true;
+
+        if (singletonClass.branchID != null &&
+            singletonClass.branchID!.isNotEmpty) {
+          _isTeamChecked = false; // ✅ branch selected → Team unchecked
+          extractAllEmployeeIdsForBranch(singletonClass.branchID);
+          loadData();
+        } else {
+          _isTeamChecked = true; // ✅ no branch selected → Team checked
+        }
+      }
+
+      /// 🧩 CASE 2:
+      /// Companies + branches available + team == false
+      else if (hasCompanies && hasBranches && !teamEnabled) {
+        showDropdown = true;
+        showTeamCheckbox = false;
+        _isTeamChecked = false;
+        extractAllEmployeeIdsForBranch(singletonClass.branchID);
+        loadData();
+      }
+
+      /// 🧩 CASE 3:
+      /// No companies + no branches + team == true
+      else if (!hasCompanies && !hasBranches && teamEnabled) {
+        showDropdown = false;
+        showTeamCheckbox = true;
+        _isTeamChecked = true;
+        extractAllEmployeeIdsForBranch(singletonClass.getJWTModel()?.branchId);
+        loadData();
+      }
+
+      /// 🧩 CASE 4:
+      /// No companies + no branches + team == false
+      else {
+        showDropdown = false;
+        showTeamCheckbox = false;
+        _isTeamChecked = false;
+      }
     }
   }
+
 
   void _extractTeams() {
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
@@ -375,12 +441,10 @@ class _TeamClockingState extends State<TeamClocking> {
                 ),
               ),
               SizedBox(height: 10),
-              if (singletonClass.getJWTModel()?.grade == "L0" ||
-                  singletonClass.getJWTModel()?.grade == "L1" ||
-                  singletonClass.getJWTModel()?.grade == "L2") ...[
-                Row(
+              Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    if (showDropdown)
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0, right: 10),
                       child: PopupMenuButton<String>(
@@ -462,6 +526,7 @@ class _TeamClockingState extends State<TeamClocking> {
                       ),
                     ),
                     Spacer(),
+                    if (showTeamCheckbox)
                     Padding(
                       padding: const EdgeInsets.only(right: 5),
                       child: Column(
@@ -494,7 +559,6 @@ class _TeamClockingState extends State<TeamClocking> {
                     ),
                   ],
                 ),
-              ],
               SizedBox(
                 height: 80,
                 child: ListView.builder(

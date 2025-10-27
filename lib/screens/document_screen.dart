@@ -35,6 +35,20 @@ class _DocumentScreenState extends State<DocumentScreen> {
   Widget build(BuildContext context) {
     final documentInfo =
         singletonClass.employeeDataList.first.data!.documentsInfo;
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+    final canCreateHRLetter = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "My HR letters" || sub.title == "My HR letter") &&
+            sub.accessType!.write == true) ??
+            false;
+      }
+      return false;
+    });
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView(padding: EdgeInsets.zero, children: [
@@ -80,8 +94,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                         ),
                       ),
                       const Spacer(),
-                      if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                          singletonClass.getJWTModel()?.grade == 'L1')
+                      if (canCreateHRLetter)
                         IconButton(
                           onPressed: () {
                             Navigator.push(
