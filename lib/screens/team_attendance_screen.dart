@@ -35,6 +35,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   DateTime? _endDate;
   int _selectedOptionIndex = 0;
   bool isSearching = false;
+  bool showDropdown = false;
+  bool showTeamCheckbox = false;
+  bool showOnlyMeCheckbox = false;
   TextEditingController searchController = TextEditingController();
   late List<DateTime> _dates;
   @override
@@ -62,11 +65,94 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     loadData();
   }
 
-  void _teamCheck(){
-    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty && _isChecked == false){
-      _isTeamChecked = false ;
-      extractAllEmployeeIdsForBranch(singletonClass.branchID);
+  void _teamCheck() {
+    /// Safely get Dashboard module
+    final dashboardModule = singletonClass
+        .roleAndAccessModelDataList
+        .first
+        .data!
+        .uiSettings!
+        .uiModules!
+        .firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+
+    /// Reset all UI flags
+    showDropdown = false;
+    showTeamCheckbox = false;
+    showOnlyMeCheckbox = false;
+    _isTeamChecked = false;
+    _isChecked = false;
+
+    if (dashboardModule == null) return;
+
+    final access = dashboardModule.accessLevel;
+    final companies = access?.companies ?? [];
+    final hasCompanies = companies.isNotEmpty;
+    final hasBranches =
+        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final teamEnabled = access?.team == true;
+    final hasBranchId =
+        singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
+
+    /// 🧩 CASE 1: Companies & Branches available, Team == true
+    if (hasCompanies && hasBranches && teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = true;
+      showOnlyMeCheckbox = true;
+
+      if (hasBranchId) {
+        /// Branch selected → Team off, Only Me off
+        _isTeamChecked = false;
+        _isChecked = false;
+        extractAllEmployeeIdsForBranch(singletonClass.branchID);
+      } else {
+        /// No branch selected → Team on, Only Me off
+        _isTeamChecked = true;
+        _isChecked = false;
+      }
     }
+
+    /// 🧩 CASE 2: Companies & Branches available, Team == false
+    else if (hasCompanies && hasBranches && !teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = false;
+      showOnlyMeCheckbox = true;
+
+      if (!hasBranchId) {
+        /// No branch selected → Only Me true
+        _isChecked = true;
+      } else {
+        extractAllEmployeeIdsForBranch(singletonClass.branchID);
+      }
+    }
+
+    /// 🧩 CASE 3: No Companies/Branches, Team == true
+    else if (!hasCompanies && !hasBranches && teamEnabled) {
+      showDropdown = false;
+      showTeamCheckbox = true;
+      showOnlyMeCheckbox = true;
+      _isTeamChecked = true;  // Always true
+      _isChecked = false;     // Only Me hidden or unchecked
+    }
+
+    /// 🧩 CASE 4: No Companies/Branches, Team == false
+    else {
+      showDropdown = false;
+      showTeamCheckbox = false;
+      showOnlyMeCheckbox = true;
+      _isTeamChecked = false;
+      _isChecked = true; // Only Me active
+    }
+
+    /// 🔁 Refresh data based on updated logic
+    setState(() {
+      loadData();
+    });
+
+    log('✅ _teamCheck results → '
+        'Dropdown: $showDropdown | TeamCheckbox: $showTeamCheckbox | OnlyMe: $showOnlyMeCheckbox | '
+        '_isTeamChecked: $_isTeamChecked | _isChecked: $_isChecked');
   }
 
 
@@ -326,7 +412,34 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final dashboardModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+    final access = dashboardModule.accessLevel;
+    final companies = access!.companies ?? [];
+    final hasCompanies = companies.isNotEmpty;
+    final hasBranches = hasCompanies &&
+        companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final teamEnabled = access.team == true;
+
+    if (hasCompanies && hasBranches && teamEnabled) {
+      // ✅ Case 1: Companies + Branches + Team → Dropdown + Team + Only Me
+      showDropdown = true;
+      showTeamCheckbox = true;
+      showOnlyMeCheckbox = true;
+    } else if (hasCompanies && hasBranches && !teamEnabled) {
+      // ✅ Case 2: Companies + Branches + No Team → Dropdown + Only Me
+      showDropdown = true;
+      showOnlyMeCheckbox = true;
+    } else if (!hasCompanies && !hasBranches && teamEnabled) {
+      // ✅ Case 3: No companies + No branches + Team → Team + Only Me
+      showTeamCheckbox = true;
+      showOnlyMeCheckbox = true;
+    } else if (!hasCompanies && !hasBranches && !teamEnabled) {
+      // ✅ Case 4: No companies + No branches + No Team → Only Me
+      showOnlyMeCheckbox = true;
+    }
+      return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Column(
         children: [
@@ -469,7 +582,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
             children: [
               if(isSearching == false)...[
                 if(_isChecked == false)...[
-                  if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2")
+                  if (showDropdown)
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0, right: 10),
                       child: PopupMenuButton<String>(
@@ -549,7 +662,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ),
                     ),
                 Spacer(),
-                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3")
+                  if (showTeamCheckbox)
                   Padding(
                     padding: const EdgeInsets.only(right: 5),
                     child: Column(
@@ -579,7 +692,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ],
                     ),
                   ),],
-                if(singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == "L2" ||singletonClass.getJWTModel()?.grade == "L3")
+                if (showOnlyMeCheckbox)
                 Padding(
                   padding: const EdgeInsets.only(left: 5 , right: 5),
                   child: Column(

@@ -17,6 +17,7 @@ class TeamScreen extends StatefulWidget {
 
 class _TeamScreenState extends State<TeamScreen> {
   SingletonClass singletonClass = SingletonClass();
+
   bool isSearching = false;
   bool isTeamMate = false;
   TextEditingController searchController = TextEditingController();
@@ -31,22 +32,83 @@ class _TeamScreenState extends State<TeamScreen> {
   String? reportingManagerId;
   List<Teams> filteredTeams = [];
   List<Teams> filteredUnderTeams = [];
-  bool _isTeamChecked = true;
+
+  bool _isTeamChecked = false;
+  bool showDropdown = false;
+  bool showTeamCheckbox = false;
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     initData();
-    teamCheck();
   }
 
-   void teamCheck(){
-    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty  ){
+  /// 🔍 Detect access-level and set mode flags + isTeamChecked
+  void teamCheck() {
+    final dashboardModule = singletonClass
+        .roleAndAccessModelDataList
+        .first
+        .data!
+        .uiSettings!
+        .uiModules!
+        .firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+
+    final access = dashboardModule.accessLevel;
+    final companies = access?.companies ?? [];
+    final hasCompanies = companies.isNotEmpty;
+    final hasBranches =
+        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final teamEnabled = access?.team == true;
+    final hasBranchId =
+        singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
+
+    // Default resets
+    showDropdown = false;
+    showTeamCheckbox = false;
+    _isTeamChecked = false;
+
+    // 1️⃣ Companies & Branches available, Team == false
+    if (hasCompanies && hasBranches && !teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = false;
       _isTeamChecked = false;
-      _selectedOptionIndex = 2;
     }
-   }
+
+    // 2️⃣ Companies & Branches available, Team == true
+    else if (hasCompanies && hasBranches && teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = true;
+
+      if (hasBranchId) {
+        _isTeamChecked = false; // show employees of selected branch
+      } else {
+        _isTeamChecked = true; // show first team view
+      }
+    }
+
+    // 3️⃣ No Companies/Branches, Team == true
+    else if (!hasCompanies && !hasBranches && teamEnabled) {
+      showDropdown = false;
+      showTeamCheckbox = true;
+      _isTeamChecked = true;
+    }
+
+    // 4️⃣ No Companies/Branches, Team == false
+    else {
+      showDropdown = false;
+      showTeamCheckbox = false;
+      _isTeamChecked = false;
+    }
+
+    if (kDebugMode) {
+      print("✅ Access check: showDropdown=$showDropdown | showTeamCheckbox=$showTeamCheckbox | _isTeamChecked=$_isTeamChecked");
+    }
+  }
+
+  /// 🧩 Load all initial data based on access level + branch logic
   Future<void> initData() async {
     setState(() {
       isLoading = true;
@@ -56,175 +118,119 @@ class _TeamScreenState extends State<TeamScreen> {
     await singletonClass.getTeamBranchData();
     reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
 
-    final branchDataList = singletonClass.branchDataList;
-    final filteredData = getFilteredTeams(branchDataList, reportingManagerId!);
+    // Run access checks to set dropdown + team mode
+    teamCheck();
+
+    // Decide which data to load
+    if (_isTeamChecked == false && singletonClass.branchID != null) {
+      // ✅ Branch Mode (when branch selected)
+      final data = _getBranchEmployees(singletonClass.branchID!);
+      setState(() {
+        filteredTeams = data['ownTeams']!;
+        filteredUnderTeams = [];
+      });
+    } else {
+      // ✅ Team Mode (when team == true OR branch not selected)
+      final branchDataList = singletonClass.branchDataList;
+      final data = getFilteredTeams(branchDataList, reportingManagerId!);
+      setState(() {
+        filteredTeams = data['ownTeams']!;
+        filteredUnderTeams = data['underTeams']!;
+      });
+    }
 
     setState(() {
-      filteredTeams = filteredData['ownTeams']!;
-      filteredUnderTeams = filteredData['underTeams']!;
       isLoading = false;
     });
   }
 
+  /// 🔹 Returns all employees for a selected branch
+  Map<String, List<Teams>> _getBranchEmployees(String branchId) {
+    List<Teams> branchTeams = [];
+
+    final branchData = singletonClass.branchDataList.firstWhere(
+          (b) => b.data?.branch?.id == branchId,
+      orElse: () => singletonClass.branchDataList.first,
+    );
+
+    List<TeamData> employees = [];
+
+    for (var deptDetails in branchData.data?.branch?.departmentDetails ?? []) {
+      for (var department in deptDetails.departments ?? []) {
+        for (var team in department.teams ?? []) {
+          for (var member in team.teamData ?? []) {
+            employees.add(member);
+          }
+        }
+      }
+    }
+
+    if (employees.isNotEmpty) {
+      branchTeams.add(Teams(teamId: 'Branch_$branchId', teamData: employees));
+    }
+
+    return {'ownTeams': branchTeams, 'underTeams': []};
+  }
+
+  /// 🔹 Filters teams normally (when team == true)
   Map<String, List<Teams>> getFilteredTeams(
       List<BranchData> branchDataList, String reportingManagerId) {
     List<Teams> ownTeams = [];
     List<Teams> underTeams = [];
-    String? userGrade = singletonClass.getJWTModel()?.grade;
 
-    if (kDebugMode) {
-      print('Branch Data List length: ${branchDataList.length}');
-      print('Reporting Manager ID: $reportingManagerId');
-    }
-    if (_isTeamChecked == false && singletonClass.branchID != null) {
-      List<TeamData> allEmployees = [];
+    for (BranchData branchData in branchDataList) {
+      for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
+        for (var department in departmentDetails.departments ?? []) {
+          final supervisors = department.supervisors ?? [];
+          final teams = department.teams ?? [];
 
-      final teamBranchData = singletonClass.teamBranchDataList.isNotEmpty
-          ? singletonClass.teamBranchDataList.first.data
-          : null;
+          bool isSupervisor =
+          supervisors.any((s) => s.empId == reportingManagerId);
 
-      if (teamBranchData != null) {
-        for (var emp in teamBranchData.employees ?? []) {
-          allEmployees.add(TeamData(
-            empId: emp.employeeInfo?.isNotEmpty == true
-                ? emp.employeeInfo!.first.empId ?? ''
-                : '',
-            employeeId: emp.id ?? '',
-            userName: emp.userName ?? '',
-            designation: emp.employeeInfo?.isNotEmpty == true
-                ? emp.employeeInfo!.first.designation ?? ''
-                : '',
-            grade: emp.employeeInfo?.isNotEmpty == true
-                ? emp.employeeInfo!.first.grade ?? ''
-                : '',
-          ));
-        }
-      }
+          if (isSupervisor) {
+            /// Supervisor — add all their teams
+            ownTeams.add(
+              Teams(
+                teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
+                teamData: supervisors.map<TeamData>((supervisor) {
+                  return TeamData(
+                    empId: supervisor.empId,
+                    employeeId: supervisor.employeeId,
+                    userName: supervisor.userName,
+                    designation: supervisor.designation,
+                    grade: supervisor.grade,
+                  );
+                }).toList(),
+              ),
+            );
 
-      if (allEmployees.isNotEmpty) {
-        ownTeams.add(Teams(
-          teamId: 'All_Employees',
-          teamData: allEmployees,
-        ));
-      }
-
-      return {
-        'ownTeams': ownTeams,
-        'underTeams': [],
-      };
-    } else {
-      for (BranchData branchData in branchDataList) {
-        for (var departmentDetails in branchData.data?.branch?.departmentDetails ?? []) {
-          for (var department in departmentDetails.departments ?? []) {
-            final supervisors = department.supervisors ?? [];
-            final teams = department.teams ?? [];
-
-            if (["L0", "L1"].contains(userGrade)) {
-              // Supervisor logic for L0 & L1
-              bool isUserSupervisorInDepartment =
-              supervisors.any((s) => s.empId == reportingManagerId);
-
-              if (isUserSupervisorInDepartment) {
-                if (kDebugMode) print('✅ User is a supervisor in this department');
-
-                ownTeams.add(
-                  Teams(
-                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
-                    teamData: supervisors.map<TeamData>((supervisor) {
-                      return TeamData(
-                        empId: supervisor.empId,
-                        employeeId: supervisor.employeeId,
-                        userName: supervisor.userName,
-                        designation: supervisor.designation,
-                        grade: supervisor.grade,
-                      );
-                    }).toList(),
-                  ),
-                );
-
-                for (var supervisor in supervisors) {
-                  if (supervisor.empId == reportingManagerId) {
-                    for (var team in teams) {
-                      if (supervisor.teamId == team.teamId) {
-                        if (kDebugMode) {
-                          print(
-                              'Adding subordinate team to underTeams based on supervisor empId and teamId match: ${team.teamId}');
-                        }
-                        underTeams.add(team);
-                      }
-                    }
-                  }
-                }
-              }
-            } else if (["L2", "L3"].contains(userGrade)) {
-              // 🔹 Handle L2 & L3
-              bool isUserSupervisorInDepartment =
-              supervisors.any((s) => s.empId == reportingManagerId);
-
-              if (isUserSupervisorInDepartment) {
-                // Same as L0/L1 supervisor logic
-                if (kDebugMode) print('✅ User (L2/L3) is a supervisor in this department');
-
-                ownTeams.add(
-                  Teams(
-                    teamId: 'Supervisors_${DateTime.now().millisecondsSinceEpoch}',
-                    teamData: supervisors.map<TeamData>((supervisor) {
-                      return TeamData(
-                        empId: supervisor.empId,
-                        employeeId: supervisor.employeeId,
-                        userName: supervisor.userName,
-                        designation: supervisor.designation,
-                        grade: supervisor.grade,
-                      );
-                    }).toList(),
-                  ),
-                );
-
-                for (var supervisor in supervisors) {
-                  if (supervisor.empId == reportingManagerId) {
-                    for (var team in teams) {
-                      if (supervisor.teamId == team.teamId) {
-                        underTeams.add(team);
-                      }
-                    }
-                  }
-                }
-              } else {
+            for (var supervisor in supervisors) {
+              if (supervisor.empId == reportingManagerId) {
                 for (var team in teams) {
-                  bool isUserInTeam = team.teamData
-                      ?.any((member) => member.empId == reportingManagerId) ??
-                      false;
-
-                  if (isUserInTeam) {
-                    if (kDebugMode) {
-                      print('👤 User (L2/L3) is in team ${team.teamId}, adding to ownTeams');
-                    }
-                    ownTeams.add(team);
+                  if (supervisor.teamId == team.teamId) {
+                    underTeams.add(team);
                   }
                 }
               }
-            } else if (userGrade == "L4") {
-              for (var team in teams) {
-                bool isUserInTeam = team.teamData
-                    ?.any((member) => member.empId == reportingManagerId) ??
-                    false;
-                if (isUserInTeam) {
-                  if (kDebugMode) {
-                    print('👤 User is team member of ${team.teamId}, adding to ownTeams');
-                  }
-                  ownTeams.add(team);
-                }
+            }
+          } else {
+            // Normal member — add their own team(s)
+            for (var team in teams) {
+              bool isMember = team.teamData
+                  ?.any((member) => member.empId == reportingManagerId) ??
+                  false;
+              if (isMember) {
+                ownTeams.add(team);
               }
             }
           }
         }
       }
-      return {
-        'ownTeams': ownTeams,
-        'underTeams': underTeams,
-      };
     }
+
+    return {'ownTeams': ownTeams, 'underTeams': underTeams};
   }
+
 
   @override
   @override
@@ -344,12 +350,10 @@ class _TeamScreenState extends State<TeamScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            if (singletonClass.getJWTModel()?.grade == "L0" ||
-                singletonClass.getJWTModel()?.grade == "L1" ||
-                singletonClass.getJWTModel()?.grade == "L2") ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  if(showDropdown)
                   Padding(
                     padding: const EdgeInsets.only(left: 10.0, right: 10),
                     child: PopupMenuButton<String>(
@@ -420,6 +424,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       ),
                     ),
                   ),
+                  if(showTeamCheckbox)
                   Column(
                     children: [
                       Checkbox(
@@ -447,12 +452,8 @@ class _TeamScreenState extends State<TeamScreen> {
                     ],
                   ),
                 ],
-              ),],
+              ),
               SizedBox(height: 5),
-            if (singletonClass.getJWTModel()?.grade == "L0" ||
-                singletonClass.getJWTModel()?.grade == "L1" ||
-                singletonClass.getJWTModel()?.grade == "L2" ||
-                singletonClass.getJWTModel()?.grade == "L3")...[
               Row(
                 children: [
                   if(_isTeamChecked == true && singletonClass.branchID == null)...[
@@ -877,7 +878,6 @@ class _TeamScreenState extends State<TeamScreen> {
                     ),
                   ),
                 ],
-              ],
             ],
             if (singletonClass.getJWTModel()?.grade == "L4") ...[
               if (isLoading)
