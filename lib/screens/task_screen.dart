@@ -114,6 +114,20 @@ class _TaskScreenState extends State<TaskScreen> {
     if (completedTags.isNotEmpty) {
       completedTags = completedTags.substring(0, completedTags.length - 2);
     }
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+    final canCreateTask = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Manage Tasks" || sub.title == "Manage Tasks") &&
+            sub.accessType!.write == true) ??
+            false;
+      }
+      return false;
+    });
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
@@ -159,7 +173,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ),
                   const Spacer(),
-                  if (singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1' || singletonClass.getJWTModel()?.grade == 'L2' || singletonClass.getJWTModel()?.grade == 'L3')
+                  if (canCreateTask)
                    TextButton(
                       child: Text(AppLocalizations.of(context)!.createAnIssue,
                         style: GoogleFonts.inter(
