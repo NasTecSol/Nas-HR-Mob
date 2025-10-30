@@ -3292,15 +3292,7 @@ class _RequestScreenState extends State<RequestScreen> {
     }
   }
 
-
-
-
-
-
-
-
-
-  //PATCH API CALL
+  ///PATCH API CALL
   void patchRequestData(String? requestID, String status,
       Map<String, dynamic> requestData) async {
     String url = '${singletonClass.baseURL}/request/$requestID';

@@ -1408,7 +1408,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'أدخل نوع الحدث أو اختر من القائمة';
 
   @override
-  String get pleaseFillAllFields => 'يرجى ملء جميع الحقول';
+  String get pleaseFillAllFields => 'يرجى تعبئة جميع الحقول قبل المتابعة.';
 
   @override
   String get minutes => 'دقائق';
@@ -1983,4 +1983,257 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get howCanIAssistYouToday => 'كيف يمكنني مساعدتك اليوم؟';
+
+  @override
+  String get onBoarding => 'الانضمام';
+
+  @override
+  String get employeeOnboarding => 'انضمام الموظف';
+
+  @override
+  String get pleaseSelectAllFields => 'يرجى تحديد جميع الحقول قبل المتابعة.';
+
+  @override
+  String get pleaseEnterValidEmail => 'يرجى إدخال بريد إلكتروني صالح.';
+
+  @override
+  String get companyInfo => 'معلومات الشركة';
+
+  @override
+  String get personalAndEducationalInfo => 'المعلومات الشخصية والتعليمية';
+
+  @override
+  String get professionalInfo => 'المعلومات المهنية';
+
+  @override
+  String get educationSalary => 'التعليم والراتب';
+
+  @override
+  String get selectCompany => 'اختر الشركة';
+
+  @override
+  String get selectDepartment => 'اختر القسم';
+
+  @override
+  String get selectSupervisor => 'اختر المشرف';
+
+  @override
+  String get selectShift => 'اختر الوردية';
+
+  @override
+  String get firstName => 'الاسم الأول';
+
+  @override
+  String get enterFirstName => 'أدخل الاسم الأول';
+
+  @override
+  String get lastName => 'اسم العائلة';
+
+  @override
+  String get enterLastName => 'أدخل اسم العائلة';
+
+  @override
+  String get selectNationality => 'اختر الجنسية';
+
+  @override
+  String get pakistani => 'باكستاني';
+
+  @override
+  String get indian => 'هندي';
+
+  @override
+  String get bangladeshi => 'بنغلاديشي';
+
+  @override
+  String get saudiaArabia => 'السعودية';
+
+  @override
+  String get other => 'أخرى';
+
+  @override
+  String get nationalId => 'الهوية الوطنية';
+
+  @override
+  String get enterNationalId => 'أدخل رقم الهوية الوطنية';
+
+  @override
+  String get iqamaNumber => 'رقم الإقامة';
+
+  @override
+  String get enterIqamaNumber => 'أدخل رقم الإقامة';
+
+  @override
+  String get phone => 'الهاتف';
+
+  @override
+  String get enterPhoneNumber => 'أدخل رقم الهاتف';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get enterEmail => 'أدخل البريد الإلكتروني';
+
+  @override
+  String get enterAddress => 'أدخل العنوان';
+
+  @override
+  String get dob => 'تاريخ الميلاد';
+
+  @override
+  String get selectReligion => 'اختر الديانة';
+
+  @override
+  String get islam => 'الإسلام';
+
+  @override
+  String get christianity => 'المسيحية';
+
+  @override
+  String get hinduism => 'الهندوسية';
+
+  @override
+  String get otherReligion => 'أخرى';
+
+  @override
+  String get single => 'أعزب';
+
+  @override
+  String get married => 'متزوج';
+
+  @override
+  String get divorced => 'مطلق';
+
+  @override
+  String get widowed => 'أرمل';
+
+  @override
+  String get username => 'اسم المستخدم';
+
+  @override
+  String get enterUsername => 'أدخل اسم المستخدم';
+
+  @override
+  String get enterPassword => 'أدخل كلمة المرور';
+
+  @override
+  String get profilePicture => 'صورة الملف الشخصي';
+
+  @override
+  String get chooseFile => 'اختر ملف';
+
+  @override
+  String get noFileChosen => 'لم يتم اختيار ملف';
+
+  @override
+  String get professionalInformation => 'المعلومات المهنية';
+
+  @override
+  String get hierarchyGroup => 'المجموعة الهرمية';
+
+  @override
+  String get selectHierarchyGroup => 'اختر المجموعة الهرمية';
+
+  @override
+  String get enterDesignation => 'أدخل المسمى الوظيفي';
+
+  @override
+  String get selectRole => 'اختر الدور';
+
+  @override
+  String get junior => 'مبتدئ';
+
+  @override
+  String get mid => 'متوسط';
+
+  @override
+  String get senior => 'كبير';
+
+  @override
+  String get contractType => 'نوع العقد';
+
+  @override
+  String get permanent => 'دائم';
+
+  @override
+  String get temporary => 'مؤقت';
+
+  @override
+  String get endOfContract => 'نهاية العقد';
+
+  @override
+  String get educationalInfo => 'المعلومات التعليمية';
+
+  @override
+  String get degreeName => 'اسم الدرجة العلمية';
+
+  @override
+  String get enterDegreeName => 'أدخل اسم الدرجة العلمية';
+
+  @override
+  String get degreeType => 'نوع الدرجة العلمية';
+
+  @override
+  String get enterDegreeType => 'أدخل نوع الدرجة العلمية';
+
+  @override
+  String get basicSalary => 'الراتب الأساسي';
+
+  @override
+  String get enterBasicSalary => 'أدخل الراتب الأساسي';
+
+  @override
+  String get currency => 'العملة';
+
+  @override
+  String get selectCurrency => 'اختر العملة';
+
+  @override
+  String get salaryPeriod => 'فترة الراتب';
+
+  @override
+  String get selectSalaryPeriod => 'اختر فترة الراتب';
+
+  @override
+  String get enterBankName => 'أدخل اسم البنك';
+
+  @override
+  String get accountNo => 'رقم الحساب';
+
+  @override
+  String get enterAccountNo => 'أدخل رقم الحساب';
+
+  @override
+  String get registerBiometrics => 'تسجيل البصمة';
+
+  @override
+  String get pleaseSelectDevice => 'يرجى اختيار جهاز';
+
+  @override
+  String get selectBiometricDevice => 'اختر جهاز البصمة';
+
+  @override
+  String get selectDevice => 'اختر الجهاز';
+
+  @override
+  String get salaryInfo => 'معلومات الراتب';
+
+  @override
+  String get salaryInformation => 'تفاصيل الراتب';
+
+  @override
+  String get male => 'ذكر';
+
+  @override
+  String get female => 'أنثى';
+
+  @override
+  String get employeeIsRegistered => 'تم تسجيل الموظف';
+
+  @override
+  String get toEnrollThisEmployeeOnBiometricDevice =>
+      'لتسجيل هذا الموظف في جهاز البصمة';
+
+  @override
+  String get skip => 'تخطي';
 }

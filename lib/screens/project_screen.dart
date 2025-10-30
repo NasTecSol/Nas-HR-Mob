@@ -36,7 +36,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
       getTasks();
       getProjectsData();
     } catch (e) {
-      print("Error fetching data: $e");
+      debugPrint("Error fetching data: $e");
     }
   }
 
@@ -717,7 +717,6 @@ class _ProjectScreenState extends State<ProjectScreen> {
       ),
     );
   }
-
   ///API CALL
   Future<ProjectsData?> getProjectsData() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
