@@ -81,6 +81,19 @@ class _SlackScreenState extends State<SlackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ///Nas Mudeer
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+    final hasNasMudeer = uiSettings.any((e) {
+      final title = (e.title ?? '').toLowerCase();
+      if (title == 'dashboard' && e.hidden == false) {
+        return e.nasMudeer == true;
+      }
+      return false;
+    });
     return Scaffold(
         backgroundColor: NasColors.backGround,
         body: Padding(
@@ -376,7 +389,9 @@ class _SlackScreenState extends State<SlackScreen> {
                   ),
                 ]
               ] else ...[
+
                 /// Normal Chat List
+                if(hasNasMudeer)
                 Column(
                   children: [
                     Row(

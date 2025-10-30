@@ -186,7 +186,6 @@ class _TeamScreenState extends State<TeamScreen> {
 
           bool isSupervisor =
           supervisors.any((s) => s.empId == reportingManagerId);
-
           if (isSupervisor) {
             /// Supervisor — add all their teams
             ownTeams.add(
