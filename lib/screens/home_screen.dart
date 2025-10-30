@@ -15,6 +15,7 @@ import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
+import 'package:nashr/screens/onboarding_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/slack_screen.dart';
@@ -512,6 +513,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           "icon": "images/clock.png",
           "label": AppLocalizations.of(context)!.manageShifts
         },
+        {
+          "icon": "images/schedule.png",
+          "label": AppLocalizations.of(context)!.onBoarding
+        },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
       if (savedOrder != null && savedOrder.isNotEmpty) {
@@ -621,6 +626,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 return false;
                               }
                               if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .onBoarding && (singletonClass.getJWTModel()?.grade == "L0" ||
+                                  singletonClass.getJWTModel()?.grade == "L1" ||
+                                  singletonClass.getJWTModel()?.grade == "L2"
+                              )) {
+                                return true;
+                              }
+                              if (item["label"] ==
                                       AppLocalizations.of(context)!
                                           .manageShifts &&
                                   !hasManageShifts) {
@@ -672,6 +685,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               PenaltyAndFineScreen()),
+                                    );
+                                  }  else if (item["label"] ==
+                                      AppLocalizations.of(context)!.onBoarding) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              OnboardingScreen()),
                                     );
                                   } else if (item["label"] ==
                                       AppLocalizations.of(context)!
@@ -2801,6 +2823,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" ||singletonClass.getJWTModel()?.grade == "L2")
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const OnboardingScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/schedule.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .onBoarding,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

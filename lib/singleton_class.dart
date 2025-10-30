@@ -9,6 +9,7 @@ import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
+import 'package:nashr/request_controller/biometric_devices_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/branches_data_model.dart';
@@ -30,6 +31,7 @@ import 'package:nashr/request_controller/event_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
+import 'package:nashr/request_controller/organization_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/policy_model.dart';
@@ -72,6 +74,8 @@ class SingletonClass {
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
+  List<BiometricDevicesModel> biometricDevicesModelDataList = [];
+  List<OrganizationModel> organizationModelDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
   List<DocumentNotificationModel> documentNotificationDataList = [];
@@ -256,6 +260,38 @@ class SingletonClass {
       return uiSettingsData;
     }
     return null ; // Print the response body
+  }
+
+  /// Organization call
+  Future<OrganizationModel?> getOrganizationData() async {
+    String? organizationID = getJWTModel()?.organizationId;
+    if (organizationID == null) {
+      print("⚠️ Organization ID not found");
+      return null;
+    }
+
+    final uri = Uri.parse('$baseURL/ui-modules/get-org-heirarchy/$organizationID');
+    final response = await http.get(uri, headers: getHeaders());
+
+    if (response.statusCode == 200) {
+      print("ORGANIZATION DATA: ${response.body}");
+      final responseBody = json.decode(response.body);
+      final organizationData = OrganizationModel.fromJson(responseBody);
+
+      organizationModelDataList.clear(); // avoid duplicates
+      organizationModelDataList.add(organizationData);
+
+      if (organizationModelDataList.first.data?.companies?.isNotEmpty == true) {
+        print("======== ${organizationModelDataList.first.data!.companies!.first.name}");
+      } else {
+        print("⚠️ No organization data parsed!");
+      }
+
+      return organizationData;
+    } else {
+      print("❌ Failed to load data: ${response.statusCode}");
+    }
+    return null;
   }
 
   ///Role and Access Api Call
@@ -452,7 +488,24 @@ class SingletonClass {
     }
     return null ;
   }
-
+  ///API METHOD
+  Future<BiometricDevicesModel?> getBiometricDevices() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/biometric-int');
+    var response = await client.get(
+        uri,
+        headers: getHeaders()
+    );
+    if (response.statusCode == 200) {
+      print("BIOMETRIC DEVICES >>><<<${response.body}");
+      var responseBody = json.decode(response.body);
+      var bioMetricDevices = BiometricDevicesModel.fromJson(responseBody);
+      biometricDevicesModelDataList.clear();
+      biometricDevicesModelDataList.addAll([bioMetricDevices]);
+      return bioMetricDevices;
+    }
+    return null ; // Print the response body
+  }
 
   Future<BranchesDataModel?> getBranchesData() async {
     String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
