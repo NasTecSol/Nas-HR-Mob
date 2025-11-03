@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -14,6 +15,8 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 import '../Controller/language_change_controller.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -25,40 +28,50 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, String>> _messages = [];
-  SingletonClass singletonClass = SingletonClass();
-  bool isBotTyping = false;
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+
+  late SingletonClass singletonClass;
+  bool isBotTyping = false;
+  List<String> _suggestedMessages = [];
+
+  // Audio + speech
   late FlutterSoundRecorder _recorder;
-  bool _isRecording = false;
   late FlutterSoundPlayer _player;
   String? _recordedFilePath;
   bool _isPlaying = false;
-  List<String> _suggestedMessages = [];
   late stt.SpeechToText _speech;
   bool _isListening = false;
+  final bool _isRecording = false;
 
   @override
   void initState() {
     super.initState();
+    singletonClass = SingletonClass();
+
     _recorder = FlutterSoundRecorder();
     _player = FlutterSoundPlayer();
     _initializeAudio();
-    _scrollToBottom();
-    Future.delayed(Duration(milliseconds: 300), () {
-      FocusScope.of(context).requestFocus(_focusNode);
-    });
-    Future.delayed(Duration.zero, () async {
-      await postMessages("");
-    });
     _speech = stt.SpeechToText();
+
+    // focus cursor and scroll
+    Future.delayed(const Duration(milliseconds: 300), () {
+      FocusScope.of(context).requestFocus(_focusNode);
+      _scrollToBottom();
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
+    // ✅ Moved here: use context safely for localization
+    if (singletonClass.chatMessages.isEmpty && !singletonClass.hasShownGreeting) {
+      singletonClass.chatMessages.add({
+        'sender': 'bot',
+        'text':
+        '${AppLocalizations.of(context)!.goodMorning} ${AppLocalizations.of(context)!.howCanIAssistYouToday}',
+      });
+      singletonClass.hasShownGreeting = true;
     _suggestedMessages = [
       AppLocalizations.of(context)!.tellMeAboutDocuments,
       AppLocalizations.of(context)!.showMyInfo,
@@ -66,6 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
       AppLocalizations.of(context)!.myDepartment,
       AppLocalizations.of(context)!.whoIsDeveloper,
     ];
+   }
   }
 
   @override
@@ -75,6 +89,30 @@ class _ChatScreenState extends State<ChatScreen> {
     _player.closePlayer();
     super.dispose();
   }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  void _addUserMessage(String message) {
+    setState(() {
+      singletonClass.chatMessages.add({'sender': 'user', 'text': message});
+    });
+    _scrollToBottom();
+  }
+
+  void _addBotMessage(String message) {
+    setState(() {
+      singletonClass.chatMessages.add({'sender': 'bot', 'text': message});
+    });
+    _scrollToBottom();
+  }
+
+
 
   Future<void> _initializeAudio() async {
     await Permission.microphone.request();
@@ -116,30 +154,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
   }
-
-  void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
-  }
-
-  void _addUserMessage(String message) {
-    setState(() {
-      _messages.add({'sender': 'user', 'text': message});
-    });
-    _scrollToBottom();
-  }
-
-  void _addBotMessage(String message) {
-    setState(() {
-      _messages.add({'sender': 'bot', 'text': message});
-    });
-    _scrollToBottom();
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +209,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       controller: _scrollController,
-                      itemCount: _messages.length + (isBotTyping ? 1 : 0),
+                      itemCount: singletonClass.chatMessages.length + (isBotTyping ? 1 : 0),
                       itemBuilder: (context, index) {
-                        if (isBotTyping && index == _messages.length) {
+                        if (isBotTyping && index ==  singletonClass.chatMessages.length) {
                           return Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -221,7 +235,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           );
                         }
 
-                        final message = _messages[index];
+                        final message = singletonClass.chatMessages[index];
                         final isUser = message['sender'] == 'user';
 
                         return Align(
@@ -246,18 +260,114 @@ class _ChatScreenState extends State<ChatScreen> {
                                     color: isUser ? NasColors.onTime : Colors.grey.shade300,
                                     borderRadius: BorderRadius.circular(18),
                                   ),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: isUser ? Colors.white : Colors.black,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // 💬 Main text
+                                      RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: isUser ? Colors.white : Colors.black,
+                                          ),
+                                          children: _parseMarkdown(message['text'] ?? ""),
+                                        ),
                                       ),
-                                      children: _parseMarkdown(message['text'] ?? ""),
-                                    ),
-                                  ),
 
+                                      // 📎 Attachment (if any)
+                                      if (!isUser && message['attachment'] != null) ...[
+                                        const SizedBox(height: 10),
+                                        Builder(
+                                          builder: (context) {
+                                            try {
+                                              final attachment = jsonDecode(message['attachment']!);
+                                              final url = attachment['filedownloadlink'];
+                                              final fileName = attachment['fileName'] ?? 'Document';
+
+                                              return Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.9),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(color: Colors.grey.shade400),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    // Tap anywhere except the download icon → open file viewer
+                                                    Expanded(
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          if (url != null && url.isNotEmpty) {
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder: (context) => FileViewerScreen(
+                                                                  url: url,
+                                                                  fileName: fileName,
+                                                                ),
+                                                              ),
+                                                            );
+                                                          } else {
+                                                            debugPrint('Invalid attachment URL');
+                                                          }
+                                                        },
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(Icons.insert_drive_file,
+                                                                color: Colors.blueAccent, size: 22),
+                                                            const SizedBox(width: 8),
+                                                            Expanded(
+                                                              child: Text(
+                                                                fileName,
+                                                                style: const TextStyle(
+                                                                  color: Colors.black87,
+                                                                  fontSize: 13,
+                                                                  fontWeight: FontWeight.w500,
+                                                                  decoration: TextDecoration.underline,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    const SizedBox(width: 8),
+
+                                                    // 🔽 Download button
+                                                    GestureDetector(
+                                                      onTap: () async {
+                                                        if (url != null && url.isNotEmpty) {
+                                                          final uri = Uri.parse(url);
+                                                          if (await canLaunchUrl(uri)) {
+                                                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                          } else {
+                                                            debugPrint('Could not launch $url');
+                                                          }
+                                                        } else {
+                                                          debugPrint('Invalid download URL');
+                                                        }
+                                                      },
+                                                      child: const Icon(Icons.download,
+                                                          color: Colors.blueAccent, size: 22),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              debugPrint('Error parsing attachment: $e');
+                                              return const SizedBox.shrink();
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                               ),
+
                               if (isUser) const SizedBox(width: 8),
                               if (isUser)
                                 CircleAvatar(
@@ -273,29 +383,30 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                     ),
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-                          child: Wrap(
-                            spacing: 5,
-                            runSpacing: 5,
-                            children: _suggestedMessages.map((suggestion) {
-                              return ActionChip(
-                                label: Text(suggestion),
-                                backgroundColor: Colors.grey.shade200,
-                                onPressed: () {
-                                  postMessages(suggestion);
-                                },
-                              );
-                            }).toList(),
+                  if (_suggestedMessages.isNotEmpty)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                            child: Wrap(
+                              spacing: 5,
+                              runSpacing: 5,
+                              children: _suggestedMessages.map((suggestion) {
+                                return ActionChip(
+                                  label: Text(suggestion),
+                                  backgroundColor: Colors.grey.shade200,
+                                  onPressed: () {
+                                    postMessages(suggestion);
+                                  },
+                                );
+                              }).toList(),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -316,8 +427,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             focusNode: _focusNode,
                             controller: _messageController,
                             cursorColor: Colors.grey,
-                            decoration: const InputDecoration(
-                              hintText: "Type a message...",
+                            decoration:  InputDecoration(
+                              hintText: AppLocalizations.of(context)!.typeAMessage,
                               border: InputBorder.none,
                             ),
                             onSubmitted: (_) => postMessages(_messageController.text),
@@ -361,10 +472,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         isBotTyping
                             ? IconButton(
-                          icon: Image.asset(
-                            'images/send.png',
-                            height: 24,
-                            width: 24,
+                          icon: Icon(
+                            Icons.stop_circle_outlined,
+                            size: 28,
                             color: Colors.grey,
                           ),
                           onPressed: null,
@@ -441,27 +551,35 @@ class _ChatScreenState extends State<ChatScreen> {
   ///CHAT API CALL
   Future<void> postMessages(String text) async {
     String userMessage = text.trim();
-  if (userMessage.isNotEmpty) {
-    _addUserMessage(userMessage);
-    _messageController.clear();
-  }
+    if (userMessage.isNotEmpty) {
+      _addUserMessage(userMessage);
+      _messageController.clear();
+    }
+    if (userMessage.isEmpty) return;
+    var uuid = const Uuid();
+    var v1 = uuid.v1();
+    String? employeeID = singletonClass.getJWTModel()?.empId;
+    String? tenantID = singletonClass.tenantId;
+    final currentLang =
+        Provider.of<LanguageChangeController>(context, listen: false)
+            .appLocale
+            ?.languageCode ??
+            'en';
 
-  String? employeeID = singletonClass.getJWTModel()?.empId;
-  final currentLang = Provider.of<LanguageChangeController>(context, listen: false).appLocale?.languageCode ?? 'en';
-
-
-  Map<String, dynamic> data = {
-      "request": {
-        "employee_id": employeeID,
+    final payload = {
+      "chatInput": jsonEncode({
+        "tenantID": tenantID,
+        "empID": employeeID,
+        "userLang": currentLang,
         "message": userMessage,
-        "language": currentLang,
-      },
+      }),
+      "sessionId": v1,
     };
 
-    String body = json.encode(data);
-    debugPrint("Request JSON POST: $body");
+    debugPrint("Request JSON POST: ${json.encode(payload)}");
 
-    var uri = Uri.parse('https://madir.nashrms.com/chat');
+    var uri = Uri.parse(
+        'https://n8n.nashrms.com/webhook/c6728eb9-031c-4d3a-994f-e5340e3bddb7/chat');
 
     try {
       setState(() {
@@ -470,22 +588,50 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final response = await http.post(
         uri,
-        body: body,
-        headers: {
-          "Content-Type": "application/json",
-          "accept": "application/json",
-        },
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
       );
 
       final decodedResponse = json.decode(utf8.decode(response.bodyBytes));
       debugPrint("MESSAGE RESPONSE: $decodedResponse");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
+      if (responseCode == 200 || decodedResponse.containsKey('output')) {
+        final output = decodedResponse['output'] ?? decodedResponse;
 
-      if (responseCode == 200) {
-        String? botReply = decodedResponse['response'];
+        String? botReply = output?['response'];
+
+        // ✅ FIX: Handle attachment as Map or List safely
+        dynamic attachment = output?['attachment'];
+        List<dynamic>? suggestions = output?['suggestion'];
+
         if (botReply != null && botReply.isNotEmpty) {
-          _addBotMessage(botReply);
+          setState(() {
+            final message = {'sender': 'bot', 'text': botReply};
+
+            if (attachment != null) {
+              if (attachment is Map<String, dynamic> &&
+                  attachment['filedownloadlink'] != null) {
+                message['attachment'] = jsonEncode(attachment);
+              } else if (attachment is List &&
+                  attachment.isNotEmpty &&
+                  attachment.first is Map &&
+                  attachment.first['filedownloadlink'] != null) {
+                // ✅ handle case where attachments is a list of files
+                message['attachment'] = jsonEncode(attachment.first);
+              }
+            }
+
+            singletonClass.chatMessages.add(message);
+
+            if (suggestions != null && suggestions.isNotEmpty) {
+              _suggestedMessages = suggestions.map((s) => s.toString()).toList();
+            } else {
+              _suggestedMessages = [];
+            }
+          });
+
+          _scrollToBottom();
         } else {
           _addBotMessage("Sorry, I couldn't understand that.");
         }
@@ -496,11 +642,14 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint("POST MESSAGE ERROR: $e");
       _addBotMessage("Network error. Please try again.");
     } finally {
-      setState(() {
-        isBotTyping = false;
-      });
+      if (mounted) {
+        setState(() {
+          isBotTyping = false;
+        });
+      }
     }
   }
+
 
   //RICH TEXT METHOD
   List<TextSpan> _parseMarkdown(String text) {

@@ -2885,7 +2885,7 @@ abstract class AppLocalizations {
   /// No description provided for @pleaseFillAllFields.
   ///
   /// In en, this message translates to:
-  /// **'Please fill all fields'**
+  /// **'Please fill all fields before continuing.'**
   String get pleaseFillAllFields;
 
   /// No description provided for @minutes.
@@ -4015,6 +4015,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'me'**
   String get me;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'👋 Good Morning!'**
+  String get goodMorning;
+
+  /// No description provided for @howCanIAssistYouToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I assist you today?'**
+  String get howCanIAssistYouToday;
+
+  /// No description provided for @onBoarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Onboarding'**
+  String get onBoarding;
+
+  /// No description provided for @employeeOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee Onboarding'**
+  String get employeeOnboarding;
+
+  /// No description provided for @pleaseSelectAllFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select all fields before continuing.'**
+  String get pleaseSelectAllFields;
+
+  /// No description provided for @pleaseEnterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email.'**
+  String get pleaseEnterValidEmail;
+
+  /// No description provided for @companyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Company Info'**
+  String get companyInfo;
+
+  /// No description provided for @personalAndEducationalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal & Educational Info'**
+  String get personalAndEducationalInfo;
+
+  /// No description provided for @professionalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional Info'**
+  String get professionalInfo;
+
+  /// No description provided for @educationSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Education & Salary'**
+  String get educationSalary;
+
+  /// No description provided for @selectCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Company'**
+  String get selectCompany;
+
+  /// No description provided for @selectDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Department'**
+  String get selectDepartment;
+
+  /// No description provided for @selectSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Supervisor'**
+  String get selectSupervisor;
+
+  /// No description provided for @selectShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Shift'**
+  String get selectShift;
+
+  /// No description provided for @firstName.
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get firstName;
+
+  /// No description provided for @enterFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter first name'**
+  String get enterFirstName;
+
+  /// No description provided for @lastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get lastName;
+
+  /// No description provided for @enterLastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter last name'**
+  String get enterLastName;
+
+  /// No description provided for @selectNationality.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Nationality'**
+  String get selectNationality;
+
+  /// No description provided for @pakistani.
+  ///
+  /// In en, this message translates to:
+  /// **'Pakistani'**
+  String get pakistani;
+
+  /// No description provided for @indian.
+  ///
+  /// In en, this message translates to:
+  /// **'Indian'**
+  String get indian;
+
+  /// No description provided for @bangladeshi.
+  ///
+  /// In en, this message translates to:
+  /// **'Bangladeshi'**
+  String get bangladeshi;
+
+  /// No description provided for @saudiaArabia.
+  ///
+  /// In en, this message translates to:
+  /// **'Saudi Arabia'**
+  String get saudiaArabia;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// No description provided for @nationalId.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID'**
+  String get nationalId;
+
+  /// No description provided for @enterNationalId.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter national ID'**
+  String get enterNationalId;
+
+  /// No description provided for @iqamaNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama Number'**
+  String get iqamaNumber;
+
+  /// No description provided for @enterIqamaNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter iqama number'**
+  String get enterIqamaNumber;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// No description provided for @enterPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter phone number'**
+  String get enterPhoneNumber;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @enterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter email'**
+  String get enterEmail;
+
+  /// No description provided for @enterAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address'**
+  String get enterAddress;
+
+  /// No description provided for @dob.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dob;
+
+  /// No description provided for @selectReligion.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Religion'**
+  String get selectReligion;
+
+  /// No description provided for @islam.
+  ///
+  /// In en, this message translates to:
+  /// **'Islam'**
+  String get islam;
+
+  /// No description provided for @christianity.
+  ///
+  /// In en, this message translates to:
+  /// **'Christianity'**
+  String get christianity;
+
+  /// No description provided for @hinduism.
+  ///
+  /// In en, this message translates to:
+  /// **'Hinduism'**
+  String get hinduism;
+
+  /// No description provided for @otherReligion.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherReligion;
+
+  /// No description provided for @single.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get single;
+
+  /// No description provided for @married.
+  ///
+  /// In en, this message translates to:
+  /// **'Married'**
+  String get married;
+
+  /// No description provided for @divorced.
+  ///
+  /// In en, this message translates to:
+  /// **'Divorced'**
+  String get divorced;
+
+  /// No description provided for @widowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Widowed'**
+  String get widowed;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @enterUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter username'**
+  String get enterUsername;
+
+  /// No description provided for @enterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get enterPassword;
+
+  /// No description provided for @profilePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Picture'**
+  String get profilePicture;
+
+  /// No description provided for @chooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose File'**
+  String get chooseFile;
+
+  /// No description provided for @noFileChosen.
+  ///
+  /// In en, this message translates to:
+  /// **'No file chosen'**
+  String get noFileChosen;
+
+  /// No description provided for @professionalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional Information'**
+  String get professionalInformation;
+
+  /// No description provided for @hierarchyGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Hierarchy Group'**
+  String get hierarchyGroup;
+
+  /// No description provided for @selectHierarchyGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Hierarchy Group'**
+  String get selectHierarchyGroup;
+
+  /// No description provided for @enterDesignation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter designation'**
+  String get enterDesignation;
+
+  /// No description provided for @selectRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Role'**
+  String get selectRole;
+
+  /// No description provided for @junior.
+  ///
+  /// In en, this message translates to:
+  /// **'Junior'**
+  String get junior;
+
+  /// No description provided for @mid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mid'**
+  String get mid;
+
+  /// No description provided for @senior.
+  ///
+  /// In en, this message translates to:
+  /// **'Senior'**
+  String get senior;
+
+  /// No description provided for @contractType.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Type'**
+  String get contractType;
+
+  /// No description provided for @permanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent'**
+  String get permanent;
+
+  /// No description provided for @temporary.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary'**
+  String get temporary;
+
+  /// No description provided for @endOfContract.
+  ///
+  /// In en, this message translates to:
+  /// **'End of Contract'**
+  String get endOfContract;
+
+  /// No description provided for @educationalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Educational Info'**
+  String get educationalInfo;
+
+  /// No description provided for @degreeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree Name'**
+  String get degreeName;
+
+  /// No description provided for @enterDegreeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Degree Name'**
+  String get enterDegreeName;
+
+  /// No description provided for @degreeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree Type'**
+  String get degreeType;
+
+  /// No description provided for @enterDegreeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Degree Type'**
+  String get enterDegreeType;
+
+  /// No description provided for @basicSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Salary'**
+  String get basicSalary;
+
+  /// No description provided for @enterBasicSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Basic Salary'**
+  String get enterBasicSalary;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// No description provided for @selectCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get selectCurrency;
+
+  /// No description provided for @salaryPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Period'**
+  String get salaryPeriod;
+
+  /// No description provided for @selectSalaryPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Salary Period'**
+  String get selectSalaryPeriod;
+
+  /// No description provided for @enterBankName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Bank Name'**
+  String get enterBankName;
+
+  /// No description provided for @accountNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Account No'**
+  String get accountNo;
+
+  /// No description provided for @enterAccountNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Account No'**
+  String get enterAccountNo;
+
+  /// No description provided for @registerBiometrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Register Biometrics'**
+  String get registerBiometrics;
+
+  /// No description provided for @pleaseSelectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a device'**
+  String get pleaseSelectDevice;
+
+  /// No description provided for @selectBiometricDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Biometric Device'**
+  String get selectBiometricDevice;
+
+  /// No description provided for @selectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Device'**
+  String get selectDevice;
+
+  /// No description provided for @salaryInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Info'**
+  String get salaryInfo;
+
+  /// No description provided for @salaryInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Information'**
+  String get salaryInformation;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @employeeIsRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee is registered'**
+  String get employeeIsRegistered;
+
+  /// No description provided for @toEnrollThisEmployeeOnBiometricDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'To enroll this employee on biometric device'**
+  String get toEnrollThisEmployeeOnBiometricDevice;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
 }
 
 class _AppLocalizationsDelegate
