@@ -483,6 +483,7 @@ class SingletonClass {
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var branch = TeamModel.fromJson(responseBody);
+      teamBranchDataList.clear();
       teamBranchDataList.add(branch);
       return branch;
     }
@@ -530,6 +531,7 @@ class SingletonClass {
       if (response.statusCode == 200) {
         var responseBody = json.decode(response.body);
         var branch = BranchesDataModel.fromJson(responseBody);
+        branchesDataList.clear();
         branchesDataList.add(branch);
         return branch;
       } else {
@@ -567,7 +569,7 @@ class SingletonClass {
     String? employeeId = getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse(
-        'https://dev.nashrms.com/api/chat-system/user-chats/$employeeId');
+        '$baseURL/chat-system/user-chats/$employeeId');
     var response = await client.get(uri, headers: getHeaders());
     if (response.statusCode == 200) {
       print("CHAT'S RESPONSE${response.body}");

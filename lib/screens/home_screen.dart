@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    singletonClass.getChats();
     singletonClass.getRoleAndAccessData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
@@ -440,6 +439,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    /// Check for onboarding
+    final hasOnboarding = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Onboarding & Offboarding") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
     /// Check for Manage Shifts - in ManageTime submenu
     final hasManageShifts = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
@@ -627,11 +637,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               }
                               if (item["label"] ==
                                   AppLocalizations.of(context)!
-                                      .onBoarding && (singletonClass.getJWTModel()?.grade == "L0" ||
-                                  singletonClass.getJWTModel()?.grade == "L1" ||
-                                  singletonClass.getJWTModel()?.grade == "L2"
-                              )) {
-                                return true;
+                                      .onBoarding && !hasOnboarding) {
+                                return false;
                               }
                               if (item["label"] ==
                                       AppLocalizations.of(context)!
@@ -896,6 +903,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final title = (e.title ?? '').toLowerCase();
       if (title == 'dashboard' && e.hidden == false) {
         return e.subMenu?.any((sub) => sub.showSocketNotifications == true) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for onboarding
+    final hasOnboarding = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Onboarding & Offboarding") &&
+            sub.hidden == false) ??
             false;
       }
       return false;
@@ -1417,6 +1435,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               selectedBranchId = null;
                                               singletonClass.branchID = null;
                                               singletonClass.branchName = null;
+                                              singletonClass.getBranchesData();
                                             });
                                           },
                                         ),
@@ -1463,6 +1482,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         onChanged: (value) { setState(() {
                                                   selectedBranchId = value;
                                                   singletonClass.branchID = selectedBranchId;
+                                                  singletonClass.getTeamBranchData();
                                                   print(singletonClass.branchID);
                                                   final selectedBranch = singletonClass.availableBranches
                                                           .firstWhere((branch) => branch.branchId.toString() == value);
@@ -2824,7 +2844,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" ||singletonClass.getJWTModel()?.grade == "L2")
+                                  if(hasOnboarding)
                                   Column(
                                     children: [
                                       GestureDetector(
