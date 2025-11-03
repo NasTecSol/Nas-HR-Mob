@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/screens/employee_profile_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../request_controller/branch_model.dart';
+import 'branch_employee_profile_screen.dart';
 
 class TeamScreen extends StatefulWidget {
   const TeamScreen({super.key});
@@ -31,6 +33,7 @@ class _TeamScreenState extends State<TeamScreen> {
   int _selectedOptionIndex = 0;
   String? reportingManagerId;
   List<Teams> filteredTeams = [];
+  List<Employees> filteredBranchTeams = [];
   List<Teams> filteredUnderTeams = [];
 
   bool _isTeamChecked = false;
@@ -121,19 +124,21 @@ class _TeamScreenState extends State<TeamScreen> {
     // Run access checks to set dropdown + team mode
     teamCheck();
 
-    // Decide which data to load
+    /// Decide which data to load
     if (_isTeamChecked == false && singletonClass.branchID != null) {
-      // ✅ Branch Mode (when branch selected)
-      final data = _getBranchEmployees(singletonClass.branchID!);
+      /// ✅ Branch Mode (when branch selected)
+      final data = _getBranchEmployees();
       setState(() {
-        filteredTeams = data['ownTeams']!;
+        filteredBranchTeams = data['ownTeams']!;
+        filteredTeams = [];
         filteredUnderTeams = [];
       });
     } else {
-      // ✅ Team Mode (when team == true OR branch not selected)
+      /// ✅ Team Mode (when team == true OR branch not selected)
       final branchDataList = singletonClass.branchDataList;
       final data = getFilteredTeams(branchDataList, reportingManagerId!);
       setState(() {
+        filteredBranchTeams = [];
         filteredTeams = data['ownTeams']!;
         filteredUnderTeams = data['underTeams']!;
       });
@@ -145,32 +150,26 @@ class _TeamScreenState extends State<TeamScreen> {
   }
 
   /// 🔹 Returns all employees for a selected branch
-  Map<String, List<Teams>> _getBranchEmployees(String branchId) {
-    List<Teams> branchTeams = [];
+  Map<String, List<Employees>> _getBranchEmployees() {
+    List<Employees> branchTeams = [];
 
-    final branchData = singletonClass.branchDataList.firstWhere(
-          (b) => b.data?.branch?.id == branchId,
-      orElse: () => singletonClass.branchDataList.first,
-    );
+    final branchData = singletonClass.teamBranchDataList.first;
 
-    List<TeamData> employees = [];
+    List<Employees> employees = [];
 
-    for (var deptDetails in branchData.data?.branch?.departmentDetails ?? []) {
-      for (var department in deptDetails.departments ?? []) {
-        for (var team in department.teams ?? []) {
-          for (var member in team.teamData ?? []) {
-            employees.add(member);
-          }
-        }
-      }
+    // Collect employees directly from branchData
+    for (var emp in branchData.data?.employees ?? []) {
+      employees.add(emp);
     }
 
+    // Add all employees to branchTeams
     if (employees.isNotEmpty) {
-      branchTeams.add(Teams(teamId: 'Branch_$branchId', teamData: employees));
+      branchTeams.addAll(employees);
     }
 
     return {'ownTeams': branchTeams, 'underTeams': []};
   }
+
 
   /// 🔹 Filters teams normally (when team == true)
   Map<String, List<Teams>> getFilteredTeams(
@@ -373,7 +372,7 @@ class _TeamScreenState extends State<TeamScreen> {
                           }
                           _isTeamChecked = false;
                           _selectedOptionIndex = 2;
-                          singletonClass.getBranchData();
+                          singletonClass.getTeamBranchData();
                         });
                         await initData();
                       },
@@ -757,21 +756,21 @@ class _TeamScreenState extends State<TeamScreen> {
                         ),
                       ))
                 else ...[
-                  filteredTeams.first.teamData!.isNotEmpty
+                  filteredBranchTeams.isNotEmpty
                       ? Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(5),
-                      itemCount: filteredTeams.first.teamData!.length,
+                      itemCount: filteredBranchTeams.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final team = filteredTeams.first.teamData![index];
+                        final team = filteredBranchTeams[index];
                         String imageUrl = images[index % images.length];
-                        if (singletonClass.getJWTModel()?.employeeId == team.employeeId) {
+                        if (singletonClass.getJWTModel()?.employeeId == team.id) {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
                         if (isSearching) {
                           final matchesName = team.userName?.toLowerCase().contains(searchText) ?? false;
-                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+                          final matchesId = team.employeeInfo!.first.empId?.toLowerCase().contains(searchText) ?? false;
 
                           if (!matchesName && !matchesId) {
                             return const SizedBox.shrink(); // hide if neither matches
@@ -785,8 +784,8 @@ class _TeamScreenState extends State<TeamScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        EmployeeProfileScreen(
-                                          teamData: team,
+                                        BranchEmployeeProfileScreen(
+                                          employees: team,
                                           isTeamMate: true,
                                         ),
                                   ),
@@ -828,7 +827,7 @@ class _TeamScreenState extends State<TeamScreen> {
                                           SizedBox(
                                             width: 270,
                                             child: Text(
-                                              "${team.designation}",
+                                              "${team.employeeInfo!.first.designation}",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
@@ -1027,7 +1026,7 @@ class _TeamScreenState extends State<TeamScreen> {
       },
       child: SizedBox(
         height: 65,
-        width: 160,
+        width: 170,
         child: Card(
           color:
               _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
@@ -1107,7 +1106,7 @@ class _TeamScreenState extends State<TeamScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${filteredTeams.isNotEmpty && filteredTeams.first.teamData != null ? filteredTeams.first.teamData!.length: 0}', // Request List Notification count
+                    '${filteredBranchTeams.isNotEmpty ? filteredBranchTeams.length: 0}', // Request List Notification count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
