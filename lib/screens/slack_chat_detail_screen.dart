@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/screens/slack_screen.dart';
@@ -75,17 +76,68 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
 
 
   void _setupChatListeners() {
+    final currentRoomId = widget.chatHistory?.id?.toString() ?? "";
+    final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
+
     socket!.on("receiveMessage", (data) async {
       if (!mounted) return;
-      debugPrint("💬 New message: $data");
-      setState(() => messages.add(ChatHistory.fromJson(data)));
-      _scrollToBottom();
-      final msg = ChatHistory.fromJson(data);
-      final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
-      if (msg.senderId.toString() != currentUserId) {
-        _playReceiveSound();
+
+      try {
+        final msg = ChatHistory.fromJson(data);
+        final incomingRoomId = data["_id"]?.toString() ?? "";
+
+        debugPrint("💬 New message for room: $incomingRoomId (current: $currentRoomId)");
+
+        // 🧩 Show only if this message belongs to the open chat room
+        if (incomingRoomId == currentRoomId) {
+          setState(() => messages.add(msg));
+          _scrollToBottom();
+
+          // 🔔 Play sound only if message is from another user
+          if (msg.senderId.toString() != currentUserId) {
+            _playReceiveSound();
+
+            // ✅ Mark messages as read for this room only
+            socket!.emit("markAsRead", {
+              "_id": currentRoomId,
+              "userId": currentUserId,
+              "tenantId": singletonClass.tenantId,
+            });
+          }
+        } else {
+          debugPrint("⚠️ Message ignored — belongs to another room ($incomingRoomId)");
+        }
+      } catch (e, st) {
+        debugPrint("⚠️ Error handling receiveMessage: $e\n$st");
       }
     });
+    socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        log("🔄 messagesMarkedAsRead event received: $data");
+
+        if (!mounted) return;
+
+        final myUserId = singletonClass.getJWTModel()?.employeeId?.toString();
+        final senderId = data["userId"]?.toString();
+
+        // only act if this event isn't from me
+        if (senderId != myUserId) {
+          setState(() {
+            // Mark only the last received message as read (not all)
+            if (messages.isNotEmpty) {
+              messages.last.isRead = true;
+            }
+          });
+          log("✅ Last message marked as read (triggered by $senderId)");
+        } else {
+          log("🟦 Ignored self markAsRead event");
+        }
+      } catch (e, st) {
+        log("⚠️ Error refreshing messages after markAsRead: $e\n$st");
+      }
+    });
+
+
   }
 
   void _joinRoom() {
@@ -253,6 +305,7 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                   itemBuilder: (context, i) {
                     final msg = messages[i];
                     final isMe = msg.senderId.toString() == currentUserId;
+                    final isGroup = widget.chatHistory!.roomType == "group";
                     final sender = widget.chatHistory?.participants
                         ?.where((p) => p.id.toString() == msg.senderId.toString())
                         .firstOrNull;
@@ -328,7 +381,7 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isMe
-                                      ? NasColors.green
+                                      ? Colors.grey[400]
                                       : (roomType == "group"
                                       ? senderColor.withOpacity(0.8)
                                       : NasColors.onTime),
@@ -348,9 +401,23 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                                       style: GoogleFonts.inter(fontSize: 16, color: Colors.white),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      timeLabel,
-                                      style: GoogleFonts.inter(fontSize: 10, color: Colors.white70),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          timeLabel,
+                                          style: GoogleFonts.inter(fontSize: 10, color: Colors.white70),
+                                        ),
+                                        if (isMe && !isGroup) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            msg.isRead == true ? Icons.done_all : Icons.done,
+                                            size: 14,
+                                            color: msg.isRead == true ? Colors.blue : Colors.white70,
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),

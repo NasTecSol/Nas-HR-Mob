@@ -23,7 +23,7 @@ class ManageTimeScreen extends StatefulWidget {
 class _ManageTimeScreenState extends State<ManageTimeScreen> {
   int _selectedOptionIndex = 0;
   SingletonClass singletonClass = SingletonClass();
-  bool _isChecked = true;
+  bool _isTeamChecked = true;
   bool isSearching = false;
   int selectedEmployeeIndex = 0;
   String? selectedEMPID;
@@ -31,6 +31,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   TextEditingController searchController = TextEditingController();
   final List<Map<String, String>> timeTableShiftEmployees = [];
   Future<void>? _shiftFuture;
+  bool showDropdown = false;
+  bool showTeamCheckbox = false;
 
   @override
   void initState() {
@@ -40,11 +42,69 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     getShiftsFromBranches();
   }
 
-  void _teamCheck(){
-    if (singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty){
-      _isChecked = false ;
+  void _teamCheck() {
+    /// Safely find the dashboard module
+    final dashboardModule = singletonClass
+        .roleAndAccessModelDataList
+        .first
+        .data!
+        .uiSettings!
+        .uiModules!
+        .firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+
+    /// Default flags
+    showDropdown = false;
+    showTeamCheckbox = false;
+    _isTeamChecked = false;
+
+    final access = dashboardModule.accessLevel;
+    final companies = access?.companies ?? [];
+
+    final hasCompanies = companies.isNotEmpty;
+    final hasBranches =
+        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final teamEnabled = access?.team == true;
+
+    /// 🧩 CASE 1:
+    /// Companies + branches available + team == true
+    if (hasCompanies && hasBranches && teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = true;
+
+      if (singletonClass.branchID != null &&
+          singletonClass.branchID!.isNotEmpty) {
+        _isTeamChecked = false;
+      } else {
+        _isTeamChecked = true;
+      }
     }
-  }
+
+    /// 🧩 CASE 2:
+    /// Companies + branches available + team == false
+    else if (hasCompanies && hasBranches && !teamEnabled) {
+      showDropdown = true;
+      showTeamCheckbox = false;
+      _isTeamChecked = false;
+    }
+
+    /// 🧩 CASE 3:
+    /// No companies + no branches + team == true
+    else if (!hasCompanies && !hasBranches && teamEnabled) {
+      showDropdown = false;
+      showTeamCheckbox = true;
+      _isTeamChecked = true;
+    }
+
+    /// 🧩 CASE 4:
+    /// No companies + no branches + team == false
+    else {
+      showDropdown = false;
+      showTeamCheckbox = false;
+      _isTeamChecked = false;
+    }
+    }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,9 +162,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               if (isSearching == false) ...[
                 if(_selectedOptionIndex == 0)...[
-                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                      singletonClass.getJWTModel()?.grade == 'L1' ||
-                      singletonClass.getJWTModel()?.grade == "L2")
+                  if (showDropdown)
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0, right: 10),
                       child: PopupMenuButton<String>(
@@ -116,27 +174,26 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                           setState(() {
                             timeTableShiftEmployees.clear();
                             singletonClass.branchID = value;
-                            final branch = singletonClass.branchesDataList.first.data?.firstWhere(
-                                    (branch) => branch.branchCompanyId == value);
-                            singletonClass.branchName = branch?.branchName ?? "Unknown Branch";
-                            _isChecked = false;
+                            final selectedBranch = singletonClass.availableBranches
+                                .firstWhere((branch) => branch.branchId.toString() == value);
+                            singletonClass.branchName = selectedBranch.branchName ?? '';
+                            _isTeamChecked = false;
                             /// UPDATE _shiftFuture so FutureBuilder gets refreshed
                             _shiftFuture = fetchAndSetShiftDetails();
                             getShiftsFromBranches();
                           });
                         },
                         itemBuilder: (BuildContext context) {
-                          final branchList = singletonClass.branchesDataList.first.data;
-                          if (branchList == null || branchList.isEmpty) {
+                          final branchList = singletonClass.availableBranches.isNotEmpty
+                              ? singletonClass.availableBranches : [];
+                          if (branchList.isEmpty) {
                             return [];
                           }
-                          return branchList
-                              .map((branch) => PopupMenuItem<String>(
-                            value: branch.branchCompanyId,
-                            child: Text(
-                                branch.branchName ?? "Unknown Branch"),
-                          ))
-                              .toList();
+
+                          return branchList.map((branch) => PopupMenuItem<String>(
+                            value: branch.branchId,
+                            child: Text(branch.branchName ?? "---"),
+                          )).toList();
                         },
                         child: Container(
                           height: 49,
@@ -184,9 +241,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                       ),
                     ),
                   Spacer(),
-                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                      singletonClass.getJWTModel()?.grade == 'L1' ||
-                      singletonClass.getJWTModel()?.grade == "L2")
+                  if (showTeamCheckbox)
                     Padding(
                       padding: const EdgeInsets.all(0),
                       child: Row(
@@ -199,12 +254,12 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                                 color: NasColors.darkBlue),
                           ),
                           Checkbox(
-                            value: _isChecked,
+                            value: _isTeamChecked,
                             activeColor: NasColors.onTime,
                             onChanged:(singletonClass.branchID != null) ? (bool? value) {
                               setState(() {
-                                _isChecked = value ?? false;
-                                if (_isChecked == true) {
+                                _isTeamChecked = value ?? false;
+                                if (_isTeamChecked == true) {
                                   timeTableShiftEmployees.clear();
                                   singletonClass.branchID = null;
                                   singletonClass.branchName = null;
@@ -816,19 +871,29 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
       onTap: () {
         setState(() {
           _selectedOptionIndex = index;
+
           if (index == 0) {
             _shiftFuture = fetchAndSetShiftDetails();
             getShiftsFromBranches();
             isSearching = false;
           } else {
             isSearching = true;
-            final employee = timeTableShiftEmployees[0];
-            print(employee['employeeId']);
-            selectedEMPID = employee['employeeId'];
-            timeTableFuture = getTimeTable(selectedEMPID!);
+
+            // ✅ Only proceed if we actually have employees
+            if (timeTableShiftEmployees.isNotEmpty) {
+              final employee = timeTableShiftEmployees[0];
+              print(employee['employeeId']);
+              selectedEMPID = employee['employeeId'];
+              timeTableFuture = getTimeTable(selectedEMPID!);
+            } else {
+              print("⚠️ No employees found in timeTableShiftEmployees");
+              selectedEMPID = null;
+              timeTableFuture = null;
+            }
           }
         });
       },
+
       child: SizedBox(
         height: 70,
         width: 140,
@@ -869,7 +934,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   /// API CALLS
   Future<void> fetchAndSetShiftDetails() async {
     String? branchId;
-    if (_isChecked == false) {
+    if (_isTeamChecked == false) {
       branchId = singletonClass.branchID?.isNotEmpty == true
           ? singletonClass.branchID
           : singletonClass.getJWTModel()?.branchId;
@@ -960,7 +1025,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
   /// UPDATE SHIFT DATA
   Future<void> getShiftsFromBranches() async {
     String? branchId;
-    if(_isChecked == false){
+    if(_isTeamChecked == false){
       branchId = singletonClass.branchID?.isNotEmpty == true
           ? singletonClass.branchID
           : singletonClass.getJWTModel()?.branchId;

@@ -10,12 +10,12 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
-import 'package:nashr/screens/chat_screen.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
+import 'package:nashr/screens/onboarding_screen.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/slack_screen.dart';
@@ -66,20 +66,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    singletonClass.getRoleAndAccessData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
     SocketService2().initSocket();
-    final uiSettings =
-        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasSocket =
-        uiSettings.any((e) => e.title == "socket" && e.hidden == false);
-    if (hasSocket) {
-      final locale = WidgetsBinding.instance.window.locale.languageCode;
-      SocketService().initializeSocket('${singletonClass.tenantId}', locale);
-    }
+    setState(() {
+      singletonClass.getChats();
+      _calculateUnreadCount();
+    });
+    final locale = WidgetsBinding.instance.window.locale.languageCode;
+    SocketService().initializeSocket('${singletonClass.tenantId}', locale);
     _draggableScrollableController.addListener(() {
       if (mounted) {
         setState(() {
@@ -89,6 +88,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
       }
     });
+  }
+
+  void _calculateUnreadCount() {
+    try {
+      if (singletonClass.slackDataList.isEmpty ||
+          singletonClass.slackDataList.first.data == null ||
+          singletonClass.slackDataList.first.data!.isEmpty) {
+        debugPrint("⚠️ No chat data available in singleton");
+        singletonClass.unreadCount = 0;
+        return;
+      }
+      final allChats = singletonClass.slackDataList.first.data!;
+      final userId = singletonClass.getJWTModel()?.employeeId;
+
+      final unreadChats = allChats.where((chat) {
+        // Only consider direct rooms
+        if (chat.roomType != "direct") return false;
+
+        // Ensure chat has messages
+        final messages = chat.chatHistory ?? [];
+
+        // Only count if there is at least one unread message not sent by the user
+        return messages.any((m) => m.isRead == false && m.senderId != userId);
+      }).toList();
+
+      singletonClass.unreadCount = unreadChats.length;
+
+      debugPrint("✅ Direct chats with unread messages: ${unreadChats.length}");
+    } catch (e) {
+      debugPrint("⚠️ Error counting unread chats: $e");
+      setState(() => singletonClass.unreadCount = 0);
+    }
   }
 
   void startWorkTimer() {
@@ -156,7 +187,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       // 🔹 Case 1: Only check-in available → running session
-      if (checkInTime != null && checkInTime.isNotEmpty &&
+      if (checkInTime != null &&
+          checkInTime.isNotEmpty &&
           (checkOutTime == null || checkOutTime.isEmpty)) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
@@ -164,7 +196,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       // 🔹 Case 2: Only checkout available → no active session
-      if (checkOutTime != null && checkOutTime.isNotEmpty &&
+      if (checkOutTime != null &&
+          checkOutTime.isNotEmpty &&
           (checkInTime == null || checkInTime.isEmpty)) {
         stopWorkTimer();
         _updateWorkedTime();
@@ -172,8 +205,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       // 🔹 Case 3: Both checkin & checkout available → check latest raw biometric
-      if (checkInTime != null && checkOutTime != null &&
-          checkInTime.isNotEmpty && checkOutTime.isNotEmpty) {
+      if (checkInTime != null &&
+          checkOutTime != null &&
+          checkInTime.isNotEmpty &&
+          checkOutTime.isNotEmpty) {
         String? lastBioType;
         DateTime? lastBioTimestamp;
 
@@ -203,14 +238,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       stopWorkTimer();
       _displayWorkedHours = "00:00:00";
     } catch (e) {
-      print("Error in calculateTodayWorkedTime: $e");
       _displayWorkedHours = '00:00:00';
       stopWorkTimer();
     }
   }
-
-
-
 
   @override
   void dispose() {
@@ -367,20 +398,95 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   OverlayEntry? _overlayEntry2;
 
   OverlayEntry _createViewAllOverlay() {
-    final uiSettings =
-        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasDocuments =
-        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
-    final hasTeams =
-        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
-    final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
-    final hasAssets =
-        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
-    final hasManageShifts = uiSettings
-        .any((e) => e.title == "manageShifts" || e.title == "manageShift");
-    final hasComplaints = uiSettings.any((e) => e.title == "complaints");
-    final hasPenaltiesAndFines =
-        uiSettings.any((e) => e.title == "penaltiesAndFines");
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+                .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+            [])
+        : [];
+
+    /// Check for Documents module
+    final hasDocuments = uiSettings.any((e) =>
+        (e.title == "Document" || e.title == "Documents") && e.hidden == false);
+
+    /// Check for Teams module
+    final hasTeams = uiSettings.any(
+        (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
+
+    /// Check for Assets module
+    final hasAssets = uiSettings.any((e) =>
+        (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
+        e.hidden == false);
+
+    /// Check for Complaints - in Approval submenu
+    final hasComplaints = uiSettings.any((e) {
+      if (e.title == "Approval" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Complaints" || sub.title == "complaints") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Penalties and Fines - in Approval submenu
+    final hasPenaltiesAndFines = uiSettings.any((e) {
+      if (e.title == "Approval" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for onboarding
+    final hasOnboarding = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Onboarding & Offboarding") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Manage Shifts - in ManageTime submenu
+    final hasManageShifts = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Manage Shifts" || sub.title == "shifts") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Team Clocking (Attendance History) - in ManageTime submenu
+    final hasAttendance = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Attendance History" ||
+                    sub.title == "attendancehistory") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Biometric Checkins - in ManageTime submenu
+    final hasBiometricCheckins = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Biometric Checkin`s" ||
+                    sub.title == "admin-bio") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
     Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
@@ -416,6 +522,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/clock.png",
           "label": AppLocalizations.of(context)!.manageShifts
+        },
+        {
+          "icon": "images/schedule.png",
+          "label": AppLocalizations.of(context)!.onBoarding
         },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
@@ -516,7 +626,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               if (item["label"] ==
                                       AppLocalizations.of(context)!
                                           .biometricCheckIn &&
-                                  !hasTeamClocking) {
+                                  !hasBiometricCheckins) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .attendance &&
+                                  !hasAttendance) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .onBoarding && !hasOnboarding) {
                                 return false;
                               }
                               if (item["label"] ==
@@ -571,6 +692,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               PenaltyAndFineScreen()),
+                                    );
+                                  }  else if (item["label"] ==
+                                      AppLocalizations.of(context)!.onBoarding) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              OnboardingScreen()),
                                     );
                                   } else if (item["label"] ==
                                       AppLocalizations.of(context)!
@@ -683,27 +813,112 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
-    final uiSettings =
-        singletonClass.uiSettingsModelDataList.first.data?.mobileModules ?? [];
-    final hasDocuments =
-        uiSettings.any((e) => e.title == "Document" || e.title == "Documents");
-    final hasTeams =
-        uiSettings.any((e) => e.title == "teams" || e.title == "Teams");
-    final hasTeamClocking = uiSettings.any((e) => e.title == "teamClockings");
-    final hasAssets =
-        uiSettings.any((e) => e.title == "assets" || e.title == "Assets");
-    final hasManageShifts = uiSettings
-        .any((e) => e.title == "manageShifts" || e.title == "manageShift");
-    final hasComplaints = uiSettings.any((e) => e.title == "complaints");
-    final hasPenaltiesAndFines =
-        uiSettings.any((e) => e.title == "penaltiesAndFines");
-    final hasChatBot =
-        uiSettings.any((e) => e.title == "chatBot" && e.hidden == false);
-    final hasNotChatBot =
-        uiSettings.any((e) => e.title == "chatBot" && e.hidden == true);
-    final chatBotNotAvailable = !uiSettings.any((e) => e.title == "chatBot");
-    final hasSocket =
-        uiSettings.any((e) => e.title == "socket" && e.hidden == false);
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+                .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+            [])
+        : [];
+
+    /// Check for Documents module
+    final hasDocuments = uiSettings.any((e) =>
+        (e.title == "Document" || e.title == "Documents") && e.hidden == false);
+
+    /// Check for Teams module
+    final hasTeams = uiSettings.any(
+        (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
+
+    /// Check for Assets module
+    final hasAssets = uiSettings.any((e) =>
+        (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
+        e.hidden == false);
+
+    /// Check for Complaints - in Approval submenu
+    final hasComplaints = uiSettings.any((e) {
+      if (e.title == "Approval" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Complaints" || sub.title == "complaints") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Penalties and Fines - in Approval submenu
+    final hasPenaltiesAndFines = uiSettings.any((e) {
+      if (e.title == "Approval" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Manage Shifts - in ManageTime submenu
+    final hasManageShifts = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Manage Shifts" || sub.title == "shifts") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Team Clocking (Attendance History) - in ManageTime submenu
+    final hasAttendance = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Attendance History" ||
+                    sub.title == "attendancehistory") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for Biometric Checkins - in ManageTime submenu
+    final hasBiometricCheckins = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+                (sub.title == "Biometric Checkin`s" ||
+                    sub.title == "admin-bio") &&
+                sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
+    ///Chats
+    final hasChats = uiSettings.any((e) {
+      final title = (e.title ?? e.name ?? '').toLowerCase();
+      return title == 'chat' && e.hidden == false;
+    });
+
+    /// ✅ Socket Notifications
+    final hasSocketNotification = uiSettings.any((e) {
+      final title = (e.title ?? '').toLowerCase();
+      if (title == 'dashboard' && e.hidden == false) {
+        return e.subMenu?.any((sub) => sub.showSocketNotifications == true) ??
+            false;
+      }
+      return false;
+    });
+
+    /// Check for onboarding
+    final hasOnboarding = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Onboarding & Offboarding") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -843,7 +1058,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 MaterialPageRoute(
                                     builder: (context) =>
                                         NotificationsScreen()));
-                            // getAddressFromLatLng(28.420262170199948, 36.56318205596275);
                           },
                           icon: Container(
                             height: 45,
@@ -900,7 +1114,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         ),
-                        hasSocket
+                        hasSocketNotification
                             ? IconButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -962,36 +1176,72 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const SlackScreen()));
-                          },
-                          icon: Container(
-                            height: 45,
-                            width: 45,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
+                        if (hasChats)
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              IconButton(
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SlackScreen()),
+                                  );
+                                  // Recalculate when returning back from Slack screen
+                                  _calculateUnreadCount();
+                                },
+                                icon: Container(
+                                  height: 45,
+                                  width: 45,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.6),
+                                        spreadRadius: 5,
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(9.0),
+                                    child: Image.asset(
+                                      'images/Comments.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(9.0),
-                              child: Image.asset(
-                                'images/Comments.png',
-                                fit: BoxFit.contain,
                               ),
-                            ),
-                          ),
-                        ),
+
+                              // 🔴 Badge for unread count
+                              if (singletonClass.unreadCount > 0)
+                                Positioned(
+                                  right: 4,
+                                  top: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      singletonClass.unreadCount > 99
+                                          ? '99+'
+                                          : singletonClass.unreadCount
+                                              .toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          )
                       ],
                     ),
                   ),
@@ -1101,19 +1351,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
-                                                  (singletonClass.companyName !=
-                                                              null &&
-                                                          singletonClass
-                                                              .companyName!
-                                                              .isNotEmpty)
+                                                  singletonClass.companyName
+                                                              ?.isNotEmpty ==
+                                                          true
                                                       ? singletonClass
                                                           .companyName!
-                                                      : (singletonClass
-                                                              .companyDataList
-                                                              .first
-                                                              .data
-                                                              ?.name ??
-                                                          "---"),
+                                                      : AppLocalizations.of(context)!.select,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: GoogleFonts.inter(
@@ -1122,139 +1365,133 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                             ],
                                           ),
-                                          items: singletonClass
-                                                  .companiesDataList.isNotEmpty
-                                              ? singletonClass.companiesDataList
-                                                  .first.data?.companies
-                                                  ?.map<
-                                                      DropdownMenuItem<
-                                                          String>>((company) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: company.companyId
-                                                        .toString(),
-                                                    child: Text(
-                                                        company.companyName ??
-                                                            "---"),
-                                                  );
-                                                }).toList()
-                                              : [],
-                                          onChanged: (value) async {
+                                          items: (() {
+                                            final uiModules = singletonClass
+                                                .roleAndAccessModelDataList
+                                                .first
+                                                .data!
+                                                .uiSettings!
+                                                .uiModules!;
+                                            final dashboardModule =
+                                                uiModules.firstWhere(
+                                              (e) =>
+                                                  (e.title == "Dashboard" ||
+                                                      e.name == "Dashboard") &&
+                                                  e.hidden == false,
+                                            );
+                                            final companies = dashboardModule
+                                                    .accessLevel?.companies ??
+                                                [];
+                                            return companies
+                                                .map<DropdownMenuItem<String>>(
+                                                    (company) {
+                                              return DropdownMenuItem<String>(
+                                                value: company.companyId,
+                                                child: Text(
+                                                    company.companyName ??
+                                                        "---"),
+                                              );
+                                            }).toList();
+                                          })(),
+                                          onChanged: (value) {
+                                            if (value == null) return;
                                             setState(() {
+                                              // select company
                                               selectedCompanyId = value;
                                               singletonClass.selectedCompanyId =
-                                                  selectedCompanyId;
+                                                  value;
+
+                                              // find selected company and update company name
+                                              final uiModules = singletonClass
+                                                  .roleAndAccessModelDataList
+                                                  .first
+                                                  .data!
+                                                  .uiSettings!
+                                                  .uiModules!;
+                                              final dashboardModule =
+                                                  uiModules.firstWhere(
+                                                (e) =>
+                                                    (e.title == "Dashboard" ||
+                                                        e.name ==
+                                                            "Dashboard") &&
+                                                    e.hidden == false,
+                                              );
+                                              final companies = dashboardModule
+                                                      .accessLevel?.companies ??
+                                                  [];
                                               final selectedCompany =
-                                                  singletonClass
-                                                      .companiesDataList
-                                                      .first
-                                                      .data!
-                                                      .companies!
-                                                      .firstWhere((company) =>
-                                                          company.companyId
-                                                              .toString() ==
-                                                          selectedCompanyId);
+                                                  companies.firstWhere(
+                                                (c) => c.companyId == value,
+                                              );
+
                                               singletonClass.companyName =
                                                   selectedCompany.companyName ??
                                                       '';
-                                              singletonClass.companyDataList
-                                                  .clear();
+
+                                              // populate branches for this company and clear selected branch
+                                              singletonClass.availableBranches =
+                                                  selectedCompany.branches ??
+                                                      [];
                                               selectedBranchId = null;
-                                              isLoadingBranches = true;
                                               singletonClass.branchID = null;
                                               singletonClass.branchName = null;
-                                              singletonClass.branchesDataList
-                                                  .clear();
-                                              singletonClass.getCompanyData();
-                                            });
-                                            await singletonClass
-                                                .getBranchesData();
-                                            setState(() {
-                                              isLoadingBranches = false;
+                                              singletonClass.getBranchesData();
                                             });
                                           },
                                         ),
                                       ),
                                     ),
                                   ),
-
                                   const SizedBox(width: 12),
 
                                   /// Branch Dropdown
                                   Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          dropdownColor: Colors.white,
-                                          isExpanded: true,
-                                          value: selectedBranchId,
-                                          hint: Text(
-                                            isLoadingBranches
-                                                ? AppLocalizations.of(context)!
-                                                    .loading
-                                                : (singletonClass.branchName ==
-                                                            null ||
-                                                        singletonClass
-                                                            .branchName!
-                                                            .isEmpty)
-                                                    ? AppLocalizations.of(
-                                                            context)!
-                                                        .selectBranch
-                                                    : singletonClass
-                                                        .branchName!,
-                                          ),
-                                          items: !isLoadingBranches &&
-                                                  singletonClass
-                                                      .branchesDataList
-                                                      .isNotEmpty
-                                              ? singletonClass
-                                                  .branchesDataList.first.data
-                                                  ?.map<
-                                                      DropdownMenuItem<
-                                                          String>>((branch) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: branch.id.toString(),
-                                                    child: Text(
-                                                        branch.branchName ??
-                                                            "---"),
-                                                  );
-                                                }).toList()
-                                              : [],
-                                          onChanged: isLoadingBranches
-                                              ? null
-                                              : (value) {
-                                                  setState(() {
-                                                    selectedBranchId = value;
-                                                    singletonClass.branchID =
-                                                        selectedBranchId;
-                                                    print(singletonClass
-                                                        .branchID);
-                                                    final selectedBranch =
-                                                        singletonClass
-                                                            .branchesDataList
-                                                            .first
-                                                            .data!
-                                                            .firstWhere((branch) =>
-                                                                branch.id
-                                                                    .toString() ==
-                                                                selectedBranchId);
-                                                    singletonClass.branchName =
-                                                        selectedBranch
-                                                                .branchName ??
-                                                            '';
-                                                  });
-                                                },
+                                      child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        dropdownColor: Colors.white,
+                                        isExpanded: true,
+                                        value: selectedBranchId,
+                                        hint: Text(
+                                          isLoadingBranches
+                                              ? AppLocalizations.of(context)!
+                                                  .loading
+                                              : (singletonClass.branchName ==
+                                                          null ||
+                                                      singletonClass
+                                                          .branchName!.isEmpty)
+                                                  ? AppLocalizations.of(
+                                                          context)!
+                                                      .selectBranch
+                                                  : singletonClass.branchName!,
                                         ),
+                                        items: singletonClass.availableBranches.isNotEmpty
+                                            ? singletonClass.availableBranches.map<DropdownMenuItem<String>>((branch) {
+                                          return DropdownMenuItem<String>(
+                                            value: branch.branchId,
+                                            child: Text(branch.branchName ?? "---"),
+                                          );
+                                        }).toList()
+                                            : [],
+                                        onChanged: (value) { setState(() {
+                                                  selectedBranchId = value;
+                                                  singletonClass.branchID = selectedBranchId;
+                                                  singletonClass.getTeamBranchData();
+                                                  print(singletonClass.branchID);
+                                                  final selectedBranch = singletonClass.availableBranches
+                                                          .firstWhere((branch) => branch.branchId.toString() == value);
+                                                  singletonClass.branchName = selectedBranch.branchName ?? '';
+                                                });
+                                              },
                                       ),
                                     ),
-                                  ),
+                                  ))
                                 ],
                               ),
                             ),
@@ -1461,8 +1698,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               .first
                                                               .data;
                                                       if (dataList == null ||
-                                                          dataList.isEmpty)
+                                                          dataList.isEmpty) {
                                                         return '--:--';
+                                                      }
 
                                                       final todayEntries =
                                                           dataList
@@ -1540,8 +1778,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                               .first
                                                               .data;
                                                       if (dataList == null ||
-                                                          dataList.isEmpty)
+                                                          dataList.isEmpty) {
                                                         return '--:--';
+                                                      }
 
                                                       final todayEntries =
                                                           dataList
@@ -1560,8 +1799,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 today.day;
                                                       }).toList();
 
-                                                      if (todayEntries.isEmpty)
+                                                      if (todayEntries
+                                                          .isEmpty) {
                                                         return '--:--';
+                                                      }
 
                                                       final lastEntry =
                                                           todayEntries.last;
@@ -1666,167 +1907,80 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                if (hasChatBot)
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ChatScreen()));
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(15)),
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey
-                                                  .withValues(alpha: 0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    const BorderRadius.only(
-                                                  topLeft: Radius.circular(15),
-                                                  topRight: Radius.circular(15),
-                                                ),
-                                                color: NasColors.darkBlue,
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    AppLocalizations.of(
-                                                            context)!
-                                                        .nassMudeer,
-                                                    style: GoogleFonts.inter(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                SizedBox(
-                                                    height: 100,
-                                                    width: 80,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: Text(
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          "${AppLocalizations.of(context)!.hey} ${singletonClass.employeeDataList.first.data!.firstName} !"),
-                                                    )),
-                                                SizedBox(
-                                                  height: 95,
-                                                  width: 95,
-                                                  child: Lottie.asset(
-                                                      'images/AIMudder.json'),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: 10,
-                                            )
-                                          ],
-                                        ),
+                                Expanded(
+                                    child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15)),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                if (hasNotChatBot || chatBotNotAvailable)
-                                  Expanded(
-                                      child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          height: 30,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                              topLeft: Radius.circular(15),
-                                              topRight: Radius.circular(15),
-                                            ),
-                                            color: NasColors.darkBlue,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(15),
+                                            topRight: Radius.circular(15),
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                AppLocalizations.of(context)!
-                                                    .totalHours,
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
+                                          color: NasColors.darkBlue,
                                         ),
-                                        Row(
+                                        child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            SizedBox(
-                                              height: 100,
-                                              width: 120,
-                                              child: Align(
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  _displayWorkedHours,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 50,
-                                              width: 50,
-                                              child: Lottie.asset(
-                                                  'images/totalWork.json'),
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .totalHours,
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white),
                                             ),
                                           ],
                                         ),
-                                        SizedBox(
-                                          height: 10,
-                                        )
-                                      ],
-                                    ),
-                                  ))
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: 100,
+                                            width: 120,
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                _displayWorkedHours,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 50,
+                                            width: 50,
+                                            child: Lottie.asset(
+                                                'images/totalWork.json'),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      )
+                                    ],
+                                  ),
+                                ))
                               ],
                             ),
                           ),
@@ -2292,54 +2446,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const TeamAttendanceScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                  if (hasAttendance)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const TeamAttendanceScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/attendance.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/attendance.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .attendance,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .attendance,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                   const SizedBox(width: 20),
                                   if (hasDocuments)
                                     Column(
@@ -2639,7 +2794,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (hasTeamClocking)
+                                  if (hasBiometricCheckins)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2688,6 +2843,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  if(hasOnboarding)
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const OnboardingScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/schedule.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .onBoarding,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -3577,7 +3782,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   ///test case
   Future<String?> getAddressFromLatLng(double lat, double lng) async {
-    const accessToken = "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA";
+    const accessToken =
+        "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA";
     final url =
         "https://api.mapbox.com/geocoding/v5/mapbox.places/$lng,$lat.json?access_token=$accessToken";
 
@@ -3593,5 +3799,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   ///Notifications handle Helper method
-
 }

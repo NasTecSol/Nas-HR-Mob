@@ -53,6 +53,14 @@ class _SlackScreenState extends State<SlackScreen> {
         log("⚠️ Error refreshing chats: $e");
       }
     });
+    SocketService2().socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        _fetchChats();
+        log("🔄 Chats refreshed after mark as read  new message");
+      } catch (e) {
+        log("⚠️ Error refreshing chats: $e");
+      }
+    });
   }
 
   @override
@@ -73,6 +81,19 @@ class _SlackScreenState extends State<SlackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ///Nas Mudeer
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+    final hasNasMudeer = uiSettings.any((e) {
+      final title = (e.title ?? '').toLowerCase();
+      if (title == 'dashboard' && e.hidden == false) {
+        return e.nasMudeer == true;
+      }
+      return false;
+    });
     return Scaffold(
         backgroundColor: NasColors.backGround,
         body: Padding(
@@ -84,7 +105,10 @@ class _SlackScreenState extends State<SlackScreen> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: (){
+                      Navigator.pop(context);
+                      singletonClass.getChats();
+                    },
                     icon: Container(
                       height: 40,
                       width: 40,
@@ -365,7 +389,9 @@ class _SlackScreenState extends State<SlackScreen> {
                   ),
                 ]
               ] else ...[
+
                 /// Normal Chat List
+                if(hasNasMudeer)
                 Column(
                   children: [
                     Row(
@@ -451,75 +477,29 @@ class _SlackScreenState extends State<SlackScreen> {
                         : ListView(
                       padding: EdgeInsets.zero,
                       children: [
-                        // --- Direct Chats ---
-                        if (_chatData!.data!
-                            .where((c) => c.roomType == "direct")
-                            .isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                            child: Text(
-                              AppLocalizations.of(context)!.directChat,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          ...(_chatData!.data!
-                              .where((c) => c.roomType == "direct")
-                              .toList()
-                            ..sort((a, b) {
-                              final aTime = a.chatHistory?.isNotEmpty == true
-                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
-                                  ?.millisecondsSinceEpoch ??
-                                  0
-                                  : 0;
-                              final bTime = b.chatHistory?.isNotEmpty == true
-                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
-                                  ?.millisecondsSinceEpoch ??
-                                  0
-                                  : 0;
-                              return bTime.compareTo(aTime); // latest first
-                            }))
-                              .map((chat) => _buildChatTile(chat, isGroup: false))
-                              .toList(),
-                        ],
-      
-                        // --- Group Chats ---
-                        if (_chatData!.data!
-                            .where((c) => c.roomType == "group")
-                            .isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                            child: Text(
-                              AppLocalizations.of(context)!.groups,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          ...(_chatData!.data!
-                              .where((c) => c.roomType == "group")
-                              .toList()
-                            ..sort((a, b) {
-                              final aTime = a.chatHistory?.isNotEmpty == true
-                                  ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
-                                  ?.millisecondsSinceEpoch ??
-                                  0
-                                  : 0;
-                              final bTime = b.chatHistory?.isNotEmpty == true
-                                  ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
-                                  ?.millisecondsSinceEpoch ??
-                                  0
-                                  : 0;
-                              return bTime.compareTo(aTime); // latest first
-                            }))
-                              .map((chat) => _buildChatTile(chat, isGroup: true))
-                              .toList(),
-                        ],
+                        // ✅ Combine both direct + group chats
+                        ...(_chatData!.data!
+                            .where((c) => c.roomType == "direct" || c.roomType == "group")
+                            .toList()
+                          ..sort((a, b) {
+                            final aTime = a.chatHistory?.isNotEmpty == true
+                                ? DateTime.tryParse(a.chatHistory!.last.timestamp ?? "")
+                                ?.millisecondsSinceEpoch ??
+                                0
+                                : 0;
+                            final bTime = b.chatHistory?.isNotEmpty == true
+                                ? DateTime.tryParse(b.chatHistory!.last.timestamp ?? "")
+                                ?.millisecondsSinceEpoch ??
+                                0
+                                : 0;
+                            return bTime.compareTo(aTime); // ✅ latest first
+                          }))
+                            .map((chat) => _buildChatTile(
+                          chat,
+                          isGroup: chat.roomType == "group",
+                        )),
                       ],
-                    ),
+                    )
                   ),
                 )
               ]
@@ -540,29 +520,36 @@ class _SlackScreenState extends State<SlackScreen> {
         chat.participants != null &&
         chat.participants!.isNotEmpty) {
       final other = chat.participants!.firstWhere(
-              (p) => p.id.toString() != currentUserId,
-          orElse: () => chat.participants!.first);
+            (p) => p.id.toString() != currentUserId,
+        orElse: () => chat.participants!.first,
+      );
       displayName = other.name ?? "---";
       initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : "?";
       isOnline = other.isOnline;
+    } else if (isGroup) {
+      displayName = chat.chatName ?? "Group";
+      initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : "G";
     }
 
-    // --- NEW: Count unread messages (only for direct chats) ---
-    final unreadCount =  chat.chatHistory
+    // --- Count unread messages ---
+    final unreadCount = chat.chatHistory
         ?.where((msg) =>
     msg.senderId.toString() != currentUserId &&
         (msg.isRead == false || msg.isRead == null))
-        .length;
-    // -----------------------------------------------------------
+        .length ??
+        0;
 
-    // last message
+    // --- Last message ---
     String message = AppLocalizations.of(context)!.noMessageYet;
     DateTime? lastMsgTime;
+    bool isSentByMe = false;
+    bool? isRead;
+
     if (chat.chatHistory != null && chat.chatHistory!.isNotEmpty) {
       final lastMsg = chat.chatHistory!.last;
-      message = lastMsg.senderId?.toString() == currentUserId
-          ? "${AppLocalizations.of(context)!.me}: ${lastMsg.content ?? ""}"
-          : (lastMsg.content ?? "");
+      isSentByMe = lastMsg.senderId?.toString() == currentUserId;
+      isRead = lastMsg.isRead;
+      message = lastMsg.content ?? "";
       if (lastMsg.timestamp != null) {
         lastMsgTime = DateTime.tryParse(lastMsg.timestamp!)?.toLocal();
       }
@@ -577,43 +564,57 @@ class _SlackScreenState extends State<SlackScreen> {
           ),
         ).then((_) => _fetchChats());
       },
-      leading: isGroup
-          ? const CircleAvatar(
-        backgroundColor: Colors.orange,
-        child: Icon(Icons.group, color: Colors.white),
-      )
-          : CircleAvatar(
-        backgroundColor: Colors.teal,
-        child:
-        Text(initial, style: GoogleFonts.inter(color: Colors.white)),
-      ),
-      title: Row(
+      leading: Stack(
         children: [
-          Expanded(
-            child: Text(
-              isGroup ? (chat.chatName ?? "Group") : displayName,
-              style:
-              GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
-              overflow: TextOverflow.ellipsis,
-            ),
+          CircleAvatar(
+            backgroundColor: isGroup ? Colors.orange : Colors.teal,
+            radius: 24,
+            child: isGroup
+                ? const Icon(Icons.group, color: Colors.white)
+                : Text(initial,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 18)),
           ),
           if (!isGroup)
-            Container(
-              height: 12,
-              width: 12,
-              margin: const EdgeInsets.only(left: 6),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isOnline == true ? Colors.green : Colors.grey,
+            Positioned(
+              bottom: 2,
+              right: 2,
+              child: Container(
+                height: 12,
+                width: 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isOnline == true ? Colors.green : Colors.grey,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
               ),
             ),
         ],
       ),
-      subtitle: Text(
-        message,
-        maxLines: 1,
+      title: Text(
+        displayName,
+        style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16),
         overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+      ),
+      subtitle: Row(
+        children: [
+          if (isSentByMe && !isGroup)
+            Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: Icon(
+                isRead == true ? Icons.done_all : Icons.check,
+                size: 18,
+                color: isRead == true ? Colors.blue : Colors.grey,
+              ),
+            ),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700]),
+            ),
+          ),
+        ],
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -622,8 +623,7 @@ class _SlackScreenState extends State<SlackScreen> {
             lastMsgTime != null ? formatChatTime(context, lastMsgTime) : "",
             style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
           ),
-          // --- Show badge only for direct chats ---
-          if (unreadCount! > 0)...[
+          if (unreadCount > 0) // ✅ now applies to both group & direct
             Container(
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -639,14 +639,15 @@ class _SlackScreenState extends State<SlackScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ] else ...[
-            SizedBox(height: 20,)
-          ]
+            )
+          else
+            const SizedBox(height: 20),
         ],
       ),
     );
   }
+
+
 
 
   /// Format Chat Time
@@ -820,7 +821,7 @@ class _SlackScreenState extends State<SlackScreen> {
 
     try {
       var client = http.Client();
-      var uri = Uri.parse("https://dev.nashrms.com/api/chat-system/create");
+      var uri = Uri.parse("${singletonClass.baseURL}/chat-system/create");
       var response = await client.post(uri,
           headers: {...singletonClass.getHeaders(), "Content-Type": "application/json"},
           body: jsonEncode(body));
@@ -890,6 +891,10 @@ class SocketService2 {
     String? userId =  singletonClass.getJWTModel()?.employeeId;
     String? tenantId = singletonClass.tenantId;
 
+    String? socketBaseUrl = singletonClass.baseURL;
+    if (socketBaseUrl!.endsWith('/api')) {
+      socketBaseUrl = socketBaseUrl.substring(0, socketBaseUrl.length - 3);
+    }
 
     log("🚀 Connecting socket with userId=$userId, tenantId=$tenantId");
 
@@ -897,7 +902,7 @@ class SocketService2 {
 
     log("🚀 Connecting global socket...");
     socket = IO.io(
-      "https://dev.nashrms.com/chat",
+      "${socketBaseUrl}chat",
       IO.OptionBuilder()
           .setTransports(["websocket", "polling"])
           .disableAutoConnect()
@@ -908,13 +913,21 @@ class SocketService2 {
           .setReconnectionDelay(1000)
           .build(),
     );
-
+    print(socketBaseUrl);
     socket!.on("chatNotification", (data) {
       debugPrint("🔔 Notification: $data");
       _handleBroadcastEvent(data);
     });
-
+    socket!.on('messagesMarkedAsRead', (data) async {
+      try {
+        singletonClass.getChats();
+        log("🔄 Chats refreshed after mark as read  new message");
+      } catch (e) {
+        log("⚠️ Error refreshing chats: $e");
+      }
+    });
     socket!.on('receiveMessage', (data) async {
+      await singletonClass.getChats();
       log("💬 Incoming message: $data");
 
       try {
@@ -922,8 +935,8 @@ class SocketService2 {
         final currentUserId = singletonClass.getJWTModel()?.employeeId ?? "";
         final currentChatId = singletonClass.activeChatRoomId;
         String? incomingRoomId = data["_id"]?.toString();
-        print("CDCD${currentChatId}");
-        print("XDXDXD${incomingRoomId}");
+        print("CDCD$currentChatId");
+        print("XDXDXD$incomingRoomId");
         // Only show banner if message is from another user
         if (msg.senderId != currentUserId && incomingRoomId != currentChatId) {
           _playReceiveSound();
@@ -931,6 +944,35 @@ class SocketService2 {
       } catch (e) {
         log("⚠️ Error parsing message: $e");
       }
+
+      if (singletonClass.slackDataList.isEmpty ||
+          singletonClass.slackDataList.first.data == null ||
+          singletonClass.slackDataList.first.data!.isEmpty) {
+        debugPrint("⚠️ No chat data available in singleton");
+        singletonClass.unreadCount = 0;
+        return;
+      }
+
+      final allChats = singletonClass.slackDataList.first.data!;
+      final userId = singletonClass.getJWTModel()?.employeeId;
+
+      final unreadChats = allChats.where((chat) {
+        // Only consider direct rooms
+        if (chat.roomType != "direct") return false;
+
+        // Ensure chat has messages
+        final messages = chat.chatHistory ?? [];
+
+        // Only count if there is at least one unread message not sent by the user
+        return messages.any((m) =>
+        m.isRead == false &&
+            m.senderId != userId);
+      }).toList();
+
+      singletonClass.unreadCount = unreadChats.length;
+
+      debugPrint("✅ Direct chats with unread messages: ${unreadChats.length}");
+
     });
 
     socket!.connect();

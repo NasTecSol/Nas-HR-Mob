@@ -1410,7 +1410,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Type event type or select from the list';
 
   @override
-  String get pleaseFillAllFields => 'Please fill all fields';
+  String get pleaseFillAllFields => 'Please fill all fields before continuing.';
 
   @override
   String get minutes => 'Mins';
@@ -1983,4 +1983,264 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get me => 'me';
+
+  @override
+  String get goodMorning => '👋 Good Morning!';
+
+  @override
+  String get howCanIAssistYouToday => 'How can I assist you today?';
+
+  @override
+  String get onBoarding => 'Onboarding';
+
+  @override
+  String get employeeOnboarding => 'Employee Onboarding';
+
+  @override
+  String get pleaseSelectAllFields =>
+      'Please select all fields before continuing.';
+
+  @override
+  String get pleaseEnterValidEmail => 'Please enter a valid email.';
+
+  @override
+  String get companyInfo => 'Company Info';
+
+  @override
+  String get personalAndEducationalInfo => 'Personal & Educational Info';
+
+  @override
+  String get professionalInfo => 'Professional Info';
+
+  @override
+  String get educationSalary => 'Education & Salary';
+
+  @override
+  String get selectCompany => 'Select Company';
+
+  @override
+  String get selectDepartment => 'Select Department';
+
+  @override
+  String get selectSupervisor => 'Select Supervisor';
+
+  @override
+  String get selectShift => 'Select Shift';
+
+  @override
+  String get firstName => 'First Name';
+
+  @override
+  String get enterFirstName => 'Enter first name';
+
+  @override
+  String get lastName => 'Last Name';
+
+  @override
+  String get enterLastName => 'Enter last name';
+
+  @override
+  String get selectNationality => 'Select Nationality';
+
+  @override
+  String get pakistani => 'Pakistani';
+
+  @override
+  String get indian => 'Indian';
+
+  @override
+  String get bangladeshi => 'Bangladeshi';
+
+  @override
+  String get saudiaArabia => 'Saudi Arabia';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get nationalId => 'National ID';
+
+  @override
+  String get enterNationalId => 'Enter national ID';
+
+  @override
+  String get iqamaNumber => 'Iqama Number';
+
+  @override
+  String get enterIqamaNumber => 'Enter iqama number';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get enterPhoneNumber => 'Enter phone number';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get enterEmail => 'Enter email';
+
+  @override
+  String get enterAddress => 'Enter address';
+
+  @override
+  String get dob => 'Date of Birth';
+
+  @override
+  String get selectReligion => 'Select Religion';
+
+  @override
+  String get islam => 'Islam';
+
+  @override
+  String get christianity => 'Christianity';
+
+  @override
+  String get hinduism => 'Hinduism';
+
+  @override
+  String get otherReligion => 'Other';
+
+  @override
+  String get single => 'Single';
+
+  @override
+  String get married => 'Married';
+
+  @override
+  String get divorced => 'Divorced';
+
+  @override
+  String get widowed => 'Widowed';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get enterUsername => 'Enter username';
+
+  @override
+  String get enterPassword => 'Enter password';
+
+  @override
+  String get profilePicture => 'Profile Picture';
+
+  @override
+  String get chooseFile => 'Choose File';
+
+  @override
+  String get noFileChosen => 'No file chosen';
+
+  @override
+  String get professionalInformation => 'Professional Information';
+
+  @override
+  String get hierarchyGroup => 'Hierarchy Group';
+
+  @override
+  String get selectHierarchyGroup => 'Select Hierarchy Group';
+
+  @override
+  String get enterDesignation => 'Enter designation';
+
+  @override
+  String get selectRole => 'Select Role';
+
+  @override
+  String get junior => 'Junior';
+
+  @override
+  String get mid => 'Mid';
+
+  @override
+  String get senior => 'Senior';
+
+  @override
+  String get contractType => 'Contract Type';
+
+  @override
+  String get permanent => 'Permanent';
+
+  @override
+  String get temporary => 'Temporary';
+
+  @override
+  String get endOfContract => 'End of Contract';
+
+  @override
+  String get educationalInfo => 'Educational Info';
+
+  @override
+  String get degreeName => 'Degree Name';
+
+  @override
+  String get enterDegreeName => 'Enter Degree Name';
+
+  @override
+  String get degreeType => 'Degree Type';
+
+  @override
+  String get enterDegreeType => 'Enter Degree Type';
+
+  @override
+  String get basicSalary => 'Basic Salary';
+
+  @override
+  String get enterBasicSalary => 'Enter Basic Salary';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get selectCurrency => 'Select Currency';
+
+  @override
+  String get salaryPeriod => 'Salary Period';
+
+  @override
+  String get selectSalaryPeriod => 'Select Salary Period';
+
+  @override
+  String get enterBankName => 'Enter Bank Name';
+
+  @override
+  String get accountNo => 'Account No';
+
+  @override
+  String get enterAccountNo => 'Enter Account No';
+
+  @override
+  String get registerBiometrics => 'Register Biometrics';
+
+  @override
+  String get pleaseSelectDevice => 'Please select a device';
+
+  @override
+  String get selectBiometricDevice => 'Select Biometric Device';
+
+  @override
+  String get selectDevice => 'Select Device';
+
+  @override
+  String get salaryInfo => 'Salary Info';
+
+  @override
+  String get salaryInformation => 'Salary Information';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get employeeIsRegistered => 'Employee is registered';
+
+  @override
+  String get toEnrollThisEmployeeOnBiometricDevice =>
+      'To enroll this employee on biometric device';
+
+  @override
+  String get skip => 'Skip';
 }

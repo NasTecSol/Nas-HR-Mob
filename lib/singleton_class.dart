@@ -9,6 +9,7 @@ import 'package:nashr/request_controller/assets_details_model.dart';
 import 'package:nashr/request_controller/attachment_response_model.dart';
 import 'package:nashr/request_controller/attendance_model.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
+import 'package:nashr/request_controller/biometric_devices_model.dart';
 import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/branch_shift_model.dart';
 import 'package:nashr/request_controller/branches_data_model.dart';
@@ -30,6 +31,7 @@ import 'package:nashr/request_controller/event_model.dart';
 import 'package:nashr/request_controller/login_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:nashr/request_controller/notification_model.dart';
+import 'package:nashr/request_controller/organization_model.dart';
 import 'package:nashr/request_controller/penalities_fines_model.dart';
 import 'package:nashr/request_controller/penalties_approver_model.dart';
 import 'package:nashr/request_controller/policy_model.dart';
@@ -38,6 +40,7 @@ import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/remoteAttendanceModel.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
+import 'package:nashr/request_controller/role_and_access_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/slack_model.dart';
@@ -66,9 +69,13 @@ class SingletonClass {
 
   bool initialized = false;
   String? baseURL;
+  int unreadCount = 0;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<RoleAndAccessModel> roleAndAccessModelDataList = [];
+  List<BiometricDevicesModel> biometricDevicesModelDataList = [];
+  List<OrganizationModel> organizationModelDataList = [];
   List<CompaniesDataModel> companiesDataList = [];
   List<BranchesDataModel> branchesDataList = [];
   List<DocumentNotificationModel> documentNotificationDataList = [];
@@ -122,6 +129,9 @@ class SingletonClass {
   String? branchName;
   String? activeChatRoomId;
   String? activeScreen;
+  List<dynamic> availableBranches = [];
+  List<Map<String, String>> chatMessages = [];
+  bool hasShownGreeting = false;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -252,13 +262,86 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
+  /// Organization call
+  Future<OrganizationModel?> getOrganizationData() async {
+    String? organizationID = getJWTModel()?.organizationId;
+    if (organizationID == null) {
+      print("⚠️ Organization ID not found");
+      return null;
+    }
+
+    final uri = Uri.parse('$baseURL/ui-modules/get-org-heirarchy/$organizationID');
+    final response = await http.get(uri, headers: getHeaders());
+
+    if (response.statusCode == 200) {
+      print("ORGANIZATION DATA: ${response.body}");
+      final responseBody = json.decode(response.body);
+      final organizationData = OrganizationModel.fromJson(responseBody);
+
+      organizationModelDataList.clear(); // avoid duplicates
+      organizationModelDataList.add(organizationData);
+
+      if (organizationModelDataList.first.data?.companies?.isNotEmpty == true) {
+        print("======== ${organizationModelDataList.first.data!.companies!.first.name}");
+      } else {
+        print("⚠️ No organization data parsed!");
+      }
+
+      return organizationData;
+    } else {
+      print("❌ Failed to load data: ${response.statusCode}");
+    }
+    return null;
+  }
+
+  ///Role and Access Api Call
+  Future<RoleAndAccessModel?> getRoleAndAccessData() async {
+    String? employeeId = getJWTModel()?.employeeId;
+    String? grade = getJWTModel()?.grade;
+
+    var uri = Uri.parse('$baseURL/ui-modules/get-ui-settings/$employeeId/$grade');
+    var response = await http.get(uri, headers: getHeaders());
+
+    if (response.statusCode == 200) {
+
+      try {
+        var jsonBody = jsonDecode(response.body);
+        log("🔍 data field type: ${jsonBody['data'].runtimeType}");
+        if (jsonBody['data'] is Map) {
+          log("✅ data is a Map");
+        } else if (jsonBody['data'] is List) {
+          log("✅ data is a List — length: ${(jsonBody['data'] as List).length}");
+        }
+
+        var roleAndAccessData = RoleAndAccessModel.fromJson(jsonBody);
+
+        roleAndAccessModelDataList
+          ..clear()
+          ..add(roleAndAccessData);
+
+        log("✅ RoleAndAccessModel parsed successfully");
+        log("✅ UI Modules Count: ${roleAndAccessData.data?.uiSettings?.uiModules?.length ?? 0}");
+        return roleAndAccessData;
+      } catch (e, st) {
+        log("❌ Error loading Role & Access data: $e");
+        log(st.toString());
+      }
+    } else {
+      log("❌ API Error: ${response.statusCode}");
+    }
+
+    return null;
+  }
+
+
+
+
   Future<PolicyModel?> getPolicyData() async {
     String? policyId =  companyDataList.first.data!.policies!.first.policyId;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/policies/$policyId');
     var response = await client.get(uri,
         headers: getHeaders());
-    log("POLICY DATA ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var policyData = PolicyModel.fromJson(responseBody);
@@ -400,12 +483,30 @@ class SingletonClass {
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var branch = TeamModel.fromJson(responseBody);
+      teamBranchDataList.clear();
       teamBranchDataList.add(branch);
       return branch;
     }
     return null ;
   }
-
+  ///API METHOD
+  Future<BiometricDevicesModel?> getBiometricDevices() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/biometric-int');
+    var response = await client.get(
+        uri,
+        headers: getHeaders()
+    );
+    if (response.statusCode == 200) {
+      print("BIOMETRIC DEVICES >>><<<${response.body}");
+      var responseBody = json.decode(response.body);
+      var bioMetricDevices = BiometricDevicesModel.fromJson(responseBody);
+      biometricDevicesModelDataList.clear();
+      biometricDevicesModelDataList.addAll([bioMetricDevices]);
+      return bioMetricDevices;
+    }
+    return null ; // Print the response body
+  }
 
   Future<BranchesDataModel?> getBranchesData() async {
     String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
@@ -430,6 +531,7 @@ class SingletonClass {
       if (response.statusCode == 200) {
         var responseBody = json.decode(response.body);
         var branch = BranchesDataModel.fromJson(responseBody);
+        branchesDataList.clear();
         branchesDataList.add(branch);
         return branch;
       } else {
@@ -467,11 +569,15 @@ class SingletonClass {
     String? employeeId = getJWTModel()?.employeeId;
     var client = http.Client();
     var uri = Uri.parse(
-        'https://dev.nashrms.com/api/chat-system/user-chats/$employeeId');
+        '$baseURL/chat-system/user-chats/$employeeId');
     var response = await client.get(uri, headers: getHeaders());
     if (response.statusCode == 200) {
+      print("CHAT'S RESPONSE${response.body}");
+      slackDataList.clear();
       var responseBody = json.decode(response.body);
-      return SlackModel.fromJson(responseBody);
+      var chats = SlackModel.fromJson(responseBody);
+      slackDataList.addAll([chats]);
+      return  chats;
     }
     return null;
   }
@@ -491,11 +597,7 @@ class SingletonClass {
         '$baseURL/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri,headers: getHeaders());
-    if (kDebugMode) {
-      print(employeeId);
-      print(firstDateString);
-      print(currentDateString);
-    }
+
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var attendance = AttendanceData.fromJson(responseBody);
@@ -516,7 +618,6 @@ class SingletonClass {
 
     /// Convert data to JSON string
     String jsonData = jsonEncode(data);
-    log("///$jsonData");
     try {
       final response = await http.patch(
         Uri.parse(url),
