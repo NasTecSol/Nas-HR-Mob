@@ -4531,6 +4531,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get skip;
+
+  /// No description provided for @noSupervisorFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No supervisor found'**
+  String get noSupervisorFound;
 }
 
 class _AppLocalizationsDelegate

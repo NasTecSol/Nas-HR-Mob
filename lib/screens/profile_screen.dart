@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -20,6 +19,7 @@ import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/loader.dart';
 import 'loan_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -1609,13 +1609,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ],
         ),
           if (isLoading)
-            Center(
-              child: SizedBox(
-                height: 200,
-                width: 200,
-                child: Lottie.asset('images/loader.json'),
-              ),
-            )
+             Loader()
         ]
       ),
     );

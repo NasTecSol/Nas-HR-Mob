@@ -8,6 +8,8 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 
+import '../widgets/loader.dart';
+
 class RegisterBiometricDeviceScreen extends StatefulWidget {
   final String empId;
   final String firstName;
@@ -292,13 +294,7 @@ class _RegisterBiometricDeviceScreenState
           if (isLoading)
             Container(
               color: Colors.black.withOpacity(0.3),
-              child: Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              ),
+              child: Loader(),
             ),
         ],
       ),
@@ -332,7 +328,7 @@ class _RegisterBiometricDeviceScreenState
       if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content:Text(
                 "✅${AppLocalizations.of(context)!.registerBiometrics} ${AppLocalizations.of(context)!.success}: $deviceName"),
           ),
         );

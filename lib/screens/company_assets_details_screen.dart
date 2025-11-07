@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/rendering.dart';
 import '../request_controller/company_assets_details_model.dart';
 import '../request_controller/company_model.dart';
+import '../widgets/loader.dart';
 
 
 class CompanyAssetsDetailsScreen extends StatefulWidget {
@@ -98,13 +99,7 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                     future: getAssetsDetailsData(), // Your API call
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
@@ -336,13 +331,7 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                     future: getDocumentNotificationData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {

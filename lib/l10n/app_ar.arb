@@ -847,5 +847,6 @@
       "female": "أنثى",
       "employeeIsRegistered": "تم تسجيل الموظف",
       "toEnrollThisEmployeeOnBiometricDevice": "لتسجيل هذا الموظف في جهاز البصمة",
-      "skip": "تخطي"
+      "skip": "تخطي",
+      "noSupervisorFound": "لا يوجد مشرف"
 }

@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../request_controller/team_model.dart';
+import '../widgets/loader.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
   final TeamData? teamData;
@@ -97,13 +98,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // Show loader while waiting for data
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       }
                       if (snapshot.hasError) {
                         print('Error: ${snapshot.error}');
@@ -1562,13 +1557,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                           ],
                         );
                       }
-                    }) : Center(
-                  child: SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: Lottie.asset('images/loader.json'),
-                  ),
-                ),
+                    }) : Loader(),
               ],
             ),
           ),

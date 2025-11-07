@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/screens/request_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -20,6 +21,7 @@ import '../request_controller/company_model.dart';
 import '../request_controller/request_data_model.dart';
 import '../request_controller/search_employee_model.dart';
 import '../widgets/colors.dart';
+import '../widgets/loader.dart';
 
 class CreateRequestScreen extends StatefulWidget {
   final Request? selectedRequest;
@@ -1751,13 +1753,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     ],
                   ),
                   if (isLoading)
-                    Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    )
+                   Loader(),
                 ]),
               ),
             )
@@ -2647,13 +2643,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     ],
                   ),
                   if (isLoading)
-                    Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    )
+                   Loader(),
                 ]),
               ),
             ),
@@ -2865,6 +2855,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         final decodedJson = json.decode(responseBody);
         AttachmentResponse attachmentResponse =
             AttachmentResponse.fromJson(decodedJson);
+        singletonClass.attachmentResponseDataList.clear();
         singletonClass.attachmentResponseDataList = [attachmentResponse];
         return {"success": true, "message": ""};
       } else {
@@ -3042,7 +3033,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           showConfirmBtn: false,
         );
         await getRequestData();
-        Navigator.pop(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 2)));
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??
             'An unexpected error occurred. Please try again.';

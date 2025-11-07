@@ -21,6 +21,7 @@ import '../request_controller/project_logo_model.dart';
 import '../request_controller/search_employee_model.dart';
 import '../request_controller/task_model.dart';
 import '../singleton_class.dart';
+import '../widgets/loader.dart';
 import 'main_screen.dart';
 
 class CreateProjectScreen extends StatefulWidget {
@@ -783,13 +784,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       ],
                     ),
                       if (isLoading)
-                        Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        )
+                       Loader()
                     ]
                 ),
               ),

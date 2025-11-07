@@ -13,6 +13,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/approver_request_data_model.dart';
 import '../request_controller/request_data_model.dart';
 import '../widgets/colors.dart';
+import '../widgets/loader.dart';
 
 
 class RequestScreen extends StatefulWidget {
@@ -159,28 +160,35 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemCount: singletonClass.companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass.companyDataList.first.data!.request![index];
-                          /// ✅ Step 1: Collect all submenu titles under "Approval"
+                          /// ✅ Step 1: Collect allowed submenus under "Approval" where accessType.add == true
                           final allowedRequestNames = <String>{};
-                          final uiSettings = singletonClass.roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ?? [];
+
+                          final uiSettings = singletonClass
+                              .roleAndAccessModelDataList
+                              .first
+                              .data
+                              ?.uiSettings
+                              ?.uiModules ?? [];
+
                           for (var module in uiSettings) {
-                            final moduleTitle = (module is Map)
-                                ? module.title?.toString()
-                                : module.title?.toString();
-                            if ((moduleTitle ?? '').trim().toLowerCase() == 'approval') {
-                              final subMenus = (module is Map) ? (module.subMenu ?? []) : (module.subMenu ?? []);
+                            final moduleTitle = module.title?.toString().trim().toLowerCase() ?? '';
+
+                            if (moduleTitle == 'approval') {
+                              final subMenus = module.subMenu ?? [];
+
                               for (var sub in subMenus) {
-                                final subTitle = (sub is Map) ? sub.title.toString() : sub.title?.toString();
-                                if (subTitle != null && subTitle.trim().isNotEmpty) {
-                                  allowedRequestNames.add(subTitle.trim());
+                                final subTitle = sub.title?.toString().trim() ?? '';
+                                final hasAddAccess = sub.accessType?.add == true;
+
+                                if (subTitle.isNotEmpty && hasAddAccess) {
+                                  allowedRequestNames.add(subTitle);
                                 }
                               }
                             }
                           }
 
-                          /// ✅ Step 2: Normalize both submenu title & request name for flexible matching
-                          final requestName = (request.requestName ?? '').trim();
-
-                          String normalizeTitle(String text) {
+                          /// ✅ Step 2: Normalize both submenu title & request name for flexible comparison
+                          String normalize(String text) {
                             return text
                                 .trim()
                                 .toLowerCase()
@@ -188,19 +196,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                 .replaceAll(RegExp(r'\s+'), ' ');
                           }
 
-                          /// ✅ Step 3: Loose matching (case-insensitive + singular/plural)
-                          final isAllowed = allowedRequestNames.any((allowed) {
-                            final allowedNormalized = normalizeTitle(allowed);
-                            final requestNormalized = normalizeTitle(requestName);
-                            return allowedNormalized == requestNormalized ||
-                                allowedNormalized.contains(requestNormalized) ||
-                                requestNormalized.contains(allowedNormalized);
+                          final requestName = normalize(request.requestName ?? '');
+
+                          /// ✅ Step 3: Match if any allowed submenu title corresponds to this request
+                          final isAllowed = allowedRequestNames.any((title) {
+                            final normalized = normalize(title);
+                            return normalized == requestName ||
+                                normalized.contains(requestName) ||
+                                requestName.contains(normalized);
                           });
 
                           /// ✅ Step 4: Hide request if not allowed
                           if (!isAllowed) {
                             return const SizedBox.shrink();
                           }
+
                           return Column(
                             children: [
                               GestureDetector(
@@ -408,7 +418,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     ),
                   ],
                   const Spacer(),
-                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e) => e.title == 'Approval' && e.accessType!.write == true))
+                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e) => e.title == 'Approval' && e.accessType!.add == true))
                   Padding(
                     padding: const EdgeInsets.only(top: 15.0),
                     child: TextButton(
@@ -525,13 +535,7 @@ class _RequestScreenState extends State<RequestScreen> {
                       future: getRequestData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
+                          return Loader();
                         } else if (snapshot.hasError) {
                           return Center(
                             child: Center(
@@ -635,17 +639,31 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ),
                                                     SizedBox(height: 5),
                                                   ],
-                                                  Align(
-                                                    alignment: Alignment.topRight,
-                                                    child: Text(
-                                                      date,
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                        color: Colors.grey,
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        request.requestData!.first.leaveType == 'sickLeave'
+                                                            ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
+                                                            ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
+                                                            ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
+                                                            ? Icons.payments_outlined : Icons.description_outlined,
+                                                        size: 30,
+                                                        color: Colors.black,
                                                       ),
-                                                    ),
+                                                      Spacer(),
+                                                      Align(
+                                                        alignment: Alignment.topRight,
+                                                        child: Text(
+                                                          date,
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                            FontWeight.bold,
+                                                            color: Colors.grey,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                   SizedBox(height: 5),
                                                   Row(
@@ -754,15 +772,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               ),
                                                             ),
                                                           ),
-                                                      Icon(
-                                                        request.requestData!.first.leaveType == 'sickLeave'
-                                                            ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
-                                                            ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
-                                                            ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
-                                                            ? Icons.payments_outlined : Icons.description_outlined,
-                                                        size: 30,
-                                                        color: Colors.black,
-                                                      )
                                                     ],
                                                   ),
                                                   const SizedBox(height: 10),
@@ -1266,13 +1275,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/loader.json'),
-                              ),
-                            );
+                            return Loader();
                           } else if (snapshot.hasError) {
                             return Center(
                               child: Center(
@@ -1378,17 +1381,31 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                       SizedBox(height: 5),
                                                     ],
-                                                    Align(
-                                                      alignment: Alignment.topRight,
-                                                      child: Text(
-                                                        date,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                          FontWeight.bold,
-                                                          color: Colors.grey,
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          request.requestData!.first.leaveType == 'sickLeave'
+                                                              ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
+                                                              ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
+                                                              ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
+                                                              ? Icons.payments_outlined : Icons.description_outlined,
+                                                          size: 30,
+                                                          color: Colors.black,
                                                         ),
-                                                      ),
+                                                        Spacer(),
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Text(
+                                                            date,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                              FontWeight.bold,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                     SizedBox(height: 5),
                                                     Row(
@@ -1487,34 +1504,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            SizedBox(width: 5),
-                                                            Icon(
-                                                          request
-                                                              .requestData!
-                                                              .first
-                                                              .leaveType ==
-                                                              'sickLeave'
-                                                              ? Icons
-                                                              .sick_outlined
-                                                              : request
-                                                              .requestData!
-                                                              .first
-                                                              .leaveType ==
-                                                              'annualLeave'
-                                                              ? Icons
-                                                              .calendar_today_outlined
-                                                              : request.requestData!.first.leaveType ==
-                                                              'casualLeave'
-                                                              ? Icons
-                                                              .beach_access_outlined
-                                                              : request.requestType ==
-                                                              'loanRequest'
-                                                              ? Icons.savings_outlined
-                                                              : Icons.description_outlined,
-                                                          // Fallback icon if no match
-                                                          size: 30,
-                                                          color: Colors.black,
-                                                        )
                                                           ],
                                                         ),
                                                     const SizedBox(height: 10),
@@ -2024,13 +2013,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/loader.json'),
-                              ),
-                            );
+                            return Loader();
                           } else if (snapshot.hasError) {
                             return Center(
                               child: Center(
@@ -2137,21 +2120,31 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ),
                                                       SizedBox(height: 5),
                                                     ],
-                                                    Align(
-                                                      alignment:
-                                                      Alignment.topRight,
-                                                      child: Text(
-                                                        date,
-                                                        style:
-                                                        GoogleFonts
-                                                            .inter(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                          FontWeight
-                                                              .bold,
-                                                          color: Colors.grey,
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          request.requestData!.first.leaveType == 'sickLeave'
+                                                              ? Icons.sick_outlined : request.requestData!.first.leaveType == 'annualLeave'
+                                                              ? Icons.calendar_today_outlined : request.requestData!.first.leaveType == 'casualLeave'
+                                                              ? Icons.beach_access_outlined : request.requestType == 'loanRequest'
+                                                              ? Icons.payments_outlined : Icons.description_outlined,
+                                                          size: 30,
+                                                          color: Colors.black,
                                                         ),
-                                                      ),
+                                                        Spacer(),
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Text(
+                                                            date,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                              FontWeight.bold,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                     SizedBox(height: 5),
                                                     Row(
@@ -2267,33 +2260,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                 ),
                                                               ),
                                                             ),
-                                                        SizedBox(width: 5),
-                                                        Icon(
-                                                          request
-                                                              .requestData!
-                                                              .first
-                                                              .leaveType ==
-                                                              'sickLeave'
-                                                              ? Icons
-                                                              .sick_outlined
-                                                              : request
-                                                              .requestData!
-                                                              .first
-                                                              .leaveType ==
-                                                              'annualLeave'
-                                                              ? Icons
-                                                              .calendar_today_outlined
-                                                              : request.requestData!.first.leaveType ==
-                                                              'casualLeave'
-                                                              ? Icons
-                                                              .beach_access_outlined
-                                                              : request.requestType ==
-                                                              'loanRequest'
-                                                              ? Icons.savings_outlined
-                                                              : Icons.description_outlined,
-                                                          size: 30,
-                                                          color: Colors.black,
-                                                        )
                                                       ],
                                                     ),
                                                     SizedBox(height: 10),

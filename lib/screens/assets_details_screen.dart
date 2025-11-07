@@ -16,6 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/rendering.dart';
 
+import '../widgets/loader.dart';
+
 
 class AssetsDetailsScreen extends StatefulWidget {
   final AssetsInfo? assetsInfo;
@@ -100,13 +102,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                     future: getAssetsDetailsData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
@@ -321,13 +317,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                     future: getDocumentNotificationData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {

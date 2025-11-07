@@ -13,6 +13,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/penalities_fines_model.dart';
 import '../request_controller/penalties_approver_model.dart';
+import '../widgets/loader.dart';
 
 class PenaltyAndFineScreen extends StatefulWidget {
   const PenaltyAndFineScreen({super.key});
@@ -167,13 +168,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
+                          return Loader();
                         } else if (snapshot.hasError) {
                           return Center(
                             child: Center(
@@ -376,13 +371,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                       future: getPenalties(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
+                          return Loader();
                         } else if (snapshot.hasError) {
                           return Center(
                             child: Center(
@@ -569,13 +558,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/loader.json'),
-                              ),
-                            );
+                            return Loader();
                           } else if (snapshot.hasError) {
                             return Center(
                               child: Center(
