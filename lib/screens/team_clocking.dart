@@ -13,6 +13,8 @@ import '../request_controller/team_clocking_model.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'dart:math' as math;
 
+import '../widgets/loader.dart';
+
 class TeamClocking extends StatefulWidget {
   const TeamClocking({super.key});
 
@@ -655,16 +657,14 @@ class _TeamClockingState extends State<TeamClocking> {
                 ),
               ),
               (_isLoadingBranchData ||  _isInitialLoading)
-                  ? Center(child: Lottie.asset('images/loader.json', height: 200, width: 200))
+                  ? Loader()
                   :
               FutureBuilder(
                   future: getTeamClockingAPI(
                       startDate: _startDate, endDate: _endDate),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                          child: Lottie.asset('images/loader.json',
-                              height: 200, width: 200));
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Center(

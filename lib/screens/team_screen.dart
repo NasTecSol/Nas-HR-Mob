@@ -8,6 +8,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../request_controller/branch_model.dart';
+import '../widgets/loader.dart';
 import 'branch_employee_profile_screen.dart';
 
 class TeamScreen extends StatefulWidget {
@@ -78,6 +79,7 @@ class _TeamScreenState extends State<TeamScreen> {
       showDropdown = true;
       showTeamCheckbox = false;
       _isTeamChecked = false;
+      _selectedOptionIndex = 2;
     }
 
     // 2️⃣ Companies & Branches available, Team == true
@@ -86,7 +88,8 @@ class _TeamScreenState extends State<TeamScreen> {
       showTeamCheckbox = true;
 
       if (hasBranchId) {
-        _isTeamChecked = false; // show employees of selected branch
+        _isTeamChecked = false;
+        _selectedOptionIndex = 2;// show employees of selected branch
       } else {
         _isTeamChecked = true; // show first team view
       }
@@ -467,13 +470,7 @@ class _TeamScreenState extends State<TeamScreen> {
               if (_selectedOptionIndex == 0) ...[
                 if (isLoading)
                   Expanded(
-                      child: Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      ))
+                      child:  Loader())
                 else ...[
                   (filteredTeams.isEmpty ||
                       (filteredTeams.first.teamData?.where((member) => member.employeeId != singletonClass.getJWTModel()?.employeeId).isEmpty ?? true))
@@ -599,13 +596,7 @@ class _TeamScreenState extends State<TeamScreen> {
               if (_selectedOptionIndex == 1) ...[
                 if (isLoading)
                   Expanded(
-                      child: Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      ))
+                      child: Loader())
                 else ...[
                   filteredUnderTeams.isNotEmpty &&
                       filteredUnderTeams.first.teamData!.isNotEmpty
@@ -748,13 +739,7 @@ class _TeamScreenState extends State<TeamScreen> {
               if (_selectedOptionIndex == 2) ...[
                 if (isLoading)
                   Expanded(
-                      child: Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      ))
+                      child: Loader())
                 else ...[
                   filteredBranchTeams.isNotEmpty
                       ? Expanded(
@@ -803,39 +788,60 @@ class _TeamScreenState extends State<TeamScreen> {
                                     children: [
                                       Container(
                                         height: 50,
-                                        width: 60,
+                                        width: 50,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
                                             image: NetworkImage(imageUrl),
-                                            fit: BoxFit.fill,
+                                            fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${team.userName}",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: NasColors.darkBlue,
+
+                                      const SizedBox(width: 10),
+
+                                      /// 👇 Expanded fixes the "unbounded width" issue
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                /// Username text
+                                                Text(
+                                                  "${team.userName}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+
+                                                /// Emp ID text
+                                                Text(
+                                                  "${team.employeeInfo!.first.empId}",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
-                                          SizedBox(
-                                            width: 270,
-                                            child: Text(
+
+                                            /// Designation text
+                                            Text(
                                               "${team.employeeInfo!.first.designation}",
                                               style: GoogleFonts.inter(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
                                                 color: Colors.grey,
                                               ),
+                                              overflow: TextOverflow.ellipsis,  // prevents overflow
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -880,13 +886,7 @@ class _TeamScreenState extends State<TeamScreen> {
             if (singletonClass.getJWTModel()?.grade == "L4") ...[
               if (isLoading)
                 Expanded(
-                    child: Center(
-                  child: SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: Lottie.asset('images/loader.json'),
-                  ),
-                ))
+                    child: Loader())
               else ...[
                 filteredTeams.first.teamData!.isNotEmpty
                     ? Expanded(

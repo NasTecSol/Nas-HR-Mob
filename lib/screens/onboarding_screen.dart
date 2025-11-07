@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/register_biometric_device_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -17,6 +17,7 @@ import 'package:mime/mime.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
+import '../widgets/loader.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -48,7 +49,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   PlatformFile? selectedFile;
   String? profilePicUrl;
   String? selectedTeamId;
-
+  String? selectedCountryName;
+  String? selectedFlagEmoji;
   String? nationality;
   String? gender;
   String? religion;
@@ -78,7 +80,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? selectedShiftFrom;
   String? selectedShiftTo;
 
-
   /// Dynamic dropdown data
   List<Map<String, String>> companies = [];
   List<Map<String, String>> branches = [];
@@ -100,11 +101,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           .toList();
     }
     firstNameController.addListener(() {
-      userName.text = "${firstNameController.text}${lastNameController.text}".trim();
+      userName.text =
+          "${firstNameController.text}${lastNameController.text}".trim();
     });
 
     lastNameController.addListener(() {
-      userName.text = "${firstNameController.text}${lastNameController.text}".trim();
+      userName.text =
+          "${firstNameController.text}${lastNameController.text}".trim();
     });
   }
 
@@ -167,23 +170,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (branch != null) {
         // ✅ Parse departments correctly
         departments = branch.departments
-            ?.map<Map<String, String>>((d) => {
-          'id': d.departmentId ?? '',
-          'name': d.departmentName ?? '',
-        })
-            .toList() ??
+                ?.map<Map<String, String>>((d) => {
+                      'id': d.departmentId ?? '',
+                      'name': d.departmentName ?? '',
+                    })
+                .toList() ??
             [];
 
         // ✅ Parse shifts with all required info
         shifts = branch.shifts
-            ?.map<Map<String, String>>((s) => {
-          'id': s.shiftId ?? '',
-          'name': s.shiftName ?? '',
-          'type': s.shiftType ?? '',
-          'timeFrom': s.timeFrom ?? '',
-          'timeTo': s.timeTo ?? '',
-        })
-            .toList() ??
+                ?.map<Map<String, String>>((s) => {
+                      'id': s.shiftId ?? '',
+                      'name': s.shiftName ?? '',
+                      'type': s.shiftType ?? '',
+                      'timeFrom': s.timeFrom ?? '',
+                      'timeTo': s.timeTo ?? '',
+                    })
+                .toList() ??
             [];
       }
     });
@@ -193,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() {
       selectedDepartment = val;
       selectedDepartmentId =
-      departments.firstWhere((d) => d['name'] == val)['id'];
+          departments.firstWhere((d) => d['name'] == val)['id'];
       selectedSupervisor = null;
       selectedSupervisorId = null;
       supervisors.clear();
@@ -202,13 +205,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         final orgData = singletonClass.organizationModelDataList.first.data;
 
         final company = orgData?.companies?.firstWhere(
-              (c) => c.name == selectedCompany,
+          (c) => c.name == selectedCompany,
         );
         final branch = company?.branches?.firstWhere(
-              (b) => b.branchName == selectedBranch,
+          (b) => b.branchName == selectedBranch,
         );
         final dept = branch?.departments?.firstWhere(
-              (d) => d.departmentName == val,
+          (d) => d.departmentName == val,
         );
 
         if (dept != null &&
@@ -216,12 +219,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             dept.supervisors!.isNotEmpty) {
           supervisors = dept.supervisors!
               .map<Map<String, String>>((s) => {
-            'id': s['employeeId']?.toString() ?? '',
-            'empId': s['empId']?.toString() ?? '',
-            'teamId': s['teamId']?.toString() ?? '',
-            'name': s['userName']?.toString() ?? '',
-            'designation': s['designation']?.toString() ?? '',
-          })
+                    'id': s['employeeId']?.toString() ?? '',
+                    'empId': s['empId']?.toString() ?? '',
+                    'teamId': s['teamId']?.toString() ?? '',
+                    'name': s['userName']?.toString() ?? '',
+                    'designation': s['designation']?.toString() ?? '',
+                  })
               .where((s) => s['name']!.isNotEmpty)
               .toList();
         }
@@ -235,27 +238,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() {
       selectedSupervisor = val;
       final selected =
-      supervisors.firstWhere((s) => s['name'] == val, orElse: () => {});
+          supervisors.firstWhere((s) => s['name'] == val, orElse: () => {});
       selectedSupervisorId = selected['empId'];
       selectedTeamId = selected['teamId'];
     });
   }
 
-
-
   void _nextPage() {
     if (_currentPage == 0) {
-      if (selectedCompany == null ||
-          selectedBranch == null ||
-          selectedDepartment == null ||
-          selectedSupervisor == null ||
-          selectedShift == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-            content: Text(AppLocalizations.of(context)!.pleaseSelectAllFields),
-          ),
-        );
-        return;
+      if (singletonClass.getJWTModel()?.grade == 'L0' ||
+          singletonClass.getJWTModel()?.grade == 'L1' ||
+          singletonClass.getJWTModel()?.grade == 'L2') {
+        if (selectedCompany == null ||
+            selectedBranch == null ||
+            selectedDepartment == null ||
+            selectedShift == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.pleaseSelectAllFields),
+            ),
+          );
+          return;
+        }
+      } else {
+        if (selectedCompany == null ||
+            selectedBranch == null ||
+            selectedDepartment == null ||
+            selectedSupervisor == null ||
+            selectedShift == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.pleaseSelectAllFields),
+            ),
+          );
+          return;
+        }
       }
     }
 
@@ -271,7 +290,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           userName.text.isEmpty ||
           password.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
           ),
         );
@@ -280,7 +299,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       String email = emailController.text.trim();
       if (!email.contains('@') || !email.contains('.com')) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseEnterValidEmail),
           ),
         );
@@ -294,7 +313,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           role == null ||
           contractType == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
           ),
         );
@@ -309,7 +328,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           bankName.text.isEmpty ||
           accountNox.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
           ),
         );
@@ -345,16 +364,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         body: Padding(
             padding:
                 const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 15),
-            child: Stack(
-              children: [
-                Column(
-                    children: [
+            child: Stack(children: [
+              Column(children: [
                 /// Header
                 Row(
                   children: [
                     IconButton(
                       onPressed: () {
-                        if (_currentPage == 0){
+                        if (_currentPage == 0) {
                           Navigator.pop(context);
                         } else {
                           _previousPage();
@@ -394,9 +411,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Spacer(),
                     IconButton(
                       onPressed: () {
-                        if(_currentPage == 0 ||_currentPage == 1 ||_currentPage == 2){
+                        if (_currentPage == 0 ||
+                            _currentPage == 1 ||
+                            _currentPage == 2) {
                           _nextPage();
-                        } else{
+                        } else {
                           createEmployee();
                         }
                       },
@@ -415,8 +434,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ],
                         ),
-                        child: Icon( _currentPage == 3 ? Icons.done :
-                          Icons.arrow_forward_ios_outlined,
+                        child: Icon(
+                          _currentPage == 3
+                              ? Icons.done
+                              : Icons.arrow_forward_ios_outlined,
                           color: Colors.black,
                         ),
                       ),
@@ -430,12 +451,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: List.generate(4, (index) {
-                      final titles = [
-                      "🏢",
-                      "🙎🏻‍♂️",
-                      "💻",
-                      "💰"
-                      ];
+                      final titles = ["🏢", "🙎🏻‍♂️", "💻", "💰"];
                       final isActive = _currentPage == index;
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -454,16 +470,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                             const SizedBox(height: 6),
                             Padding(
-                              padding: const EdgeInsets.only(left: 20.0 ,right: 20),
+                              padding:
+                                  const EdgeInsets.only(left: 20.0, right: 20),
                               child: Text(
-                                  titles[index],
-                                  style: GoogleFonts.inter(
-                                    color: isActive ? Colors.black : Colors.grey,
-                                    fontWeight: isActive
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    fontSize: 30,
-                                  ),
+                                titles[index],
+                                style: GoogleFonts.inter(
+                                  color: isActive ? Colors.black : Colors.grey,
+                                  fontWeight: isActive
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  fontSize: 30,
+                                ),
                               ),
                             ),
                           ],
@@ -494,12 +511,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   color: Colors.black),
                             ),
                             const SizedBox(height: 20),
+
                             /// Company Dropdown
                             RichText(
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: AppLocalizations.of(context)!.selectCompany,
+                                    text: AppLocalizations.of(context)!
+                                        .selectCompany,
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -537,10 +556,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     horizontal: 12, vertical: 14),
                               ),
                               value: selectedCompany,
-                              hint:  Text(AppLocalizations.of(context)!.selectCompany),
+                              hint: Text(
+                                  AppLocalizations.of(context)!.selectCompany),
                               items: companies
                                   .map((e) => DropdownMenuItem(
-                                      value: e['name'], child: Text(e['name']!)))
+                                      value: e['name'],
+                                      child: Text(e['name']!)))
                                   .toList(),
                               onChanged: _onCompanySelected,
                             ),
@@ -551,7 +572,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: AppLocalizations.of(context)!.selectBranch,
+                                    text: AppLocalizations.of(context)!
+                                        .selectBranch,
                                     style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -587,10 +609,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     horizontal: 12, vertical: 14),
                               ),
                               value: selectedBranch,
-                              hint:  Text(AppLocalizations.of(context)!.selectBranch),
+                              hint: Text(
+                                  AppLocalizations.of(context)!.selectBranch),
                               items: branches
                                   .map((e) => DropdownMenuItem(
-                                      value: e['name'], child: Text(e['name']!)))
+                                      value: e['name'],
+                                      child: Text(e['name']!)))
                                   .toList(),
                               onChanged: _onBranchSelected,
                             ),
@@ -601,7 +625,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: AppLocalizations.of(context)!.selectDepartment,
+                                    text: AppLocalizations.of(context)!
+                                        .selectDepartment,
                                     style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -637,10 +662,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     horizontal: 12, vertical: 14),
                               ),
                               value: selectedDepartment,
-                              hint:  Text(AppLocalizations.of(context)!.selectDepartment),
+                              hint: Text(AppLocalizations.of(context)!
+                                  .selectDepartment),
                               items: departments
                                   .map((e) => DropdownMenuItem(
-                                      value: e['name'], child: Text(e['name']!)))
+                                      value: e['name'],
+                                      child: Text(e['name']!)))
                                   .toList(),
                               onChanged: _onDepartmentSelected,
                             ),
@@ -651,7 +678,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: AppLocalizations.of(context)!.selectSupervisor,
+                                    text: AppLocalizations.of(context)!
+                                        .selectSupervisor,
                                     style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -686,13 +714,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 14),
                               ),
-                              value: selectedSupervisor,
-                              hint:  Text(AppLocalizations.of(context)!.selectSupervisor),
-                              items: supervisors
-                                  .map((e) => DropdownMenuItem(
-                                      value: e['name'], child: Text(e['name']!)))
-                                  .toList(),
-                              onChanged: (value) => _onSupervisorSelected(value),
+                              value: supervisors.isEmpty
+                                  ? null
+                                  : selectedSupervisor,
+                              hint: Text(
+                                supervisors.isEmpty
+                                    ? AppLocalizations.of(context)!.noSupervisorFound
+                                    : AppLocalizations.of(context)!
+                                        .selectSupervisor,
+                              ),
+                              items: supervisors.isEmpty
+                                  ? [
+                                       DropdownMenuItem(
+                                        value: null,
+                                        enabled: false,
+                                        child: Text(
+                                          AppLocalizations.of(context)!.noSupervisorFound,
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                      )
+                                    ]
+                                  : supervisors
+                                      .map((e) => DropdownMenuItem(
+                                            value: e['name'],
+                                            child: Text(e['name']!),
+                                          ))
+                                      .toList(),
+                              onChanged: supervisors.isEmpty
+                                  ? null
+                                  : (value) => _onSupervisorSelected(value),
                             ),
                             const SizedBox(height: 16),
 
@@ -701,7 +751,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: AppLocalizations.of(context)!.selectShift,
+                                    text: AppLocalizations.of(context)!
+                                        .selectShift,
                                     style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -723,29 +774,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.grey),
+                                  borderSide:
+                                      const BorderSide(color: Colors.grey),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                                  borderSide: const BorderSide(
+                                      color: Colors.black, width: 1.5),
                                 ),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 14),
                               ),
                               value: selectedShift,
-                              hint:  Text(AppLocalizations.of(context)!.selectShift),
+                              hint: Text(
+                                  AppLocalizations.of(context)!.selectShift),
                               items: shifts
                                   .map((shift) => DropdownMenuItem<String>(
-                                value: shift['name'],
-                                child: Text(shift['name'] ?? ''),
-                              ))
+                                        value: shift['name'],
+                                        child: Text(shift['name'] ?? ''),
+                                      ))
                                   .toList(),
                               onChanged: (value) {
                                 setState(() {
                                   selectedShift = value;
 
-                                  final selected = shifts.firstWhere((s) => s['name'] == value);
+                                  final selected = shifts
+                                      .firstWhere((s) => s['name'] == value);
                                   selectedShiftId = selected['id'];
                                   selectedShiftType = selected['type'];
                                   selectedShiftFrom = selected['timeFrom'];
@@ -753,10 +809,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 });
                               },
                             )
-
                           ],
                         ),
                       ),
+
                       ///Page 2
                       SingleChildScrollView(
                         child: Padding(
@@ -765,19 +821,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                AppLocalizations.of(context)!.personalAndEducationalInfo,
+                                AppLocalizations.of(context)!
+                                    .personalAndEducationalInfo,
                                 style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                               const SizedBox(height: 20),
+
                               /// ===== FIRST NAME =====
                               RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.firstName,
+                                        text: AppLocalizations.of(context)!
+                                            .firstName,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -795,11 +854,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: firstNameController,
                                   decoration: InputDecoration(
-                                      hintText:AppLocalizations.of(context)!.enterFirstName,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterFirstName,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -809,7 +869,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
                               const SizedBox(height: 12),
 
                               // ===== LAST NAME =====
@@ -817,7 +878,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.lastName,
+                                        text: AppLocalizations.of(context)!
+                                            .lastName,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -835,11 +897,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: lastNameController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterLastName,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterLastName,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -856,70 +919,65 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                               // ===== NATIONALITY =====
                               RichText(
-                                text: TextSpan(
+                                text: const TextSpan(
+                                  text: "Nationality ",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.nationality,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
+                                      text: "*",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 14),
+                                    ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                    const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
+                              const SizedBox(height: 6),
+                              Container(
+                                height: 55,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey),
                                 ),
-                                hint: Text("-- ${AppLocalizations.of(context)!.selectNationality} --"),
-                                value: nationality,
-                                items: [
-                                  AppLocalizations.of(context)!.pakistani,
-                                  (AppLocalizations.of(context)!.indian),
-                                  (AppLocalizations.of(context)!.bangladeshi),
-                                  (AppLocalizations.of(context)!.saudiaArabia),
-                                  (AppLocalizations.of(context)!.other)
-                                ]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => nationality = val);
-                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: CountryCodePicker(
+                                        onChanged: (country) {
+                                          setState(() {
+                                            nationality = country.name;
+                                            selectedCountryName = country.name;
+                                          });
+                                        },
+                                        initialSelection: 'SA',
+                                        showCountryOnly: true,
+                                        showOnlyCountryWhenClosed: true,
+                                        alignLeft: true,
+                                        showFlag: true,
+                                        showFlagDialog: true,
+                                        padding: EdgeInsets.zero,
+                                        textStyle: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-
-                              const SizedBox(height: 12),
 
                               /// ====Gender ====
                               const SizedBox(height: 12),
-
-                              // ===== NATIONALITY =====
                               RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.gender,
+                                        text: AppLocalizations.of(context)!
+                                            .gender,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -940,7 +998,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -952,16 +1010,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 14),
                                 ),
-                                hint: Text("-- ${AppLocalizations.of(context)!.gender} --"),
+                                hint: Text(
+                                    "-- ${AppLocalizations.of(context)!.gender} --"),
                                 value: gender,
                                 items: [
                                   AppLocalizations.of(context)!.male,
                                   AppLocalizations.of(context)!.female,
                                   (AppLocalizations.of(context)!.other),
-
                                 ]
                                     .map((val) => DropdownMenuItem(
-                                    value: val, child: Text(val)))
+                                        value: val, child: Text(val)))
                                     .toList(),
                                 onChanged: (val) {
                                   setState(() => gender = val);
@@ -969,12 +1027,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
 
                               const SizedBox(height: 12),
+
                               /// ===== NATIONAL ID =====
                               RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.nationalId,
+                                        text: AppLocalizations.of(context)!
+                                            .nationalId,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -990,11 +1050,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ],
                                   controller: nationalIdController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterNationalId,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterNationalId,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1004,7 +1065,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1013,7 +1075,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.iqamaNumber,
+                                        text: AppLocalizations.of(context)!
+                                            .iqamaNumber,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1029,11 +1092,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ],
                                   controller: iqamaController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterIqamaNumber,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterIqamaNumber,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1043,7 +1107,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1052,7 +1117,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.phone,
+                                        text:
+                                            AppLocalizations.of(context)!.phone,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1074,11 +1140,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ],
                                   controller: phoneController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterPhoneNumber,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterPhoneNumber,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1088,7 +1155,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1097,7 +1165,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.enterEmail,
+                                        text: AppLocalizations.of(context)!
+                                            .enterEmail,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1115,11 +1184,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: emailController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterEmail,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterEmail,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1129,7 +1199,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1138,7 +1209,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.address,
+                                        text: AppLocalizations.of(context)!
+                                            .address,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1150,11 +1222,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: addressController,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterAddress,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterAddress,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1164,7 +1237,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1173,7 +1247,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.dateOfBirth,
+                                        text: AppLocalizations.of(context)!
+                                            .dateOfBirth,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1195,7 +1270,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     initialDate: DateTime.now(),
                                     firstDate: DateTime(1950),
                                     lastDate: DateTime.now(),
-                                    builder: (BuildContext context, Widget? child) {
+                                    builder:
+                                        (BuildContext context, Widget? child) {
                                       return Theme(
                                         data: ThemeData.light().copyWith(
                                           colorScheme: ColorScheme.light(
@@ -1206,7 +1282,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           dialogBackgroundColor: Colors.white,
                                           textButtonTheme: TextButtonThemeData(
                                             style: TextButton.styleFrom(
-                                              foregroundColor: NasColors.darkBlue,
+                                              foregroundColor:
+                                                  NasColors.darkBlue,
                                             ),
                                           ),
                                         ),
@@ -1227,8 +1304,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       suffixIcon: Icon(Icons.calendar_today),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide:
-                                        const BorderSide(color: Colors.grey),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
@@ -1236,9 +1313,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             color: Colors.black, width: 1.5),
                                       ),
                                       border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 14),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 14),
                                     ),
                                   ),
                                 ),
@@ -1251,7 +1330,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.religion,
+                                        text: AppLocalizations.of(context)!
+                                            .religion,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1272,7 +1352,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -1282,8 +1362,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
-                                hint: Text("-- ${AppLocalizations.of(context)!.selectReligion} --"),
+                                      horizontal: 12, vertical: 14),
+                                ),
+                                hint: Text(
+                                    "-- ${AppLocalizations.of(context)!.selectReligion} --"),
                                 value: religion,
                                 items: [
                                   (AppLocalizations.of(context)!.islam),
@@ -1306,7 +1388,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.martialStatus,
+                                        text: AppLocalizations.of(context)!
+                                            .martialStatus,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1327,7 +1410,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -1337,8 +1420,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
-                                hint: Text("-- ${AppLocalizations.of(context)!.selectStatus} --"),
+                                      horizontal: 12, vertical: 14),
+                                ),
+                                hint: Text(
+                                    "-- ${AppLocalizations.of(context)!.selectStatus} --"),
                                 value: maritalStatus,
                                 items: [
                                   (AppLocalizations.of(context)!.single),
@@ -1361,7 +1446,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.username,
+                                        text: AppLocalizations.of(context)!
+                                            .username,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1380,19 +1466,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 controller: userName,
                                 readOnly: true,
                                 decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.enterUsername,
+                                  hintText: AppLocalizations.of(context)!
+                                      .enterUsername,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Colors.grey),
+                                    borderSide:
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                                    borderSide: const BorderSide(
+                                        color: Colors.black, width: 1.5),
                                   ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 14),
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -1402,7 +1492,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.password,
+                                        text: AppLocalizations.of(context)!
+                                            .password,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1421,11 +1512,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 controller: password,
                                 obscureText: true,
                                 decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.enterPassword,
+                                  hintText: AppLocalizations.of(context)!
+                                      .enterPassword,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -1435,7 +1527,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
+                                      horizontal: 12, vertical: 14),
+                                ),
                               ),
 
                               const SizedBox(height: 12),
@@ -1444,7 +1537,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.degreeName,
+                                      text: AppLocalizations.of(context)!
+                                          .degreeName,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -1457,11 +1551,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: degreeName,
                                   decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.enterDegreeName,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterDegreeName,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1471,7 +1566,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               SizedBox(height: 12),
 
@@ -1480,7 +1576,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.degreeType,
+                                      text: AppLocalizations.of(context)!
+                                          .degreeType,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -1493,11 +1590,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: degreeType,
                                   decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.enterDegreeType,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterDegreeType,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1507,14 +1605,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
                               const SizedBox(height: 20),
                               // ===== PROFILE PICTURE =====
                               RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.profilePicture,
+                                        text: AppLocalizations.of(context)!
+                                            .profilePicture,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1526,48 +1626,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Row(
                                 children: [
                                   // 🔹 Show button only when no profile image uploaded
-                                  if (profilePicUrl == null || profilePicUrl!.isEmpty)
+                                  if (profilePicUrl == null ||
+                                      profilePicUrl!.isEmpty)
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: NasColors.darkBlue, // 🔹 Button color
-                                        foregroundColor: Colors.white, // 🔹 Text color
+                                        backgroundColor: NasColors.darkBlue,
+                                        // 🔹 Button color
+                                        foregroundColor: Colors.white,
+                                        // 🔹 Text color
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
                                       ),
                                       onPressed: () async {
-                                        FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                        FilePickerResult? result =
+                                            await FilePicker.platform.pickFiles(
                                           type: FileType.image,
                                         );
 
-                                        if (result != null && result.files.single.path != null) {
-                                          PlatformFile file = result.files.single;
+                                        if (result != null &&
+                                            result.files.single.path != null) {
+                                          PlatformFile file =
+                                              result.files.single;
                                           setState(() {
                                             selectedFile = file;
                                           });
 
                                           print('Selected file: ${file.name}');
                                           await uploadProfileToS3(file);
-                                          setState(() {}); // refresh to show image preview
+                                          setState(
+                                              () {}); // refresh to show image preview
                                         } else {
                                           print('File selection canceled.');
                                         }
                                       },
-                                      child:  Text(AppLocalizations.of(context)!.chooseFile),
+                                      child: Text(AppLocalizations.of(context)!
+                                          .chooseFile),
                                     )
                                   else
                                     Stack(
                                       alignment: Alignment.topRight,
                                       children: [
                                         ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                           child: Image.network(
                                             profilePicUrl!,
                                             width: 70,
                                             height: 70,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey),
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                const Icon(Icons.broken_image,
+                                                    color: Colors.grey),
                                           ),
                                         ),
                                         Positioned(
@@ -1586,7 +1700,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                                 shape: BoxShape.circle,
                                               ),
                                               padding: const EdgeInsets.all(4),
-                                              child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                              child: const Icon(Icons.close,
+                                                  color: Colors.white,
+                                                  size: 14),
                                             ),
                                           ),
                                         ),
@@ -1596,9 +1712,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   const SizedBox(width: 10),
 
                                   // 🔹 Show text only when no file chosen
-                                  if (profilePicUrl == null || profilePicUrl!.isEmpty)
-                                     Text(
-                                       AppLocalizations.of(context)!.noFileChosen,
+                                  if (profilePicUrl == null ||
+                                      profilePicUrl!.isEmpty)
+                                    Text(
+                                      AppLocalizations.of(context)!
+                                          .noFileChosen,
                                       style: TextStyle(color: Colors.grey),
                                     ),
                                 ],
@@ -1607,6 +1725,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
+
                       ///Page 3
                       SingleChildScrollView(
                         child: Padding(
@@ -1615,7 +1734,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                AppLocalizations.of(context)!.professionalInformation,
+                                AppLocalizations.of(context)!
+                                    .professionalInformation,
                                 style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -1628,7 +1748,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.hierarchyGroup,
+                                        text: AppLocalizations.of(context)!
+                                            .hierarchyGroup,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1649,7 +1770,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -1659,10 +1780,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
-                                hint: Text(AppLocalizations.of(context)!.selectHierarchyGroup),
+                                      horizontal: 12, vertical: 14),
+                                ),
+                                hint: Text(AppLocalizations.of(context)!
+                                    .selectHierarchyGroup),
                                 value: hierarchyGroup,
-                                items: ["L1", "L2", "L3" ,"L4"]
+                                items: ["L1", "L2", "L3", "L4"]
                                     .map((val) => DropdownMenuItem(
                                         value: val, child: Text(val)))
                                     .toList(),
@@ -1678,7 +1801,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.designation,
+                                        text: AppLocalizations.of(context)!
+                                            .designation,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1696,11 +1820,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: designation,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterDesignation,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterDesignation,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1710,7 +1835,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               const SizedBox(height: 12),
 
@@ -1719,7 +1845,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.role,
+                                        text:
+                                            AppLocalizations.of(context)!.role,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1735,12 +1862,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
+                                dropdownColor: Colors.white,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -1750,10 +1877,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
-                                hint: Text(AppLocalizations.of(context)!.selectRole),
+                                      horizontal: 12, vertical: 14),
+                                ),
+                                hint: Text(
+                                    AppLocalizations.of(context)!.selectRole),
                                 value: role,
-                                items: [(AppLocalizations.of(context)!.junior), (AppLocalizations.of(context)!.mid), (AppLocalizations.of(context)!.senior)]
+                                items: [
+                                  (AppLocalizations.of(context)!.junior),
+                                  (AppLocalizations.of(context)!.mid),
+                                  (AppLocalizations.of(context)!.senior)
+                                ]
                                     .map((val) => DropdownMenuItem(
                                         value: val, child: Text(val)))
                                     .toList(),
@@ -1769,7 +1902,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!.contractType,
+                                        text: AppLocalizations.of(context)!
+                                            .contractType,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1793,7 +1927,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       onChanged: (val) {
                                         setState(() => contractType = val);
                                       }),
-                                   Text(AppLocalizations.of(context)!.permanent),
+                                  Text(AppLocalizations.of(context)!.permanent),
                                   const SizedBox(width: 20),
                                   Radio(
                                       value: "Temporary",
@@ -1802,19 +1936,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       onChanged: (val) {
                                         setState(() => contractType = val);
                                       }),
-                                   Text(AppLocalizations.of(context)!.temporary),
+                                  Text(AppLocalizations.of(context)!.temporary),
                                 ],
                               ),
 
                               const SizedBox(height: 12),
 
                               // ===== END OF CONTRACT =====
-                              if(contractType == "Temporary")...[
+                              if (contractType == "Temporary") ...[
                                 RichText(
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
-                                          text: AppLocalizations.of(context)!.endOfContract,
+                                          text: AppLocalizations.of(context)!
+                                              .endOfContract,
                                           style: GoogleFonts.inter(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -1836,7 +1971,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       initialDate: DateTime.now(),
                                       firstDate: DateTime(2000),
                                       lastDate: DateTime(2100),
-                                      builder: (BuildContext context, Widget? child) {
+                                      builder: (BuildContext context,
+                                          Widget? child) {
                                         return Theme(
                                           data: ThemeData.light().copyWith(
                                             colorScheme: ColorScheme.light(
@@ -1845,9 +1981,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                               onSurface: Colors.black,
                                             ),
                                             dialogBackgroundColor: Colors.white,
-                                            textButtonTheme: TextButtonThemeData(
+                                            textButtonTheme:
+                                                TextButtonThemeData(
                                               style: TextButton.styleFrom(
-                                                foregroundColor: NasColors.darkBlue,
+                                                foregroundColor:
+                                                    NasColors.darkBlue,
                                               ),
                                             ),
                                           ),
@@ -1867,19 +2005,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             : "dd/mm/yyyy",
                                         suffixIcon: Icon(Icons.calendar_today),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide:
-                                          const BorderSide(color: Colors.grey),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: const BorderSide(
+                                              color: Colors.grey),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                           borderSide: const BorderSide(
                                               color: Colors.black, width: 1.5),
                                         ),
                                         border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 14),
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 14),
                                       ),
                                     ),
                                   ),
@@ -1891,6 +2033,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
+
                       ///page 4
                       SingleChildScrollView(
                         child: Padding(
@@ -1906,7 +2049,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     color: Colors.black),
                               ),
 
-
                               SizedBox(height: 20),
 
                               // Basic Salary
@@ -1914,7 +2056,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.basicSalary,
+                                      text: AppLocalizations.of(context)!
+                                          .basicSalary,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -1932,17 +2075,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
-                                keyboardType: TextInputType.number,
+                                  keyboardType: TextInputType.number,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   controller: basicSalary,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterBasicSalary,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterBasicSalary,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -1952,7 +2096,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               SizedBox(height: 12),
 
@@ -1961,7 +2106,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.currency,
+                                      text: AppLocalizations.of(context)!
+                                          .currency,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -1989,11 +2135,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   setState(() => currency = val);
                                 },
                                 decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.selectCategory,
+                                  hintText: AppLocalizations.of(context)!
+                                      .selectCategory,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -2003,7 +2150,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
+                                      horizontal: 12, vertical: 14),
+                                ),
                               ),
 
                               SizedBox(height: 12),
@@ -2013,7 +2161,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.salaryPeriod,
+                                      text: AppLocalizations.of(context)!
+                                          .salaryPeriod,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -2041,11 +2190,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   setState(() => salaryPeriod = val);
                                 },
                                 decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.selectSalaryPeriod,
+                                  hintText: AppLocalizations.of(context)!
+                                      .selectSalaryPeriod,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:
-                                    const BorderSide(color: Colors.grey),
+                                        const BorderSide(color: Colors.grey),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -2055,7 +2205,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),),
+                                      horizontal: 12, vertical: 14),
+                                ),
                               ),
 
                               SizedBox(height: 12),
@@ -2065,7 +2216,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.bankName,
+                                      text: AppLocalizations.of(context)!
+                                          .bankName,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -2085,11 +2237,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               TextField(
                                   controller: bankName,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterBankName,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterBankName,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -2099,7 +2252,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
 
                               SizedBox(height: 12),
 
@@ -2108,7 +2262,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: AppLocalizations.of(context)!.accountNo,
+                                      text: AppLocalizations.of(context)!
+                                          .accountNo,
                                       style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -2132,11 +2287,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ],
                                   controller: accountNox,
                                   decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.enterAccountNo,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterAccountNo,
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide:
-                                      const BorderSide(color: Colors.grey),
+                                          const BorderSide(color: Colors.grey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -2146,7 +2302,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),)),
+                                        horizontal: 12, vertical: 14),
+                                  )),
                             ],
                           ),
                         ),
@@ -2155,18 +2312,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ]),
-                if (isLoading)
-                  Center(
-                    child:
-                    SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset(
-                          'images/loader.json'
-                      ),
-                    ),)
-              ]
-            )));
+              if (isLoading) Loader(),
+            ])));
   }
 
   ///S3 Bucket Call Method
@@ -2191,7 +2338,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // ✅ Prepare request
       var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
       var request = http.MultipartRequest('POST', uri);
-      final mimeType = lookupMimeType(file.path ?? '', headerBytes: fileBytes) ?? 'application/octet-stream';
+      final mimeType =
+          lookupMimeType(file.path ?? '', headerBytes: fileBytes) ??
+              'application/octet-stream';
 
       request.headers.addAll(singletonClass.getHeaders());
       request.files.add(http.MultipartFile.fromBytes(
@@ -2379,7 +2528,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     String body = json.encode(data);
 
-    final uri = Uri.parse("${singletonClass.baseURL}/employee/create?branchId=$selectedBranchId&departmentId=$selectedDepartmentId&organizationId=$organizationID&teamId=$selectedTeamId");
+    final uri = Uri.parse(
+        "${singletonClass.baseURL}/employee/create?branchId=$selectedBranchId&departmentId=$selectedDepartmentId&organizationId=$organizationID&teamId=$selectedTeamId");
     try {
       setState(() => isLoading = true);
       final response = await http.post(
@@ -2417,7 +2567,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           );
-
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),
@@ -2428,7 +2577,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             type: QuickAlertType.error,
           );
         }
-      }else if (response.statusCode == 400 || response.statusCode == 500) {
+      } else if (response.statusCode == 400 || response.statusCode == 500) {
         setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -2455,8 +2604,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       print("❌ Error: $e");
     }
   }
-
-
 
 // helper method
   int _calculateAge(String? birthDateString) {
