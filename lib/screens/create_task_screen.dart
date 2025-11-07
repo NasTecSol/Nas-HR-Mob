@@ -21,6 +21,8 @@ import '../request_controller/projects_data_model.dart';
 import '../request_controller/task_attachment_model.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 
+import '../widgets/loader.dart';
+
 class CreateTaskScreen extends StatefulWidget {
   final Data? projectData;
 
@@ -584,13 +586,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             ],
           ),
             if (isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              )
+             Loader()
           ]
         ),
       ),

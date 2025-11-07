@@ -7,6 +7,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import '../request_controller/projects_data_model.dart';
 import '../request_controller/task_model.dart';
+import '../widgets/loader.dart';
 
 
 class TaskDetailScreen extends StatefulWidget {
@@ -299,13 +300,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ],
           ),
             if (isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              )
+              Loader()
           ]
         ),
       ),

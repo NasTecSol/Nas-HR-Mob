@@ -11,6 +11,8 @@ import '../request_controller/event_model.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 
+import '../widgets/loader.dart';
+
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -205,13 +207,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   future: getEventData(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      );
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Center(
@@ -392,13 +388,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   future: getEventData(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      );
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Center(
@@ -556,7 +546,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     } else {
                       return Center(
                         child: Text(
-                          "No data available",
+                          AppLocalizations.of(context)!.noData,
                           style: GoogleFonts.inter(fontSize: 15, color: Colors.grey),
                         ),
                       );
@@ -569,13 +559,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   future: getEventData(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      );
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Center(

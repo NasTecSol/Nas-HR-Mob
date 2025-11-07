@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/company_selection_screen.dart';
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -20,10 +19,9 @@ import 'package:uuid/uuid.dart';
 import 'package:local_auth/local_auth.dart';
 import '../Controller/language_change_controller.dart';
 import '../request_controller/login_model.dart';
-
+import '../widgets/loader.dart';
 
 enum Language { english, arabic }
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,13 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void loadVersion() async {
-    if(Platform.isAndroid || Platform.isIOS){
+    if (Platform.isAndroid || Platform.isIOS) {
       final info = await PackageInfo.fromPlatform();
       setState(() {
         version = 'v${info.version}';
       });
     }
-
   }
 
   Future<void> _checkToken() async {
@@ -102,42 +99,42 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         if (isAuthenticated) {
           setState(() {
-            isLoading = true ;
+            isLoading = true;
           });
-          final SharedPreferences preferences = await SharedPreferences.getInstance();
+          final SharedPreferences preferences =
+              await SharedPreferences.getInstance();
           String? token = preferences.getString('token');
           decodeJwt(token!.trim());
           setState(() {
-            isLoading = false ;
+            isLoading = false;
           });
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
+            MaterialPageRoute(
+                builder: (context) => const MainScreen(
+                      index: 0,
+                    )),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-              content:  Text(AppLocalizations.of(context)!.biometricAuthenticationFailed,
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                    fontSize: 15
-                ),
-              )
-            ),
+            SnackBar(
+                content: Text(
+              AppLocalizations.of(context)!.biometricAuthenticationFailed,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                  fontSize: 15),
+            )),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-            content: Text(AppLocalizations.of(context)!.biometricNotAvailable,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  fontSize: 15
-              ),
-            )
-          ),
+          SnackBar(
+              content: Text(
+            AppLocalizations.of(context)!.biometricNotAvailable,
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w500, color: Colors.white, fontSize: 15),
+          )),
         );
       }
     } catch (e) {
@@ -145,15 +142,12 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Error during biometric authentication: $e');
       }
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
-          content: Text(AppLocalizations.of(context)!.anErrorOccurredDuringAuthentication,
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-                fontSize: 15
-            ),
-          )
-        ),
+        SnackBar(
+            content: Text(
+          AppLocalizations.of(context)!.anErrorOccurredDuringAuthentication,
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w500, color: Colors.white, fontSize: 15),
+        )),
       );
     }
   }
@@ -167,24 +161,22 @@ class _LoginScreenState extends State<LoginScreen> {
         child: ListView(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 20.0 , right: 20 , top: 10),
-              child: Stack(
-                alignment: AlignmentDirectional.center,
-                children: [ Column(
+              padding: const EdgeInsets.only(left: 20.0, right: 20, top: 10),
+              child: Stack(alignment: AlignmentDirectional.center, children: [
+                Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if(singletonClass.companyName != null && singletonClass.companyName!.isNotEmpty)...[
+                        if (singletonClass.companyName != null &&
+                            singletonClass.companyName!.isNotEmpty) ...[
                           Container(
-                            height:8,
+                            height: 8,
                             width: 8,
                             decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle
-                            ),
+                                color: Colors.green, shape: BoxShape.circle),
                           ),
                           SizedBox(width: 5),
                           Text(
@@ -195,39 +187,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ],
-                        IconButton(onPressed: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanySelectionScreen()));
-                        }, icon: Icon(Icons.apartment_outlined,
-                          size: 28,
-                        )),
+                        IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CompanySelectionScreen()));
+                            },
+                            icon: Icon(
+                              Icons.apartment_outlined,
+                              size: 28,
+                            )),
                         Consumer<LanguageChangeController>(
                             builder: (context, provider, child) {
-                              return PopupMenuButton(
-                                color: Colors.white,
-                                icon: const Icon(Icons.language_rounded),
-                                onSelected: (Language item) {
-                                  if (Language.english.name == item.name) {
-                                    provider.changeLanguage(const Locale('en'));
-                                  } else {
-                                    provider.changeLanguage(const Locale('ar'));
-                                  }
-                                },
-                                itemBuilder: (BuildContext context) =>
+                          return PopupMenuButton(
+                            color: Colors.white,
+                            icon: const Icon(Icons.language_rounded),
+                            onSelected: (Language item) {
+                              if (Language.english.name == item.name) {
+                                provider.changeLanguage(const Locale('en'));
+                              } else {
+                                provider.changeLanguage(const Locale('ar'));
+                              }
+                            },
+                            itemBuilder: (BuildContext context) =>
                                 <PopupMenuEntry<Language>>[
-                                  const PopupMenuItem(
-                                    value: Language.english,
-                                    child: Text("English"),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: Language.arabic,
-                                    child: Text("العربية"),
-                                  ),
-                                ],
-                              );
-                            }),
+                              const PopupMenuItem(
+                                value: Language.english,
+                                child: Text("English"),
+                              ),
+                              const PopupMenuItem(
+                                value: Language.arabic,
+                                child: Text("العربية"),
+                              ),
+                            ],
+                          );
+                        }),
                       ],
                     ),
-                    if(kDebugMode)...[
+                    if (kDebugMode) ...[
                       Text(
                         "You're in debug mode",
                         style: GoogleFonts.inter(
@@ -289,7 +288,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _email,
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return AppLocalizations.of(context)!.pleaseEnterUsername;
+                            return AppLocalizations.of(context)!
+                                .pleaseEnterUsername;
                           }
                           return null;
                         },
@@ -303,11 +303,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
+                            borderSide:
+                                const BorderSide(color: Colors.transparent),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
-                            borderSide: const BorderSide(color: Colors.transparent),
+                            borderSide:
+                                const BorderSide(color: Colors.transparent),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
@@ -317,58 +319,63 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                   Container(
-                    decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: NasColors.lightGrey,
-                  ),
-                  child: TextFormField(
-                    controller: _password,
-                    obscureText: _obscurePassword,
-                    obscuringCharacter: '•',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                    ),
-                    cursorColor: Colors.grey,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(context)!.pleaseEnterPassword;
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: NasColors.lightGrey,
+                      ),
+                      child: TextFormField(
+                        controller: _password,
+                        obscureText: _obscurePassword,
+                        obscuringCharacter: '•',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                        ),
+                        cursorColor: Colors.grey,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return AppLocalizations.of(context)!
+                                .pleaseEnterPassword;
+                          }
+                          return null;
                         },
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                          color: NasColors.icons,
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: NasColors.icons,
+                            ),
+                          ),
+                          hintText: AppLocalizations.of(context)!.password,
+                          hintStyle: GoogleFonts.inter(color: Colors.grey),
+                          prefixIcon: Icon(
+                            Icons.lock_outline,
+                            color: NasColors.icons,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide:
+                                const BorderSide(color: Colors.transparent),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide:
+                                const BorderSide(color: Colors.transparent),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
                         ),
                       ),
-                      hintText: AppLocalizations.of(context)!.password,
-                      hintStyle: GoogleFonts.inter(color: Colors.grey),
-                      prefixIcon: Icon(
-                        Icons.lock_outline,
-                        color: NasColors.icons,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(color: Colors.transparent),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(color: Colors.transparent),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
                     ),
-                  ),
-                ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -394,8 +401,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           login();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(
-                              content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
+                            SnackBar(
+                              content: Text(AppLocalizations.of(context)!
+                                  .pleaseFillAllFields),
                               duration: Duration(seconds: 4),
                             ),
                           );
@@ -413,22 +421,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     Text(
                       version.isEmpty ? 'Loading version...' : version,
-                      style: GoogleFonts.inter(fontSize: 14, color: Colors.grey),
+                      style:
+                          GoogleFonts.inter(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
-                  if (isLoading)
-                    Center(
-                      child:
-                      SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset(
-                          'images/loader.json'
-                      ),
-                    ),)
-        ]
-              ),
+                if (isLoading)
+                  Positioned.fill(
+                    child: Container(
+                        color: Colors.white.withOpacity(0.7),
+                        child: Loader()),
+                  )
+              ]),
             ),
           ],
         ),
@@ -486,10 +490,14 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MainScreen(index: 0,)),
+              MaterialPageRoute(
+                  builder: (context) => const MainScreen(
+                        index: 0,
+                      )),
             );
           }
-        } else if (loginResponse.statusCode == 400 || loginResponse.statusCode == 500) {
+        } else if (loginResponse.statusCode == 400 ||
+            loginResponse.statusCode == 500) {
           setState(() {
             isLoading = false;
           });
@@ -498,7 +506,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showCancelBtn: false,
             showConfirmBtn: false,
             context: context,
-            title:  AppLocalizations.of(context)!.passwordOrUsernameIncorrect,
+            title: AppLocalizations.of(context)!.passwordOrUsernameIncorrect,
             type: QuickAlertType.error,
           );
         } else {
@@ -554,12 +562,13 @@ class _LoginScreenState extends State<LoginScreen> {
         showCancelBtn: false,
         showConfirmBtn: false,
         context: context,
-        title:  AppLocalizations.of(context)!.internalServerError,
-        text:  AppLocalizations.of(context)!.tryAgain,
+        title: AppLocalizations.of(context)!.internalServerError,
+        text: AppLocalizations.of(context)!.tryAgain,
         type: QuickAlertType.error,
       );
     }
   }
+
   // Decoding Token Data Here
   void decodeJwt(String token) {
     List<String> parts = token.split('.');

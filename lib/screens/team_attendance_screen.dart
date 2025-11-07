@@ -12,6 +12,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:http/http.dart' as http;
 import '../request_controller/branch_model.dart';
+import '../widgets/loader.dart';
 
 class TeamAttendanceScreen extends StatefulWidget {
   const TeamAttendanceScreen({super.key});
@@ -839,15 +840,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
             SizedBox(height: 10),
             Expanded(
                 child: (_isLoadingBranchData ||  _isInitialLoading)
-                    ? Center(child: Lottie.asset('images/loader.json', height: 200, width: 200))
+                    ? Loader()
                     : FutureBuilder(
                     future: getTeamAttendanceData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: Lottie.asset('images/loader.json',
-                              height: 200, width: 200),
-                        );
+                        return Loader();
                       } else if (filteredAttendanceDataList.isEmpty) {
                         return Center(
                           child: Padding(

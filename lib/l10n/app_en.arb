@@ -1185,7 +1185,8 @@
     "female": "Female",
     "employeeIsRegistered":"Employee is registered",
     "toEnrollThisEmployeeOnBiometricDevice":"To enroll this employee on biometric device",
-    "skip":"Skip"
+    "skip":"Skip",
+    "noSupervisorFound":"No supervisor found"
 
 
 }

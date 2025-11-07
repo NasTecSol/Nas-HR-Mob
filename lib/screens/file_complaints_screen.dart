@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/company_model.dart';
+import '../widgets/loader.dart';
 
 class FileComplaintsScreen extends StatefulWidget {
   const FileComplaintsScreen({super.key});
@@ -262,13 +263,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
             ]
           ),
             if (isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              )
+             Loader(),
           ]
         ),
       ),

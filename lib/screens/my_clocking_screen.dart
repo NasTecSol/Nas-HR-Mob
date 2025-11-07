@@ -11,6 +11,8 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:nashr/l10n/app_localizations.dart';
 
+import '../widgets/loader.dart';
+
 class MyClockingScreen extends StatefulWidget {
   const MyClockingScreen({super.key});
 
@@ -159,13 +161,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
               future: getClockingData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/loader.json'),
-                    ),
-                  );
+                  return Loader();
                 } else if (snapshot.hasError) {
                   return Center(
                     child: Center(

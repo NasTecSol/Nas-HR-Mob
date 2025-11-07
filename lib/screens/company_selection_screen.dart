@@ -12,6 +12,7 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/buttons.dart';
+import '../widgets/loader.dart';
 
 class CompanySelectionScreen extends StatefulWidget {
   const CompanySelectionScreen({super.key});
@@ -303,13 +304,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
               ],
             ),
             if (_isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              ),
+            Loader(),
           ],
         ),
       ),
