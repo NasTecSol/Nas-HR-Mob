@@ -18,6 +18,8 @@ import '../main.dart';
 import '../request_controller/search_employee_model.dart' hide Data;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+import '../widgets/loader.dart';
+
 class SlackScreen extends StatefulWidget {
   const SlackScreen({super.key});
 
@@ -39,10 +41,21 @@ class _SlackScreenState extends State<SlackScreen> {
   final List<SearchedResults> _selectedEmployees = [];
   SlackModel? _chatData;
   Timer? _refreshTimer;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
+    searchController.addListener(() {
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+      _debounce = Timer(const Duration(milliseconds: 600), () {
+        if (searchController.text.trim().isNotEmpty) {
+          getSearchEmployeeData(searchController.text.trim());
+        }
+      });
+    });
+
     singletonClass.activeScreen = "SlackScreen";
     _fetchChats();
     SocketService2().socket!.on('receiveMessage', (data) async {
@@ -179,7 +192,7 @@ class _SlackScreenState extends State<SlackScreen> {
                           controller: searchController,
                           onChanged: (value) {
                             if (value.trim().isNotEmpty) {
-                              getSearchEmployeeData();
+                              getSearchEmployeeData(searchController.text);
                             } else {
                               setState(() {
                                 _showSearchResult = false;
@@ -243,23 +256,8 @@ class _SlackScreenState extends State<SlackScreen> {
                 const SizedBox(height: 15),
                 if (isLoading)
                    Expanded(
-                      child: Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'),
-                        ),
-                      ))
-                else if (_noDataFound)
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  )
+                      child: Loader())
+
                 else if (_showSearchResult)
                     Expanded(
                       child: ListView.builder(
@@ -447,13 +445,7 @@ class _SlackScreenState extends State<SlackScreen> {
                     color: NasColors.darkBlue,
                     onRefresh: _fetchChats,
                     child: _chatData == null
-                        ? Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    )
+                        ? Loader()
                         : _chatData!.data == null || _chatData!.data!.isEmpty
                         ? Center(
                       child: Column(
@@ -679,13 +671,12 @@ class _SlackScreenState extends State<SlackScreen> {
   }
 
   /// Search Employee
-  Future<void> getSearchEmployeeData() async {
-    final employeeId = searchController.text.trim().toUpperCase();
+  Future<void> getSearchEmployeeData(String query) async {
+    final employeeId = query.trim().toUpperCase();
     if (employeeId.isEmpty) return;
 
     setState(() {
       isLoading = true;
-      _employeeSearchResults.clear();
       _showSearchResult = false;
       _noDataFound = false;
     });
@@ -720,7 +711,9 @@ class _SlackScreenState extends State<SlackScreen> {
             );
 
             setState(() {
-              _employeeSearchResults.add(result);
+              if (!_employeeSearchResults.any((e) => e.empId == result.empId)) {
+                _employeeSearchResults.add(result);
+              }
               _showSearchResult = true;
             });
           } else {

@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml.dart' as xml;
 import '../request_controller/search_employee_model.dart';
+import '../widgets/loader.dart';
 
 class CreateHrLetterScreen extends StatefulWidget {
   const CreateHrLetterScreen({super.key});
@@ -496,13 +497,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
               ),]
             ),
                 if(_isLoading == true)...[
-                  Center(child:  SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: Lottie.asset(
-                        'images/loader.json'
-                    ),
-                  ),)
+                  Loader()
                 ]
           ]),
         ),

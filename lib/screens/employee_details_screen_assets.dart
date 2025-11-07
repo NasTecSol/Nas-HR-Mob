@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/l10n/app_localizations.dart';
-import 'package:lottie/lottie.dart';
 import '../request_controller/employee_details_assets_model.dart';
 import '../request_controller/employee_details_model.dart';
 import '../singleton_class.dart';
 import '../widgets/colors.dart';
+import '../widgets/loader.dart';
 
 class EmployeeDetailsScreenAssets extends StatefulWidget {
   final AssetsInfo? assetsInfo;
@@ -72,13 +72,7 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
                   future: getEmployeeAssetsDetailsData(), // Your API call
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/loader.json'), // Adjust path as necessary
-                        ),
-                      );
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (snapshot.hasData && snapshot.data != null) {

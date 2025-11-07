@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/branch_shift_model.dart';
+import '../widgets/loader.dart';
 
 class UpdateShiftScreen extends StatefulWidget {
   final Employees? employees;
@@ -209,13 +209,7 @@ class _UpdateShiftScreenState extends State<UpdateShiftScreen> {
               ],
             ),
             if (isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              ),
+               Loader(),
           ],
         ),
       ),

@@ -12,6 +12,7 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../request_controller/branches_model.dart';
 import '../singleton_class.dart';
+import '../widgets/loader.dart';
 
 class ManageTimeScreen extends StatefulWidget {
   const ManageTimeScreen({super.key});
@@ -336,13 +337,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                     future: _shiftFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(
                           child: Center(
@@ -629,10 +624,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                   future: timeTableFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: Lottie.asset('images/loader.json',
-                            height: 200, width: 200),
-                      );
+                      return Loader();
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Center(

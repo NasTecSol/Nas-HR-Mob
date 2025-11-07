@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../request_controller/search_employee_model.dart';
+import '../widgets/loader.dart' show Loader;
 import 'main_screen.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -850,13 +851,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ],
             ),
             if (isLoading)
-              Center(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: Lottie.asset('images/loader.json'),
-                ),
-              )
+              Loader()
           ],
         ),
       ),
