@@ -33,6 +33,7 @@ import '../request_controller/attendance_model.dart' hide Data;
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import '../widgets/loader.dart';
 import 'onsite_checkin.dart';
 import 'dart:io';
 import 'package:reorderables/reorderables.dart';
@@ -810,6 +811,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
   }
 
+  bool showDropdown = false;
+
   @override
   Widget build(BuildContext context) {
     final dashBoardData = singletonClass.employeeDataList.first.data;
@@ -918,6 +921,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
       return false;
     });
+
+    ///Dashboard module checks
+    final dashboardModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.firstWhere(
+          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    );
+    final access = dashboardModule.accessLevel;
+    final companies = access!.companies ?? [];
+    final hasCompanies = companies.isNotEmpty;
+    final hasBranches = hasCompanies &&
+        companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final teamEnabled = access.team == true;
+
+    if (hasCompanies && hasBranches && teamEnabled) {
+      // ✅ Case 1: Companies + Branches + Team → Dropdown + Team + Only Me
+      showDropdown = true;
+    } else if (hasCompanies && hasBranches && !teamEnabled) {
+      // ✅ Case 2: Companies + Branches + No Team → Dropdown + Only Me
+      showDropdown = true;
+    } else if (!hasCompanies && !hasBranches && teamEnabled) {
+      // ✅ Case 3: No companies + No branches + Team → Team + Only Me
+      showDropdown = false;
+    } else if (!hasCompanies && !hasBranches && !teamEnabled) {
+      // ✅ Case 4: No companies + No branches + No Team → Only Me
+      showDropdown = false;
+    }
 
     return Scaffold(
       body: Stack(
@@ -1323,8 +1351,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )
                             ],
                           ),
-                          if (singletonClass.getJWTModel()?.grade == "L0" ||
-                              singletonClass.getJWTModel()?.grade == "L1")
+                          if (showDropdown)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
@@ -3305,13 +3332,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           ),
           if (isLoading)
-            Center(
-              child: SizedBox(
-                height: 200,
-                width: 200,
-                child: Lottie.asset('images/loader.json'),
-              ),
-            )
+            Loader()
         ],
       ),
     );

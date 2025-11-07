@@ -2243,4 +2243,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skip => 'Skip';
+
+  @override
+  String get noSupervisorFound => 'No supervisor found';
 }

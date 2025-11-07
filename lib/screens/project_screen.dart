@@ -10,6 +10,7 @@ import 'package:nashr/screens/task_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:nashr/widgets/loader.dart';
 import '../request_controller/task_model.dart';
 
 class ProjectScreen extends StatefulWidget {
@@ -114,13 +115,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                       future: getAllProjects(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
+                          return Loader();
                         } else if (snapshot.hasError) {
                           return Center(
                             child: Center(
@@ -299,13 +294,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                       future: getProjectsData(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/loader.json'),
-                            ),
-                          );
+                          return Loader();
                         } else if (snapshot.hasError) {
                           return Center(
                             child: Center(
@@ -485,13 +474,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                     future: getProjectsData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/loader.json'),
-                          ),
-                        );
+                        return Loader();
                       } else if (snapshot.hasError) {
                         return Center(
                           child: Center(

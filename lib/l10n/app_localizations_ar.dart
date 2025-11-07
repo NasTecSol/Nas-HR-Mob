@@ -2236,4 +2236,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get skip => 'تخطي';
+
+  @override
+  String get noSupervisorFound => 'لا يوجد مشرف';
 }

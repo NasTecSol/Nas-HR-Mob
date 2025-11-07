@@ -69,12 +69,15 @@ class _SplashscreenState extends State<SplashScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: 300,
-                width: 300,
-                child: Lottie.asset('images/splash4.json'),
+                height: 50,
               ),
               SizedBox(
-                    height: 280,
+                height: 400,
+                width: 400,
+                child: Lottie.asset('images/splash5.json'),
+              ),
+              SizedBox(
+                    height: 200,
                     width: 280,
                     child: Image.asset('images/N.png'),
               ),

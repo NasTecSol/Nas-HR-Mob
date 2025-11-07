@@ -13,6 +13,8 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:translator/translator.dart';
 
+import '../widgets/loader.dart';
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -83,13 +85,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 future: singletonClass.getNotifications(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(
-                        height: 200,
-                        width: 200,
-                        child: Lottie.asset('images/loader.json'),
-                      ),
-                    );
+                    return Loader();
                   } else if (snapshot.hasError) {
                     return Center(
                       child: Center(
