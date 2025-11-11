@@ -70,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getRoleAndAccessData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
+    singletonClass.getPolicyData();
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -89,8 +90,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
       }
     });
+    if (singletonClass.isFirstTimeSelectionDone == false) {
+      autoSelectCompanyAndBranch();
+      singletonClass.isFirstTimeSelectionDone = true;
+    }
   }
 
+  ///Drop down selection
+  void autoSelectCompanyAndBranch(){
+    final uiModules = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!;
+    final dashboardModule = uiModules.firstWhere(
+          (e) => (e.title == "Dashboard" || e.name == "Dashboard") && e.hidden == false,
+    );
+
+    final companies = dashboardModule.accessLevel?.companies ?? [];
+
+    if (companies.isNotEmpty && selectedCompanyId == null) {
+      // Auto select 0 index company
+      selectedCompanyId = companies.first.companyId;
+      singletonClass.selectedCompanyId = selectedCompanyId;
+      singletonClass.companyName = companies.first.companyName ?? '';
+
+      // Populate branches of this company
+      singletonClass.availableBranches = companies.first.branches ?? [];
+
+      if (singletonClass.availableBranches.isNotEmpty && selectedBranchId == null) {
+        // Auto select 0 index branch
+        selectedBranchId = singletonClass.availableBranches.first.branchId;
+        singletonClass.branchID = selectedBranchId;
+        singletonClass.branchName = singletonClass.availableBranches.first.branchName ?? '';
+
+        // Call your API
+        singletonClass.getTeamBranchData();
+        singletonClass.getBranchesData();
+      }
+
+      setState(() {});
+    }
+  }
   void _calculateUnreadCount() {
     try {
       if (singletonClass.slackDataList.isEmpty ||
@@ -444,8 +481,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasOnboarding = uiSettings.any((e) {
       if (e.title == "Teams" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "Onboarding & Offboarding") &&
-            sub.hidden == false) ??
+                (sub.title == "Onboarding & Offboarding") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
@@ -637,8 +674,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 return false;
                               }
                               if (item["label"] ==
-                                  AppLocalizations.of(context)!
-                                      .onBoarding && !hasOnboarding) {
+                                      AppLocalizations.of(context)!
+                                          .onBoarding &&
+                                  !hasOnboarding) {
                                 return false;
                               }
                               if (item["label"] ==
@@ -694,8 +732,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           builder: (context) =>
                                               PenaltyAndFineScreen()),
                                     );
-                                  }  else if (item["label"] ==
-                                      AppLocalizations.of(context)!.onBoarding) {
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .onBoarding) {
                                     _removeOverlay();
                                     Navigator.push(
                                       context,
@@ -915,22 +954,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasOnboarding = uiSettings.any((e) {
       if (e.title == "Teams" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "Onboarding & Offboarding") &&
-            sub.hidden == false) ??
+                (sub.title == "Onboarding & Offboarding") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
 
     ///Dashboard module checks
-    final dashboardModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final dashboardModule = singletonClass
+        .roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere(
+      (e) => e.title == "Dashboard" || e.title == "dashboard",
     );
     final access = dashboardModule.accessLevel;
     final companies = access!.companies ?? [];
     final hasCompanies = companies.isNotEmpty;
-    final hasBranches = hasCompanies &&
-        companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final hasBranches =
+        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
     final teamEnabled = access.team == true;
 
     if (hasCompanies && hasBranches && teamEnabled) {
@@ -956,23 +997,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                dashBoardData?.profilePic != null &&
-                        dashBoardData!.profilePic!.isNotEmpty
-                    ? Image.network(
-                        dashBoardData.profilePic!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            'images/DP.png',
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        'images/DP.png',
-                        fit: BoxFit.cover,
-                      ),
-                BackdropFilter(
+            (dashBoardData?.profilePic != null &&
+            dashBoardData!.profilePic!.isNotEmpty &&
+            dashBoardData.profilePic != "https://www.profilePic.com")
+                ? Image.network(
+              dashBoardData.profilePic!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'images/DP.png',
+                  fit: BoxFit.cover,
+                );
+              },
+            )
+                : Image.asset(
+              'images/DP.png',
+              fit: BoxFit.cover,
+            ),
+      BackdropFilter(
                   filter: ImageFilter.blur(
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
@@ -998,7 +1040,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         onTap: toggleSheet,
-                        child: ClipOval(
+                        child: singletonClass.employeeDataList.first.data!.profilePic == "https://www.profilePic.com" ? ClipOval(
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 40,
+                            child: ClipOval(
+                                child: Image.asset(
+                                  'images/DP.png',
+                                  fit: BoxFit.cover,
+                                  width: 100,
+                                  height: 100,
+                                )
+                            ),
+                          ),
+                        ) : ClipOval(
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,
@@ -1020,7 +1075,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ),
                             ),
                           ),
-                        ),
+                        )
                       ),
                     ),
                   ),
@@ -1383,7 +1438,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           true
                                                       ? singletonClass
                                                           .companyName!
-                                                      : AppLocalizations.of(context)!.select,
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .select,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: GoogleFonts.inter(
@@ -1498,24 +1555,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       .selectBranch
                                                   : singletonClass.branchName!,
                                         ),
-                                        items: singletonClass.availableBranches.isNotEmpty
-                                            ? singletonClass.availableBranches.map<DropdownMenuItem<String>>((branch) {
-                                          return DropdownMenuItem<String>(
-                                            value: branch.branchId,
-                                            child: Text(branch.branchName ?? "---"),
-                                          );
-                                        }).toList()
+                                        items: singletonClass
+                                                .availableBranches.isNotEmpty
+                                            ? singletonClass.availableBranches
+                                                .map<DropdownMenuItem<String>>(
+                                                    (branch) {
+                                                return DropdownMenuItem<String>(
+                                                  value: branch.branchId,
+                                                  child: Text(
+                                                      branch.branchName ??
+                                                          "---"),
+                                                );
+                                              }).toList()
                                             : [],
-                                        onChanged: (value) { setState(() {
-                                                  selectedBranchId = value;
-                                                  singletonClass.branchID = selectedBranchId;
-                                                  singletonClass.getTeamBranchData();
-                                                  print(singletonClass.branchID);
-                                                  final selectedBranch = singletonClass.availableBranches
-                                                          .firstWhere((branch) => branch.branchId.toString() == value);
-                                                  singletonClass.branchName = selectedBranch.branchName ?? '';
-                                                });
-                                              },
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedBranchId = value;
+                                            singletonClass.branchID =
+                                                selectedBranchId;
+                                            singletonClass.getTeamBranchData();
+                                            print(singletonClass.branchID);
+                                            final selectedBranch =
+                                                singletonClass.availableBranches
+                                                    .firstWhere((branch) =>
+                                                        branch.branchId
+                                                            .toString() ==
+                                                        value);
+                                            singletonClass.branchName =
+                                                selectedBranch.branchName ?? '';
+                                          });
+                                        },
                                       ),
                                     ),
                                   ))
@@ -2534,31 +2603,74 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     builder: (context) =>
                                                         const DocumentScreen()));
                                           },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0),
+                                          child: Stack(children: [
+                                            Container(
+                                              height: 65,
+                                              width: 65,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.5),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 0.5,
+                                                    offset: const Offset(0, 0),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  'images/files.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
                                                 ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                'images/files.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
                                               ),
                                             ),
-                                          ),
+                                            if (singletonClass.employeeDataList
+                                                    .isNotEmpty &&
+                                                singletonClass
+                                                        .employeeDataList
+                                                        .first
+                                                        .data
+                                                        ?.documentsInfo !=
+                                                    null &&
+                                                singletonClass
+                                                    .employeeDataList
+                                                    .first
+                                                    .data!
+                                                    .documentsInfo!
+                                                    .isNotEmpty)
+                                              Positioned(
+                                                right: 0,
+                                                top: 0,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                    minWidth: 18,
+                                                    minHeight: 18,
+                                                  ),
+                                                  child: Text(
+                                                    '${singletonClass.employeeDataList.first.data!.documentsInfo!.length}',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              )
+                                          ]),
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
@@ -2584,30 +2696,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     builder: (context) =>
                                                         const AssetsScreen()));
                                           },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0),
+                                          child: Stack(
+                                            children:[ Container(
+                                              height: 65,
+                                              width: 65,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.5),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 0.5,
+                                                    offset: const Offset(0, 0),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  'images/assets.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
                                                 ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                'images/assets.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
                                               ),
                                             ),
+                                              if (singletonClass.employeeDataList.isNotEmpty &&
+                                                  singletonClass.employeeDataList.first.data?.assetsInfo != null &&
+                                                  singletonClass.employeeDataList.first.data!.assetsInfo!.isNotEmpty)
+                                                Positioned(
+                                                  right: 0,
+                                                  top: 0,
+                                                  child: Container(
+                                                    padding:
+                                                    const EdgeInsets.all(2),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                          10),
+                                                    ),
+                                                    constraints:
+                                                    const BoxConstraints(
+                                                      minWidth: 18,
+                                                      minHeight: 18,
+                                                    ),
+                                                    child: Text(
+                                                      '${singletonClass.employeeDataList.first.data!.assetsInfo!.length}',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                )
+                      ]
                                           ),
                                         ),
                                         const SizedBox(height: 5),
@@ -2871,55 +3016,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if(hasOnboarding)
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const OnboardingScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                  if (hasOnboarding)
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const OnboardingScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/schedule.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/schedule.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .onBoarding,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .onBoarding,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -3088,7 +3233,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                 .center,
                                                         children: [
                                                           Text(
-                                                            "2/6",
+                                                            "0/0",
                                                             style: GoogleFonts.inter(
                                                                 fontSize: 18,
                                                                 fontWeight:
@@ -3331,8 +3476,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
             ),
           ),
-          if (isLoading)
-            Loader()
+          if (isLoading) Loader()
         ],
       ),
     );

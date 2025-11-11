@@ -498,15 +498,17 @@ class OvertimePolicy {
   bool? isAllowed;
   bool? isAuto;
   bool? preApproval;
+  String? approvalType;
   dynamic paidAs;
   dynamic amount;
 
-  OvertimePolicy({this.isAllowed, this.isAuto, this.preApproval, this.paidAs, this.amount});
+  OvertimePolicy({this.isAllowed, this.isAuto, this.preApproval, this.paidAs, this.amount , this.approvalType});
 
   OvertimePolicy.fromJson(Map<String, dynamic> json) {
     isAllowed = json["isAllowed"];
     isAuto = json["isAuto"];
     preApproval = json["preApproval"];
+    approvalType = json["approvalType"];
     paidAs = json["paidAs"];
     amount = json["amount"];
   }
@@ -516,6 +518,7 @@ class OvertimePolicy {
     _data["isAllowed"] = isAllowed;
     _data["isAuto"] = isAuto;
     _data["preApproval"] = preApproval;
+    _data["approvalType"] = approvalType;
     _data["paidAs"] = paidAs;
     _data["amount"] = amount;
     return _data;

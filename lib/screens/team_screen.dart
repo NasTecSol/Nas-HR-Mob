@@ -50,17 +50,15 @@ class _TeamScreenState extends State<TeamScreen> {
 
   /// 🔍 Detect access-level and set mode flags + isTeamChecked
   void teamCheck() {
-    final dashboardModule = singletonClass
-        .roleAndAccessModelDataList
-        .first
-        .data!
-        .uiSettings!
-        .uiModules!
-        .firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final teamModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => (e.title == "Teams" || e.name == "Teams"),
+    );
+    final employeeManagementMenu = teamModule.subMenu!.firstWhere((submenu) =>
+    submenu.title == "Employee Management" ||
+        submenu.name == "Employee Management",
     );
 
-    final access = dashboardModule.accessLevel;
+    final access = employeeManagementMenu.accessLevel;
     final companies = access?.companies ?? [];
     final hasCompanies = companies.isNotEmpty;
     final hasBranches =

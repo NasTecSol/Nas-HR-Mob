@@ -25,7 +25,7 @@ class TeamClocking extends StatefulWidget {
 class _TeamClockingState extends State<TeamClocking> {
   SingletonClass singletonClass = SingletonClass();
   late String reportingManagerId;
-  late List<Teams> filteredUnderTeams;
+  List<Teams> filteredUnderTeams = [];
   List<TeamClockingData> filteredClockingDataList = [];
   String? selectedEmployeeId;
   bool _isTeamChecked = true;
@@ -38,9 +38,11 @@ class _TeamClockingState extends State<TeamClocking> {
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
   bool showDropdown = false;
-  bool _isInitialLoading = false;
+  bool _isInitialLoading = true;
   bool _isLoadingBranchData = false;
   bool showTeamCheckbox = false;
+  final ScrollController _scrollController = ScrollController();
+  bool isDateRangeSelected = false;
 
   @override
   void initState() {
@@ -73,26 +75,37 @@ class _TeamClockingState extends State<TeamClocking> {
     });
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDate();
+    });
   }
+
+  void _scrollToSelectedDate() {
+    if (_scrollController.hasClients && _selectedDateIndex! >= 0) {
+      _scrollController.animateTo(
+        _selectedDateIndex! * 60,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
 
   void _teamCheck() {
     /// Safely find the dashboard module
-    final dashboardModule = singletonClass
-        .roleAndAccessModelDataList
-        .first
-        .data!
-        .uiSettings!
-        .uiModules!
-        .firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
     );
-
+    final biometricMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
+    submenu.title == "Biometric Checkin`s" ||
+        submenu.name == "Biometric Checkin`s",
+    );
     /// Default flags
     showDropdown = false;
     showTeamCheckbox = false;
     _isTeamChecked = false;
 
-    final access = dashboardModule.accessLevel;
+    final access = biometricMenu.accessLevel;
     final companies = access?.companies ?? [];
 
     final hasCompanies = companies.isNotEmpty;
@@ -203,18 +216,21 @@ class _TeamClockingState extends State<TeamClocking> {
 
   void _initDates({required DateTime start, required DateTime end}) {
     _dates.clear();
-    final now = DateTime.now();
+    final today = DateTime.now();
 
-    for (var date = start;
-        !date.isAfter(end) && !date.isAfter(now);
-        date = date.add(Duration(days: 1))) {
+    for (var date = start; !date.isAfter(end); date = date.add(const Duration(days: 1))) {
       _dates.add(date);
     }
 
-    _selectedDateIndex = null;
-    _selectedDate = null;
+    /// ✅ Auto-select today's index
+    _selectedDateIndex = _dates.indexWhere((d) =>
+    d.year == today.year && d.month == today.month && d.day == today.day);
 
-    log("📅 Generated ${_dates.length} dates from $start to $end");
+    if (_selectedDateIndex != -1) {
+      _selectedDate = today;
+    }
+    log("📅 Generated ${_dates.length} dates");
+    log("✅ Auto-selected today: $_selectedDate");
   }
 
   Map<String, List<Teams>> getFilteredTeams(
@@ -251,11 +267,23 @@ class _TeamClockingState extends State<TeamClocking> {
 
   Future<void> loadData() async {
     log("📥 Starting data load...");
+    if (selectedBranchIds.isEmpty && filteredUnderTeams.isEmpty) {
+      debugPrint("[log] ⚠️ No employee IDs found to fetch clocking data");
+
+      setState(() => _isInitialLoading = false);
+      return;
+    }
     await getTeamClockingAPI(startDate: _startDate!, endDate: _endDate!);
     filterAttendanceData();
   }
 
   void filterAttendanceData() {
+    if (singletonClass.teamClockingDataList.isEmpty ||
+        singletonClass.teamClockingDataList.first.data == null ||
+        singletonClass.teamClockingDataList.first.data!.isEmpty) {
+      print("[log] ⚠️ No data to filter, skipping.");
+      return;   // ✅ prevent crash
+    }
     List<TeamClockingData> allClockingData =
         singletonClass.teamClockingDataList.first.data!;
 
@@ -266,13 +294,15 @@ class _TeamClockingState extends State<TeamClocking> {
           filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
     }
 
-    if (_selectedDate != null) {
-      filtered = filtered.where((attendance) {
-        DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
-        return updatedAt.year == _selectedDate!.year &&
-            updatedAt.month == _selectedDate!.month &&
-            updatedAt.day == _selectedDate!.day;
-      }).toList();
+    if (!isDateRangeSelected) {
+      if (_selectedDate != null) {
+        filtered = filtered.where((attendance) {
+          DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
+          return updatedAt.year == _selectedDate!.year &&
+              updatedAt.month == _selectedDate!.month &&
+              updatedAt.day == _selectedDate!.day;
+        }).toList();
+      }
     }
 
     setState(() {
@@ -363,11 +393,10 @@ class _TeamClockingState extends State<TeamClocking> {
                   IconButton(
                     onPressed: () async {
                       final DateTime now = DateTime.now();
-                      final DateTime lastSelectableDate = now;
                       final DateTimeRange? picked = await showDateRangePicker(
                         context: context,
                         firstDate: DateTime(now.year - 2),
-                        lastDate: lastSelectableDate,
+                        lastDate: now,
                         builder: (BuildContext context, Widget? child) {
                           return Theme(
                             data: ThemeData.light().copyWith(
@@ -392,13 +421,14 @@ class _TeamClockingState extends State<TeamClocking> {
                             end: now),
                       );
                       if (picked != null) {
-                        singletonClass.teamClockingDataList.clear();
                         _startDate = picked.start;
                         _endDate = picked.end;
+
+                        isDateRangeSelected = true;  // ✅ activate range mode
+
                         _initDates(start: picked.start, end: picked.end);
-                        await getTeamClockingAPI(
-                            startDate: _startDate!, endDate: _endDate!);
-                        filterAttendanceData();
+
+                        await loadData(); // <-- API fetch
                       }
                     },
                     icon: Icon(
@@ -614,6 +644,7 @@ class _TeamClockingState extends State<TeamClocking> {
               SizedBox(
                 height: 80,
                 child: ListView.builder(
+                  controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   itemCount: _dates.length,
                   itemBuilder: (ctx, i) {
@@ -621,8 +652,11 @@ class _TeamClockingState extends State<TeamClocking> {
                     final selected = _selectedDateIndex == i;
                     return GestureDetector(
                       onTap: () {
-                        _selectedDateIndex = i;
-                        _selectedDate = date;
+                        setState(() {
+                          _selectedDateIndex = i;
+                          _selectedDate = date;
+                          isDateRangeSelected = false;
+                        });
                         filterAttendanceData();
                       },
                       child: Container(
@@ -656,382 +690,382 @@ class _TeamClockingState extends State<TeamClocking> {
                   },
                 ),
               ),
-              (_isLoadingBranchData ||  _isInitialLoading)
-                  ? Loader()
-                  :
-              FutureBuilder(
-                  future: getTeamClockingAPI(
-                      startDate: _startDate, endDate: _endDate),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Loader();
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/error.json'),
-                          ),
-                        ),
-                      );
-                    }
-                    if (singletonClass.teamClockingDataList.isEmpty ||
-                        singletonClass.teamClockingDataList.first.data ==
-                            null ||
-                        singletonClass
-                            .teamClockingDataList.first.data!.isEmpty) {
-                      return Center(
-                        child: Column(
-                          children: [
-                            Lottie.asset('images/empty.json',
-                                height: 200, width: 200),
-                            Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    final dataList =
-                        singletonClass.teamClockingDataList.first.data!;
-                    return Expanded(
-                        child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: dataList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final team = dataList[index];
-                        final searchText = searchController.text.toLowerCase();
-                        if (isSearching) {
-                          final matchesName = team.employeeName?.toLowerCase().contains(searchText) ?? false;
-                          final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
-
-                          if (!matchesName && !matchesId) {
-                            return const SizedBox.shrink();
-                          }
-                        }
-                        return GestureDetector(
-                          onTap: () {
-                            if (team.rawBiometrics != null &&
-                                team.rawBiometrics!.isNotEmpty) {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Container(
-                                          height: 40,
-                                          width: 70,
-                                          decoration: BoxDecoration(
-                                              color: NasColors.onTime),
-                                          child: Center(
-                                              child: Text(
-                                            AppLocalizations.of(context)!.srNo,
-                                            style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12,
-                                                color: Colors.white),
-                                          )),
-                                        ),
-                                        Container(
-                                          height: 40,
-                                          width: 120,
-                                          decoration: BoxDecoration(
-                                              color: NasColors.onTime),
-                                          child: Center(
-                                              child: Text(
-                                            AppLocalizations.of(context)!
-                                                .timeStamp,
-                                            style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12,
-                                                color: Colors.white),
-                                          )),
-                                        ),
-                                        Container(
-                                          height: 40,
-                                          width: 80,
-                                          decoration: BoxDecoration(
-                                              color: NasColors.onTime),
-                                          child: Center(
-                                              child: Text(
-                                            AppLocalizations.of(context)!.type,
-                                            style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12,
-                                                color: Colors.white),
-                                          )),
-                                        ),
-                                      ],
-                                    ),
-                                    content: SizedBox(
-                                      width: double.maxFinite,
-                                      child: ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount: team.rawBiometrics!.length,
-                                        itemBuilder: (context, index) {
-                                          final bio =
-                                              team.rawBiometrics![index];
-                                          return Row(
-                                            children: [
-                                              SizedBox(
-                                                height: 40,
-                                                width: 70,
-                                                child: Center(
-                                                    child: Text(
-                                                  "${index + 1}",
-                                                  style: GoogleFonts.inter(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 12,
-                                                      color: Colors.black),
-                                                )),
-                                              ),
-                                              SizedBox(
-                                                height: 40,
-                                                width: 115,
-                                                child: Center(
-                                                    child: Text(
-                                                  singletonClass
-                                                      .formatCheckInTime(
-                                                          bio.timestamp
-                                                              .toString(),
-                                                          context),
-                                                  style: GoogleFonts.inter(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 12,
-                                                      color: Colors.black),
-                                                )),
-                                              ),
-                                              SizedBox(
-                                                height: 40,
-                                                width: 80,
-                                                child: Center(
-                                                    child: Text(
-                                                  "${bio.type}",
-                                                  style: GoogleFonts.inter(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 12,
-                                                      color: Colors.black),
-                                                )),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text(
-                                          AppLocalizations.of(context)!.close,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.red),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              color: Colors.white,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "${team.empId}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      Text(
-                                        singletonClass.formatDate2(
-                                            team.createdAt.toString(), context),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "${team.employeeName}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Container(
-                                        height: 20,
-                                        width: 75,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.rectangle,
-                                          color: getStatusColor(
-                                              team.status.toString()),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            _translateSecondaryStatus(
-                                                "${team.status}", context),
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    children: [
-                                      SizedBox(
-                                        width:70,
-                                        child: Text(
-                                          team.checkInTime != null
-                                              ? singletonClass.formatCheckInTime(
-                                                  team.checkInTime!, context)
-                                              : '--:--',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
-                                      Transform(
-                                        transform: Matrix4.rotationY(math.pi),
-                                        alignment: Alignment.center,
-                                        child: const Icon(
-                                          Icons.exit_to_app_outlined,
-                                          size: 20,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        size: 20,
-                                        color: NasColors.onTime,
-                                      ),
-                                      Text(
-                                        "${team.type}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 70,
-                                        child: Text(
-                                            team.checkOutTime != null
-                                                ? singletonClass
-                                                    .formatCheckInTime(
-                                                        team.checkOutTime!,
-                                                        context)
-                                                : '--:--',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                      ),
-                                      const Icon(
-                                        Icons.exit_to_app_outlined,
-                                        size: 20,
-                                        color: Colors.black,
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .totalRecord,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      SizedBox(width: 5),
-                                      Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          color: (team.rawBiometrics!.length ==
-                                                      1 ||
-                                                  team.rawBiometrics!.length ==
-                                                      2)
-                                              ? NasColors.onTime
-                                              : Colors.red,
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        constraints: const BoxConstraints(
-                                          minWidth: 28,
-                                          minHeight: 28,
-                                        ),
-                                        child: Text(
-                                          '${team.rawBiometrics!.length}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+              Expanded(
+                child: (_isInitialLoading || _isLoadingBranchData)
+                    ? Loader()
+                    : FutureBuilder(
+                    future: getTeamClockingAPI(
+                        startDate: _startDate, endDate: _endDate),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Loader();
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Center(
+                            child: SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/error.json'),
                             ),
                           ),
                         );
-                      },
-                    ));
-                  })
+                      }
+                      if (singletonClass.teamClockingDataList.isEmpty ||
+                          singletonClass.teamClockingDataList.first.data ==
+                              null ||
+                          singletonClass
+                              .teamClockingDataList.first.data!.isEmpty) {
+                        return Center(
+                          child: Column(
+                            children: [
+                              Lottie.asset('images/empty.json',
+                                  height: 200, width: 200),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      final dataList =
+                      singletonClass.teamClockingDataList.first.data!;
+                      return ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: dataList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final team = dataList[index];
+                              final searchText = searchController.text.toLowerCase();
+                              if (isSearching) {
+                                final matchesName = team.employeeName?.toLowerCase().contains(searchText) ?? false;
+                                final matchesId = team.empId?.toLowerCase().contains(searchText) ?? false;
+
+                                if (!matchesName && !matchesId) {
+                                  return const SizedBox.shrink();
+                                }
+                              }
+                              return GestureDetector(
+                                onTap: () {
+                                  if (team.rawBiometrics != null &&
+                                      team.rawBiometrics!.isNotEmpty) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          backgroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                          title: Row(
+                                            children: [
+                                              Container(
+                                                height: 40,
+                                                width: 70,
+                                                decoration: BoxDecoration(
+                                                    color: NasColors.onTime),
+                                                child: Center(
+                                                    child: Text(
+                                                      AppLocalizations.of(context)!.srNo,
+                                                      style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 12,
+                                                          color: Colors.white),
+                                                    )),
+                                              ),
+                                              Container(
+                                                height: 40,
+                                                width: 120,
+                                                decoration: BoxDecoration(
+                                                    color: NasColors.onTime),
+                                                child: Center(
+                                                    child: Text(
+                                                      AppLocalizations.of(context)!
+                                                          .timeStamp,
+                                                      style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 12,
+                                                          color: Colors.white),
+                                                    )),
+                                              ),
+                                              Container(
+                                                height: 40,
+                                                width: 80,
+                                                decoration: BoxDecoration(
+                                                    color: NasColors.onTime),
+                                                child: Center(
+                                                    child: Text(
+                                                      AppLocalizations.of(context)!.type,
+                                                      style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w500,
+                                                          fontSize: 12,
+                                                          color: Colors.white),
+                                                    )),
+                                              ),
+                                            ],
+                                          ),
+                                          content: SizedBox(
+                                            width: double.maxFinite,
+                                            child: ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: team.rawBiometrics!.length,
+                                              itemBuilder: (context, index) {
+                                                final bio =
+                                                team.rawBiometrics![index];
+                                                return Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      height: 40,
+                                                      width: 70,
+                                                      child: Center(
+                                                          child: Text(
+                                                            "${index + 1}",
+                                                            style: GoogleFonts.inter(
+                                                                fontWeight:
+                                                                FontWeight.w500,
+                                                                fontSize: 12,
+                                                                color: Colors.black),
+                                                          )),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 40,
+                                                      width: 115,
+                                                      child: Center(
+                                                          child: Text(
+                                                            singletonClass
+                                                                .formatCheckInTime(
+                                                                bio.timestamp
+                                                                    .toString(),
+                                                                context),
+                                                            style: GoogleFonts.inter(
+                                                                fontWeight:
+                                                                FontWeight.w500,
+                                                                fontSize: 12,
+                                                                color: Colors.black),
+                                                          )),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 40,
+                                                      width: 80,
+                                                      child: Center(
+                                                          child: Text(
+                                                            "${bio.type}",
+                                                            style: GoogleFonts.inter(
+                                                                fontWeight:
+                                                                FontWeight.w500,
+                                                                fontSize: 12,
+                                                                color: Colors.black),
+                                                          )),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(
+                                                AppLocalizations.of(context)!.close,
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.red),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                    color: Colors.white,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${team.empId}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: NasColors.darkBlue,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Text(
+                                              singletonClass.formatDate2(
+                                                  team.createdAt.toString(), context),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: NasColors.darkBlue,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${team.employeeName}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              height: 20,
+                                              width: 75,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.rectangle,
+                                                color: getStatusColor(
+                                                    team.status.toString()),
+                                                borderRadius:
+                                                BorderRadius.circular(10),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  _translateSecondaryStatus(
+                                                      "${team.status}", context),
+                                                  textAlign: TextAlign.center,
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width:70,
+                                              child: Text(
+                                                team.checkInTime != null
+                                                    ? singletonClass.formatCheckInTime(
+                                                    team.checkInTime!, context)
+                                                    : '--:--',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            Transform(
+                                              transform: Matrix4.rotationY(math.pi),
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.exit_to_app_outlined,
+                                                size: 20,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Icon(
+                                              Icons.location_on_outlined,
+                                              size: 20,
+                                              color: NasColors.onTime,
+                                            ),
+                                            Text(
+                                              "${team.type}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 70,
+                                              child: Text(
+                                                team.checkOutTime != null
+                                                    ? singletonClass
+                                                    .formatCheckInTime(
+                                                    team.checkOutTime!,
+                                                    context)
+                                                    : '--:--',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.exit_to_app_outlined,
+                                              size: 20,
+                                              color: Colors.black,
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .totalRecord,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color: (team.rawBiometrics!.length ==
+                                                    1 ||
+                                                    team.rawBiometrics!.length ==
+                                                        2)
+                                                    ? NasColors.onTime
+                                                    : Colors.red,
+                                                borderRadius:
+                                                BorderRadius.circular(20),
+                                              ),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 28,
+                                                minHeight: 28,
+                                              ),
+                                              child: Text(
+                                                '${team.rawBiometrics!.length}',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                    }),
+              )
             ])));
   }
 
