@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:nashr/widgets/colors.dart';
-
+import 'package:nashr/l10n/app_localizations.dart';
 class FileViewerScreen extends StatefulWidget {
   final String url;
   final String fileName;
@@ -54,7 +54,12 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       appBar: AppBar(
-        title: Text(widget.fileName, overflow: TextOverflow.ellipsis),
+        title: Text(
+            widget.fileName == "Doc_Contract_Emp"
+                ? AppLocalizations.of(context)!
+                .employmentContract
+                :  widget.fileName == "Doc_Uploaded_EMP" ? AppLocalizations.of(context)!.uploadedDocument : widget.fileName ?? '',
+            overflow: TextOverflow.ellipsis),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -70,8 +75,10 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           else
             WebViewWidget(controller: _controller),
           if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
+             Center(
+              child: CircularProgressIndicator(
+                color: NasColors.darkBlue,
+              ),
             ),
         ],
       ),

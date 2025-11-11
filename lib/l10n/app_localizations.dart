@@ -3119,7 +3119,7 @@ abstract class AppLocalizations {
   /// No description provided for @employmentContract.
   ///
   /// In en, this message translates to:
-  /// **'Employee ID Card'**
+  /// **'Employee Contract'**
   String get employmentContract;
 
   /// No description provided for @done.
@@ -4537,6 +4537,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No supervisor found'**
   String get noSupervisorFound;
+
+  /// No description provided for @uploadedDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded Document'**
+  String get uploadedDocument;
+
+  /// No description provided for @self.
+  ///
+  /// In en, this message translates to:
+  /// **'Self'**
+  String get self;
+
+  /// No description provided for @paidAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid As'**
+  String get paidAs;
+
+  /// No description provided for @selectPaidAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Paid As'**
+  String get selectPaidAs;
+
+  /// No description provided for @selectPaidAsValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select Paid As option'**
+  String get selectPaidAsValidation;
+
+  /// No description provided for @numberOfHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of Hours'**
+  String get numberOfHours;
+
+  /// No description provided for @enterNumberOfHoursValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter number of hours'**
+  String get enterNumberOfHoursValidation;
+
+  /// No description provided for @enterValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get enterValidNumber;
+
+  /// No description provided for @enterHoursPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter number of hours'**
+  String get enterHoursPlaceholder;
+
+  /// No description provided for @amountPerHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount per Hour'**
+  String get amountPerHour;
+
+  /// No description provided for @amountAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount will appear here'**
+  String get amountAppearHere;
+
+  /// No description provided for @totalAmountAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Total amount will appear here'**
+  String get totalAmountAppearHere;
+
+  /// No description provided for @enterNotesValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter notes'**
+  String get enterNotesValidation;
+
+  /// No description provided for @createAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Created at'**
+  String get createAt;
 }
 
 class _AppLocalizationsDelegate

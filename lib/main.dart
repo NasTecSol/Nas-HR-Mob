@@ -26,7 +26,7 @@ void main() async {
 
   if (kDebugMode) {
     print("App is running in Debug mode.");
-    SingletonClass().baseURL = "https://www.nashrms.com/api";
+    SingletonClass().baseURL = "https://dev.nashrms.com/api";
     print("Debug url ${SingletonClass().baseURL}");
   }
 

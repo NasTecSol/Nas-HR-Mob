@@ -39,6 +39,7 @@ import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/remoteAttendanceModel.dart';
+import 'package:nashr/request_controller/report_manager_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/role_and_access_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
@@ -73,6 +74,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
   List<BiometricDevicesModel> biometricDevicesModelDataList = [];
   List<OrganizationModel> organizationModelDataList = [];
@@ -132,6 +134,8 @@ class SingletonClass {
   List<dynamic> availableBranches = [];
   List<Map<String, String>> chatMessages = [];
   bool hasShownGreeting = false;
+  bool isFirstTimeSelectionDone = false;
+
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -343,8 +347,10 @@ class SingletonClass {
     var response = await client.get(uri,
         headers: getHeaders());
     if (response.statusCode == 200) {
+      log("policyDAta ${response.body}");
       var responseBody = json.decode(response.body);
       var policyData = PolicyModel.fromJson(responseBody);
+      policyModelDataList.clear();
       policyModelDataList.addAll([policyData]);
       return policyData;
     }
@@ -376,6 +382,21 @@ class SingletonClass {
       var remoteData = RemoteAttendanceModel.fromJson(responseBody);
       remoteAttendanceModelList.addAll([remoteData]);
       return remoteData;
+    }
+    return null ;
+  }
+
+  ///Get supervisor Data
+  Future<ReportManagerModel?> getSupervisorData() async {
+    String? employeeId =  employeeDataList.first.data!.employeeInfo!.first.reportingManager;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
+    var response = await client.get(uri,headers: getHeaders());
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var reportManagerData = ReportManagerModel.fromJson(responseBody);
+      reportManagerDataList.addAll([reportManagerData]);
+      return reportManagerData;
     }
     return null ;
   }

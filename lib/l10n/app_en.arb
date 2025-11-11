@@ -927,7 +927,7 @@
   "cnic":"CNIC",
   "iqama":"Iqama",
   "passport":"Passport",
-  "employmentContract":"Employee ID Card",
+  "employmentContract":"Employee Contract",
   "done":"Done",
   "name":"Name",
   "cardNumber":"Card Number",
@@ -1186,7 +1186,23 @@
     "employeeIsRegistered":"Employee is registered",
     "toEnrollThisEmployeeOnBiometricDevice":"To enroll this employee on biometric device",
     "skip":"Skip",
-    "noSupervisorFound":"No supervisor found"
+    "noSupervisorFound":"No supervisor found",
+    "uploadedDocument":"Uploaded Document",
+    "self": "Self",
+    "paidAs": "Paid As",
+    "selectPaidAs": "Select Paid As",
+    "selectPaidAsValidation": "Please select Paid As option",
+    "numberOfHours": "Number of Hours",
+    "enterNumberOfHoursValidation": "Please enter number of hours",
+    "enterValidNumber": "Enter a valid number",
+    "enterHoursPlaceholder": "Enter number of hours",
+    "amountPerHour": "Amount per Hour",
+    "amountAppearHere": "Amount will appear here",
+    "totalAmount": "Total Amount",
+    "totalAmountAppearHere": "Total amount will appear here",
+    "enterNotesValidation": "Please enter notes",
+    "createAt" : "Created at"
+
 
 
 }

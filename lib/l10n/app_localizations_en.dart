@@ -1527,7 +1527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passport => 'Passport';
 
   @override
-  String get employmentContract => 'Employee ID Card';
+  String get employmentContract => 'Employee Contract';
 
   @override
   String get done => 'Done';
@@ -2246,4 +2246,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSupervisorFound => 'No supervisor found';
+
+  @override
+  String get uploadedDocument => 'Uploaded Document';
+
+  @override
+  String get self => 'Self';
+
+  @override
+  String get paidAs => 'Paid As';
+
+  @override
+  String get selectPaidAs => 'Select Paid As';
+
+  @override
+  String get selectPaidAsValidation => 'Please select Paid As option';
+
+  @override
+  String get numberOfHours => 'Number of Hours';
+
+  @override
+  String get enterNumberOfHoursValidation => 'Please enter number of hours';
+
+  @override
+  String get enterValidNumber => 'Enter a valid number';
+
+  @override
+  String get enterHoursPlaceholder => 'Enter number of hours';
+
+  @override
+  String get amountPerHour => 'Amount per Hour';
+
+  @override
+  String get amountAppearHere => 'Amount will appear here';
+
+  @override
+  String get totalAmountAppearHere => 'Total amount will appear here';
+
+  @override
+  String get enterNotesValidation => 'Please enter notes';
+
+  @override
+  String get createAt => 'Created at';
 }

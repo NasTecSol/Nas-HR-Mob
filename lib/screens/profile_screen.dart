@@ -415,7 +415,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       ),
                                       child: ClipOval(
                                         child: (employeeProfile?.profilePic != null &&
-                                            employeeProfile!.profilePic!.isNotEmpty)
+                                            employeeProfile!.profilePic!.isNotEmpty && employeeProfile.profilePic != "https://www.profilePic.com")
                                             ? Image.network(
                                           employeeProfile.profilePic!,
                                           fit: BoxFit.cover,
@@ -435,8 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               height: 100,
                                             );
                                           },
-                                        )
-                                            : Image.asset(
+                                        ) : Image.asset(
                                           'images/DP.png',
                                           fit: BoxFit.cover,
                                           width: 100,

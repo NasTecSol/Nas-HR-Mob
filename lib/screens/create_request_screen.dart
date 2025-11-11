@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'dart:developer';
 import 'dart:io';

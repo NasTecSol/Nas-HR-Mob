@@ -7,6 +7,7 @@ import 'package:nashr/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/create_request_screen.dart';
+import 'package:nashr/screens/overtime_request_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -46,6 +47,7 @@ class _RequestScreenState extends State<RequestScreen> {
   @override
   void initState() {
     super.initState();
+    singletonClass.getSupervisorData();
     _fetchRequestData(0);
     _fetchApproverData(0);
     getRequestData();
@@ -160,6 +162,9 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemCount: singletonClass.companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
                           final request = singletonClass.companyDataList.first.data!.request![index];
+                          if(request.requestType == 'overTimeRequest' && singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false){
+                            return const SizedBox.shrink();
+                          }
                           /// ✅ Step 1: Collect allowed submenus under "Approval" where accessType.add == true
                           final allowedRequestNames = <String>{};
 
@@ -178,7 +183,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
                               for (var sub in subMenus) {
                                 final subTitle = sub.title?.toString().trim() ?? '';
-                                final hasAddAccess = sub.accessType?.add == true;
+                                final hasAddAccess = sub.accessType?.add == false;
 
                                 if (subTitle.isNotEmpty && hasAddAccess) {
                                   allowedRequestNames.add(subTitle);
@@ -196,7 +201,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 .replaceAll(RegExp(r'\s+'), ' ');
                           }
 
-                          final requestName = normalize(request.requestName ?? '');
+                          final requestName = normalize(request.requestName ?? '').toLowerCase();
 
                           /// ✅ Step 3: Match if any allowed submenu title corresponds to this request
                           final isAllowed = allowedRequestNames.any((title) {
@@ -210,7 +215,6 @@ class _RequestScreenState extends State<RequestScreen> {
                           if (!isAllowed) {
                             return const SizedBox.shrink();
                           }
-
                           return Column(
                             children: [
                               GestureDetector(
@@ -313,6 +317,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                       },
                                     );
                                     _removeOverlay();
+                                  } else if (request.requestType == 'overTimeRequest'){
+                                    _removeOverlay();
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> OvertimeRequestScreen(selectedRequest: request,)));
                                   } else {
                                     setState(() {
                                       _selectedRequestType = request.requestType;
@@ -595,6 +602,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                       return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                                     }
                                     String date = formatDate(request.createdAt!);
+                                    final startDate = request.requestData!.first.startDate;
+                                    final endDate = request.requestData!.first.endDate;
+
+                                    // ✅ Avoid crash: check both dates
+                                    final int daysDiff = (startDate != null && endDate != null)
+                                        ? DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays + 1
+                                        : 0;
                                     return GestureDetector(
                                       onTap: () => _toggleExpand(index),
                                       child: AnimatedContainer(
@@ -654,7 +668,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       Align(
                                                         alignment: Alignment.topRight,
                                                         child: Text(
-                                                          date,
+                                                          '${AppLocalizations.of(context)!.createAt} $date',
                                                           style: GoogleFonts.inter(
                                                             fontSize: 13,
                                                             fontWeight:
@@ -805,7 +819,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           request
                                                               .requestData!
                                                               .isNotEmpty
-                                                          ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
+                                                          ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days}"
                                                           : AppLocalizations.of(
                                                           context)!
                                                           .noData,
@@ -1336,6 +1350,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                                       }
                                       String date = formatDate(request.createdAt!);
+                                      final startDate = request.requestData!.first.startDate;
+                                      final endDate = request.requestData!.first.endDate;
+
+                                      // ✅ Avoid crash: check both dates
+                                      final int daysDiff = (startDate != null && endDate != null)
+                                          ? DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays + 1
+                                          : 0;
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(
@@ -1396,7 +1417,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         Align(
                                                           alignment: Alignment.topRight,
                                                           child: Text(
-                                                            date,
+                                          '${AppLocalizations.of(context)!.createAt} $date',
                                                             style: GoogleFonts.inter(
                                                               fontSize: 13,
                                                               fontWeight:
@@ -1537,7 +1558,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                                       request
                                                                           .requestData!
                                                                           .isNotEmpty
-                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
+                                                                  ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days} "
                                                                   : AppLocalizations.of(
                                                                           context)!
                                                                       .noData,
@@ -2075,6 +2096,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                         return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
                                       }
                                       String date = formatDate(request.createdAt!);
+                                      final startDate = request.requestData!.first.startDate;
+                                      final endDate = request.requestData!.first.endDate;
+
+                                      // ✅ Avoid crash: check both dates
+                                      final int daysDiff = (startDate != null && endDate != null)
+                                          ? DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays + 1
+                                          : 0;
                                       return GestureDetector(
                                         onTap: () => _toggleExpand(index),
                                         child: AnimatedContainer(
@@ -2135,7 +2163,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         Align(
                                                           alignment: Alignment.topRight,
                                                           child: Text(
-                                                            date,
+                                                            '${AppLocalizations.of(context)!.createAt} $date',
                                                             style: GoogleFonts.inter(
                                                               fontSize: 13,
                                                               fontWeight:
@@ -2293,7 +2321,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             request
                                                                 .requestData!
                                                                 .isNotEmpty
-                                                            ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - ${request.requestData!.first.endDate?? "---"} "
+                                                            ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days} "
                                                             : AppLocalizations.of(
                                                             context)!
                                                             .noData,
@@ -3324,6 +3352,7 @@ class _RequestScreenState extends State<RequestScreen> {
           title: AppLocalizations.of(context)!.success,
           type: QuickAlertType.success,
         );
+        _fetchApproverData(0);
       } else {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -3455,7 +3484,7 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 }
 
-//DUMMY MODEL
+///DUMMY MODEL
 
 class SearchedResult {
   dynamic empId;
