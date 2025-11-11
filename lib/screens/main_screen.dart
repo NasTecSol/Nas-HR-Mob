@@ -83,6 +83,7 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getBranchesData(),
      singletonClass.getChats(),
      singletonClass.getOrganizationData(),
+     singletonClass.getPolicyData(),
     ]);
   }
 
@@ -98,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
               child: Center(
                 child:SizedBox(
                   child: Lottie.asset(
-                  'images/mainLoader.json'
+                  'images/splash5.json'
               ),),
               ),
             )
@@ -129,7 +130,8 @@ class _MainScreenState extends State<MainScreen> {
                       child: ClipOval(
                         child: (singletonClass.employeeDataList.isNotEmpty &&
                             singletonClass.employeeDataList.first.data?.profilePic != null &&
-                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com")
                             ? Image.network(
                           singletonClass.employeeDataList.first.data!.profilePic!,
                           fit: BoxFit.cover,
@@ -200,7 +202,10 @@ class _MainScreenState extends State<MainScreen> {
                                   minWidth: 18,
                                   minHeight: 18,
                                 ),
-                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'  ?
+                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'
+                                    || singletonClass.getJWTModel()?.grade == 'L2'
+                                    || singletonClass.getJWTModel()?.grade == 'L3'
+                                    ?
                                 Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null

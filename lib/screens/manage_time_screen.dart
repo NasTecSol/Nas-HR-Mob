@@ -45,14 +45,12 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
 
   void _teamCheck() {
     /// Safely find the dashboard module
-    final dashboardModule = singletonClass
-        .roleAndAccessModelDataList
-        .first
-        .data!
-        .uiSettings!
-        .uiModules!
-        .firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
+    );
+    final manageShiftsMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
+    submenu.title == "Manage Shifts" ||
+        submenu.name == "Manage Shifts",
     );
 
     /// Default flags
@@ -60,7 +58,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     showTeamCheckbox = false;
     _isTeamChecked = false;
 
-    final access = dashboardModule.accessLevel;
+    final access = manageShiftsMenu.accessLevel;
     final companies = access?.companies ?? [];
 
     final hasCompanies = companies.isNotEmpty;
@@ -695,19 +693,21 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                               final timeTable = shiftDates[i];
                               final slots = timeTable.slots ?? [];
 
-                              String formatDate(String updatedAt) {
+                              String formatDateWithDay(String updatedAt) {
                                 try {
-                                  final updatedAtDateTime =
-                                  DateTime.parse(updatedAt);
-                                  return DateFormat('dd-MM-yyyy')
-                                      .format(updatedAtDateTime);
+                                  final updatedAtDateTime = DateTime.parse(updatedAt);
+                                  final formattedDate = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+                                  final dayName = DateFormat('EEEE').format(updatedAtDateTime); // This gives Saturday, Sunday, etc.
+
+                                  return "$formattedDate ($dayName)";
                                 } catch (e) {
                                   return '';
                                 }
                               }
 
+
                               final String date =
-                              formatDate(timeTable.date ?? '');
+                              formatDateWithDay(timeTable.date ?? '');
 
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -984,6 +984,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
         ? singletonClass.branchID
         : jwt?.branchId;
 
+    final String currentMonth = DateFormat('MMMM').format(DateTime.now());
+
     if (companyId == null || branchId == null) {
       if (kDebugMode) {
         print("Company ID or Branch ID is missing");
@@ -992,7 +994,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     }
 
     final uri = Uri.parse(
-      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=August&employeeId=$employeeId',
+      '${singletonClass.baseURL}/time-tables/getByEmployeeIds/$companyId/$branchId?month=$currentMonth&employeeId=$employeeId',
     );
 
     final response = await http.get(uri, headers: singletonClass.getHeaders());

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/create_hr_letter_screen.dart';
+import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,7 +31,25 @@ class _DocumentScreenState extends State<DocumentScreen> {
   final GlobalKey _iqamaContainerKey = GlobalKey();
   final GlobalKey _passportContainerKey = GlobalKey();
   final GlobalKey _employeeContractContainerKey = GlobalKey();
+  bool isLoading = false ;
 
+  Future<void> fetchLatestDocumentData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await singletonClass.getEmployeeData();
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final documentInfo =
@@ -191,139 +210,169 @@ class _DocumentScreenState extends State<DocumentScreen> {
               ),
             ),
             if (_selectedOptionIndex == 0) ...[
-              Column(
-                children: [
-                  documentInfo!.isNotEmpty
-                      ? ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: documentInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final documents = documentInfo[index];
-                            final url = documents.remarks ?? '';
-                            final fileType = url.split('.').last.toLowerCase();
-                            final isImage = ['png', 'jpg', 'jpeg', 'gif']
-                                .contains(fileType);
-                            final isPdf = fileType == 'pdf';
-                            final searchText =
-                                searchController.text.toLowerCase();
-                            if (isSearching &&
-                                !(documents.type
-                                        ?.toLowerCase()
-                                        .contains(searchText) ??
-                                    false)) {
-                              return const SizedBox.shrink();
-                            }
-                            return Transform.translate(
-                              offset: Offset(0, index == 0 ? 0 : -10),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (isImage || isPdf || url.isNotEmpty) {
-                                    if (await canLaunchUrl(Uri.parse(url))) {
-                                      await launchUrl(Uri.parse(url),
-                                          mode: LaunchMode.externalApplication);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Could not open the document!')),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('Unsupported file type!')),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.only(
-                                      top: 10.0, left: 30, right: 30),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      if (index != 0)
+              RefreshIndicator(
+                color: NasColors.darkBlue,
+                backgroundColor: Colors.white,
+                onRefresh: fetchLatestDocumentData,
+                child: Column(
+                  children: [
+                    documentInfo!.isNotEmpty
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: documentInfo.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final documents = documentInfo[index];
+                              final url = documents.remarks ?? '';
+                              final fileType = url.split('.').last.toLowerCase();
+                              final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+                              final searchText =
+                                  searchController.text.toLowerCase();
+                              if (isSearching &&
+                                  !(documents.type
+                                          ?.toLowerCase()
+                                          .contains(searchText) ??
+                                      false)) {
+                                return const SizedBox.shrink();
+                              }
+                              return Transform.translate(
+                                offset: Offset(0, index == 0 ? 0 : -10),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                      if (url != null && url.isNotEmpty) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => FileViewerScreen(
+                                              url: url,
+                                              fileName: "${documents.type}",
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        debugPrint('Invalid attachment URL');
+                                      }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.only(
+                                        top: 10.0, left: 30, right: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        if (index != 0)
+                                          const BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 10,
+                                            spreadRadius: 10,
+                                            offset: Offset(0, -6),
+                                          ),
                                         const BoxShadow(
                                           color: Colors.black12,
                                           blurRadius: 10,
-                                          spreadRadius: 10,
-                                          offset: Offset(0, -6),
+                                          offset: Offset(0, 5),
                                         ),
-                                      const BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        documents.type == "Doc_Contract_Emp"
-                                            ? AppLocalizations.of(context)!
-                                                .employmentContract
-                                            : documents.type ?? '',
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: NasColors.darkBlue,
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          documents.type == "Doc_Contract_Emp"
+                                              ? AppLocalizations.of(context)!
+                                                  .employmentContract
+                                              :  documents.type == "Doc_Uploaded_EMP" ? AppLocalizations.of(context)!.uploadedDocument : documents.type ?? '',
+                                          maxLines: 2,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: NasColors.darkBlue,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: isImage
-                                            ? Image.network(
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            Icon(Icons.arrow_forward_ios_outlined,
+                                            color: Colors.grey,
+                                              size: 20,
+                                            )
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(10),
+                                              child: isImage
+                                                  ? Image.network(
                                                 url,
                                                 height: 60,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
                                                 alignment: Alignment.topCenter,
                                               )
-                                            : Icon(
-                                                isPdf
-                                                    ? Icons.picture_as_pdf
-                                                    : Icons.insert_drive_file,
-                                                size: 60,
-                                                color: NasColors.darkBlue,
+                                                  : Image.asset(
+                                                _getFileIcon(url),
+                                                height: 60,
+                                                width: 60,
                                               ),
-                                      ),
-                                    ],
+                                            ),
+                                            Spacer(),
+                                            GestureDetector(
+                                              onTap: () async {
+                                                if (url != null && url.isNotEmpty) {
+                                                  final uri = Uri.parse(url);
+                                                  if (await canLaunchUrl(uri)) {
+                                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                  } else {
+                                                    debugPrint('Could not launch $url');
+                                                  }
+                                                } else {
+                                                  debugPrint('Invalid download URL');
+                                                }
+                                              },
+                                              child:  Image.asset(
+                                                'images/download.png',
+                                                height: 35,
+                                                width: 35,
+                                              ),
+                                            ),
+                                            SizedBox(width: 20),
+                                          ],
+                                        ),
+                                        SizedBox(height: 10),
+                                      ],
+                                    ),
                                   ),
                                 ),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Center(
+                                    child: SizedBox(
+                                      height: 200,
+                                      width: 200,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!.noData,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        )
-                      : Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                ],
+                  ],
+                ),
               )
             ],
             if (_selectedOptionIndex == 1) ...[
@@ -3316,7 +3365,28 @@ class _DocumentScreenState extends State<DocumentScreen> {
     );
   }
 
-  //CARDS
+  /// Helper method to get correct asset based on file type
+  String _getFileIcon(String fileUrl) {
+    final extension = fileUrl.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return 'images/pdf.png';
+      case 'doc':
+      case 'docx':
+        return 'images/word.png';
+      case 'xls':
+      case 'xlsx':
+        return 'images/excel.png';
+      case 'ppt':
+      case 'pptx':
+        return 'images/powerPoint.png';
+      default:
+        return 'images/documentIcons.png';
+    }
+  }
+
+
+  ///CARDS
   Widget buildOptionsCard(int index, String title) {
     return GestureDetector(
       onTap: () {

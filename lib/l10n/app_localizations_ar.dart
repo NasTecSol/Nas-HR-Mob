@@ -2239,4 +2239,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noSupervisorFound => 'لا يوجد مشرف';
+
+  @override
+  String get uploadedDocument => 'المستند المرفوع';
+
+  @override
+  String get self => 'ذاتي / نفسي';
+
+  @override
+  String get paidAs => 'الدفع كـ';
+
+  @override
+  String get selectPaidAs => 'اختر طريقة الدفع';
+
+  @override
+  String get selectPaidAsValidation => 'يرجى اختيار طريقة الدفع';
+
+  @override
+  String get numberOfHours => 'عدد الساعات';
+
+  @override
+  String get enterNumberOfHoursValidation => 'يرجى إدخال عدد الساعات';
+
+  @override
+  String get enterValidNumber => 'أدخل رقمًا صالحًا';
+
+  @override
+  String get enterHoursPlaceholder => 'أدخل عدد الساعات';
+
+  @override
+  String get amountPerHour => 'المبلغ لكل ساعة';
+
+  @override
+  String get amountAppearHere => 'سيظهر المبلغ هنا';
+
+  @override
+  String get totalAmountAppearHere => 'سيظهر المبلغ الإجمالي هنا';
+
+  @override
+  String get enterNotesValidation => 'يرجى إدخال الملاحظات';
+
+  @override
+  String get createAt => 'تم الإنشاء في';
 }
