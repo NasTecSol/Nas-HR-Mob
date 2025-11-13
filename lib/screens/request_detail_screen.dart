@@ -602,7 +602,16 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             '.xls',
                             '.xlsx',
                             '.ppt',
-                            '.pptx'
+                            '.pptx',
+                            '.jpg',
+                            '.jpeg',
+                            '.png',
+                            '.gif',
+                            '.bmp',
+                            '.webp',
+                            '.heic',
+                            '.heif',
+                            '.tiff'
                           ];
 
                           final lower = url.toLowerCase();
@@ -1186,7 +1195,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       "approvers": updatedApprovers,
       "reason": requestData['reason'],
       "attachments": requestData['attachments'],
-      "status": status
     };
 
     String jsonData = jsonEncode(data);
