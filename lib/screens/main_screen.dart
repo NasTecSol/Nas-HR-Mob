@@ -11,7 +11,8 @@ import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int index;
-  const MainScreen({super.key, required this.index});
+  final int selectedIndex;
+  const MainScreen({super.key, required this.index, required this.selectedIndex});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -29,13 +30,6 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const ProjectScreen(),
-    const RequestScreen(),
-    const CalendarScreen(),
-    const ProfileScreen()
-  ];
 
   @override
   void initState() {
@@ -89,6 +83,13 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      const HomeScreen(),
+      const ProjectScreen(),
+      RequestScreen(selectedIndex: widget.selectedIndex),
+      const CalendarScreen(),
+      const ProfileScreen()
+    ];
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -103,7 +104,7 @@ class _MainScreenState extends State<MainScreen> {
               ),),
               ),
             )
-            : _screens[_currentIndex],
+            : screens[_currentIndex],
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(15.0),
           child: Container(

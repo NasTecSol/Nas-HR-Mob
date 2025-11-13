@@ -203,7 +203,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             if (type.contains('leave')){
                                               Navigator.push(
                                                 context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2)),
+                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
                                               );
                                             } else if (type.contains('employee') && type.contains('late')) {
                                               Navigator.push(
@@ -213,7 +213,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             } else if (type.contains('meeting')) {
                                               Navigator.push(
                                                 context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 3)),
+                                                MaterialPageRoute(builder: (context) => MainScreen(index: 3 , selectedIndex: 0)),
                                               );
                                             } else if (type.contains('complain')) {
                                               Navigator.push(
@@ -228,7 +228,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             } else if (type.contains('request')) {
                                               Navigator.push(
                                                 context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2)),
+                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
                                               );
                                             }
                                           },

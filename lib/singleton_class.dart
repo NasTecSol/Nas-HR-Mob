@@ -723,6 +723,58 @@ class SingletonClass {
       "x-tenant-id" : "2002"
     };
   }
+
+
+  ///Request Screen API Calls
+  Future<ApproverRequestData?> getApproverData(
+      {int page = 0, int limit = 20}) async {
+    String? employeeId = getJWTModel()?.employeeId;
+
+    // Request body (stays the same)
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+        "specialLeaveRequest",
+      ],
+    };
+    final uri = Uri.parse(
+      '$baseURL/request/approver/$employeeId?limit=$limit&page=$page',
+    );
+    print(uri);
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: getHeaders(),
+      );
+
+      log("Request Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+        if (page == 0) {
+          setApproverDataList([requestData]);
+        } else {
+          final existing = approverDataList;
+          setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
 }
 
 
