@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -1012,7 +1011,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const MainScreen(index: 3)));
+                  builder: (context) => const MainScreen(index: 3 , selectedIndex: 0,)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400 ||
             decodedResponse['statusCode'] == 500) {

@@ -68,7 +68,7 @@ class DataApprover {
   List<RequestData>? requestData;
   List<Approvers>? approvers;
   String? reason;
-  List<dynamic>? attachments;
+  List<Attachments>? attachments;
   String? createdAt;
   String? updatedAt;
   int? v;
@@ -89,7 +89,7 @@ class DataApprover {
     requestData = json["requestData"] == null ? null : (json["requestData"] as List).map((e) => RequestData.fromJson(e)).toList();
     approvers = json["approvers"] == null ? null : (json["approvers"] as List).map((e) => Approvers.fromJson(e)).toList();
     reason = json["reason"];
-    attachments = json["attachments"] ?? [];
+    attachments = json["attachments"] == null ? null : (json["attachments"] as List).map((e) => Attachments.fromJson(e)).toList();
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
@@ -115,7 +115,7 @@ class DataApprover {
     }
     _data["reason"] = reason;
     if(attachments != null) {
-      _data["attachments"] = attachments;
+      _data["attachments"] = attachments?.map((e) => e.toJson()).toList();
     }
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
@@ -246,6 +246,28 @@ class Employees {
     _data["empId"] = empId;
     _data["name"] = name;
     _data["severity"] = severity;
+    return _data;
+  }
+}
+
+class Attachments {
+  String? fileName;
+  String? fileType;
+  String? fileContent;
+
+  Attachments({this.fileName, this.fileType, this.fileContent});
+
+  Attachments.fromJson(Map<String, dynamic> json) {
+    fileName = json["fileName"];
+    fileType = json["fileType"];
+    fileContent = json["fileContent"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["fileName"] = fileName;
+    _data["fileType"] = fileType;
+    _data["fileContent"] = fileContent;
     return _data;
   }
 }

@@ -3032,7 +3032,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           showConfirmBtn: false,
         );
         await getRequestData();
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 2)));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 2 , selectedIndex: 0,)));
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??
             'An unexpected error occurred. Please try again.';

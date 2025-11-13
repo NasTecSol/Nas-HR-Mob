@@ -64,7 +64,7 @@ class _RegisterBiometricDeviceScreenState
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MainScreen(index: 0),
+                            builder: (context) => MainScreen(index: 0  , selectedIndex: 0),
                           ),
                         ),
                         icon: Container(
@@ -276,7 +276,7 @@ class _RegisterBiometricDeviceScreenState
               child: TextButton(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MainScreen(index: 0)),
+                  MaterialPageRoute(builder: (context) => MainScreen(index: 0 , selectedIndex: 0)),
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.skip,
@@ -334,7 +334,7 @@ class _RegisterBiometricDeviceScreenState
         );
         setState(() => isLoading = false);
         Navigator.push(
-            context, MaterialPageRoute(builder: (_) => MainScreen(index: 0)));
+            context, MaterialPageRoute(builder: (_) => MainScreen(index: 0 , selectedIndex: 0)));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("❌ Failed: ${response.statusCode}")),
