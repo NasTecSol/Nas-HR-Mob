@@ -1804,7 +1804,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MainScreen(index: 2)),
+          MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
         );
       } else {
         QuickAlert.show(

@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -1529,7 +1528,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
             type: QuickAlertType.success,
           );
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const MainScreen(index: 1)));
+              context, MaterialPageRoute(builder: (context) => const MainScreen(index: 1 , selectedIndex: 0,)));
           singletonClass.taskModelList.clear();
           singletonClass.taskAttachmentDataList.clear();
         } else {

@@ -474,41 +474,37 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   padding:
                                                       const EdgeInsets.only(
                                                           left: 18.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                    child: (singletonClass
-                                                                .employeeDataList
-                                                                .first
-                                                                .data
-                                                                ?.profilePic
-                                                                ?.isNotEmpty ??
-                                                            false)
-                                                        ? Image.network(
-                                                            singletonClass
-                                                                .employeeDataList
-                                                                .first
-                                                                .data!
-                                                                .profilePic!,
-                                                            fit: BoxFit.cover,
-                                                            width: 110,
-                                                            height: 110,
-                                                            errorBuilder: (context,
-                                                                    error,
-                                                                    stackTrace) =>
-                                                                Image.asset(
-                                                              'images/DP.png',
-                                                              fit: BoxFit.cover,
-                                                              width: 110,
-                                                              height: 110,
-                                                            ),
-                                                          )
-                                                        : Image.asset(
+                                                  child:  ClipRRect(
+                                                      borderRadius:
+                                                      BorderRadius.zero,
+                                                      child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                        singletonClass
+                                                            .employeeDataList
+                                                            .first
+                                                            .data
+                                                            ?.profilePic ??
+                                                            '',
+                                                        fit: BoxFit.cover,
+                                                        width: 100,
+                                                        height: 100,
+                                                        errorBuilder:
+                                                            (BuildContext context,
+                                                            Object exception,
+                                                            StackTrace?
+                                                            stackTrace) {
+                                                          return Image.asset(
                                                             'images/DP.png',
                                                             fit: BoxFit.cover,
-                                                            width: 110,
-                                                            height: 110,
-                                                          ),
+                                                            width: 100,
+                                                            height: 100,
+                                                          );
+                                                        },
+                                                      ) : Image.asset(
+                                                        'images/DP.png',
+                                                        fit: BoxFit.cover,
+                                                        width: 100,
+                                                        height: 100,
+                                                      )
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
@@ -1119,26 +1115,36 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       MainAxisAlignment.center,
                                                   children: [
                                                     ClipRRect(
-                                                      child: Image.network(
-                                                        singletonClass
-                                                                .employeeDataList
-                                                                .first
-                                                                .data
-                                                                ?.profilePic ??
-                                                            '',
-                                                        fit: BoxFit.cover,
-                                                        width: 110,
-                                                        height: 130,
-                                                        errorBuilder: (context,
-                                                                error,
-                                                                stackTrace) =>
-                                                            Image.asset(
+                                                        borderRadius:
+                                                        BorderRadius.zero,
+                                                        child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                          singletonClass
+                                                              .employeeDataList
+                                                              .first
+                                                              .data
+                                                              ?.profilePic ??
+                                                              '',
+                                                          fit: BoxFit.cover,
+                                                          width: 100,
+                                                          height: 100,
+                                                          errorBuilder:
+                                                              (BuildContext context,
+                                                              Object exception,
+                                                              StackTrace?
+                                                              stackTrace) {
+                                                            return Image.asset(
+                                                              'images/DP.png',
+                                                              fit: BoxFit.cover,
+                                                              width: 100,
+                                                              height: 100,
+                                                            );
+                                                          },
+                                                        ) : Image.asset(
                                                           'images/DP.png',
                                                           fit: BoxFit.cover,
-                                                          width: 110,
-                                                          height: 130,
-                                                        ),
-                                                      ),
+                                                          width: 100,
+                                                          height: 100,
+                                                        )
                                                     ),
                                                     SizedBox(width: 10),
                                                     SizedBox(
@@ -1807,31 +1813,36 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 padding: const EdgeInsets.only(
                                                     left: 20.0),
                                                 child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.zero,
-                                                  child: Image.network(
-                                                    singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data
-                                                            ?.profilePic ??
-                                                        '---',
-                                                    fit: BoxFit.cover,
-                                                    width: 110,
-                                                    height: 130,
-                                                    errorBuilder:
-                                                        (BuildContext context,
-                                                            Object exception,
-                                                            StackTrace?
-                                                                stackTrace) {
-                                                      return Image.asset(
-                                                        'images/DP.png',
-                                                        fit: BoxFit.cover,
-                                                        width: 100,
-                                                        height: 100,
-                                                      );
-                                                    },
-                                                  ),
+                                                    borderRadius:
+                                                    BorderRadius.zero,
+                                                    child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                      singletonClass
+                                                          .employeeDataList
+                                                          .first
+                                                          .data
+                                                          ?.profilePic ??
+                                                          '',
+                                                      fit: BoxFit.cover,
+                                                      width: 100,
+                                                      height: 100,
+                                                      errorBuilder:
+                                                          (BuildContext context,
+                                                          Object exception,
+                                                          StackTrace?
+                                                          stackTrace) {
+                                                        return Image.asset(
+                                                          'images/DP.png',
+                                                          fit: BoxFit.cover,
+                                                          width: 100,
+                                                          height: 100,
+                                                        );
+                                                      },
+                                                    ) : Image.asset(
+                                                      'images/DP.png',
+                                                      fit: BoxFit.cover,
+                                                      width: 100,
+                                                      height: 100,
+                                                    )
                                                 ),
                                               ),
                                               Spacer(),
@@ -2497,14 +2508,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 child: ClipRRect(
                                                   borderRadius:
                                                       BorderRadius.zero,
-                                                  child: Image.network(
+                                                  child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
                                                     singletonClass
                                                             .employeeDataList
                                                             .first
                                                             .data
                                                             ?.profilePic ??
                                                         '',
-                                                    // URL for the network image, empty string if null
                                                     fit: BoxFit.cover,
                                                     width: 100,
                                                     height: 100,
@@ -2520,7 +2530,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         height: 100,
                                                       );
                                                     },
-                                                  ),
+                                                  ) : Image.asset(
+                                                    'images/DP.png',
+                                                    fit: BoxFit.cover,
+                                                    width: 100,
+                                                    height: 100,
+                                                  )
                                                 ),
                                               ),
                                               Spacer(),
@@ -2547,16 +2562,19 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                  Text(
-                                                    "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation : '---'}",
-                                                    maxLines: 4,
-                                                    textAlign: TextAlign.left,
-                                                    softWrap: true,
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: NasColors.darkBlue,
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Text(
+                                                      "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation : '---'}",
+                                                      maxLines: 4,
+                                                      textAlign: TextAlign.left,
+                                                      softWrap: true,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: NasColors.darkBlue,
+                                                      ),
                                                     ),
                                                   ),
                                                   Text(
