@@ -428,7 +428,7 @@ class DocumentsInfo {
 }
 
 class RemoteLocation {
-  bool? isRemoteAttendance;
+  dynamic isRemoteAttendance;
   String? remoteAttendanceLoc;
   String? lastLocation;
   String? lastLocationUpdatedAt;

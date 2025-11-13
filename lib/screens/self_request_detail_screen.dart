@@ -590,7 +590,16 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                           '.xls',
                           '.xlsx',
                           '.ppt',
-                          '.pptx'
+                          '.pptx',
+                          '.jpg',
+                          '.jpeg',
+                          '.png',
+                          '.gif',
+                          '.bmp',
+                          '.webp',
+                          '.heic',
+                          '.heif',
+                          '.tiff'
                         ];
 
                         final lower = url.toLowerCase();
