@@ -998,8 +998,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     child: TextButton(
                                       onPressed: () {
                                         Navigator.pop(context);
-                                        patchRequestData(
-                                            widget.dataApprover.id,
+                                        patchRequestData(widget.dataApprover.id,
                                             'approved',
                                             widget.dataApprover.toJson());
                                         _comment.clear();
@@ -1164,37 +1163,19 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   ///PATCH API CALL
   void patchRequestData(String? requestID, String status,
       Map<String, dynamic> requestData) async {
-    String url = '${singletonClass.baseURL}/request/$requestID';
+    String? employeeId = requestData['employeeId'];
+    String url = '${singletonClass.baseURL}/request/acceptLeave/$employeeId/$requestID';
 
     String? currentApproverId = singletonClass.getJWTModel()?.employeeId;
+    String? currentApproverName = singletonClass.getJWTModel()?.userName;
 
-    List<dynamic> updatedApprovers = requestData['approvers'].map((approver) {
-      if (approver['approverId'] == currentApproverId) {
-        return {
-          "approverId": approver['approverId'],
-          "approverName": approver['approverName'],
-          "status": status,
-          "timeStamps": DateTime.now().toIso8601String(),
-          "comments": _comment.text,
-        };
-      } else {
-        return approver;
-      }
-    }).toList();
 
     Map<String, dynamic> data = {
-      "employeeId": requestData['employeeId'],
-      "employeeName": requestData['employeeName'],
-      "empId": requestData['empId'],
-      "companyId": requestData['companyId'],
-      "branchId": requestData['branchId'],
-      "policyId": requestData['policyId'],
-      "requestType": requestData['requestType'],
-      "subType": requestData['subType'],
-      "requestData": requestData['requestData'],
-      "approvers": updatedApprovers,
-      "reason": requestData['reason'],
-      "attachments": requestData['attachments'],
+      "approverId": currentApproverId,
+      "approverName": currentApproverName,
+      "status": status,
+      "timeStamps": DateTime.now().toIso8601String(),
+      "comments": _comment.text,
     };
 
     String jsonData = jsonEncode(data);
