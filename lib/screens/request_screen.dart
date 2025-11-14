@@ -175,7 +175,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
                               for (var sub in subMenus) {
                                 final subTitle = sub.title?.toString().trim() ?? '';
-                                final hasAddAccess = sub.accessType?.add == false;
+                                final hasAddAccess = sub.accessType?.add == true;
 
                                 if (subTitle.isNotEmpty && hasAddAccess) {
                                   allowedRequestNames.add(subTitle);
