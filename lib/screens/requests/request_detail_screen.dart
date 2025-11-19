@@ -14,7 +14,7 @@ import 'package:nashr/widgets/loader.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../request_controller/approver_request_data_model.dart';
+import '../../request_controller/approver_request_data_model.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final DataApprover dataApprover;
@@ -54,15 +54,19 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final approversWithComments = aprovers
         .where((a) => (a.comments?.trim().isNotEmpty ?? false))
         .toList();
-
+    final rd = widget.dataApprover.requestData != null &&
+            widget.dataApprover.requestData!.isNotEmpty
+        ? widget.dataApprover.requestData!.first
+        : null;
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Stack(
-          children: [ Column(
+        child: Stack(children: [
+          Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              ///Header
               Row(
                 children: [
                   IconButton(
@@ -112,10 +116,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         : widget.dataApprover.requestData!.first.leaveType ==
                                 'annualLeave'
                             ? Icons.calendar_today_outlined
-                            : widget.dataApprover.requestData!.first.leaveType ==
+                            : widget.dataApprover.requestData!.first
+                                        .leaveType ==
                                     'casualLeave'
                                 ? Icons.beach_access_outlined
-                                : widget.dataApprover.requestType == 'loanRequest'
+                                : widget.dataApprover.requestType ==
+                                        'loanRequest'
                                     ? Icons.payments_outlined
                                     : Icons.description_outlined,
                     size: 30,
@@ -218,6 +224,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ],
               ),
               const SizedBox(height: 15),
+              ///Duration
               Row(
                 children: [
                   Align(
@@ -231,35 +238,76 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         ),
                       )),
                   const SizedBox(width: 5),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: widget.dataApprover.requestType == "loanRequest"
-                        ? Text(
-                            widget.dataApprover.requestData != null &&
-                                    widget.dataApprover.requestData!.isNotEmpty
-                                ? "${widget.dataApprover.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
-                                : AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                              fontSize: 15,
-                            ),
-                          )
-                        : Text(
-                            widget.dataApprover.requestData != null &&
-                                    widget.dataApprover.requestData!.isNotEmpty
-                                ? "${widget.dataApprover.requestData!.first.startDate ?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days} "
-                                : AppLocalizations.of(context)!.noData,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                              fontSize: 15,
-                            ),
-                          ),
-                  ),
+                  ///Loan Request → loanDuration (months)
+                  if (widget.dataApprover.requestType == "loanRequest")
+                    Text(
+                      rd != null
+                          ? "${rd.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+
+                  ///Expense Request → expenseDate
+                  if (widget.dataApprover.requestType == "expenseRequest")
+                    Text(
+                      rd != null
+                          ? "${rd.expenseDate ?? "---"}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+
+                  ///Overtime Request → hours
+                  if (widget.dataApprover.requestType == "overTimeRequest")
+                    Text(
+                      rd != null
+                          ? "${rd.overTimeHours ?? "---"} hrs"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+
+                  ///Attendance Request → attendanceTime
+                  if (widget.dataApprover.requestType == "attendanceRequest")
+                    Text(
+                      rd != null
+                          ? "${rd.attendanceTime ?? "---"}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+
+                  ///Leave / Special Leave / Document Request → start - end (daysDiff)
+                  if (widget.dataApprover.requestType == "leaveRequest" ||
+                      widget.dataApprover.requestType == "specialLeaveRequest" ||
+                      widget.dataApprover.requestType == "documentRequest")
+                    Text(
+                      rd != null
+                          ? "${rd.startDate ?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 15),
+              ///Note
               Row(
                 children: [
                   Text(
@@ -270,11 +318,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       fontSize: 15,
                     ),
                   ),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      "${widget.dataApprover.reason}",
+                      widget.dataApprover.reason ?? "---",
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey,
@@ -285,6 +333,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ],
               ),
               const SizedBox(height: 15),
+              ///Request Type
               Row(
                 children: [
                   Text(
@@ -298,7 +347,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      '${widget.dataApprover.requestType}',
+                      "${widget.dataApprover.requestType}",
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
                         color: Colors.grey,
@@ -312,92 +361,405 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               if (widget.dataApprover.requestType == 'loanRequest') ...[
                 Row(
                   children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "${AppLocalizations.of(context)!.totalLoanAmount} - ",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 15,
-                        ),
+                    Text(
+                      "${AppLocalizations.of(context)!.totalLoanAmount} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
                       ),
                     ),
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          widget.dataApprover.requestData != null &&
-                                  widget.dataApprover.requestData!.isNotEmpty
-                              ? "${widget.dataApprover.requestData!.first.loanAmount}"
-                              : AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        )),
+                    Text(
+                      rd != null
+                          ? "${rd.loanAmount} SAR"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 15),
                 Row(
                   children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "${AppLocalizations.of(context)!.loanInstallment} - ",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 15,
-                        ),
+                    Text(
+                      "${AppLocalizations.of(context)!.loanInstallment} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
                       ),
                     ),
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          widget.dataApprover.requestData != null &&
-                                  widget.dataApprover.requestData!.isNotEmpty
-                              ? "${widget.dataApprover.requestData!.first.loanInstallment}"
-                              : AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        )),
+                    Text(
+                      rd != null
+                          ? "${rd.loanInstallment} SAR/month"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 15),
                 Row(
                   children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "${AppLocalizations.of(context)!.loanCycle} - ",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 15,
-                        ),
+                    Text(
+                      "${AppLocalizations.of(context)!.loanCycle} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
                       ),
                     ),
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          widget.dataApprover.requestData != null &&
-                                  widget.dataApprover.requestData!.isNotEmpty
-                              ? "${widget.dataApprover.requestData!.first.loanCycle}"
-                              : AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        )),
+                    Text(
+                      rd != null
+                          ? "${rd.loanCycle}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
               ],
+              if (widget.dataApprover.requestType == 'expenseRequest') ...[
+                Row(
+                  children: [
+                    Text(
+                      "${AppLocalizations.of(context)!.amount} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      rd != null
+                          ? "${rd.amount} SAR"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text(
+                      "${AppLocalizations.of(context)!.category} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      rd != null
+                          ? "${rd.category}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text(
+                      "${AppLocalizations.of(context)!.paymentMethods} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      rd != null
+                          ? "${rd.paymentMethod}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text(
+                      "${AppLocalizations.of(context)!.transactionType} - ",
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15),
+                    ),
+                    Text(
+                      rd != null
+                          ? "${rd.transactionType}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text(
+                      "${AppLocalizations.of(context)!.purpose} - ",
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15),
+                    ),
+                    Text(
+                      rd != null
+                          ? "${rd.purpose}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'allowanceIncrement') ...[
+                Row(
+                  children: [
+                    Text("Allowance Type - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.leaveType}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text("Effective Date - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.startDate}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text("Amount - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.amount} SAR"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'overTimeRequest') ...[
+                Row(
+                  children: [
+                    Text("Hours - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.overTimeHours}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text("Paid As - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.paidAs?["type"]}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'documentRequest') ...[
+                Row(
+                  children: [
+                    Text("Document Type - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.documentType}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'leaveRequest') ...[
+                Row(
+                  children: [
+                    Text("Leave Type - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.leaveType}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text("Total Days - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      "$daysDiff ${AppLocalizations.of(context)!.days}",
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'specialLeaveRequest') ...[
+                Row(
+                  children: [
+                    Text("Special Leave - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.leaveType}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Text("Days - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      "$daysDiff ${AppLocalizations.of(context)!.days}",
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (widget.dataApprover.requestType == 'attendanceRequest') ...[
+                Row(
+                  children: [
+                    Text("Time - ",
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15)),
+                    Text(
+                      rd != null
+                          ? "${rd.attendanceTime}"
+                          : AppLocalizations.of(context)!.noData,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -479,7 +841,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                widget.dataApprover.approvers![i].approverName ??
+                                widget.dataApprover.approvers![i]
+                                        .approverName ??
                                     '---',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
@@ -557,6 +920,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              ///Attachments
               Row(
                 children: [
                   Text(
@@ -570,138 +935,139 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ],
               ),
               const SizedBox(height: 10),
+
               /// ✅ Show attachment if exists
               (widget.dataApprover.attachments != null &&
-                  widget.dataApprover.attachments!.isNotEmpty)
+                      widget.dataApprover.attachments!.isNotEmpty)
                   ? Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade400),
-                ),
-                child: Row(
-                  // ✅ changed from min → max
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          final url = widget.dataApprover.attachments!
-                              .first.fileContent;
-
-                          if (url == null || url.isEmpty) {
-                            debugPrint("Invalid attachment URL");
-                            return;
-                          }
-
-                          final inlineExtensions = [
-                            '.pdf',
-                            '.doc',
-                            '.docx',
-                            '.xls',
-                            '.xlsx',
-                            '.ppt',
-                            '.pptx',
-                            '.jpg',
-                            '.jpeg',
-                            '.png',
-                            '.gif',
-                            '.bmp',
-                            '.webp',
-                            '.heic',
-                            '.heif',
-                            '.tiff'
-                          ];
-
-                          final lower = url.toLowerCase();
-                          final isDocs = inlineExtensions
-                              .any((ext) => lower.endsWith(ext));
-
-                          if (isDocs) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FileViewerScreen(
-                                  url: url,
-                                  fileName:
-                                  "${widget.dataApprover.attachments!.first.fileName}",
-                                ),
-                              ),
-                            );
-                          } else {
-                            if (await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(Uri.parse(url),
-                                  mode: LaunchMode.externalApplication);
-                            } else {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(
-                                const SnackBar(
-                                    content:
-                                    Text("Unable to open file")),
-                              );
-                            }
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.insert_drive_file,
-                                color: Colors.blueAccent, size: 22),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                "${widget.dataApprover.attachments!.first.fileName}",
-                                style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade400),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () async {
-                        final url = widget.dataApprover.attachments!
-                            .first.fileContent;
-                        if (url != null && url.isNotEmpty) {
-                          if (await canLaunchUrl(Uri.parse(url))) {
-                            await launchUrl(Uri.parse(url),
-                                mode: LaunchMode.externalApplication);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Unable to open file")),
-                            );
-                          }
-                        } else {
-                          debugPrint('Invalid download URL');
-                        }
-                      },
-                      child: const Icon(Icons.download,
-                          color: Colors.blueAccent, size: 22),
-                    ),
-                  ],
-                ),
-              )
-                  : Row(
-                    children: [
-                      const Text(
-                                    "---",
-                                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                      child: Row(
+                        // ✅ changed from min → max
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                final url = widget.dataApprover.attachments!
+                                    .first.fileContent;
+
+                                if (url == null || url.isEmpty) {
+                                  debugPrint("Invalid attachment URL");
+                                  return;
+                                }
+
+                                final inlineExtensions = [
+                                  '.pdf',
+                                  '.doc',
+                                  '.docx',
+                                  '.xls',
+                                  '.xlsx',
+                                  '.ppt',
+                                  '.pptx',
+                                  '.jpg',
+                                  '.jpeg',
+                                  '.png',
+                                  '.gif',
+                                  '.bmp',
+                                  '.webp',
+                                  '.heic',
+                                  '.heif',
+                                  '.tiff'
+                                ];
+
+                                final lower = url.toLowerCase();
+                                final isDocs = inlineExtensions
+                                    .any((ext) => lower.endsWith(ext));
+
+                                if (isDocs) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FileViewerScreen(
+                                        url: url,
+                                        fileName:
+                                            "${widget.dataApprover.attachments!.first.fileName}",
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  if (await canLaunchUrl(Uri.parse(url))) {
+                                    await launchUrl(Uri.parse(url),
+                                        mode: LaunchMode.externalApplication);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text("Unable to open file")),
+                                    );
+                                  }
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.insert_drive_file,
+                                      color: Colors.blueAccent, size: 22),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      "${widget.dataApprover.attachments!.first.fileName}",
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                    ],
-                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () async {
+                              final url = widget
+                                  .dataApprover.attachments!.first.fileContent;
+                              if (url != null && url.isNotEmpty) {
+                                if (await canLaunchUrl(Uri.parse(url))) {
+                                  await launchUrl(Uri.parse(url),
+                                      mode: LaunchMode.externalApplication);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("Unable to open file")),
+                                  );
+                                }
+                              } else {
+                                debugPrint('Invalid download URL');
+                              }
+                            },
+                            child: const Icon(Icons.download,
+                                color: Colors.blueAccent, size: 22),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        const Text(
+                          "---",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
               const SizedBox(height: 25),
+
+              ///Comments
               Row(
                 children: [
                   Text(
@@ -772,10 +1138,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               const SizedBox(height: 25),
             ],
           ),
-            if(isLoading)
-              Loader()
-          ]
-        ),
+          if (isLoading) Loader()
+        ]),
       ),
       bottomNavigationBar: (widget.dataApprover.approvers != null &&
               widget.dataApprover.approvers!.any(
@@ -998,7 +1362,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     child: TextButton(
                                       onPressed: () {
                                         Navigator.pop(context);
-                                        patchRequestData(widget.dataApprover.id,
+                                        patchRequestData(
+                                            widget.dataApprover.id,
                                             'approved',
                                             widget.dataApprover.toJson());
                                         _comment.clear();
@@ -1164,11 +1529,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   void patchRequestData(String? requestID, String status,
       Map<String, dynamic> requestData) async {
     String? employeeId = requestData['employeeId'];
-    String url = '${singletonClass.baseURL}/request/acceptLeave/$employeeId/$requestID';
+    String url =
+        '${singletonClass.baseURL}/request/acceptLeave/$employeeId/$requestID';
 
     String? currentApproverId = singletonClass.getJWTModel()?.employeeId;
     String? currentApproverName = singletonClass.getJWTModel()?.userName;
-
 
     Map<String, dynamic> data = {
       "approverId": currentApproverId,
@@ -1207,8 +1572,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           title: AppLocalizations.of(context)!.success,
           type: QuickAlertType.success,
         );
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 1,)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MainScreen(
+                      index: 2,
+                      selectedIndex: 1,
+                    )));
       } else {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),

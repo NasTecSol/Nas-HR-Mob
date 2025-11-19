@@ -11,16 +11,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/screens/main_screen.dart';
-import 'package:nashr/screens/request_screen.dart';
+import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import '../request_controller/attachment_response_model.dart';
-import '../request_controller/company_model.dart';
-import '../request_controller/request_data_model.dart';
-import '../request_controller/search_employee_model.dart';
-import '../widgets/colors.dart';
-import '../widgets/loader.dart';
+import '../../request_controller/attachment_response_model.dart';
+import '../../request_controller/company_model.dart';
+import '../../request_controller/request_data_model.dart';
+import '../../request_controller/search_employee_model.dart';
+import '../../widgets/colors.dart';
+import '../../widgets/loader.dart';
 
 class CreateRequestScreen extends StatefulWidget {
   final Request? selectedRequest;
@@ -2953,25 +2953,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         "fine_penality": selectedSubType,
         "amount": _amount.text,
         "details": _details.text,
-        "date&time": formattedFromDate,
+        "date": formattedFromDate,
         "remark": _notes.text,
       });
-    } else if (selectedRequestType == 'allowance_Insurance') {
-      List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
-        return {
-          "empId": employee!.empId,
-          "name": employee.employeeName,
-        };
-      }).toList();
-
-      requestData.add({
-        "employees": employees,
-        "startDate": formattedFromDate,
-        "endDate": formattedToDate,
-        "duration": totalDaysString,
-        "allowanceType": selectedSubType,
-      });
-    } else {
+    }  else {
       requestData.add({
         "startDate": formattedFromDate,
         "endDate": formattedToDate,

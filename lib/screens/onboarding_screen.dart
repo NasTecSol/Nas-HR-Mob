@@ -1071,7 +1071,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               const SizedBox(height: 12),
 
                               // ===== IQAMA NUMBER =====
-                              RichText(
+                              if(nationality != "العربية السعودية")...[ RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
@@ -1084,34 +1084,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: iqamaController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterIqamaNumber,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              const SizedBox(height: 12),
-
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    controller: iqamaController,
+                                    decoration: InputDecoration(
+                                      hintText: AppLocalizations.of(context)!
+                                          .enterIqamaNumber,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide:
+                                        const BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.black, width: 1.5),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 14),
+                                    )),
+                                const SizedBox(height: 12),
+                              ],
                               // ===== PHONE =====
                               RichText(
                                 text: TextSpan(
@@ -1242,7 +1241,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                               const SizedBox(height: 12),
 
-                              // ===== DATE OF BIRTH =====
+                              /// ===== DATE OF BIRTH =====
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2281,10 +2280,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
+                                  keyboardType: TextInputType.text,
                                   controller: accountNox,
                                   decoration: InputDecoration(
                                     hintText: AppLocalizations.of(context)!

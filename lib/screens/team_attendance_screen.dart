@@ -1173,16 +1173,19 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                 color: Colors.black,
                                               ),
                                             ),
-                                            Text(
-                                              maxLines: 5,
-                                              attendance.shiftInfo != null &&
-                                                  attendance.shiftInfo!.shiftName != null
-                                                  ? "${attendance.shiftInfo!.shiftName}"
-                                                  : "---",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                            SizedBox(
+                                              width: 180,
+                                              child: Text(
+                                                maxLines: 5,
+                                                attendance.shiftInfo != null &&
+                                                    attendance.shiftInfo!.shiftName != null
+                                                    ? "${attendance.shiftInfo!.shiftName}"
+                                                    : "---",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
                                           ],

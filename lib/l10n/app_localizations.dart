@@ -4621,6 +4621,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created at'**
   String get createAt;
+
+  /// No description provided for @selectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Payment Method'**
+  String get selectPaymentMethod;
+
+  /// No description provided for @selectTransactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Transaction Type'**
+  String get selectTransactionType;
+
+  /// No description provided for @datePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'mm/dd/yyyy'**
+  String get datePlaceholder;
+
+  /// No description provided for @enterExpenseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an expense amount'**
+  String get enterExpenseAmount;
+
+  /// No description provided for @enterAmountValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get enterAmountValidation;
+
+  /// No description provided for @enterPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a purpose'**
+  String get enterPurpose;
+
+  /// No description provided for @enterPurposeValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a purpose'**
+  String get enterPurposeValidation;
+
+  /// No description provided for @uploadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Failed'**
+  String get uploadFailedTitle;
+
+  /// No description provided for @fileSelectionCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'File selection canceled.'**
+  String get fileSelectionCanceled;
+
+  /// No description provided for @uploadFailedPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get uploadFailedPrefix;
+
+  /// No description provided for @errorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorPrefix;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Check your connection.'**
+  String get somethingWentWrong;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @pleaseSelectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment method'**
+  String get pleaseSelectPaymentMethod;
+
+  /// No description provided for @pleaseSelectTransactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a transaction type'**
+  String get pleaseSelectTransactionType;
+
+  /// No description provided for @employeeOrCompanyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee or Company data missing.'**
+  String get employeeOrCompanyMissing;
+
+  /// No description provided for @unexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error occurred.'**
+  String get unexpectedError;
+
+  /// No description provided for @transactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Type'**
+  String get transactionType;
+
+  /// No description provided for @purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get purpose;
 }
 
 class _AppLocalizationsDelegate

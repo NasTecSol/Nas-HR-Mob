@@ -2816,7 +2816,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (hasComplaints)
+                                  if (hasComplaints)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2825,7 +2825,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 context,
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                        const Complaints()));
+                                                    const Complaints()));
                                           },
                                           child: Container(
                                             height: 65,
@@ -2865,7 +2865,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
+                                    const SizedBox(width: 20),
+                                  ],
                                   if (hasPenaltiesAndFines)
                                     Column(
                                       children: [

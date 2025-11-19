@@ -11,7 +11,7 @@ import 'package:mime/mime.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:nashr/singleton_class.dart';
-import '../request_controller/attachment_response_model.dart';
+import '../../request_controller/attachment_response_model.dart';
 
 class ShortLeaveRequestScreen extends StatefulWidget {
   const ShortLeaveRequestScreen({super.key});
