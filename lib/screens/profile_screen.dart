@@ -375,11 +375,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   GestureDetector(
                                     onTap: (){
                                       String url = "${employeeProfile?.profilePic ?? ''}".toLowerCase();
-                                      if (url.endsWith(".png") ||
-                                          url.endsWith(".jpg") ||
-                                          url.endsWith(".jpeg") ||
-                                          url.endsWith(".heic") ||
-                                          url.endsWith(".heif") ||
+                                      if (url.endsWith(".png")  ||
+                                          url.endsWith(".jpg")  ||
+                                          url.endsWith(".jpeg")  ||
+                                          url.endsWith(".heic")  ||
+                                          url.endsWith(".heif")  ||
                                           url.endsWith(".tiff") ||
                                           url.endsWith(".bmp")) {
                                         showDialog(
