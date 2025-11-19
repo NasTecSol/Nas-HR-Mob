@@ -7,7 +7,7 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../request_controller/request_data_model.dart';
+import '../../request_controller/request_data_model.dart';
 
 class SelfRequestDetailScreen extends StatefulWidget {
   final Data1 data1;
@@ -184,6 +184,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
               ],
             ),
             const SizedBox(height: 15),
+            ///Duration
             Row(
               children: [
                 Align(
@@ -199,10 +200,8 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                     )
                 ),
                 const SizedBox(width: 5),
-                Align(
-                  alignment:
-                  Alignment.topLeft,
-                  child: widget.data1.requestType == "loanRequest" ? Text(
+                if (widget.data1.requestType == "loanRequest")...[
+                  Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
                         ? "${widget.data1.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
                         : AppLocalizations.of(context)!.noData,
@@ -212,7 +211,18 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                       fontSize: 15,
                     ),
                   )
-                      : Text(
+                ],
+                if (widget.data1.requestType == "expenseRequest")...[Text(
+                  widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
+                      ? "${widget.data1.requestData!.first.expenseDate ?? "---"}"
+                      : AppLocalizations.of(context)!.noData,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                    fontSize: 15,
+                  ),
+                )] else ...[
+                  Text(
                     widget.data1.requestData != null &&
                         widget.data1.requestData!.isNotEmpty
                         ? "${widget.data1.requestData!.first.startDate?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days} "
@@ -224,10 +234,11 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                       fontSize: 15,
                     ),
                   ),
-                ),
+                ],
               ],
             ),
             const SizedBox(height: 15),
+            /// Note
             Row(
               children: [
                 Text( "${AppLocalizations.of(context)!.note}:",
@@ -254,6 +265,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
               ],
             ),
             const SizedBox(height: 15),
+            ///Request Type
             Row(
               children: [
                 Text(
@@ -396,6 +408,200 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
               ),
               const SizedBox(height: 20),
             ],
+            if (widget.data1.requestType == 'expenseRequest') ...[
+              Row(
+                children: [
+                  Align(
+                    alignment:
+                    Alignment.topLeft,
+                    child: Text(
+                      "${AppLocalizations.of(context)!.amount} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight:
+                        FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        widget.data1.requestData != null &&
+                            widget.data1.requestData!.isNotEmpty
+                            ? "${widget.data1.requestData!.first.amount}"
+                            : AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Align(
+                    alignment:
+                    Alignment.topLeft,
+                    child: Text(
+                      "${AppLocalizations.of(context)!.category} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight:
+                        FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        widget.data1.requestData !=
+                            null &&
+                            widget.data1
+                                .requestData!
+                                .isNotEmpty
+                            ? "${widget.data1.requestData!.first.category}"
+                            : AppLocalizations.of(
+                            context)!
+                            .noData,
+                        style: GoogleFonts
+                            .inter(
+                          fontWeight:
+                          FontWeight
+                              .bold,
+                          color:
+                          Colors.grey,
+                          fontSize: 15,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "${AppLocalizations.of(context)!.paymentMethods} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight:
+                        FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Align(
+                      alignment:
+                      Alignment.topLeft,
+                      child: Text(
+                        widget.data1.requestData !=
+                            null &&
+                            widget.data1
+                                .requestData!
+                                .isNotEmpty
+                            ? "${widget.data1.requestData!.first.paymentMethod}"
+                            : AppLocalizations.of(
+                            context)!
+                            .noData,
+                        style: GoogleFonts
+                            .inter(
+                          fontWeight:
+                          FontWeight
+                              .bold,
+                          color:
+                          Colors.grey,
+                          fontSize: 15,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "${AppLocalizations.of(context)!.transactionType} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight:
+                        FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Align(
+                      alignment:
+                      Alignment.topLeft,
+                      child: Text(
+                        widget.data1.requestData !=
+                            null &&
+                            widget.data1
+                                .requestData!
+                                .isNotEmpty
+                            ? "${widget.data1.requestData!.first.transactionType}"
+                            : AppLocalizations.of(
+                            context)!
+                            .noData,
+                        style: GoogleFonts
+                            .inter(
+                          fontWeight:
+                          FontWeight
+                              .bold,
+                          color:
+                          Colors.grey,
+                          fontSize: 15,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "${AppLocalizations.of(context)!.purpose} - ",
+                      style: GoogleFonts.inter(
+                        fontWeight:
+                        FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  Align(
+                      alignment:
+                      Alignment.topLeft,
+                      child: Text(
+                        widget.data1.requestData !=
+                            null &&
+                            widget.data1
+                                .requestData!
+                                .isNotEmpty
+                            ? "${widget.data1.requestData!.first.purpose}"
+                            : AppLocalizations.of(
+                            context)!
+                            .noData,
+                        style: GoogleFonts
+                            .inter(
+                          fontWeight:
+                          FontWeight
+                              .bold,
+                          color:
+                          Colors.grey,
+                          fontSize: 15,
+                        ),
+                      )),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+
             const SizedBox(height: 10),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -569,7 +775,6 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                 border: Border.all(color: Colors.grey.shade400),
               ),
               child: Row(
-                // ✅ changed from min → max
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Expanded(

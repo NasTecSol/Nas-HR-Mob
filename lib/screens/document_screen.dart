@@ -371,6 +371,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               ),
                             ),
                           ),
+
+                    SizedBox(height: 20),
                   ],
                 ),
               )

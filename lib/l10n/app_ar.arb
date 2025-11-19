@@ -863,7 +863,28 @@
       "totalAmount": "المبلغ الإجمالي",
       "totalAmountAppearHere": "سيظهر المبلغ الإجمالي هنا",
       "enterNotesValidation": "يرجى إدخال الملاحظات",
-      "createAt" : "تم الإنشاء في"
+      "createAt" : "تم الإنشاء في",
+      "selectCategory": "اختر الفئة",
+      "selectPaymentMethod": "اختر طريقة الدفع",
+      "selectTransactionType": "اختر نوع المعاملة",
+      "datePlaceholder": "شهر/يوم/سنة",
+      "enterExpenseAmount": "أدخل مبلغ المصروف",
+      "enterAmountValidation": "أدخل مبلغًا",
+      "enterPurpose": "أدخل الغرض",
+      "enterPurposeValidation": "أدخل الغرض",
+      "uploadFailedTitle": "فشل التحميل",
+      "ok": "حسناً",
+      "fileSelectionCanceled": "تم إلغاء اختيار الملف.",
+      "uploadFailedPrefix": "فشل التحميل",
+      "errorPrefix": "خطأ",
+      "somethingWentWrong": "حدث خطأ ما. تحقق من اتصالك.",
+      "pleaseSelectCategory": "يرجى اختيار الفئة",
+      "pleaseSelectPaymentMethod": "يرجى اختيار طريقة الدفع",
+      "pleaseSelectTransactionType": "يرجى اختيار نوع المعاملة",
+      "employeeOrCompanyMissing": "بيانات الموظف أو الشركة مفقودة.",
+      "unexpectedError": "حدث خطأ غير متوقع.",
+      "transactionType": "نوع المعاملة",
+      "purpose": "الغرض"
 
 
 }

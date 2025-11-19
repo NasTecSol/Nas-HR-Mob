@@ -2288,4 +2288,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAt => 'Created at';
+
+  @override
+  String get selectPaymentMethod => 'Select Payment Method';
+
+  @override
+  String get selectTransactionType => 'Select Transaction Type';
+
+  @override
+  String get datePlaceholder => 'mm/dd/yyyy';
+
+  @override
+  String get enterExpenseAmount => 'Enter an expense amount';
+
+  @override
+  String get enterAmountValidation => 'Enter an amount';
+
+  @override
+  String get enterPurpose => 'Enter a purpose';
+
+  @override
+  String get enterPurposeValidation => 'Enter a purpose';
+
+  @override
+  String get uploadFailedTitle => 'Upload Failed';
+
+  @override
+  String get fileSelectionCanceled => 'File selection canceled.';
+
+  @override
+  String get uploadFailedPrefix => 'Upload failed';
+
+  @override
+  String get errorPrefix => 'Error';
+
+  @override
+  String get somethingWentWrong =>
+      'Something went wrong. Check your connection.';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'Please select a payment method';
+
+  @override
+  String get pleaseSelectTransactionType => 'Please select a transaction type';
+
+  @override
+  String get employeeOrCompanyMissing => 'Employee or Company data missing.';
+
+  @override
+  String get unexpectedError => 'Unexpected error occurred.';
+
+  @override
+  String get transactionType => 'Transaction Type';
+
+  @override
+  String get purpose => 'Purpose';
 }

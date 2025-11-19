@@ -3,7 +3,7 @@ import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.da
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
-import 'package:nashr/screens/request_screen.dart';
+import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../widgets/colors.dart';

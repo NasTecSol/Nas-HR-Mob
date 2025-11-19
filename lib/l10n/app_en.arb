@@ -1201,7 +1201,28 @@
     "totalAmount": "Total Amount",
     "totalAmountAppearHere": "Total amount will appear here",
     "enterNotesValidation": "Please enter notes",
-    "createAt" : "Created at"
+    "createAt" : "Created at",
+    "selectCategory": "Select Category",
+    "selectPaymentMethod": "Select Payment Method",
+    "selectTransactionType": "Select Transaction Type",
+    "datePlaceholder": "mm/dd/yyyy",
+    "enterExpenseAmount": "Enter an expense amount",
+    "enterAmountValidation": "Enter an amount",
+    "enterPurpose": "Enter a purpose",
+    "enterPurposeValidation": "Enter a purpose",
+    "uploadFailedTitle": "Upload Failed",
+    "ok": "OK",
+    "fileSelectionCanceled": "File selection canceled.",
+    "uploadFailedPrefix": "Upload failed",
+    "errorPrefix": "Error",
+    "somethingWentWrong": "Something went wrong. Check your connection.",
+    "pleaseSelectCategory": "Please select a category",
+    "pleaseSelectPaymentMethod": "Please select a payment method",
+    "pleaseSelectTransactionType": "Please select a transaction type",
+    "employeeOrCompanyMissing": "Employee or Company data missing.",
+    "unexpectedError": "Unexpected error occurred.",
+    "transactionType": "Transaction Type",
+    "purpose": "Purpose"
 
 
 

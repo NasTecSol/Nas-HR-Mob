@@ -153,21 +153,59 @@ class Approvers {
 }
 
 class RequestData {
+  // Common keys (Employees list)
   List<Employees>? employees;
+
+  // Leave
   dynamic startDate;
   dynamic endDate;
   dynamic duration;
   dynamic leaveType;
+
+  // Loan
   dynamic loanAmount;
   dynamic loanCycle;
   dynamic loanInstallment;
   dynamic loanDuration;
   dynamic loanType;
+
+  // Penalties/Fines
   dynamic finePenality;
-  int? amount;
+  dynamic amount;
   dynamic details;
-  dynamic dateTime;
   dynamic remark;
+
+  // Expense
+  dynamic purpose;
+  dynamic description;
+  dynamic expenseDate;
+  dynamic category;
+  dynamic paymentMethod;
+  bool? isAdvanceUsed;
+  dynamic transactionType;
+
+  // Document Request
+  dynamic docType;
+  dynamic name;
+  dynamic notes;
+  dynamic documentType;
+  dynamic documentName;
+
+  // Overtime Request
+  dynamic overTimeHours;
+  Map<String, dynamic>? paidAs;
+  List<Map<String, dynamic>>? to;
+
+  // Attendance Request
+  dynamic punchingType;
+  dynamic attendanceTime;
+  dynamic attendanceDate;
+
+  // 🔥 NEW FIELD (Single date for: expense, overtime, documents, penalties)
+  dynamic date;
+
+  // Extra storage for any unrecognized keys
+  Map<String, dynamic>? extra;
 
   RequestData({
     this.employees,
@@ -183,48 +221,141 @@ class RequestData {
     this.finePenality,
     this.amount,
     this.details,
-    this.dateTime,
     this.remark,
+    this.purpose,
+    this.description,
+    this.expenseDate,
+    this.category,
+    this.paymentMethod,
+    this.isAdvanceUsed,
+    this.transactionType,
+    this.docType,
+    this.name,
+    this.notes,
+    this.documentType,
+    this.documentName,
+    this.overTimeHours,
+    this.paidAs,
+    this.to,
+    this.punchingType,
+    this.attendanceTime,
+    this.attendanceDate,
+    this.date, // NEW FIELD
+    this.extra,
   });
 
+  /// ---------- FROM JSON ----------
   RequestData.fromJson(Map<String, dynamic> json) {
-    employees = json["employees"] == null ? null : (json["employees"] as List).map((e) => Employees.fromJson(e)).toList();
+    employees = json["employees"] == null
+        ? null
+        : (json["employees"] as List)
+        .map((e) => Employees.fromJson(e))
+        .toList();
+
+    // Direct keys
     startDate = json["startDate"];
     endDate = json["endDate"];
     duration = json["duration"];
     leaveType = json["leaveType"];
+
     loanAmount = json["loanAmount"];
     loanCycle = json["loanCycle"];
     loanInstallment = json["loanInstallment"];
     loanDuration = json["loanDuration"];
     loanType = json["loanType"];
+
     finePenality = json["fine_penality"];
     amount = json["amount"];
     details = json["details"];
-    dateTime = json["date&time"];
     remark = json["remark"];
+
+    purpose = json["purpose"];
+    description = json["description"];
+    expenseDate = json["expenseDate"];
+    category = json["category"];
+    paymentMethod = json["paymentMethod"];
+    isAdvanceUsed = json["isAdvanceUsed"];
+    transactionType = json["transactionType"];
+
+    docType = json["docType"];
+    name = json["name"];
+    notes = json["remarks"];
+    documentType = json["documentType"];
+    documentName = json["documentName"];
+
+    overTimeHours = json["overTimeHours"];
+    paidAs = json["paidAs"];
+    to = json["to"]?.cast<Map<String, dynamic>>();
+
+    punchingType = json["punchingType"];
+    attendanceTime = json["attendanceTime"];
+    attendanceDate = json["attendanceDate"];
+
+    date = json["date"]; // NEW FIELD
+
+    // Save extra unknown keys
+    extra = {};
+    json.forEach((key, value) {
+      if (!toJson().containsKey(key)) {
+        extra![key] = value;
+      }
+    });
   }
 
+  /// ---------- TO JSON ----------
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    if(employees != null) {
-      _data["employees"] = employees?.map((e) => e.toJson()).toList();
+    final Map<String, dynamic> data = {};
+
+    if (employees != null) {
+      data["employees"] = employees!.map((e) => e.toJson()).toList();
     }
-    _data["startDate"] = startDate;
-    _data["endDate"] = endDate;
-    _data["duration"] = duration;
-    _data["leaveType"] = leaveType;
-    _data["loanAmount"] = loanAmount;
-    _data["loanCycle"] = loanCycle;
-    _data["loanInstallment"] = loanInstallment;
-    _data["loanDuration"] = loanDuration;
-    _data["loanType"] = loanType;
-    _data["fine_penality"] = finePenality;
-    _data["amount"] = amount;
-    _data["details"] = details;
-    _data["date&time"] = dateTime;
-    _data["remark"] = remark;
-    return _data;
+
+    data["startDate"] = startDate;
+    data["endDate"] = endDate;
+    data["duration"] = duration;
+    data["leaveType"] = leaveType;
+
+    data["loanAmount"] = loanAmount;
+    data["loanCycle"] = loanCycle;
+    data["loanInstallment"] = loanInstallment;
+    data["loanDuration"] = loanDuration;
+    data["loanType"] = loanType;
+
+    data["fine_penality"] = finePenality;
+    data["amount"] = amount;
+    data["details"] = details;
+    data["remark"] = remark;
+
+    data["purpose"] = purpose;
+    data["description"] = description;
+    data["expenseDate"] = expenseDate;
+    data["category"] = category;
+    data["paymentMethod"] = paymentMethod;
+    data["isAdvanceUsed"] = isAdvanceUsed;
+    data["transactionType"] = transactionType;
+
+    data["docType"] = docType;
+    data["name"] = name;
+    data["remarks"] = notes;
+    data["documentType"] = documentType;
+    data["documentName"] = documentName;
+
+    data["overTimeHours"] = overTimeHours;
+    data["paidAs"] = paidAs;
+    data["to"] = to;
+
+    data["punchingType"] = punchingType;
+    data["attendanceTime"] = attendanceTime;
+    data["attendanceDate"] = attendanceDate;
+
+    data["date"] = date; // NEW FIELD
+
+    // Add unknown extra keys
+    if (extra != null) {
+      data.addAll(extra!);
+    }
+
+    return data;
   }
 }
 
