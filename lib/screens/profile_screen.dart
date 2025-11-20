@@ -418,7 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: (employeeProfile?.profilePic != null &&
+                                        child: (employeeProfile?.profilePic != null && employeeProfile!.profilePic.isNotEmpty &&
                                             employeeProfile!.profilePic!.isNotEmpty && employeeProfile.profilePic != "https://www.profilePic.com")
                                             ? Image.network(
                                           employeeProfile.profilePic!,

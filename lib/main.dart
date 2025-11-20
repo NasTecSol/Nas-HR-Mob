@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:background_fetch/background_fetch.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nashr/screens/socket_screen.dart';
+import 'package:newrelic_mobile/config.dart';
+import 'package:newrelic_mobile/newrelic_mobile.dart';
+import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -83,19 +87,39 @@ void main() async {
 
   LanguageChangeController languageController = LanguageChangeController();
   await languageController.loadLanguage();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => languageController),
-      ],
-      child: Consumer<LanguageChangeController>(
-        builder: (context, provider, child) {
-          return  MyApp(provider: provider);
-        },
-      ),
-    ),
+  var appToken = "";
+  if (Platform.isIOS) {
+    appToken = 'AA796b590654035b9f72fb84c72e39173ffbcc165b-NRMA';
+  } else if (Platform.isAndroid) {
+    appToken = 'AA54e627aef512b22489a6d1abf365e9ab63e294f6-NRMA';
+  }
+  Config config = Config(
+      accessToken: appToken,
+      analyticsEventEnabled: true,
+      webViewInstrumentation: true,
+      networkErrorRequestEnabled: true,
+      networkRequestEnabled: true,
+      crashReportingEnabled: true,
+      interactionTracingEnabled: true,
+      httpResponseBodyCaptureEnabled: true,
+      loggingEnabled: true,
+      printStatementAsEventsEnabled: true,
+      httpInstrumentationEnabled: true
   );
+  NewrelicMobile.instance.start(config, () {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => languageController),
+        ],
+        child: Consumer<LanguageChangeController>(
+          builder: (context, provider, child) {
+            return MyApp(provider: provider);
+          },
+        ),
+      ),
+    );
+  });
   initBackgroundFetch();
 }
 
@@ -119,6 +143,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [
+        NewRelicNavigationObserver(),
+      ],
       locale: widget.provider.appLocale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

@@ -91,6 +91,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
     singletonClass.getBiometricDevices();
+    setState(() {
+      selectedCountryName = 'العربية السعودية';
+      nationality = 'العربية السعودية';
+    });
     final orgData = singletonClass.organizationModelDataList.first.data;
     if (orgData?.companies != null && orgData!.companies!.isNotEmpty) {
       companies = orgData.companies!
@@ -362,8 +366,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
         backgroundColor: NasColors.backGround,
         body: Padding(
-            padding:
-                const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 15),
+            padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 15),
             child: Stack(children: [
               Column(children: [
                 /// Header
@@ -919,8 +922,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                               // ===== NATIONALITY =====
                               RichText(
-                                text: const TextSpan(
-                                  text: "Nationality ",
+                                text:  TextSpan(
+                                  text: "${AppLocalizations.of(context)!.nationality} ",
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w600,
@@ -953,6 +956,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           setState(() {
                                             nationality = country.name;
                                             selectedCountryName = country.name;
+                                            print(country.name);
                                           });
                                         },
                                         initialSelection: 'SA',
@@ -1784,7 +1788,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 hint: Text(AppLocalizations.of(context)!
                                     .selectHierarchyGroup),
                                 value: hierarchyGroup,
-                                items: ["L1", "L2", "L3", "L4"]
+                                items: ["Admin", "Manager", "Supervisor", "Employee"]
                                     .map((val) => DropdownMenuItem(
                                         value: val, child: Text(val)))
                                     .toList(),
@@ -2377,153 +2381,165 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final today = DateTime.now().toIso8601String().split('T').first;
     String? organizationID = singletonClass.getJWTModel()?.organizationId;
     final Map<String, dynamic> data = {
-      "userName": userName.text,
-      "password": password.text,
+      "userName": userName.text.isNotEmpty ? userName.text : "",
+      "password": password.text.isNotEmpty ? password.text : "",
       "email": [
         {
-          "personalEmail": emailController.text,
-          "workEmail": emailController.text,
+          "personalEmail": emailController.text.isNotEmpty ? emailController.text : "",
+          "workEmail": emailController.text.isNotEmpty ? emailController.text : "",
         }
       ],
-      "firstName": firstNameController.text,
-      "middleName": '',
-      "lastName": lastNameController.text,
-      "branchId": selectedBranchId,
-      "martialStatus": maritalStatus.toString(),
-      "religion": religion.toString(),
+      "firstName": firstNameController.text.isNotEmpty ? firstNameController.text : "",
+      "middleName": "",
+      "lastName": lastNameController.text.isNotEmpty ? lastNameController.text : "",
+      "branchId": selectedBranchId ?? "",
+      "martialStatus": (maritalStatus?.toString() ?? ""),
+      "religion": (religion?.toString() ?? ""),
       "address": {
-        "streetAddress": addressController.text,
-        "city": '',
-        "country": ''
+        "streetAddress": addressController.text.isNotEmpty ? addressController.text : "",
+        "city": "",
+        "country": nationality?.toString() ?? "",
       },
-      "NIC": nationalIdController.text,
+      "NIC": nationalIdController.text.isNotEmpty ? nationalIdController.text : "",
       "iqamaNumber": {
-        "id": iqamaController.text,
-        "issueDate": '',
-        "expiryDate": ''
+        "id": iqamaController.text.isNotEmpty ? iqamaController.text : "",
+        "issueDate": "",
+        "expiryDate": ""
       },
-      "passport": {"id": '', "issueDate": '', "expiryDate": ''},
+      "passport": {"id": "", "issueDate": "", "expiryDate": ""},
       "imigrationSatus": "foreigner",
-      "DOB": selectedDate.toString(),
-      "age": _calculateAge(selectedDate.toString()),
+      "DOB": selectedDate != null
+          ? selectedDate!.toIso8601String().split('T').first
+          : "",
+      "age": selectedDate != null ? _calculateAge(selectedDate.toString()) : "",
       "phoneNumber": [
         {
-          "mobileNumber": phoneController.text,
-          "landlineNumber": phoneController.text,
+          "mobileNumber": phoneController.text.isNotEmpty ? phoneController.text : "",
+          "landlineNumber": phoneController.text.isNotEmpty ? phoneController.text : "",
         }
       ],
-      "gender": gender.toString(),
-      "role": role.toString(),
+      "gender": gender?.toString() ?? "",
+      "role": role?.toString() ?? "",
       "profession": "",
-      "nationality": nationality.toString(),
-      "profilePic": profilePicUrl,
+      "nationality": nationality?.toString() ?? "",
+      "profilePic": profilePicUrl ?? "",
       "familyInfo": {
-        "fatherName": '',
-        "motherName": '',
-        "familyAddress": {"streetAddress": '', "city": '', "country": ''},
-        "familyContactNumber": '',
+        "fatherName": "",
+        "motherName": "",
+        "familyAddress": {"streetAddress": "", "city": "", "country": ""},
+        "familyContactNumber": "",
         "emergencyContactInfo": [
           {
-            "relationName": '',
-            "relationType": '',
-            "relationContactNumber": '',
-            "relationAddress": ''
+            "relationName": "",
+            "relationType": "",
+            "relationContactNumber": "",
+            "relationAddress": ""
           }
         ]
       },
       "educationInfo": [
         {
-          "degreeName": degreeName.text,
-          "degreeType": degreeType.text,
-          "fieldofStudy": '',
-          "institute": '',
-          "from": '',
-          "to": '',
-          "results": ''
+          "degreeName": degreeName.text.isNotEmpty ? degreeName.text : "",
+          "degreeType": degreeType.text.isNotEmpty ? degreeType.text : "",
+          "fieldofStudy": "",
+          "institute": "",
+          "from": "",
+          "to": "",
+          "results": ""
         }
       ],
       "experienceBackground": [],
       "bankingInfo": [
         {
-          "title": bankName.text,
-          "accountNumber": accountNox.text,
-          "branchCode": '',
-          "accountType": '',
-          "country": '',
-          "empSwiftCode": '',
-          "bankName": '',
+          "title": bankName.text.isNotEmpty ? bankName.text : "",
+          "accountNumber": accountNox.text.isNotEmpty ? accountNox.text : "",
+          "branchCode": "",
+          "accountType": "",
+          "country": "",
+          "empSwiftCode": "",
+          "bankName": "",
         }
       ],
       "employeeInfo": [
         {
-          "depId": selectedDepartmentId,
-          "depName": selectedDepartment,
+          "depId": selectedDepartmentId ?? "",
+          "depName": selectedDepartment ?? "",
           "jobTitle": "",
-          "jobDescription": '',
-          "reportingManager": selectedSupervisorId,
-          "jobRank": '',
-          "designation": designation.text,
-          "grade": hierarchyGroup.toString(),
-          "workDomain": '',
-          "location": '',
+          "jobDescription": "",
+          "reportingManager": selectedSupervisorId ?? "",
+          "jobRank": "",
+          "designation": designation.text.isNotEmpty ? designation.text : "",
+          "grade": hierarchyGroup == "Admin"
+              ? "L1"
+              : hierarchyGroup == "Manager"
+              ? "L2"
+              : hierarchyGroup == "Supervisor"
+              ? "L3"
+              : hierarchyGroup == "Employee"
+              ? "L4"
+              : "",
+          "workDomain": "",
+          "location": selectedBranch?.toString() ?? "",
           "employeeStatus": "Active",
-          "employeeType": '',
-          "employeeShift": selectedShiftId,
+          "employeeType": "",
+          "employeeShift": selectedShiftId ?? "",
           "joiningDate": today,
-          "leavingDate": '',
+          "leavingDate": "",
           "hiringDate": today,
-          "noticePeriod": '',
-          "empSignature": ''
+          "noticePeriod": "",
+          "empSignature": ""
         }
       ],
       "salaryInfo": {
-        "baseSalary": basicSalary.text,
-        "currency": currency.toString(),
-        "timeCycle_Period": salaryPeriod.toString(),
+        "baseSalary": basicSalary.text.isNotEmpty ? basicSalary.text : "",
+        "currency": currency?.toString() ?? "",
+        "timeCycle_Period": salaryPeriod?.toString() ?? "",
         "allowance_Benefits": [],
         "deductions": [],
         "taxInfo": {
-          "taxPercentage": '',
-          "deductableAmount": '',
-          "timeCycle": ''
+          "taxPercentage": "",
+          "deductableAmount": "",
+          "timeCycle": ""
         },
-        "allowanceContribution": '',
-        "netSalary": ''
+        "allowanceContribution": "",
+        "netSalary": ""
       },
       "shiftInfo": {
-        "shiftId": selectedShiftId.toString(),
-        "shiftType": selectedShiftType.toString(),
-        "shiftName": selectedShift.toString(),
-        "timeFrom": selectedShiftFrom.toString(),
-        "timeTo": selectedShiftTo.toString(),
+        "shiftId": selectedShiftId?.toString() ?? "",
+        "shiftType": selectedShiftType?.toString() ?? "",
+        "shiftName": selectedShift?.toString() ?? "",
+        "timeFrom": selectedShiftFrom?.toString() ?? "",
+        "timeTo": selectedShiftTo?.toString() ?? "",
       },
       "socialLinks": [],
       "loanInfo": [],
       "assetsInfo": [],
       "remoteLocation": {
-        "isRemoteAttendance": '',
-        "remoteAttendanceLoc": '',
-        "lastLocation": '',
-        "lastLocationUpdatedAt": ''
+        "isRemoteAttendance": "",
+        "remoteAttendanceLoc": "",
+        "lastLocation": "",
+        "lastLocationUpdatedAt": ""
       },
       "contractInfo": [
         {
-          "contractId": '',
-          "contractStatus": '',
-          "contractType": contractType.toString(),
+          "contractId": "",
+          "contractStatus": "",
+          "contractType": contractType?.toString() ?? "",
           "contractStartDate": today,
-          "contractExpiry": contractEndDate.toString(),
-          "probabtionStartDate": '',
-          "probationPeriod": '',
-          "probationstatus": ''
+          "contractExpiry": contractEndDate != null
+              ? contractEndDate!.toIso8601String().split('T').first
+              : "",
+          "probabtionStartDate": "",
+          "probationPeriod": "",
+          "probationstatus": ""
         }
       ],
       "documentsInfo": [],
-      "createdBy": singletonClass.getJWTModel()?.empId ?? '',
+      "createdBy": singletonClass.getJWTModel()?.empId ?? "",
     };
 
     String body = json.encode(data);
-
+    log("JSON DATA $body");
     final uri = Uri.parse(
         "${singletonClass.baseURL}/employee/create?branchId=$selectedBranchId&departmentId=$selectedDepartmentId&organizationId=$organizationID&teamId=$selectedTeamId");
     try {

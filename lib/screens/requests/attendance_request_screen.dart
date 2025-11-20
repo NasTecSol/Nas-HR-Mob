@@ -542,8 +542,8 @@ class _AttendanceRequestScreenState extends State<AttendanceRequestScreen> {
         "requestData": [
           {
             "punchingType": selectedSubType,
-            "attendanceTime": selectedTime,
-            'attendanceDate': dateTime
+            "attendanceTime": selectedTime!.format(context),
+            'attendanceDate': dateTime!.toIso8601String().split('T').first
           }
         ],
         "approvers": [],
