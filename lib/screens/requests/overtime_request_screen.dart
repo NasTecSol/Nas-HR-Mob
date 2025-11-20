@@ -235,7 +235,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                                       ),
                                     ],
                                   ),
-                                  width: 150,
+                                  width: 160,
                                   child: Row(
                                     children: [
                                       Container(
@@ -250,28 +250,34 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 5),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            employee.employeeName ?? "Unknown",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                      // Wrap Column with Expanded
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start, // start so text aligns left
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              employee.employeeName ?? "Unknown",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Text(
-                                            employee.empId ?? "Unknown",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
+                                            Text(
+                                              employee.empId ?? "Unknown",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.white,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -362,6 +368,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                             onPressed: () {
                               setState(() {
                                 _employeeSearchResults.clear();
+                                _showSearchResult = false;
                               });
                             },
                             child: Text(
@@ -1765,7 +1772,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
               {"employeeId": supervisorID}
             ]
                 : _selectedEmployees
-                .map((e) => {"employeeId": e.empId})
+                .map((e) => {"employeeId": e.employeeId})
                 .toList(),
           }
         ],
@@ -1800,10 +1807,19 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
           showConfirmBtn: false,
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
-        );
+        Future.delayed(const Duration(milliseconds: 900), () {
+          if (!mounted) return;
+          // Close any dialogs (QuickAlert).
+          try {
+            Navigator.of(context, rootNavigator: true).pop();
+          } catch (_) {}
+
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0)),
+          );
+        });
       } else {
         QuickAlert.show(
           context: context,

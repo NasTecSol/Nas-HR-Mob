@@ -1040,7 +1040,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         onTap: toggleSheet,
-                        child: singletonClass.employeeDataList.first.data!.profilePic == "https://www.profilePic.com" ? ClipOval(
+                        child: (singletonClass.employeeDataList.first.data!.profilePic == "https://www.profilePic.com" ||
+                            singletonClass.employeeDataList.first.data!.profilePic == null ||
+                            singletonClass.employeeDataList.first.data!.profilePic.isEmpty
+                        ) ? ClipOval(
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,

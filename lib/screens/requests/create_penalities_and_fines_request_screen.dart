@@ -1061,7 +1061,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
              "subType": selectedSubType,
              "amount": _amount.text,
              "remark": _notes.text,
-              "date": dateTime,
+              "date": dateTime!.toIso8601String().split('T').first,
           }
         ],
         "approvers": [],

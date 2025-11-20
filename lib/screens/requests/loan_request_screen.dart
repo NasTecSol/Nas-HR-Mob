@@ -758,7 +758,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
           {
             "loanAmount": _amount.text,
             "loanCycle": "Monthly",
-            "loanInstallment": installmentAmount,
+            "loanInstallment": _installmentAmount.text,
             "loanDuration": calculateLoanDurationInMonths(startDate!, endDate!),
             "loanType": selectedSubType,
           }

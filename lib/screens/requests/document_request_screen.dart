@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:nashr/widgets/loader.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../request_controller/company_model.dart';
@@ -211,7 +212,10 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
                 ),
                 const SizedBox(height: 30),
               ],
-            ),]
+            ),
+              if(isLoading)
+                Loader(),
+            ]
           ),
         ),
       ),
@@ -396,7 +400,7 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
             "docType": selectedSubType,
             "name": documentNameController.text,
             "remarks": notesController.text,
-            "date": DateTime.now().toIso8601String(),
+            "date": DateTime.now().toIso8601String().split('T').first,
           }
         ],
         "approvers": [],
