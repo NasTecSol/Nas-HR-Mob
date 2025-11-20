@@ -159,7 +159,9 @@ class _RequestScreenState extends State<RequestScreen> {
                               .companyDataList.first.data!.request![index];
                           if ((request.requestType == 'overTimeRequest' &&
                               singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false) ||
-                          request.requestType == 'complaintRequest'
+                          request.requestType == 'complaintRequest' ||
+                          request.requestType == 'approvalDoc' ||
+                          request.requestType == 'payrollRequest'
                           ) {
                             return const SizedBox.shrink();
                           }
@@ -187,7 +189,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 final subTitle =
                                     sub.title?.toString().trim() ?? '';
                                 final hasAddAccess =
-                                    sub.accessType?.add == false;
+                                    sub.accessType?.add == true;
 
                                 if (subTitle.isNotEmpty && hasAddAccess) {
                                   allowedRequestNames.add(subTitle);
@@ -731,22 +733,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                           .format(updatedAtDateTime);
                                     }
 
-                                    String date =
-                                        formatDate(request.createdAt!);
-                                    final startDate =
-                                        request.requestData!.first.startDate;
-                                    final endDate =
-                                        request.requestData!.first.endDate;
-
-                                    // ✅ Avoid crash: check both dates
-                                    final int daysDiff = (startDate != null &&
-                                            endDate != null)
-                                        ? DateTime.parse(endDate)
-                                                .difference(
-                                                    DateTime.parse(startDate))
-                                                .inDays +
-                                            1
-                                        : 0;
+                                    String date = formatDate(request.createdAt!);
                                     return GestureDetector(
                                       onTap: () {
                                         Navigator.push(
@@ -976,81 +963,291 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ],
                                                   ),
                                                   const SizedBox(height: 10),
-                                                  if(request.requestType == 'loanRequest')...[
+                                                  ///Request Data of every request
+                                                  if(request.requestType == 'allowanceIncrement')...[
+                                                    ///date
                                                     Row(
                                                       children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
                                                         Text(
-                                                          request.requestData !=
-                                                              null &&
-                                                              request
-                                                                  .requestData!
-                                                                  .isNotEmpty
-                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
-                                                              : AppLocalizations.of(
-                                                              context)!
-                                                              .noData,
-                                                          style: GoogleFonts
-                                                              .inter(
-                                                            fontWeight:
-                                                            FontWeight.bold,
-                                                            color:
-                                                            Colors.grey,
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.date ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
                                                             fontSize: 15,
                                                           ),
-                                                        ),
+                                                        )
                                                       ],
-                                                    )
+                                                    ),
                                                   ],
-                                                  if(request.requestType == 'expenseRequest')...[
+                                                  if(request.requestType == 'overTimeRequest')...[
+                                                    ///date
                                                     Row(
                                                       children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
                                                         Text(
-                                                          request.requestData !=
-                                                              null &&
-                                                              request
-                                                                  .requestData!
-                                                                  .isNotEmpty
-                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.expenseDate ?? "---"}"
-                                                              : AppLocalizations.of(
-                                                              context)!
-                                                              .noData,
-                                                          style:
-                                                          GoogleFonts
-                                                              .inter(
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .bold,
-                                                            color: Colors
-                                                                .grey,
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.date ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if (request.requestType == "loanRequest")...[
+                                                    ///Duration
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.duration}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
                                                             fontSize: 15,
                                                           ),
                                                         ),
                                                       ],
-                                                    )
-                                                  ] else ...[
+                                                    ),
+                                                  ],
+                                                  if(request.requestType == 'attendanceRequest')...[
+                                                    ///date
                                                     Row(
                                                       children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
                                                         Text(
-                                                          request.requestData !=
-                                                              null &&
-                                                              request
-                                                                  .requestData!
-                                                                  .isNotEmpty
-                                                              ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate ?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days}"
-                                                              : AppLocalizations.of(
-                                                              context)!
-                                                              .noData,
-                                                          style:
-                                                          GoogleFonts
-                                                              .inter(
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .bold,
-                                                            color: Colors
-                                                                .grey,
-                                                            fontSize: 13,
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.attendanceDate ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if (request.requestType == "expenseRequest")...[
+                                                    ///expense Data
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.expense} ${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.expenseDate ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if(request.requestType == 'documentRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.date ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if(request.requestType == 'leaveRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.startDate ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
                                                           ),
                                                         ),
+                                                        Text(
+                                                          " - ",
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.endDate ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if(request.requestType == 'specialLeaveRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.startDate ?? "---"} - ${request.requestData!.first.endDate ?? "---"}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 15),
+                                                    ///duration
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.duration}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? "${request.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.days}"
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
                                                       ],
                                                     ),
                                                   ],
@@ -1207,22 +1404,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                             .format(updatedAtDateTime);
                                       }
 
-                                      String date =
-                                          formatDate(request.createdAt!);
-                                      final startDate =
-                                          request.requestData!.first.startDate;
-                                      final endDate =
-                                          request.requestData!.first.endDate;
-
-                                      // ✅ Avoid crash: check both dates
-                                      final int daysDiff = (startDate != null &&
-                                              endDate != null)
-                                          ? DateTime.parse(endDate)
-                                                  .difference(
-                                                      DateTime.parse(startDate))
-                                                  .inDays +
-                                              1
-                                          : 0;
+                                      String date = formatDate(request.createdAt!);
                                       return GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -1461,81 +1643,291 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ],
                                                     ),
                                                     const SizedBox(height: 10),
-                                                    if(request.requestType == 'loanRequest')...[
+                                                    ///Request Data of every request
+                                                    if(request.requestType == 'allowanceIncrement')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight.bold,
-                                                              color:
-                                                              Colors.grey,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          ),
+                                                          )
                                                         ],
-                                                      )
+                                                      ),
                                                     ],
-                                                    if(request.requestType == 'expenseRequest')...[
+                                                    if(request.requestType == 'overTimeRequest')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.expenseDate ?? "---"}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style:
-                                                            GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold,
-                                                              color: Colors
-                                                                  .grey,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if (request.requestType == "loanRequest")...[
+                                                      ///Duration
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.duration}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
-                                                      )
-                                                    ] else ...[
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'attendanceRequest')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate ?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style:
-                                                            GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold,
-                                                              color: Colors
-                                                                  .grey,
-                                                              fontSize: 13,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.attendanceDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if (request.requestType == "expenseRequest")...[
+                                                      ///expense Data
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.expense} ${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.expenseDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'documentRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'leaveRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.startDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
+                                                          Text(
+                                                            " - ",
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.endDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'specialLeaveRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.startDate ?? "---"} - ${request.requestData!.first.endDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 15),
+                                                      ///duration
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.duration}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.days}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
                                                         ],
                                                       ),
                                                     ],
@@ -1689,22 +2081,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                             .format(updatedAtDateTime);
                                       }
 
-                                      String date =
-                                          formatDate(request.createdAt!);
-                                      final startDate =
-                                          request.requestData!.first.startDate;
-                                      final endDate =
-                                          request.requestData!.first.endDate;
-
-                                      // ✅ Avoid crash: check both dates
-                                      final int daysDiff = (startDate != null &&
-                                              endDate != null)
-                                          ? DateTime.parse(endDate)
-                                                  .difference(
-                                                      DateTime.parse(startDate))
-                                                  .inDays +
-                                              1
-                                          : 0;
+                                      String date = formatDate(request.createdAt!);
                                       return GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -1909,33 +2286,22 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           height: 30,
                                                           width: 75,
                                                           decoration:
-                                                              BoxDecoration(
-                                                            shape: BoxShape
-                                                                .rectangle,
+                                                          BoxDecoration(
+                                                            shape: BoxShape.rectangle,
                                                             color: _getColorForVerificationStatus(
-                                                                request.status ??
-                                                                    'default'),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
+                                                                "${request.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status}"),
+                                                            borderRadius: BorderRadius.circular(10),
                                                           ),
                                                           child: Center(
                                                             child: Text(
                                                               _translateStatus(
-                                                                  request
-                                                                      .status,
-                                                                  context),
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .white,
+                                                                request.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status,
+                                                                context,
+                                                              ),
+                                                              textAlign: TextAlign.center,
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.white,
                                                                 fontSize: 12,
                                                               ),
                                                             ),
@@ -1944,81 +2310,291 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ],
                                                     ),
                                                     SizedBox(height: 10),
-                                                    if(request.requestType == 'loanRequest')...[
+                                                    ///Request Data of every request
+                                                    if(request.requestType == 'allowanceIncrement')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight.bold,
-                                                              color:
-                                                              Colors.grey,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          ),
+                                                          )
                                                         ],
-                                                      )
+                                                      ),
                                                     ],
-                                                    if(request.requestType == 'expenseRequest')...[
+                                                    if(request.requestType == 'overTimeRequest')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.expenseDate ?? "---"}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style:
-                                                            GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold,
-                                                              color: Colors
-                                                                  .grey,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if (request.requestType == "loanRequest")...[
+                                                      ///Duration
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.duration}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.loanDuration ?? "---"} ${AppLocalizations.of(context)!.month}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
                                                           ),
                                                         ],
-                                                      )
-                                                    ] else ...[
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'attendanceRequest')...[
+                                                      ///date
                                                       Row(
                                                         children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData !=
-                                                                null &&
-                                                                request
-                                                                    .requestData!
-                                                                    .isNotEmpty
-                                                                ? "${AppLocalizations.of(context)!.duration}: ${request.requestData!.first.startDate ?? "---"} - $daysDiff ${AppLocalizations.of(context)!.days}"
-                                                                : AppLocalizations.of(
-                                                                context)!
-                                                                .noData,
-                                                            style:
-                                                            GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold,
-                                                              color: Colors
-                                                                  .grey,
-                                                              fontSize: 13,
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.attendanceDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if (request.requestType == "expenseRequest")...[
+                                                      ///expense Data
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.expense} ${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.expenseDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'documentRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.date ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'leaveRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.startDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
                                                             ),
                                                           ),
+                                                          Text(
+                                                            " - ",
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.endDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'specialLeaveRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.startDate ?? "---"} - ${request.requestData!.first.endDate ?? "---"}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 15),
+                                                      ///duration
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.duration}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? "${request.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.days}"
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
                                                         ],
                                                       ),
                                                     ],
@@ -2364,7 +2940,8 @@ class _RequestScreenState extends State<RequestScreen> {
         "allowance_Increment",
         "documentRequest",
         "specialLeaveRequest",
-        "payrollRequest"
+        "attendanceRequest",
+        "overTimeRequest"
       ],
     };
 

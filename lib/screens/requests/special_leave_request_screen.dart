@@ -4,6 +4,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/widgets/loader.dart';
 import '../../request_controller/company_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +33,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   final TextEditingController _totalDays = TextEditingController();
+  final TextEditingController _notes = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   SubTypes? _selectedSubType;
   DateTime? startDate;
@@ -310,6 +312,36 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  ///Notes
+                  Text(AppLocalizations.of(context)!.notes,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    cursorColor: Colors.grey,
+                    controller: _notes,
+                    maxLines: 3,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return AppLocalizations.of(context)!.enterNotesValidation;
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.typeYourDescription,
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   /// Attachment button (only if required)
                   if (widget.selectedRequest?.docRequired == true) ...[
                     TextButton(
@@ -415,7 +447,9 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                     ),
                   ),
                 ],
-              )
+              ),
+              if(isLoading)
+                Loader()
             ],
           ),
         ),
@@ -583,7 +617,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
       final responseBody = await response.stream.bytesToString();
 
       if (mounted) setState(() => isLoading = false);
-
+      debugPrint("UPLOAD DOCUMENT RESPONSE${responseBody}");
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
         final attachmentResponse = AttachmentResponse.fromJson(decodedJson);
@@ -675,14 +709,14 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
         "subType": selectedSubType,
         "requestData": [
           {
-            "startDate": startDate,
-            "endDate": endDate,
+            "startDate": startDate!.toIso8601String().split('T').first,
+            "endDate": endDate!.toIso8601String().split('T').first,
             "duration": _totalDays.text  ,
             "leaveType": selectedSubType,
           }
         ],
         "approvers": [],
-        "reason": "",
+        "reason": _notes.text,
         "attachments": attachments,
       };
 

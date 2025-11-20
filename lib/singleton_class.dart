@@ -418,9 +418,7 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
-        ? selectedCompanyId
-        : getJWTModel()?.companyId;
+    String? companyId = getJWTModel()?.companyId;
 
     if (companyId == null || companyId.isEmpty) {
       log("❌ No companyId available from selectedCompanyId or JWT!");
@@ -739,6 +737,8 @@ class SingletonClass {
         "allowance_Increment",
         "documentRequest",
         "specialLeaveRequest",
+        "attendanceRequest",
+        "overTimeRequest"
       ],
     };
     final uri = Uri.parse(

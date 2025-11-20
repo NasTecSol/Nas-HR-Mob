@@ -280,8 +280,8 @@ class RequestData {
     docType = json["docType"];
     name = json["name"];
     notes = json["remarks"];
-    documentType = json["documentType"];
-    documentName = json["documentName"];
+    documentType = json["docType"];
+    documentName = json["name"];
 
     overTimeHours = json["overTimeHours"];
     paidAs = json["paidAs"];
@@ -337,8 +337,8 @@ class RequestData {
     data["docType"] = docType;
     data["name"] = name;
     data["remarks"] = notes;
-    data["documentType"] = documentType;
-    data["documentName"] = documentName;
+    data["docType"] = documentType;
+    data["name"] = documentName;
 
     data["overTimeHours"] = overTimeHours;
     data["paidAs"] = paidAs;

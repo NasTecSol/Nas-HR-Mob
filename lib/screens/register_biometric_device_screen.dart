@@ -53,7 +53,7 @@ class _RegisterBiometricDeviceScreenState
         children: [
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.only(top: 0, left: 20, right: 20, bottom: 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

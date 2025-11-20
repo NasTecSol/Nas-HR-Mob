@@ -725,8 +725,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         "requestData": [
           {
             "leaveType": selectedSubType,
-            "startDate": startDate,
-            "endDate": endDate,
+            "startDate": startDate!.toIso8601String().split('T').first,
+            "endDate": endDate!.toIso8601String().split('T').first,
             "duration": _totalDays.text
           }
         ],
