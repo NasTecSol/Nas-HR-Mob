@@ -1103,7 +1103,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         const SizedBox(width: 5),
                                                         Text(
                                                           request.requestData != null && request.requestData!.isNotEmpty
-                                                              ? "${request.requestData!.first.expenseDate ?? "---"}"
+                                                              ? (request.requestData!.first.expenseDate != null && request.requestData!.first.expenseDate!.isNotEmpty
+                                                              ? DateFormat('dd/MM/yyyy').format(DateTime.parse(request.requestData!.first.expenseDate!))
+                                                              : "---")
                                                               : AppLocalizations.of(context)!.noData,
                                                           style: GoogleFonts.inter(
                                                             fontWeight: FontWeight.bold,
@@ -1783,7 +1785,9 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           const SizedBox(width: 5),
                                                           Text(
                                                             request.requestData != null && request.requestData!.isNotEmpty
-                                                                ? "${request.requestData!.first.expenseDate ?? "---"}"
+                                                                ? (request.requestData!.first.expenseDate != null && request.requestData!.first.expenseDate!.isNotEmpty
+                                                                ? DateFormat('dd-MM-yyyy').format(DateTime.parse(request.requestData!.first.expenseDate!))
+                                                                : "---")
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
