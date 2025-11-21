@@ -1,29 +1,33 @@
 #!/bin/sh
-
 set -e
 
-# Change working directory to the root of your cloned repo.
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 
-# Clone Flutter SDK (custom repo or standard one).
+# Clone Flutter
 git clone https://github.com/flutter/flutter.git --depth 1 -b 3.35.6 $HOME/flutter
-
-# Add Flutter to PATH.
 export PATH="$PATH:$HOME/flutter/bin"
 
-# Pre-cache Flutter artifacts for iOS.
 flutter precache --ios
-
-# Install Flutter package dependencies.
 flutter pub get
 
-# Install CocoaPods via Homebrew without auto-updating Homebrew.
-HOMEBREW_NO_AUTO_UPDATE=1
-brew install cocoapods
+# Install CocoaPods
+export COCOAPODS_DISABLE_STATS=true
+HOMEBREW_NO_AUTO_UPDATE=1 brew install cocoapods
 
-# Navigate to the iOS directory and install pod dependencies.
 cd ios
-pod install
 
-# Exit script successfully.
+# Fix CocoaPods CDN timeout issue
+pod repo remove master || true
+pod repo add master https://github.com/CocoaPods/Specs.git
+
+# Update repo
+pod repo update master --verbose
+
+# Clean old pods
+rm -rf Pods
+rm -rf Podfile.lock
+
+# Install pods
+pod install --verbose
+
 exit 0
