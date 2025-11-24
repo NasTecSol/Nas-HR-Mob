@@ -884,7 +884,8 @@
       "employeeOrCompanyMissing": "بيانات الموظف أو الشركة مفقودة.",
       "unexpectedError": "حدث خطأ غير متوقع.",
       "transactionType": "نوع المعاملة",
-      "purpose": "الغرض"
+      "purpose": "الغرض",
+      "allowance":"البدل"
 
 
 }

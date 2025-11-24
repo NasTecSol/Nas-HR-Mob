@@ -2906,12 +2906,8 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       if (singletonClass.attachmentResponseDataList.isNotEmpty &&
           singletonClass.attachmentResponseDataList.first.data != null) {
         attachments.add({
-          "fileName": singletonClass
-              .attachmentResponseDataList.first.data!.attachmentName,
-          "fileType": singletonClass
-              .attachmentResponseDataList.first.data!.attachmentType,
-          "fileContent":
-              singletonClass.attachmentResponseDataList.first.data!.url,
+          "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
+          "url": singletonClass.attachmentResponseDataList.first.data!.url,
         });
       } else {
         await QuickAlert.show(
