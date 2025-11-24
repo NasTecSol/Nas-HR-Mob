@@ -1222,7 +1222,8 @@
     "employeeOrCompanyMissing": "Employee or Company data missing.",
     "unexpectedError": "Unexpected error occurred.",
     "transactionType": "Transaction Type",
-    "purpose": "Purpose"
+    "purpose": "Purpose",
+    "allowance":"Allowance"
 
 
 

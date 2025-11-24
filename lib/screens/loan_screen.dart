@@ -37,7 +37,7 @@ class _LoanScreenState extends State<LoanScreen> {
     print(issueDate);
     if (issueDate.trim().isEmpty) {
       print("Invalid issueDate: empty or null");
-      return installments; // Return empty list if invalid date
+      return installments;
     }
 
     DateTime startDate;

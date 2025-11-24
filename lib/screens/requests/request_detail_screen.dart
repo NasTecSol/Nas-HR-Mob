@@ -1627,8 +1627,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               const SizedBox(height: 10),
               (widget.dataApprover.attachments != null &&
                   widget.dataApprover.attachments!.isNotEmpty &&
-                  widget.dataApprover.attachments!.first.fileContent != null &&
-                  widget.dataApprover.attachments!.first.fileContent!.isNotEmpty)
+                  widget.dataApprover.attachments!.first.url != null &&
+                  widget.dataApprover.attachments!.first.url!.isNotEmpty)
                   ? Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -1643,7 +1643,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       child: GestureDetector(
                         onTap: () async {
                           final url = widget.dataApprover.attachments!
-                              .first.fileContent;
+                              .first.url;
 
                           if (url == null || url.isEmpty) {
                             debugPrint("Invalid attachment URL");
@@ -1680,7 +1680,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 builder: (context) => FileViewerScreen(
                                   url: url,
                                   fileName:
-                                  "${widget.dataApprover.attachments!.first.fileName}",
+                                  "${widget.dataApprover.attachments!.first.type}",
                                 ),
                               ),
                             );
@@ -1705,7 +1705,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                "${widget.dataApprover.attachments!.first.fileName}",
+                                "${widget.dataApprover.attachments!.first.type}",
                                 style: const TextStyle(
                                   color: Colors.black87,
                                   fontSize: 13,
@@ -1723,7 +1723,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     GestureDetector(
                       onTap: () async {
                         final url = widget.dataApprover.attachments!
-                            .first.fileContent;
+                            .first.url;
                         if (url != null && url.isNotEmpty) {
                           if (await canLaunchUrl(Uri.parse(url))) {
                             await launchUrl(Uri.parse(url),

@@ -1609,8 +1609,8 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
             const SizedBox(height: 10),
             (widget.data1.attachments != null &&
                 widget.data1.attachments!.isNotEmpty &&
-                widget.data1.attachments!.first.fileContent != null &&
-                widget.data1.attachments!.first.fileContent!.isNotEmpty)
+                widget.data1.attachments!.first.url != null &&
+                widget.data1.attachments!.first.url!.isNotEmpty)
                 ? Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -1625,7 +1625,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                     child: GestureDetector(
                       onTap: () async {
                         final url = widget.data1.attachments!
-                            .first.fileContent;
+                            .first.url;
 
                         if (url == null || url.isEmpty) {
                           debugPrint("Invalid attachment URL");
@@ -1662,7 +1662,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                               builder: (context) => FileViewerScreen(
                                 url: url,
                                 fileName:
-                                "${widget.data1.attachments!.first.fileName}",
+                                "${widget.data1.attachments!.first.type}",
                               ),
                             ),
                           );
@@ -1687,7 +1687,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              "${widget.data1.attachments!.first.fileName}",
+                              "${widget.data1.attachments!.first.type}",
                               style: const TextStyle(
                                 color: Colors.black87,
                                 fontSize: 13,
@@ -1705,7 +1705,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   GestureDetector(
                     onTap: () async {
                       final url = widget.data1.attachments!
-                          .first.fileContent;
+                          .first.url;
                       if (url != null && url.isNotEmpty) {
                         if (await canLaunchUrl(Uri.parse(url))) {
                           await launchUrl(Uri.parse(url),

@@ -2346,4 +2346,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get purpose => 'Purpose';
+
+  @override
+  String get allowance => 'Allowance';
 }

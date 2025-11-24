@@ -2338,4 +2338,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get purpose => 'الغرض';
+
+  @override
+  String get allowance => 'البدل';
 }

@@ -382,23 +382,20 @@ class Employees {
 }
 
 class Attachments {
-  String? fileName;
-  String? fileType;
-  String? fileContent;
+  String? type;
+  String? url;
 
-  Attachments({this.fileName, this.fileType, this.fileContent});
+  Attachments({this.type, this.url});
 
   Attachments.fromJson(Map<String, dynamic> json) {
-    fileName = json["fileName"];
-    fileType = json["fileType"];
-    fileContent = json["fileContent"];
+    type = json["type"];
+    url = json["url"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["fileName"] = fileName;
-    _data["fileType"] = fileType;
-    _data["fileContent"] = fileContent;
+    _data["type"] = type;
+    _data["url"] = url;
     return _data;
   }
 }

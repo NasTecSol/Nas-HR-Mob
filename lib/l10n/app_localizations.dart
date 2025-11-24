@@ -4735,6 +4735,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purpose'**
   String get purpose;
+
+  /// No description provided for @allowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance'**
+  String get allowance;
 }
 
 class _AppLocalizationsDelegate
