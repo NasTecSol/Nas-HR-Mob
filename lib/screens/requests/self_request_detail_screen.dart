@@ -206,7 +206,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.date ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.date, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -322,7 +322,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.date ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.date, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -689,7 +689,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.attendanceDate ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.attendanceDate, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -834,7 +834,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.expenseDate ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.expenseDate, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -1066,7 +1066,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.date ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.date, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -1211,7 +1211,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.startDate ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.startDate , context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -1229,7 +1229,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   ),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.endDate ?? "---"}"
+                        ? singletonClass.formatDate2(widget.data1.requestData!.first.endDate, context)
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
@@ -1345,7 +1345,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   const SizedBox(width: 5),
                   Text(
                     widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                        ? "${widget.data1.requestData!.first.startDate ?? "---"} - ${widget.data1.requestData!.first.endDate ?? "---"}"
+                        ? "${singletonClass.formatDate2(widget.data1.requestData!.first.startDate, context)} - ${singletonClass.formatDate2(widget.data1.requestData!.first.endDate, context)}"
                         : AppLocalizations.of(context)!.noData,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.bold,
