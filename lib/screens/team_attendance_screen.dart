@@ -185,7 +185,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         '_isTeamChecked: $_isTeamChecked | _isChecked: $_isChecked');
   }
 
-
   Future<void> extractAllEmployeeIdsForBranch(String? selectedBranchId) async {
 
     await singletonClass.getTeamBranchData();
@@ -203,7 +202,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         if (branchData != null && branchData.employees != null) {
           for (var employee in branchData.employees!) {
             final employeeId = employee.id;
-            if (employeeId != null && employeeId.isNotEmpty) {
+            if (employeeId != null && employeeId.isNotEmpty && employee.employeeInfo!.first.employeeStatus == 'Active') {
               allEmployeeIds.add(employeeId);
               selectedBranchIds.clear();
             }
@@ -224,10 +223,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       }
     }
   }
-
-
-
-
 
   void _setDefaultDates() {
     final now = DateTime.now();
@@ -1208,11 +1203,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: attendance.slots!.take(2).map<Widget>((slot) {
-                                                final start = DateTime.tryParse(slot.slotStart ?? '')?.toLocal();
-                                                final end = DateTime.tryParse(slot.slotEnd ?? '')?.toLocal();
-                                                final startTime = start != null ? DateFormat.jm().format(start) : '--:--';
-                                                final endTime = end != null ? DateFormat.jm().format(end) : '--:--';
-
                                                 return Padding(
                                                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                                                   child: Row(
@@ -1220,7 +1210,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                       Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
                                                       const SizedBox(width: 6),
                                                       Text(
-                                                        "$startTime - $endTime",
+                                                        "${singletonClass.formatCheckInTime(slot.slotStart , context)} - ${singletonClass.formatCheckInTime(slot.slotEnd, context)}",
                                                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                                                       ),
                                                     ],

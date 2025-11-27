@@ -49,7 +49,6 @@ class _RequestScreenState extends State<RequestScreen> {
   int _requestTotalPages = 1;
   List<DataApprover>? _approver;
   List<Data1>? _request;
-
   @override
   void initState() {
     super.initState();
@@ -168,31 +167,30 @@ class _RequestScreenState extends State<RequestScreen> {
 
                           /// ✅ Step 1: Collect allowed submenus under "Approval" where accessType.add == true
                           final allowedRequestNames = <String>{};
-
-                          final uiSettings = singletonClass
-                                  .roleAndAccessModelDataList
-                                  .first
-                                  .data
-                                  ?.uiSettings
-                                  ?.uiModules ??
-                              [];
+                          final uiSettings = singletonClass.roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ?? [];
 
                           for (var module in uiSettings) {
                             final moduleTitle =
-                                module.title?.toString().trim().toLowerCase() ??
-                                    '';
+                                module.title?.toString().trim().toLowerCase() ?? '';
 
                             if (moduleTitle == 'approval') {
-                              final subMenus = module.subMenu ?? [];
+                              final approvalSubMenus = module.subMenu ?? [];
 
-                              for (var sub in subMenus) {
-                                final subTitle =
-                                    sub.title?.toString().trim() ?? '';
-                                final hasAddAccess =
-                                    sub.accessType?.add == true;
+                              for (var item in approvalSubMenus) {
+                                final itemTitle =
+                                    item.title?.toString().trim().toLowerCase() ?? '';
 
-                                if (subTitle.isNotEmpty && hasAddAccess) {
-                                  allowedRequestNames.add(subTitle);
+                                if (itemTitle == 'requests') {
+                                  final requestSubMenus = item.subMenu ?? [];
+
+                                  for (var sub in requestSubMenus) {
+                                    final subTitle = sub['title']?.toString().trim() ?? '';
+                                    final hasAddAccess = sub['accessType']?['add'] == true;
+
+                                    if (subTitle.isNotEmpty && hasAddAccess) {
+                                      allowedRequestNames.add(subTitle);
+                                    }
+                                  }
                                 }
                               }
                             }
@@ -493,6 +491,12 @@ class _RequestScreenState extends State<RequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final showRequest = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .any((module) => module.title?.trim().toLowerCase() == 'approval' &&
+        (module.subMenu ?.where((item) => item.title?.trim().toLowerCase() == 'requests')
+            .expand((item) => item.subMenu ?? [])
+            .any((sub) => sub['accessType']?['add'] == true) ?? false));
+
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
@@ -541,10 +545,7 @@ class _RequestScreenState extends State<RequestScreen> {
                     ),
                   ],
                   const Spacer(),
-                  if (singletonClass.roleAndAccessModelDataList.first.data!
-                      .uiSettings!.uiModules!
-                      .any((e) =>
-                          e.title == 'Approval' && e.accessType!.add == true))
+                  if (showRequest == true)
                     Padding(
                       padding: const EdgeInsets.only(top: 15.0),
                       child: TextButton(

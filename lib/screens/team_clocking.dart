@@ -185,7 +185,7 @@ class _TeamClockingState extends State<TeamClocking> {
         if (branchData != null && branchData.employees != null) {
           for (var employee in branchData.employees!) {
             final employeeId = employee.id;
-            if (employeeId != null && employeeId.isNotEmpty) {
+            if (employeeId != null && employeeId.isNotEmpty && employee.employeeInfo!.first.employeeStatus == 'Active') {
               allEmployeeIds.add(employeeId);
               selectedBranchIds.clear();
             }
@@ -424,7 +424,7 @@ class _TeamClockingState extends State<TeamClocking> {
                         _startDate = picked.start;
                         _endDate = picked.end;
 
-                        isDateRangeSelected = true;  // ✅ activate range mode
+                        isDateRangeSelected = true;
 
                         _initDates(start: picked.start, end: picked.end);
 
@@ -1254,11 +1254,12 @@ class _TeamClockingState extends State<TeamClocking> {
     final ids = employeeIds.join(',');
     final now = DateTime.now();
     String startDateStr = startDate != null
-        ? DateFormat('MM-dd-yyyy').format(startDate)
-        : DateFormat('MM-01-yyyy').format(now);
+        ? '${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}-${startDate.year}'
+        : '${now.month.toString().padLeft(2, '0')}-01-${now.year}';
+
     String endDateStr = endDate != null
-        ? DateFormat('MM-dd-yyyy').format(endDate)
-        : DateFormat('MM-dd-yyyy').format(now);
+        ? '${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}-${endDate.year}'
+        : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
 
     var uri = Uri.parse(
         '${singletonClass.baseURL}/c-emp-check-in-out/filter?employeeId=$ids&startDate=$startDateStr&endDate=$endDateStr');

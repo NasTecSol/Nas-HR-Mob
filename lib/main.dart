@@ -19,81 +19,82 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'Controller/language_change_controller.dart';
+import 'dart:async';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await SingletonClass().init();
-  await NotificationService.init();
+void main() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  if (kDebugMode) {
-    print("App is running in Debug mode.");
-    SingletonClass().baseURL = "https://dev.nashrms.com/api";
-    print("Debug url ${SingletonClass().baseURL}");
-  }
+    await SingletonClass().init();
+    await NotificationService.init();
 
-  if (kReleaseMode) {
-    SingletonClass().baseURL = "https://www.nashrms.com/api";
-  }
+    if (kDebugMode) {
+      print("App is running in Debug mode.");
+      SingletonClass().baseURL = "https://dev.nashrms.com/api";
+    }
 
-  if (kProfileMode) {
-    log("App is running in Profile mode.");
-  }
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA");
+    if (kReleaseMode) {
+      SingletonClass().baseURL = "https://www.nashrms.com/api";
+    }
 
-  final prefs = await SharedPreferences.getInstance();
-  SingletonClass().tenantId = prefs.getString('baseURL') ?? '';
-  try {
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
+    if (kProfileMode) {
+      log("App is running in Profile mode.");
+    }
+
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-    String? fcmToken = await FirebaseMessaging.instance.getToken();
-    if (kDebugMode) {
-      print('FCM TOKEN: $fcmToken');
-    }
-    if (fcmToken != null) {
-      SingletonClass().setFCMToken(fcmToken);
-      if (kDebugMode) {
-        print('FCM TOKEN: $fcmToken');
-        print('FCM TOKEN from Singleton: ${SingletonClass().fcmToken}');
-      }
-    }
-    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    if (apnsToken != null) {
-      if (kDebugMode) {
-        print('APNS Token: $apnsToken');
-      }
-    }
-    await FirebaseMessaging.instance.setAutoInitEnabled(true);
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        if (kDebugMode) {
-          print('Received notification: ${message.notification?.title} - ${message.notification?.body}');
-        }
-      }
-    });
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error setting up Firebase Messaging: $e');
-    }
-  }
 
-  LanguageChangeController languageController = LanguageChangeController();
-  await languageController.loadLanguage();
-  var appToken = "";
-  if (Platform.isIOS) {
-    appToken = 'AA796b590654035b9f72fb84c72e39173ffbcc165b-NRMA';
-  } else if (Platform.isAndroid) {
-    appToken = 'AA54e627aef512b22489a6d1abf365e9ab63e294f6-NRMA';
-  }
-  Config config = Config(
+    MapboxOptions.setAccessToken(
+        "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA"
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    SingletonClass().tenantId = prefs.getString('baseURL') ?? '';
+
+    try {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        SingletonClass().setFCMToken(fcmToken);
+      }
+
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      if (apnsToken != null && kDebugMode) {
+        debugPrint('APNS Token: $apnsToken');
+      }
+
+      await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (message.notification != null && kDebugMode) {
+          debugPrint('Notification: ${message.notification?.title}');
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) print('Firebase Messaging Error: $e');
+    }
+
+    LanguageChangeController languageController = LanguageChangeController();
+    await languageController.loadLanguage();
+
+    // NEW RELIC
+    var appToken = "";
+    if (Platform.isIOS) {
+      appToken = 'AA796b590654035b9f72fb84c72e39173ffbcc165b-NRMA';
+    } else if (Platform.isAndroid) {
+      appToken = 'AA54e627aef512b22489a6d1abf365e9ab63e294f6-NRMA';
+    }
+
+    Config config = Config(
       accessToken: appToken,
       analyticsEventEnabled: true,
       webViewInstrumentation: true,
@@ -104,9 +105,13 @@ void main() async {
       httpResponseBodyCaptureEnabled: true,
       loggingEnabled: true,
       printStatementAsEventsEnabled: true,
-      httpInstrumentationEnabled: true
-  );
-  NewrelicMobile.instance.start(config, () {
+      httpInstrumentationEnabled: true,
+    );
+
+    // Start New Relic (NO runApp inside)
+    await NewrelicMobile.instance.start(config , (){});
+
+    // Now run the app safely in SAME zone
     runApp(
       MultiProvider(
         providers: [
@@ -119,9 +124,15 @@ void main() async {
         ),
       ),
     );
+
+    initBackgroundFetch();
+  }, (error, stack) {
+    if (kDebugMode) {
+      print("Uncaught Zone Error: $error");
+    }
   });
-  initBackgroundFetch();
 }
+
 
 /// ✅ Add your App wrapper here so we can manage socket lifecycle
 class MyApp extends StatefulWidget {
@@ -190,7 +201,7 @@ class NotificationService {
 
     final currentScreen = SingletonClass().activeScreen;
     if (currentScreen == "SlackScreen" || currentScreen == "SlackChatDetailScreen") {
-      print("🔕 Notification suppressed on Slack screens");
+      debugPrint("🔕 Notification suppressed on Slack screens");
       return;
     }
 
