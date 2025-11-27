@@ -15,6 +15,7 @@ class RegisterBiometricDeviceScreen extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String userName;
+  final bool? fromTeamScreen;
 
   const RegisterBiometricDeviceScreen({
     super.key,
@@ -22,6 +23,7 @@ class RegisterBiometricDeviceScreen extends StatefulWidget {
     required this.firstName,
     required this.lastName,
     required this.userName,
+    this.fromTeamScreen
   });
 
   @override
@@ -52,6 +54,7 @@ class _RegisterBiometricDeviceScreenState
       body: Stack(
         children: [
           SafeArea(
+            minimum: EdgeInsets.zero,
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(top: 0, left: 20, right: 20, bottom: 15),
               child: Column(
@@ -61,12 +64,14 @@ class _RegisterBiometricDeviceScreenState
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MainScreen(index: 0  , selectedIndex: 0),
-                          ),
-                        ),
+                        onPressed: () {
+                          widget.fromTeamScreen == true ? Navigator.pop(context) : Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MainScreen(index: 0  , selectedIndex: 0),
+                            ),
+                          );
+                         },
                         icon: Container(
                           height: 40,
                           width: 40,
@@ -128,29 +133,29 @@ class _RegisterBiometricDeviceScreenState
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 30),
-
-                  /// 🔹 Employee Registration Info
-                  Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.employeeIsRegistered,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                  if(widget.fromTeamScreen == false)...[
+                    /// 🔹 Employee Registration Info
+                    Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.employeeIsRegistered,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                  /// 🔹 Animation
-                  Center(
-                    child: SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset('images/done.json'),
+                    /// 🔹 Animation
+                    Center(
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/done.json'),
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 10),
 
                   /// 🔹 Employee Details
@@ -175,7 +180,6 @@ class _RegisterBiometricDeviceScreenState
                     ],
                   ),
                   const SizedBox(height: 5),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -196,9 +200,7 @@ class _RegisterBiometricDeviceScreenState
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 15),
-
                   /// 🔹 Instructions
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -268,27 +270,29 @@ class _RegisterBiometricDeviceScreenState
           ),
 
           /// 🔹 Bottom "Skip" Button
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MainScreen(index: 0 , selectedIndex: 0)),
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.skip,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    color: Colors.red,
-                    fontWeight: FontWeight.w500,
+          if(widget.fromTeamScreen == false) ...[
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: TextButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainScreen(index: 0 , selectedIndex: 0)),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.skip,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
 
           /// 🔹 Loader Overlay
           if (isLoading)
@@ -306,7 +310,7 @@ class _RegisterBiometricDeviceScreenState
     final pin = widget.empId;
     final name = "${widget.firstName} ${widget.lastName}".trim();
     final cardNo = "0";
-    final uri = Uri.parse("${singletonClass.baseURL}/iclock/enqueue-user");
+    final uri = Uri.parse("https://dev.nashrms.com/api/iclock/enqueue-user");
 
     final Map<String, dynamic> data = {
       "sn": deviceId,

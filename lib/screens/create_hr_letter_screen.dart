@@ -12,10 +12,16 @@ import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml.dart' as xml;
 import '../request_controller/search_employee_model.dart';
 import '../widgets/loader.dart';
+import 'package:flutter/services.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
+import '../../request_controller/attachment_response_model.dart';
 
 class CreateHrLetterScreen extends StatefulWidget {
   const CreateHrLetterScreen({super.key});
@@ -504,7 +510,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     );
   }
 
-  //Search Call
+  /// Call for search
   Future<void> getSearchEmployeeData() async {
     String employeeId = _searchController.text.trim().toUpperCase();
     if (employeeId.isEmpty) return;
@@ -571,7 +577,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final defaultTemplate = templates?.firstWhere(
         (template) =>
             template is Map<String, dynamic> &&
-            template['templateType']?.toString() == 'Doc_Shared_Templates' &&
+            template['templateType']?.toString() == 'Doc_Shared_Template' &&
             template['default'] == true,
         orElse: () => null,
       );
@@ -614,6 +620,68 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       }
     } catch (e) {
       log("Error downloading/saving template: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadFileToS3FromPath(String filePath) async {
+    try {
+      final file = File(filePath);
+
+      if (!await file.exists()) {
+        return {"success": false, "message": "File not found at: $filePath"};
+      }
+
+      final fileBytes = await file.readAsBytes();
+      final fileName = file.uri.pathSegments.last;
+      final fileExtension = fileName.split('.').last;
+
+      setState(() => _isLoading = true);
+
+      final uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
+      final request = http.MultipartRequest('POST', uri);
+
+      final mimeType = lookupMimeType(filePath) ?? 'application/octet-stream';
+
+      request.headers.addAll(singletonClass.getHeaders());
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType.parse(mimeType),
+        ),
+      );
+
+      request.fields['attachmentName'] = fileName;
+      request.fields['attachmentType'] = fileExtension;
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (mounted) setState(() => _isLoading = false);
+
+      log("HR S3 Response ${responseBody}");
+      if (response.statusCode == 200) {
+        singletonClass.attachmentResponseDataList.clear();
+        final decodedJson = jsonDecode(responseBody);
+        final attachmentResponse = AttachmentResponse.fromJson(decodedJson);
+
+        singletonClass.attachmentResponseDataList
+          ..clear()
+          ..add(attachmentResponse);
+        uploadHRLetter();
+
+        return {"success": true, "message": "Upload Success"};
+      } else {
+        return {
+          "success": false,
+          "message": "Upload failed: ${response.statusCode}\n$responseBody"
+        };
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+      return {"success": false, "message": "Error: $e"};
     }
   }
 
@@ -805,6 +873,21 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       // Rebuild the final DOCX file bytes
       final newDocxBytes = ZipEncoder().encode(updatedArchive);
       _generatedDocxBytes = Uint8List.fromList(newDocxBytes!);
+      if (_generatedDocxBytes == null) return;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/generated_hr_letter.docx';
+
+      final file = File(filePath);
+      await file.writeAsBytes(_generatedDocxBytes!);
+
+      print("📄 Saved Generated DOCX at: $filePath");
+
+      // Upload using your existing method
+      final result = await uploadFileToS3FromPath(filePath);
+
+      print("📤 Upload Result: $result");
+
 
       if (kDebugMode) {
         print("✅ Template parsed and document generated successfully.");
@@ -820,6 +903,83 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
           SnackBar(content: Text("Error parsing template: ${e.toString()}")),
         );
       }
+    }
+  }
+
+  ///POST CALL FOR DOCUMENT
+  Future<void> uploadHRLetter() async {
+    String? employeeID = singletonClass.getJWTModel()?.employeeId;
+    String? companyID = singletonClass.getJWTModel()?.companyId;
+    Map data = {
+      "templateType": "Doc_Shared_Template",
+      "objectDetails": {
+        "Type": "Doc_templates",
+        "objectName": "Letter Templates",
+        "objectIcon": "edit",
+        "parameters": {
+          "documentUrl": singletonClass.attachmentResponseDataList.first.data!.url,
+        },
+        "createdBy": employeeID
+      }
+    };
+    String body = json.encode(data);
+    var uri = Uri.parse('${singletonClass.baseURL}/documents/create/$companyID/documents/$employeeID');
+    print(uri);
+    print(body);
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final response = await http.post(
+        uri,
+        body: body,
+        headers: singletonClass.getHeaders(),
+      );
+      print("POST CALL ${response.body}");
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
+      } else if (response.statusCode == 405 || response.statusCode == 502) {
+        setState(() {
+          _isLoading = false;
+        });
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
+          text: AppLocalizations.of(context)!.tryAgain,
+          type: QuickAlertType.error,
+        );
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        await QuickAlert.show(
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+          context: context,
+          title: AppLocalizations.of(context)!.internalServerError,
+          text: AppLocalizations.of(context)!.tryAgain,
+          type: QuickAlertType.error,
+        );
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      await QuickAlert.show(
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+        context: context,
+        title: AppLocalizations.of(context)!.internalServerError,
+        text: AppLocalizations.of(context)!.tryAgain,
+        type: QuickAlertType.error,
+      );
     }
   }
 }
