@@ -502,7 +502,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredTeams.first.teamData![index];
                         String imageUrl = images[index % images.length];
-                        if (singletonClass.getJWTModel()?.employeeId == team.employeeId) {
+                        if (singletonClass.getJWTModel()?.employeeId == team.employeeId ) {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
@@ -747,7 +747,7 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredBranchTeams[index];
                         String imageUrl = images[index % images.length];
-                        if (singletonClass.getJWTModel()?.employeeId == team.id) {
+                        if (singletonClass.getJWTModel()?.employeeId == team.id || team.employeeInfo!.first.employeeStatus == 'suspended') {
                           return SizedBox.shrink();
                         }
                         final searchText = searchController.text.toLowerCase();
@@ -1104,7 +1104,10 @@ class _TeamScreenState extends State<TeamScreen> {
                     minHeight: 18,
                   ),
                   child: Text(
-                    '${filteredBranchTeams.isNotEmpty ? filteredBranchTeams.length: 0}', // Request List Notification count
+                    '${filteredBranchTeams.where((team) =>
+                    team.employeeInfo != null &&
+                        team.employeeInfo!.first.employeeStatus?.toLowerCase() == "active"
+                    ).length}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,

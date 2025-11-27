@@ -2576,6 +2576,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 firstName: firstName,
                 lastName: lastName,
                 userName: userName,
+                fromTeamScreen: false,
               ),
             ),
           );
