@@ -5,9 +5,10 @@ class Environment {
 
   static Future<String> detectEnv() async {
     try {
-      final bool isTestFlight =
-          await _channel.invokeMethod('isTestFlight') ?? false;
-
+      final bool isTestFlight = await _channel.invokeMethod('isTestFlight') ?? false;
+      if (isTestFlight) {
+        print("🔥 Running TestFlight build");
+      }
       return isTestFlight ? "staging" : "production";
     } catch (_) {
       return "production";

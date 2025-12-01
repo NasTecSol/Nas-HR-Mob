@@ -11,10 +11,16 @@ import Flutter
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
+        // FIX: Ensure FlutterViewController exists before channel
+        if self.window == nil {
+            self.window = UIWindow(frame: UIScreen.main.bounds)
+        }
+
         // ---------------------------
-        // ENVIRONMENT CHANNEL ADDED
+        // ENVIRONMENT CHANNEL
         // ---------------------------
-        if let controller = window?.rootViewController as? FlutterViewController {
+        let controller = window?.rootViewController as? FlutterViewController
+        if let controller = controller {
             let channel = FlutterMethodChannel(
                 name: "env_channel",
                 binaryMessenger: controller.binaryMessenger
@@ -50,7 +56,7 @@ import Flutter
 
 
     // ---------------------------
-    // ADDED — Detect TestFlight OR AppStore
+    // DETECT TESTFLIGHT
     // ---------------------------
     func isTestFlightBuild() -> Bool {
         #if targetEnvironment(simulator)
@@ -61,15 +67,13 @@ import Flutter
             return false
         }
 
-        // TestFlight builds always contain this sandbox receipt
         return url.lastPathComponent == "sandboxReceipt"
     }
 
 
     // ---------------------------
-    // YOUR ORIGINAL FUNCTIONS (UNCHANGED)
+    // YOUR ORIGINAL METHODS
     // ---------------------------
-
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         print("Firebase registration token: \(String(describing: fcmToken))")
 
