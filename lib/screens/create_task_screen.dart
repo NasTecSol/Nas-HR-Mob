@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -759,7 +758,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             type: QuickAlertType.success,
           );
 
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen(index: 1,)));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen(index: 1,selectedIndex: 0,)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(

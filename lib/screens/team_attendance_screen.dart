@@ -43,6 +43,9 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   TextEditingController searchController = TextEditingController();
   late List<DateTime> _dates;
   bool _isInitialLoading = true;
+  final ScrollController _scrollController = ScrollController();
+  bool isDateRangeSelected = false;
+
 
   @override
    void initState() {
@@ -81,17 +84,29 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     });
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDate();
+    });
   }
+
+  void _scrollToSelectedDate() {
+    if (_scrollController.hasClients && _selectedDateIndex! >= 0) {
+      _scrollController.animateTo(
+        _selectedDateIndex! * 60,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _teamCheck() {
     /// Safely get Dashboard module
-    final dashboardModule = singletonClass
-        .roleAndAccessModelDataList
-        .first
-        .data!
-        .uiSettings!
-        .uiModules!
-        .firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
+    );
+    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
+    submenu.title == "Attendance History" ||
+        submenu.name == "Attendance History",
     );
 
     /// Reset all UI flags
@@ -101,7 +116,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     _isTeamChecked = false;
     _isChecked = false;
 
-    final access = dashboardModule.accessLevel;
+    final access = attendanceHistoryMenu.accessLevel;
     final companies = access?.companies ?? [];
     final hasCompanies = companies.isNotEmpty;
     final hasBranches =
@@ -170,7 +185,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         '_isTeamChecked: $_isTeamChecked | _isChecked: $_isChecked');
   }
 
-
   Future<void> extractAllEmployeeIdsForBranch(String? selectedBranchId) async {
 
     await singletonClass.getTeamBranchData();
@@ -188,7 +202,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         if (branchData != null && branchData.employees != null) {
           for (var employee in branchData.employees!) {
             final employeeId = employee.id;
-            if (employeeId != null && employeeId.isNotEmpty) {
+            if (employeeId != null && employeeId.isNotEmpty && employee.employeeInfo!.first.employeeStatus == 'Active') {
               allEmployeeIds.add(employeeId);
               selectedBranchIds.clear();
             }
@@ -210,31 +224,35 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     }
   }
 
-
-
-
-
   void _setDefaultDates() {
     final now = DateTime.now();
+
     _startDate = DateTime(now.year, now.month, 1);
-    _endDate = now;
+    _endDate = DateTime(now.year, now.month, now.day);
+
     log("📆 Default Date Range: $_startDate to $_endDate");
   }
 
 
   void _initDates({required DateTime start, required DateTime end}) {
     _dates.clear();
-    final now = DateTime.now();
+    final today = DateTime.now();
 
-    for (var date = start; !date.isAfter(end) && !date.isAfter(now); date = date.add(Duration(days: 1))) {
+    for (var date = start; !date.isAfter(end); date = date.add(const Duration(days: 1))) {
       _dates.add(date);
     }
 
-    _selectedDateIndex = null;
-    _selectedDate = null;
+    /// ✅ Auto-select today's index
+    _selectedDateIndex = _dates.indexWhere((d) =>
+    d.year == today.year && d.month == today.month && d.day == today.day);
 
-    log("📅 Generated ${_dates.length} dates from $start to $end");
+    if (_selectedDateIndex != -1) {
+      _selectedDate = today;
+    }
+    log("📅 Generated ${_dates.length} dates");
+    log("✅ Auto-selected today: $_selectedDate");
   }
+
 
 
   Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
@@ -366,23 +384,28 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     List<TeamAttendanceData> filtered = allAttendanceData;
 
+    // ✅ Filter by employee if selected
     if (selectedEmployeeId != null) {
       filtered = filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
     }
 
-    if (_selectedDate != null) {
-      filtered = filtered.where((attendance) {
-        DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
-        return updatedAt.year == _selectedDate!.year &&
-            updatedAt.month == _selectedDate!.month &&
-            updatedAt.day == _selectedDate!.day;
-      }).toList();
+    // ✅ Show all date range data when range is selected
+    if (!isDateRangeSelected) {
+      if (_selectedDate != null) {
+        filtered = filtered.where((attendance) {
+          DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
+          return updatedAt.year == _selectedDate!.year &&
+              updatedAt.month == _selectedDate!.month &&
+              updatedAt.day == _selectedDate!.day;
+        }).toList();
+      }
     }
 
     setState(() {
       filteredAttendanceDataList = filtered;
     });
   }
+
 
 
   String _getDayOfWeek(BuildContext context, DateTime date) {
@@ -425,10 +448,15 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.firstWhere(
-          (e) => e.title == "Dashboard" || e.title == "dashboard",
+    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
     );
-    final access = dashboardModule.accessLevel;
+    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
+      submenu.title == "Attendance History" ||
+          submenu.name == "Attendance History",
+    );
+
+    final access = attendanceHistoryMenu.accessLevel;
     final companies = access!.companies ?? [];
     final hasCompanies = companies.isNotEmpty;
     final hasBranches = hasCompanies &&
@@ -496,11 +524,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                   IconButton(
                     onPressed: () async {
                       final DateTime now = DateTime.now();
-                      final DateTime lastSelectableDate = now;
                       final DateTimeRange? picked = await showDateRangePicker(
                         context: context,
                         firstDate: DateTime(now.year - 2),
-                        lastDate: lastSelectableDate,
+                        lastDate: now,
+                        initialDateRange: DateTimeRange(
+                          start: now.subtract(const Duration(days: 7)),
+                          end: now,
+                        ),
                         builder: (BuildContext context, Widget? child) {
                           return Theme(
                             data: ThemeData.light().copyWith(
@@ -519,14 +550,16 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             child: child!,
                           );
                         },
-                        initialDateRange: DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
                       );
                       if (picked != null) {
                         _startDate = picked.start;
                         _endDate = picked.end;
+
+                        isDateRangeSelected = true;  // ✅ activate range mode
+
                         _initDates(start: picked.start, end: picked.end);
-                        await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
-                        filterAttendanceData();
+
+                        await loadData(); // <-- API fetch
                       }
                     },
                     icon:  Icon(Icons.date_range,color: NasColors.darkBlue,size: 30,),
@@ -553,14 +586,18 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
               height: 80,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                controller: _scrollController,
                 itemCount: _dates.length,
                 itemBuilder: (ctx, i) {
                   final date = _dates[i];
                   final selected = _selectedDateIndex == i;
                   return GestureDetector(
                     onTap: () {
-                      _selectedDateIndex = i;
-                      _selectedDate = date;
+                      setState(() {
+                        _selectedDateIndex = i;
+                        _selectedDate = date;
+                        isDateRangeSelected = false;
+                      });
                       filterAttendanceData();
                     },
                     child: Container(
@@ -839,7 +876,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           ),
             SizedBox(height: 10),
             Expanded(
-                child: (_isLoadingBranchData ||  _isInitialLoading)
+                child: (_isLoadingBranchData ||  _isInitialLoading == true)
                     ? Loader()
                     : FutureBuilder(
                     future: getTeamAttendanceData(),
@@ -1131,16 +1168,19 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                 color: Colors.black,
                                               ),
                                             ),
-                                            Text(
-                                              maxLines: 5,
-                                              attendance.shiftInfo != null &&
-                                                  attendance.shiftInfo!.shiftName != null
-                                                  ? "${attendance.shiftInfo!.shiftName}"
-                                                  : "---",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                            SizedBox(
+                                              width: 180,
+                                              child: Text(
+                                                maxLines: 5,
+                                                attendance.shiftInfo != null &&
+                                                    attendance.shiftInfo!.shiftName != null
+                                                    ? "${attendance.shiftInfo!.shiftName}"
+                                                    : "---",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -1163,11 +1203,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: attendance.slots!.take(2).map<Widget>((slot) {
-                                                final start = DateTime.tryParse(slot.slotStart ?? '')?.toLocal();
-                                                final end = DateTime.tryParse(slot.slotEnd ?? '')?.toLocal();
-                                                final startTime = start != null ? DateFormat.jm().format(start) : '--:--';
-                                                final endTime = end != null ? DateFormat.jm().format(end) : '--:--';
-
                                                 return Padding(
                                                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                                                   child: Row(
@@ -1175,7 +1210,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                       Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
                                                       const SizedBox(width: 6),
                                                       Text(
-                                                        "$startTime - $endTime",
+                                                        "${singletonClass.formatCheckInTime(slot.slotStart , context)} - ${singletonClass.formatCheckInTime(slot.slotEnd, context)}",
                                                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                                                       ),
                                                     ],
@@ -1339,6 +1374,42 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         ],
       ),
     );
+  }
+
+
+  ///counter helper method
+  int getCountForCard(int index) {
+    if (filteredAttendanceDataList.isEmpty) return 0;
+
+    switch (index) {
+      case 0:
+        return filteredAttendanceDataList.length;
+      case 1:
+        return filteredAttendanceDataList.where(
+              (e) => (e.status?.toLowerCase() ?? "") == "present",
+        ).length;
+      case 2:
+        return filteredAttendanceDataList.where(
+              (e) => (e.status?.toLowerCase() ?? "") == "absent",
+        ).length;
+      case 3:
+        return filteredAttendanceDataList.where((e) {
+          final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
+          return status == "missing checkin/out" ||
+              status == "missing checkin" ||
+              status == "missing checkout";
+        }).length;
+      case 4:
+        return filteredAttendanceDataList.where(
+              (e) => (e.lateMinutes ?? 0) > 0,
+        ).length;
+      case 5:
+        return filteredAttendanceDataList.where(
+              (e) => (e.earlyCheckOut ?? 0) > 0,
+        ).length;
+      default:
+        return 0;
+    }
   }
 
   String _translateStatus(String? status, BuildContext context) {
@@ -1531,6 +1602,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
 
   Widget buildOptionsCard(int index, String title) {
+    int count = getCountForCard(index);
+
     Color getTextColor() {
       if (_selectedOptionIndex == index) return Colors.white;
       switch (index) {
@@ -1576,6 +1649,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         setState(() {
           _selectedOptionIndex = index;
         });
+        filterAttendanceData();  // ✅ filter list based on selected card
       },
       child: SizedBox(
         height: 70,
@@ -1591,19 +1665,55 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
             ),
           ),
           child: Center(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: getTextColor(),
+        child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: getTextColor(),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 6),
+
+            /// ✅ Circle badge for count
+            _selectedOptionIndex == index ?
+            Text(
+              count.toString(),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: getTextColor(),
+              ),
+            ) :
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: getTextColor().withOpacity(0.2), // opacity 50%
+              ),
+              child: Text(
+                count.toString(),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: getTextColor(),
+                ),
+              ),
+            )
+        ],
         ),
+      ),
+
+    ),
       ),
     );
   }
+
 
 }

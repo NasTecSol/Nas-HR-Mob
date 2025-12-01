@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/base_url_model.dart';
 import 'package:nashr/screens/login_screen.dart';
 import 'package:nashr/singleton_class.dart';

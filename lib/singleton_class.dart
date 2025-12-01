@@ -39,6 +39,7 @@ import 'package:nashr/request_controller/profile_response_model.dart';
 import 'package:nashr/request_controller/project_logo_model.dart';
 import 'package:nashr/request_controller/projects_data_model.dart';
 import 'package:nashr/request_controller/remoteAttendanceModel.dart';
+import 'package:nashr/request_controller/report_manager_model.dart';
 import 'package:nashr/request_controller/request_data_model.dart';
 import 'package:nashr/request_controller/role_and_access_model.dart';
 import 'package:nashr/request_controller/search_employee_model.dart';
@@ -73,6 +74,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
   List<BiometricDevicesModel> biometricDevicesModelDataList = [];
   List<OrganizationModel> organizationModelDataList = [];
@@ -132,6 +134,8 @@ class SingletonClass {
   List<dynamic> availableBranches = [];
   List<Map<String, String>> chatMessages = [];
   bool hasShownGreeting = false;
+  bool isFirstTimeSelectionDone = false;
+
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -343,8 +347,10 @@ class SingletonClass {
     var response = await client.get(uri,
         headers: getHeaders());
     if (response.statusCode == 200) {
+      log("policyDAta ${response.body}");
       var responseBody = json.decode(response.body);
       var policyData = PolicyModel.fromJson(responseBody);
+      policyModelDataList.clear();
       policyModelDataList.addAll([policyData]);
       return policyData;
     }
@@ -380,6 +386,21 @@ class SingletonClass {
     return null ;
   }
 
+  ///Get supervisor Data
+  Future<ReportManagerModel?> getSupervisorData() async {
+    String? employeeId =  employeeDataList.first.data!.employeeInfo!.first.reportingManager;
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
+    var response = await client.get(uri,headers: getHeaders());
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var reportManagerData = ReportManagerModel.fromJson(responseBody);
+      reportManagerDataList.addAll([reportManagerData]);
+      return reportManagerData;
+    }
+    return null ;
+  }
+
   //NOTIFICATION API CALL
   Future<NotificationModel?> getNotifications() async {
     String? employeeId =  getJWTModel()?.employeeId;
@@ -397,9 +418,7 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
-        ? selectedCompanyId
-        : getJWTModel()?.companyId;
+    String? companyId = getJWTModel()?.companyId;
 
     if (companyId == null || companyId.isEmpty) {
       log("❌ No companyId available from selectedCompanyId or JWT!");
@@ -702,6 +721,60 @@ class SingletonClass {
       "x-tenant-id" : "2002"
     };
   }
+
+
+  ///Request Screen API Calls
+  Future<ApproverRequestData?> getApproverData(
+      {int page = 0, int limit = 20}) async {
+    String? employeeId = getJWTModel()?.employeeId;
+
+    // Request body (stays the same)
+    Map<String, dynamic> requestBody = {
+      "requestTypes": [
+        "leaveRequest",
+        "loanRequest",
+        "expenseRequest",
+        "allowance_Increment",
+        "documentRequest",
+        "specialLeaveRequest",
+        "attendanceRequest",
+        "overTimeRequest"
+      ],
+    };
+    final uri = Uri.parse(
+      '$baseURL/request/approver/$employeeId?limit=$limit&page=$page',
+    );
+    print(uri);
+    try {
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: getHeaders(),
+      );
+
+      log("Request Log approver: ${response.body}");
+
+      if (response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+        if (page == 0) {
+          setApproverDataList([requestData]);
+        } else {
+          final existing = approverDataList;
+          setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
 }
 
 

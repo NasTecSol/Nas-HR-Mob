@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/screens/task_detail_screen_details.dart';
 import 'package:nashr/singleton_class.dart';

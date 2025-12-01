@@ -589,6 +589,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
+  go_router:
+    dependency: transitive
+    description:
+      name: go_router
+      sha256: d8f590a69729f719177ea68eb1e598295e8dbc41bbc247fed78b2c8a25660d7c
+      url: "https://pub.dev"
+    source: hosted
+    version: "16.3.0"
   google_fonts:
     dependency: "direct main"
     description:
@@ -933,6 +941,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  newrelic_mobile:
+    dependency: "direct main"
+    description:
+      name: newrelic_mobile
+      sha256: "30cb440e64f091ca3ebf673cc46d008a05a766e66482868694638ef4acb0835b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.19"
   open_file:
     dependency: "direct main"
     description:

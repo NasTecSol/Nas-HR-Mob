@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'dart:developer';
 import 'dart:io';
@@ -12,16 +11,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/screens/main_screen.dart';
-import 'package:nashr/screens/request_screen.dart';
+import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import '../request_controller/attachment_response_model.dart';
-import '../request_controller/company_model.dart';
-import '../request_controller/request_data_model.dart';
-import '../request_controller/search_employee_model.dart';
-import '../widgets/colors.dart';
-import '../widgets/loader.dart';
+import '../../request_controller/attachment_response_model.dart';
+import '../../request_controller/company_model.dart';
+import '../../request_controller/request_data_model.dart';
+import '../../request_controller/search_employee_model.dart';
+import '../../widgets/colors.dart';
+import '../../widgets/loader.dart';
 
 class CreateRequestScreen extends StatefulWidget {
   final Request? selectedRequest;
@@ -2907,12 +2906,8 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       if (singletonClass.attachmentResponseDataList.isNotEmpty &&
           singletonClass.attachmentResponseDataList.first.data != null) {
         attachments.add({
-          "fileName": singletonClass
-              .attachmentResponseDataList.first.data!.attachmentName,
-          "fileType": singletonClass
-              .attachmentResponseDataList.first.data!.attachmentType,
-          "fileContent":
-              singletonClass.attachmentResponseDataList.first.data!.url,
+          "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
+          "url": singletonClass.attachmentResponseDataList.first.data!.url,
         });
       } else {
         await QuickAlert.show(
@@ -2954,25 +2949,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         "fine_penality": selectedSubType,
         "amount": _amount.text,
         "details": _details.text,
-        "date&time": formattedFromDate,
+        "date": formattedFromDate,
         "remark": _notes.text,
       });
-    } else if (selectedRequestType == 'allowance_Insurance') {
-      List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
-        return {
-          "empId": employee!.empId,
-          "name": employee.employeeName,
-        };
-      }).toList();
-
-      requestData.add({
-        "employees": employees,
-        "startDate": formattedFromDate,
-        "endDate": formattedToDate,
-        "duration": totalDaysString,
-        "allowanceType": selectedSubType,
-      });
-    } else {
+    }  else {
       requestData.add({
         "startDate": formattedFromDate,
         "endDate": formattedToDate,
@@ -3033,7 +3013,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           showConfirmBtn: false,
         );
         await getRequestData();
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 2)));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 2 , selectedIndex: 0,)));
       } else {
         String errorMessage = decodedResponse['errorMessage'] ??
             'An unexpected error occurred. Please try again.';

@@ -3,7 +3,7 @@ import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.da
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/calendar_screen.dart';
 import 'package:nashr/screens/profile_screen.dart';
-import 'package:nashr/screens/request_screen.dart';
+import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import '../widgets/colors.dart';
@@ -11,7 +11,8 @@ import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int index;
-  const MainScreen({super.key, required this.index});
+  final int selectedIndex;
+  const MainScreen({super.key, required this.index, required this.selectedIndex});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -29,13 +30,6 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const ProjectScreen(),
-    const RequestScreen(),
-    const CalendarScreen(),
-    const ProfileScreen()
-  ];
 
   @override
   void initState() {
@@ -83,11 +77,19 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getBranchesData(),
      singletonClass.getChats(),
      singletonClass.getOrganizationData(),
+     singletonClass.getPolicyData(),
     ]);
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      const HomeScreen(),
+      const ProjectScreen(),
+      RequestScreen(selectedIndex: widget.selectedIndex),
+      const CalendarScreen(),
+      const ProfileScreen()
+    ];
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -98,11 +100,11 @@ class _MainScreenState extends State<MainScreen> {
               child: Center(
                 child:SizedBox(
                   child: Lottie.asset(
-                  'images/mainLoader.json'
+                  'images/splash5.json'
               ),),
               ),
             )
-            : _screens[_currentIndex],
+            : screens[_currentIndex],
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(15.0),
           child: Container(
@@ -129,7 +131,8 @@ class _MainScreenState extends State<MainScreen> {
                       child: ClipOval(
                         child: (singletonClass.employeeDataList.isNotEmpty &&
                             singletonClass.employeeDataList.first.data?.profilePic != null &&
-                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
+                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com")
                             ? Image.network(
                           singletonClass.employeeDataList.first.data!.profilePic!,
                           fit: BoxFit.cover,
@@ -200,7 +203,10 @@ class _MainScreenState extends State<MainScreen> {
                                   minWidth: 18,
                                   minHeight: 18,
                                 ),
-                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'  ?
+                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'
+                                    || singletonClass.getJWTModel()?.grade == 'L2'
+                                    || singletonClass.getJWTModel()?.grade == 'L3'
+                                    ?
                                 Text(
                                   '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
                                       singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null

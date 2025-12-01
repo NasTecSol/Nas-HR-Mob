@@ -7,6 +7,7 @@ import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/screens/employee_details_screen_assets.dart';
+import 'package:nashr/screens/register_biometric_device_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -42,6 +43,21 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
+        ? (singletonClass
+        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+        [])
+        : [];
+    /// Check for onboarding
+    final hasOnboarding = uiSettings.any((e) {
+      if (e.title == "Teams" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Onboarding & Offboarding") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
     return Scaffold(
         backgroundColor: NasColors.backGround,
         body: ListView(padding: EdgeInsets.zero, children: [
@@ -264,6 +280,18 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                             ),
                                           ),
                                         ],
+                                      ),
+                                    ),
+                                    if (hasOnboarding)
+                                    IconButton  (
+                                      onPressed: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> RegisterBiometricDeviceScreen(empId: widget.employees!.employeeInfo!.first.empId, firstName: widget.employees!.firstName, lastName: widget.employees!.lastName, userName: widget.employees!.userName , fromTeamScreen: true,)));
+                                      },
+                                      icon: Image.asset(
+                                        'images/fingerprint.png',   // your image path
+                                        width: 30,
+                                        height: 30,
+                                        color: Colors.red,         // optional if you want color overlay
                                       ),
                                     )
                                   ],

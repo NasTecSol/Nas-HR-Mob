@@ -248,12 +248,12 @@ class _AssetsScreenState extends State<AssetsScreen> {
                    child: Row(
                      mainAxisAlignment: MainAxisAlignment.start,
                      children: [
-                       buildOptionsCard(0, AppLocalizations.of(context)!.companyNotifications),
-                       buildOptionsCard(1, AppLocalizations.of(context)!.assignedAssets),
+                       buildOptionsCard(0, AppLocalizations.of(context)!.assignedAssets),
+                       buildOptionsCard(1, AppLocalizations.of(context)!.companyNotifications),
                      ],
                    ),
                  ),
-                 if (_selectedOptionIndex == 0)...[
+                 if (_selectedOptionIndex == 1)...[
                    companyAssetsInfo!.isNotEmpty
                        ? ListView.builder(
                      padding: const EdgeInsets.all(5),
@@ -388,7 +388,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                      ),
                    ),
                  ],
-                 if (_selectedOptionIndex == 1)...[
+                 if (_selectedOptionIndex == 0)...[
                    assetsInfo!.isNotEmpty
                        ? ListView.builder(
                      padding: const EdgeInsets.all(5),

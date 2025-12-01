@@ -1527,7 +1527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passport => 'Passport';
 
   @override
-  String get employmentContract => 'Employee ID Card';
+  String get employmentContract => 'Employee Contract';
 
   @override
   String get done => 'Done';
@@ -2246,4 +2246,107 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSupervisorFound => 'No supervisor found';
+
+  @override
+  String get uploadedDocument => 'Uploaded Document';
+
+  @override
+  String get self => 'Self';
+
+  @override
+  String get paidAs => 'Paid As';
+
+  @override
+  String get selectPaidAs => 'Select Paid As';
+
+  @override
+  String get selectPaidAsValidation => 'Please select Paid As option';
+
+  @override
+  String get numberOfHours => 'Number of Hours';
+
+  @override
+  String get enterNumberOfHoursValidation => 'Please enter number of hours';
+
+  @override
+  String get enterValidNumber => 'Enter a valid number';
+
+  @override
+  String get enterHoursPlaceholder => 'Enter number of hours';
+
+  @override
+  String get amountPerHour => 'Amount per Hour';
+
+  @override
+  String get amountAppearHere => 'Amount will appear here';
+
+  @override
+  String get totalAmountAppearHere => 'Total amount will appear here';
+
+  @override
+  String get enterNotesValidation => 'Please enter notes';
+
+  @override
+  String get createAt => 'Created at';
+
+  @override
+  String get selectPaymentMethod => 'Select Payment Method';
+
+  @override
+  String get selectTransactionType => 'Select Transaction Type';
+
+  @override
+  String get datePlaceholder => 'mm/dd/yyyy';
+
+  @override
+  String get enterExpenseAmount => 'Enter an expense amount';
+
+  @override
+  String get enterAmountValidation => 'Enter an amount';
+
+  @override
+  String get enterPurpose => 'Enter a purpose';
+
+  @override
+  String get enterPurposeValidation => 'Enter a purpose';
+
+  @override
+  String get uploadFailedTitle => 'Upload Failed';
+
+  @override
+  String get fileSelectionCanceled => 'File selection canceled.';
+
+  @override
+  String get uploadFailedPrefix => 'Upload failed';
+
+  @override
+  String get errorPrefix => 'Error';
+
+  @override
+  String get somethingWentWrong =>
+      'Something went wrong. Check your connection.';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'Please select a payment method';
+
+  @override
+  String get pleaseSelectTransactionType => 'Please select a transaction type';
+
+  @override
+  String get employeeOrCompanyMissing => 'Employee or Company data missing.';
+
+  @override
+  String get unexpectedError => 'Unexpected error occurred.';
+
+  @override
+  String get transactionType => 'Transaction Type';
+
+  @override
+  String get purpose => 'Purpose';
+
+  @override
+  String get allowance => 'Allowance';
 }
