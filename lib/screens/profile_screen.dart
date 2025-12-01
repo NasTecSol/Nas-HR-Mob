@@ -375,9 +375,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   GestureDetector(
                                     onTap: (){
                                       String url = "${employeeProfile?.profilePic ?? ''}".toLowerCase();
-                                      if (url.endsWith(".png") ||
-                                          url.endsWith(".jpg") ||
-                                          url.endsWith(".jpeg")) {
+                                      if (url.endsWith(".png")  ||
+                                          url.endsWith(".jpg")  ||
+                                          url.endsWith(".jpeg")  ||
+                                          url.endsWith(".heic")  ||
+                                          url.endsWith(".heif")  ||
+                                          url.endsWith(".tiff") ||
+                                          url.endsWith(".bmp")) {
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -414,8 +418,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: (employeeProfile?.profilePic != null &&
-                                            employeeProfile!.profilePic!.isNotEmpty)
+                                        child: (employeeProfile?.profilePic != null && employeeProfile!.profilePic.isNotEmpty &&
+                                            employeeProfile.profilePic!.isNotEmpty && employeeProfile.profilePic != "https://www.profilePic.com")
                                             ? Image.network(
                                           employeeProfile.profilePic!,
                                           fit: BoxFit.cover,
@@ -435,8 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               height: 100,
                                             );
                                           },
-                                        )
-                                            : Image.asset(
+                                        ) : Image.asset(
                                           'images/DP.png',
                                           fit: BoxFit.cover,
                                           width: 100,
@@ -791,6 +794,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               children: [
                                 ListView.builder(
                                   shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: bankInfo?.length ?? 0,
                                   itemBuilder: (BuildContext context, int index) {
@@ -922,39 +926,99 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       ],
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(10.0),
+                                      padding: const EdgeInsets.only(top: 10.0 ,  left: 20 , right: 20 , bottom: 20),
                                       child: Column(
                                         children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset("images/loanRequest.png",
+                                                    height: 50,
+                                                    width: 50,
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text(
+                                                  AppLocalizations.of(context)!.salaryInfo,
+                                                  maxLines: 2,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                          ),
                                           const SizedBox(height: 10),
-                                          Text(
-                                            AppLocalizations.of(context)!
-                                                .lastMonthSalary,
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!.salary,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                "${salaryInfo?.baseSalary} ${singletonClass.employeeDataList.first.data!.salaryInfo!.currency}",
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           const SizedBox(height: 5),
-                                          Text(
-                                            "June 2024",
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!.netSalary,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                "${salaryInfo?.netSalary}",
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(height: 25),
-                                          Text(
-                                            "${salaryInfo?.baseSalary} SAR",
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.black,
-                                            ),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!.allowance,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                "${salaryInfo?.allowanceContribution ?? "---"}",
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),

@@ -1131,7 +1131,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get insufficientBalance => 'رصيد الإجازة غير كافٍ';
 
   @override
-  String get ok => 'موافق';
+  String get ok => 'حسناً';
 
   @override
   String get employeeNotFound => 'الموظف غير موجود';
@@ -2239,4 +2239,106 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noSupervisorFound => 'لا يوجد مشرف';
+
+  @override
+  String get uploadedDocument => 'المستند المرفوع';
+
+  @override
+  String get self => 'ذاتي / نفسي';
+
+  @override
+  String get paidAs => 'الدفع كـ';
+
+  @override
+  String get selectPaidAs => 'اختر طريقة الدفع';
+
+  @override
+  String get selectPaidAsValidation => 'يرجى اختيار طريقة الدفع';
+
+  @override
+  String get numberOfHours => 'عدد الساعات';
+
+  @override
+  String get enterNumberOfHoursValidation => 'يرجى إدخال عدد الساعات';
+
+  @override
+  String get enterValidNumber => 'أدخل رقمًا صالحًا';
+
+  @override
+  String get enterHoursPlaceholder => 'أدخل عدد الساعات';
+
+  @override
+  String get amountPerHour => 'المبلغ لكل ساعة';
+
+  @override
+  String get amountAppearHere => 'سيظهر المبلغ هنا';
+
+  @override
+  String get totalAmountAppearHere => 'سيظهر المبلغ الإجمالي هنا';
+
+  @override
+  String get enterNotesValidation => 'يرجى إدخال الملاحظات';
+
+  @override
+  String get createAt => 'تم الإنشاء في';
+
+  @override
+  String get selectPaymentMethod => 'اختر طريقة الدفع';
+
+  @override
+  String get selectTransactionType => 'اختر نوع المعاملة';
+
+  @override
+  String get datePlaceholder => 'شهر/يوم/سنة';
+
+  @override
+  String get enterExpenseAmount => 'أدخل مبلغ المصروف';
+
+  @override
+  String get enterAmountValidation => 'أدخل مبلغًا';
+
+  @override
+  String get enterPurpose => 'أدخل الغرض';
+
+  @override
+  String get enterPurposeValidation => 'أدخل الغرض';
+
+  @override
+  String get uploadFailedTitle => 'فشل التحميل';
+
+  @override
+  String get fileSelectionCanceled => 'تم إلغاء اختيار الملف.';
+
+  @override
+  String get uploadFailedPrefix => 'فشل التحميل';
+
+  @override
+  String get errorPrefix => 'خطأ';
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما. تحقق من اتصالك.';
+
+  @override
+  String get pleaseSelectCategory => 'يرجى اختيار الفئة';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'يرجى اختيار طريقة الدفع';
+
+  @override
+  String get pleaseSelectTransactionType => 'يرجى اختيار نوع المعاملة';
+
+  @override
+  String get employeeOrCompanyMissing => 'بيانات الموظف أو الشركة مفقودة.';
+
+  @override
+  String get unexpectedError => 'حدث خطأ غير متوقع.';
+
+  @override
+  String get transactionType => 'نوع المعاملة';
+
+  @override
+  String get purpose => 'الغرض';
+
+  @override
+  String get allowance => 'البدل';
 }

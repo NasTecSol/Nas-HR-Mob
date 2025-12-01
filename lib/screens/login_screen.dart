@@ -113,6 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(
                 builder: (context) => const MainScreen(
                       index: 0,
+                    selectedIndex: 0
                     )),
           );
         } else {
@@ -493,6 +494,7 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(
                   builder: (context) => const MainScreen(
                         index: 0,
+                    selectedIndex: 0,
                       )),
             );
           }

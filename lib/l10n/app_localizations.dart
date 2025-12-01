@@ -3119,7 +3119,7 @@ abstract class AppLocalizations {
   /// No description provided for @employmentContract.
   ///
   /// In en, this message translates to:
-  /// **'Employee ID Card'**
+  /// **'Employee Contract'**
   String get employmentContract;
 
   /// No description provided for @done.
@@ -4537,6 +4537,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No supervisor found'**
   String get noSupervisorFound;
+
+  /// No description provided for @uploadedDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded Document'**
+  String get uploadedDocument;
+
+  /// No description provided for @self.
+  ///
+  /// In en, this message translates to:
+  /// **'Self'**
+  String get self;
+
+  /// No description provided for @paidAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid As'**
+  String get paidAs;
+
+  /// No description provided for @selectPaidAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Paid As'**
+  String get selectPaidAs;
+
+  /// No description provided for @selectPaidAsValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select Paid As option'**
+  String get selectPaidAsValidation;
+
+  /// No description provided for @numberOfHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of Hours'**
+  String get numberOfHours;
+
+  /// No description provided for @enterNumberOfHoursValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter number of hours'**
+  String get enterNumberOfHoursValidation;
+
+  /// No description provided for @enterValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get enterValidNumber;
+
+  /// No description provided for @enterHoursPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter number of hours'**
+  String get enterHoursPlaceholder;
+
+  /// No description provided for @amountPerHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount per Hour'**
+  String get amountPerHour;
+
+  /// No description provided for @amountAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount will appear here'**
+  String get amountAppearHere;
+
+  /// No description provided for @totalAmountAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Total amount will appear here'**
+  String get totalAmountAppearHere;
+
+  /// No description provided for @enterNotesValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter notes'**
+  String get enterNotesValidation;
+
+  /// No description provided for @createAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Created at'**
+  String get createAt;
+
+  /// No description provided for @selectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Payment Method'**
+  String get selectPaymentMethod;
+
+  /// No description provided for @selectTransactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Transaction Type'**
+  String get selectTransactionType;
+
+  /// No description provided for @datePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'mm/dd/yyyy'**
+  String get datePlaceholder;
+
+  /// No description provided for @enterExpenseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an expense amount'**
+  String get enterExpenseAmount;
+
+  /// No description provided for @enterAmountValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get enterAmountValidation;
+
+  /// No description provided for @enterPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a purpose'**
+  String get enterPurpose;
+
+  /// No description provided for @enterPurposeValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a purpose'**
+  String get enterPurposeValidation;
+
+  /// No description provided for @uploadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Failed'**
+  String get uploadFailedTitle;
+
+  /// No description provided for @fileSelectionCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'File selection canceled.'**
+  String get fileSelectionCanceled;
+
+  /// No description provided for @uploadFailedPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get uploadFailedPrefix;
+
+  /// No description provided for @errorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorPrefix;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Check your connection.'**
+  String get somethingWentWrong;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @pleaseSelectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment method'**
+  String get pleaseSelectPaymentMethod;
+
+  /// No description provided for @pleaseSelectTransactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a transaction type'**
+  String get pleaseSelectTransactionType;
+
+  /// No description provided for @employeeOrCompanyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee or Company data missing.'**
+  String get employeeOrCompanyMissing;
+
+  /// No description provided for @unexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error occurred.'**
+  String get unexpectedError;
+
+  /// No description provided for @transactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Type'**
+  String get transactionType;
+
+  /// No description provided for @purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get purpose;
+
+  /// No description provided for @allowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance'**
+  String get allowance;
 }
 
 class _AppLocalizationsDelegate

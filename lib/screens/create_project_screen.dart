@@ -8,7 +8,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mime/mime.dart';
 import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -1028,7 +1027,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           );
           if (!mounted) return;
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1)));
+              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1 , selectedIndex: 0,)));
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),
