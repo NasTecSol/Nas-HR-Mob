@@ -1085,8 +1085,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date, context)
+                        (widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.date != null)
+                            ? singletonClass.formatDate2(
+                          widget.dataApprover.requestData!.first.date!,
+                          context,
+                        )
                             : AppLocalizations.of(context)!.noData,
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
