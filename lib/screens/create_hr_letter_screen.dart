@@ -924,8 +924,8 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     };
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/documents/create/$companyID/documents/$employeeID');
-    print(uri);
-    print(body);
+    log("$uri");
+    log(body);
     setState(() {
       _isLoading = true;
     });

@@ -42,30 +42,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             Row(
               children: [
-                 IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              spreadRadius: 5,
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_outlined,
-                        color: Colors.black,
-                      ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 5,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_outlined,
+                      color: Colors.black,
                     ),
                   ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(left: 0.0, top: 0.0),
                   child: Text(
@@ -80,6 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const Spacer(),
               ],
             ),
+            // Expanded List
             Expanded(
               child: FutureBuilder(
                 future: singletonClass.getNotifications(),
@@ -88,277 +90,279 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     return Loader();
                   } else if (snapshot.hasError) {
                     return Center(
-                      child: Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset('images/error.json'),
-                        ),
+                      child: SizedBox(
+                        height: 200,
+                        width: 200,
+                        child: Lottie.asset('images/error.json'),
                       ),
                     );
                   } else if (snapshot.hasData) {
-                    return singletonClass
-                            .notificationModelList.first.data!.isEmpty
-                        ? Center(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
+                    final notificationsList = singletonClass.notificationModelList.first.data ?? [];
+
+                    if (notificationsList.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.noData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: NasColors.darkBlue,
                                 ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        )
-                    )
-                        : ListView.builder(
-                            padding: EdgeInsets.zero,
-                            itemCount: singletonClass
-                                .notificationModelList.first.data!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final notificationData = singletonClass.notificationModelList.first.data!.reversed.toList()[index];
-                              final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-                              Future<List<String>> getTranslatedText() async {
-                                if (!isArabic) {
-                                  return [
-                                    notificationData.notificationType ?? '',
-                                    notificationData.message ?? '',
-                                    notificationData.metaData ?? '',
-                                  ];
-                                } else {
-                                  final titleTranslation = await translator.translate(notificationData.notificationType ?? '', to: 'ar');
-                                  final messageTranslation = await translator.translate(notificationData.message ?? '', to: 'ar');
-                                  final metaDataTranslation = await translator.translate(notificationData.metaData ?? '', to: 'ar');
-                                  return [
-                                    titleTranslation.text,
-                                    messageTranslation.text,
-                                    metaDataTranslation.text,
-                                  ];
-                                }
-                              }
+                        ),
+                      );
+                    }
 
-                              return FutureBuilder<List<String>>(
-                                future: getTranslatedText(),
-                                builder: (context, snapshot) {
-                                  final translatedTitle = snapshot.hasData ? snapshot.data![0] : notificationData.notificationType ?? '';
-                                  final translatedMessage = snapshot.hasData ? snapshot.data![1] : notificationData.message ?? '';
-                                  final translateMetaMessage = snapshot.hasData ? snapshot.data![2] : notificationData.metaData ?? '';
+                    final reversedList = notificationsList.reversed.toList();
 
-                                  return Dismissible(
-                                    key: Key(notificationData.id.toString()),
-                                    direction: DismissDirection.endToStart,
-                                    onDismissed: (direction) {
-                                      setState(() {
-                                        singletonClass.notificationModelList.first.data!.removeAt(index);
-                                        if (kDebugMode) {
-                                          print(notificationData.id);
-                                        }
-                                        deleteNotification(notificationData.id!);
-                                      });
-                                    },
-                                    background: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(15)),
-                                          color: Colors.red,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 2,
-                                              offset: const Offset(3, 3),
-                                            ),
-                                          ],
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: reversedList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final notificationData = reversedList[index];
+
+                        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+                        Future<List<String>> getTranslatedText() async {
+                          if (!isArabic) {
+                            return [
+                              notificationData.notificationType ?? '',
+                              notificationData.message ?? '',
+                              notificationData.metaData ?? '',
+                            ];
+                          } else {
+                            try {
+                              final titleTranslation = await translator.translate(notificationData.notificationType ?? '', to: 'ar');
+                              final messageTranslation = await translator.translate(notificationData.message ?? '', to: 'ar');
+                              final metaDataTranslation = await translator.translate(notificationData.metaData ?? '', to: 'ar');
+                              return [
+                                titleTranslation.text,
+                                messageTranslation.text,
+                                metaDataTranslation.text,
+                              ];
+                            } catch (_) {
+                              return [
+                                notificationData.notificationType ?? '',
+                                notificationData.message ?? '',
+                                notificationData.metaData ?? '',
+                              ];
+                            }
+                          }
+                        }
+
+                        // Safe helpers
+                        String getCurrentUserEmail() {
+                          try {
+                            final empList = singletonClass.employeeDataList;
+                            if (empList.isEmpty) return '';
+                            final empData = empList.first.data;
+                            if (empData == null) return '';
+                            final emails = empData.email;
+                            if (emails == null || emails.isEmpty) return '';
+                            return emails.first.workEmail ?? '';
+                          } catch (_) {
+                            return '';
+                          }
+                        }
+
+                        String getNotificationFromEmail() {
+                          try {
+                            final fromList = notificationData.from;
+                            if (fromList == null || fromList.isEmpty) return '';
+                            return fromList.first.email ?? '';
+                          } catch (_) {
+                            return '';
+                          }
+                        }
+
+                        final currentUserEmail = getCurrentUserEmail();
+                        final notificationFromEmail = getNotificationFromEmail();
+
+                        return FutureBuilder<List<String>>(
+                          future: getTranslatedText(),
+                          builder: (context, snapshot) {
+                            final list = snapshot.data ?? [];
+                            final translatedTitle = list.length > 0 ? list[0] : (notificationData.notificationType ?? '');
+                            final translatedMessage = list.length > 1 ? list[1] : (notificationData.message ?? '');
+                            final translateMetaMessage = list.length > 2 ? list[2] : (notificationData.metaData ?? '');
+
+                            return Dismissible(
+                              key: Key(notificationData.id?.toString() ?? index.toString()),
+                              direction: DismissDirection.endToStart,
+                              onDismissed: (direction) {
+                                setState(() {
+                                  final origList = singletonClass.notificationModelList.first.data!;
+                                  origList.removeWhere((e) => e.id == notificationData.id);
+                                  if (kDebugMode) print(notificationData.id);
+                                  deleteNotification(notificationData.id!);
+                                });
+                              },
+                              background: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                  color: Colors.red,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 2,
+                                      offset: const Offset(3, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: const Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 20),
+                                    child: Icon(Icons.delete_outline_rounded, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final typeRaw = notificationData.notificationType ?? '';
+                                    final type = typeRaw.toLowerCase();
+
+                                    if (type.contains('leave')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0)));
+                                    } else if (type.contains('employee') && type.contains('late')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => TeamAttendanceScreen()));
+                                    } else if (type.contains('meeting')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 3, selectedIndex: 0)));
+                                    } else if (type.contains('complain')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => Complaints()));
+                                    } else if (type.contains('penalty') || type.contains('fine')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => PenaltyAndFineScreen()));
+                                    } else if (type.contains('request')) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0)));
+                                    }
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(vertical: 5),
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                      color: const Color(0xffF4F7FA),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 2,
+                                          offset: const Offset(3, 3),
                                         ),
-                                        child: const Align(
-                                          alignment: Alignment.centerRight,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 20),
-                                            child: Icon(
-                                                Icons.delete_outline_rounded,
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
+                                      ],
+                                    ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: GestureDetector(
-                                          onTap: () {
-                                            final type = notificationData.notificationType!.toLowerCase();
-                                            if (type.contains('leave')){
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
-                                              );
-                                            } else if (type.contains('employee') && type.contains('late')) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => TeamAttendanceScreen()),
-                                              );
-                                            } else if (type.contains('meeting')) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 3 , selectedIndex: 0)),
-                                              );
-                                            } else if (type.contains('complain')) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => Complaints()),
-                                              );
-                                            } else if (type.contains('penalty') || type.contains('fine')) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => PenaltyAndFineScreen()),
-                                              );
-                                            } else if (type.contains('request')) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
-                                              );
-                                            }
-                                          },
-                                          child: Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 5),
-                                          decoration: BoxDecoration(
-                                            borderRadius: const BorderRadius.all(
-                                                Radius.circular(15)),
-                                            color: Color(0xffF4F7FA),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color:
-                                                    Colors.grey.withOpacity(0.5),
-                                                spreadRadius: 2,
-                                                blurRadius: 2,
-                                                offset: const Offset(3, 3),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Column(
-                                              children: [
-                                                Row(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            translatedTitle,
-                                                            style:
-                                                                GoogleFonts.inter(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight.bold,
-                                                              color: Colors.black,
-                                                            ),
-                                                          ),
-                                                          if (singletonClass.employeeDataList.first.data!.email!.first.workEmail  == notificationData.from!.first.email)...[
-                                                            Text(
-                                                              translatedMessage,
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 12,
-                                                                fontWeight: FontWeight.bold,
-                                                                color: Colors.grey,
-                                                              ),
-                                                              overflow: TextOverflow.ellipsis,
-                                                              maxLines: 4,
-                                                            ),
-                                                          ]else...[
-                                                            Text(
-                                                              translateMetaMessage,
-                                                              style:
-                                                              GoogleFonts.inter(
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                FontWeight.bold,
-                                                                color: Colors.grey,
-                                                              ),
-                                                              overflow: TextOverflow
-                                                                  .ellipsis,
-                                                              maxLines: 4,
-                                                            ),
-                                                          ],
-                                                          Row(
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                formatRelativeTime(
-                                                                    "${notificationData.createdAt}"),
-                                                                style: GoogleFonts.inter(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                  FontWeight.bold,
-                                                                  color: Colors.grey,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
+                                                    Text(
+                                                      translatedTitle,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.black,
                                                       ),
                                                     ),
-                                                    SizedBox(
-                                                      height: 50,
-                                                      width: 50,
-                                                      child: Image.asset(_getNotificationImage("${notificationData.notificationType}"))
+                                                    if (currentUserEmail == notificationFromEmail) ...[
+                                                      Text(
+                                                        translatedMessage,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 4,
+                                                      ),
+                                                    ] else ...[
+                                                      Text(
+                                                        translateMetaMessage,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 4,
+                                                      ),
+                                                    ],
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          formatRelativeTime("${notificationData.createdAt}"),
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              SizedBox(
+                                                height: 50,
+                                                width: 50,
+                                                child: Image.asset(_getNotificationImage("${notificationData.notificationType}")),
+                                              ),
+                                            ],
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ),
-                                  );
-                                },
-                              );
-                            },
-                          );
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
                   } else {
                     return Center(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
                             ),
-                          ),
-                        )
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   }
                 },

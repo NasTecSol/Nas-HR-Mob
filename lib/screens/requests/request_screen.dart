@@ -1135,15 +1135,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                         const SizedBox(width: 5),
                                                         Text(
-                                                          request.requestData != null && request.requestData!.isNotEmpty
-                                                              ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                          (request.requestData != null &&
+                                                              request.requestData!.isNotEmpty &&
+                                                              request.requestData!.first.date != null)
+                                                              ? singletonClass.formatDate2(
+                                                            request.requestData!.first.date!,
+                                                            context,
+                                                          )
                                                               : AppLocalizations.of(context)!.noData,
                                                           style: GoogleFonts.inter(
                                                             fontWeight: FontWeight.bold,
                                                             color: Colors.grey,
                                                             fontSize: 15,
                                                           ),
-                                                        )
+                                                        ),
                                                       ],
                                                     ),
                                                   ],
@@ -1817,15 +1822,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                           const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData != null && request.requestData!.isNotEmpty
-                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                            (request.requestData != null &&
+                                                                request.requestData!.isNotEmpty &&
+                                                                request.requestData!.first.date != null)
+                                                                ? singletonClass.formatDate2(
+                                                              request.requestData!.first.date!,
+                                                              context,
+                                                            )
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
@@ -2486,15 +2496,20 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                           const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData != null && request.requestData!.isNotEmpty
-                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                            (request.requestData != null &&
+                                                                request.requestData!.isNotEmpty &&
+                                                                request.requestData!.first.date != null)
+                                                                ? singletonClass.formatDate2(
+                                                              request.requestData!.first.date!,
+                                                              context,
+                                                            )
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
