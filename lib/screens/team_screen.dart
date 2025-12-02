@@ -756,7 +756,7 @@ class _TeamScreenState extends State<TeamScreen> {
                           final matchesId = team.employeeInfo!.first.empId?.toLowerCase().contains(searchText) ?? false;
 
                           if (!matchesName && !matchesId) {
-                            return const SizedBox.shrink(); // hide if neither matches
+                            return const SizedBox.shrink();
                           }
                         }
                         return Column(

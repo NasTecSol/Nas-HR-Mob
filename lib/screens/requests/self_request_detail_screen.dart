@@ -1068,8 +1068,13 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      widget.data1.requestData != null && widget.data1.requestData!.isNotEmpty
-                          ? singletonClass.formatDate2(widget.data1.requestData!.first.date, context)
+                      (widget.data1.requestData != null &&
+                          widget.data1.requestData!.isNotEmpty &&
+                          widget.data1.requestData!.first.date != null)
+                          ? singletonClass.formatDate2(
+                        widget.data1.requestData!.first.date!,
+                        context,
+                      )
                           : AppLocalizations.of(context)!.noData,
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,

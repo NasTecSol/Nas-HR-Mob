@@ -70,7 +70,6 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       } catch (e, s) {
         log("❌ initState error: $e\n$s");
       } finally {
-        // ✅ Hide loader only after everything completes
         if (mounted) {
           setState(() {
             _isInitialLoading = false;
@@ -393,7 +392,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     if (!isDateRangeSelected) {
       if (_selectedDate != null) {
         filtered = filtered.where((attendance) {
-          DateTime updatedAt = DateTime.parse(attendance.updatedAt!);
+          DateTime updatedAt = DateTime.parse(attendance.date!);
           return updatedAt.year == _selectedDate!.year &&
               updatedAt.month == _selectedDate!.month &&
               updatedAt.day == _selectedDate!.day;
@@ -402,6 +401,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     }
 
     setState(() {
+      filteredAttendanceDataList.clear();
       filteredAttendanceDataList = filtered;
     });
   }
@@ -803,8 +803,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               }
 
                               _initDates(start: _startDate!, end: _endDate!);
-                              await singletonClass.getTeamBranchData();
-                              await loadData();
+                              singletonClass.getTeamBranchData();
+                              loadData();
                             } catch (e) {
                               log("❌ Error toggling only me checkbox: $e");
                             } finally {
@@ -962,7 +962,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                               return '--:--';
                             }
                           }
-                          String date = formatDate(attendance.updatedAt!);
+                          String date = formatDate(attendance.date!);
                           int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
                           int? earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString());
                           String breakTime = formatMinutes(attendance.breakTime);
