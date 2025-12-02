@@ -32,12 +32,11 @@ void main() {
     await SingletonClass().init();
     await NotificationService.init();
 
-    if ( env == "staging") {
-      print("App is running in Debug mode.");
+    if ( env == "staging" || kDebugMode) {
+      debugPrint("App is running in Debug mode.");
       SingletonClass().baseURL = "https://dev.nashrms.com/api";
     }
-
-    if ( env == "production") {
+    if ( env == "production" || kReleaseMode) {
       SingletonClass().baseURL = "https://www.nashrms.com/api";
     }
 
