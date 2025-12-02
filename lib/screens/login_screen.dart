@@ -20,6 +20,7 @@ import 'package:local_auth/local_auth.dart';
 import '../Controller/language_change_controller.dart';
 import '../request_controller/login_model.dart';
 import '../widgets/loader.dart';
+import 'package:nashr/enviroment/enviroment.dart';
 
 enum Language { english, arabic }
 
@@ -41,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isBiometricEnabled = false;
   final LocalAuthentication _localAuth = LocalAuthentication();
   String version = '';
+  final env =  Environment.detectEnv();
 
   @override
   void initState() {
@@ -227,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }),
                       ],
                     ),
-                    if (kDebugMode) ...[
+                    if ( env == "staging") ...[
                       Text(
                         "You're in debug mode",
                         style: GoogleFonts.inter(
