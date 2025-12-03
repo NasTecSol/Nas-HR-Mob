@@ -1223,7 +1223,8 @@
     "unexpectedError": "Unexpected error occurred.",
     "transactionType": "Transaction Type",
     "purpose": "Purpose",
-    "allowance":"Allowance"
+    "allowance":"Allowance",
+    "hrLetter":"HR Letter"
 
 
 

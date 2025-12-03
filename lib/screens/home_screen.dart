@@ -71,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
+    singletonClass.getHRLetter();
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();

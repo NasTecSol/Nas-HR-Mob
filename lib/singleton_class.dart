@@ -22,6 +22,7 @@ import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
+import 'package:nashr/request_controller/document_shared_template.dart';
 import 'package:nashr/request_controller/employee_details_assets_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
@@ -74,6 +75,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<DocumentSharedTemplate> documentSharedTemplateDataList = [];
   List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
   List<BiometricDevicesModel> biometricDevicesModelDataList = [];
@@ -264,6 +266,24 @@ class SingletonClass {
       return uiSettingsData;
     }
     return null ; // Print the response body
+  }
+
+  ///Get HR letter Template
+  Future<DocumentSharedTemplate?> getHRLetter() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/documents/getBytemplateType?templateType=Doc_editor_shared&page=0&limit=100');
+    var response = await client.get(
+        uri,
+        headers: getHeaders()
+    );
+    log("GET HR LETTER${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var documentSharedTemplateData = DocumentSharedTemplate.fromJson(responseBody);
+      documentSharedTemplateDataList.addAll([documentSharedTemplateData]);
+      return documentSharedTemplateData;
+    }
+    return null;
   }
 
   /// Organization call
