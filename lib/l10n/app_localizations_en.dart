@@ -2349,4 +2349,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allowance => 'Allowance';
+
+  @override
+  String get hrLetter => 'HR Letter';
 }

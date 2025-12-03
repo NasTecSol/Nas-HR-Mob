@@ -4741,6 +4741,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allowance'**
   String get allowance;
+
+  /// No description provided for @hrLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'HR Letter'**
+  String get hrLetter;
 }
 
 class _AppLocalizationsDelegate

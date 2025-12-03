@@ -885,7 +885,9 @@
       "unexpectedError": "حدث خطأ غير متوقع.",
       "transactionType": "نوع المعاملة",
       "purpose": "الغرض",
-      "allowance":"البدل"
+      "allowance":"البدل",
+      "hrLetter": "خطاب الموارد البشرية"
+
 
 
 }
