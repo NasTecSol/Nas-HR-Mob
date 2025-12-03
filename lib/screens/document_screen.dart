@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/create_hr_letter_screen.dart';
 import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:nashr/singleton_class.dart';
+import 'package:nashr/widgets/loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -40,6 +41,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
 
     try {
       await singletonClass.getEmployeeData();
+      await singletonClass.getHRLetter();
       setState(() {
         isLoading = false;
       });
@@ -49,6 +51,14 @@ class _DocumentScreenState extends State<DocumentScreen> {
         isLoading = false;
       });
     }
+  }
+  @override
+  void initState() {
+    super.initState();
+    singletonClass.getHRLetter();
+    setState(() {
+
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -62,8 +72,17 @@ class _DocumentScreenState extends State<DocumentScreen> {
     final canCreateHRLetter = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "My HR letters" || sub.title == "My HR letter") &&
-            sub.accessType!.write == true) ??
+        (sub.title == "Manage HR Letters" || sub.title == "Manage HR Letters") &&
+            sub.accessType!.add == true) ??
+            false;
+      }
+      return false;
+    });
+    final canSeeHRLetter = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Manage HR Letters" || sub.title == "Manage HR Letters") &&
+            sub.hidden == false) ??
             false;
       }
       return false;
@@ -111,7 +130,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ),
                     const Spacer(),
-                    if (canCreateHRLetter)
+                    if (canCreateHRLetter && _selectedOptionIndex == 2)
                       IconButton(
                         onPressed: () {
                           Navigator.push(
@@ -148,9 +167,10 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      buildOptionsCard(
-                          0, AppLocalizations.of(context)!.documents),
+                      buildOptionsCard(0, AppLocalizations.of(context)!.documents),
                       buildOptionsCard(1, AppLocalizations.of(context)!.card),
+                      if(canSeeHRLetter)
+                      buildOptionsCard(2, AppLocalizations.of(context)!.hrLetter),
                     ],
                   ),
                 ),
@@ -232,6 +252,9 @@ class _DocumentScreenState extends State<DocumentScreen> {
                             .contains(searchText) ??
                             false)) {
                       return const SizedBox.shrink();
+                    }
+                    if(documents.type == "Doc_editor_shared"){
+                      return SizedBox.shrink();
                     }
                     return Transform.translate(
                       offset: Offset(0, index == 0 ? 0 : -10),
@@ -3377,6 +3400,180 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     ),
                   ))
             ]),
+          ],
+          if(_selectedOptionIndex == 2)...[
+            Expanded(
+              child: FutureBuilder(
+                key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                future: singletonClass.getHRLetter(),
+                builder: (context, snapshot) {
+                  return RefreshIndicator(
+                    color: NasColors.darkBlue,
+                    backgroundColor: Colors.white,
+                    onRefresh: () async {
+                      await fetchLatestDocumentData();
+                      setState(() {});
+                    },
+                    child: (snapshot.connectionState == ConnectionState.waiting)
+                        ? Center(child: Loader())
+                        : singletonClass.documentSharedTemplateDataList.first.data!.data!.isNotEmpty
+                        ? ListView.builder(
+                      padding: EdgeInsets.zero,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: singletonClass.documentSharedTemplateDataList
+                          .first.data!.data!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final documents = singletonClass
+                            .documentSharedTemplateDataList
+                            .first
+                            .data!
+                            .data![index];
+
+                        final url = documents.objectDetails!.parameters!.documentUrl ?? '';
+                        final fileType = url.split('.').last.toLowerCase();
+                        final isImage =
+                        ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+
+                        if (documents.objectDetails!.createdBy != singletonClass.getJWTModel()?.employeeId &&
+                            !(documents.objectDetails!.parameters!.employees?.contains(singletonClass.getJWTModel()?.employeeId) ?? false))
+                          return SizedBox.shrink();
+
+                        return Transform.translate(
+                          offset: Offset(0, index == 0 ? 0 : -10),
+                          child: GestureDetector(
+                            onTap: () async {
+                              if (url.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FileViewerScreen(
+                                      url: url,
+                                      fileName:
+                                      "${documents.objectDetails!.objectName}",
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                debugPrint('Invalid attachment URL');
+                              }
+                            },
+                            child: Container(
+                              padding:
+                              const EdgeInsets.only(top: 10, left: 30, right: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  if (index != 0)
+                                    const BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 10,
+                                      spreadRadius: 10,
+                                      offset: Offset(0, -6),
+                                    ),
+                                  const BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${documents.objectDetails!.objectName}",
+                                    maxLines: 2,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: NasColors.darkBlue),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Icon(Icons.arrow_forward_ios_outlined,
+                                          color: Colors.grey, size: 20)
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: isImage
+                                            ? Image.network(
+                                          url,
+                                          height: 60,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        )
+                                            : Image.asset(
+                                          _getFileIcon(url),
+                                          height: 60,
+                                          width: 60,
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          if (url.isNotEmpty) {
+                                            final uri = Uri.parse(url);
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(uri,
+                                                  mode: LaunchMode.externalApplication);
+                                            } else {
+                                              debugPrint('Could not launch $url');
+                                            }
+                                          } else {
+                                            debugPrint('Invalid download URL');
+                                          }
+                                        },
+                                        child: Image.asset(
+                                          'images/download.png',
+                                          height: 35,
+                                          width: 35,
+                                        ),
+                                      ),
+                                      SizedBox(width: 20),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                        : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset('images/empty.json'),
+                              ),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
           ],
         ],
       )

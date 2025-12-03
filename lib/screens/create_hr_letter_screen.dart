@@ -532,7 +532,8 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 
       // Create a SearchedResult instance
       SearchedResultForLetter result = SearchedResultForLetter(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
+        empId: employeeData.data?.first.employeeInfo!.first.empId,
+        employeeId: employeeData.data?.first.id,
         employeeName: employeeData.data?.first.firstName,
         department: employeeData.data?.first.employeeInfo!.first.depName,
         designation: employeeData.data?.first.employeeInfo!.first.designation,
@@ -910,17 +911,21 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   Future<void> uploadHRLetter() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String? companyID = singletonClass.getJWTModel()?.companyId;
+    List<String> employees = _selectedEmployees
+        .map((employee) => employee!.employeeId.toString())
+        .toList();
     Map data = {
-      "templateType": "Doc_Shared_Template",
-      "objectDetails": {
-        "Type": "Doc_templates",
-        "objectName": "Letter Templates",
-        "objectIcon": "edit",
-        "parameters": {
-          "documentUrl": singletonClass.attachmentResponseDataList.first.data!.url,
-        },
-        "createdBy": employeeID
-      }
+    "templateType": "Doc_editor_shared",
+    "objectDetails": {
+    "Type": "shared",
+    "objectName": _letterSubject.text,
+    "objectIcon": "edit",
+    "parameters": {
+         "documentUrl": singletonClass.attachmentResponseDataList.first.data!.url,
+         "employees": employees
+     },
+      "createdBy": employeeID,
+      },
     };
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/documents/create/$companyID/documents/$employeeID');
@@ -987,6 +992,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 //DUMMY MODEL
 class SearchedResultForLetter {
   dynamic empId;
+  dynamic employeeId;
   dynamic designation;
   dynamic department;
   dynamic employeeName;
@@ -994,6 +1000,7 @@ class SearchedResultForLetter {
 
   SearchedResultForLetter({
     this.empId,
+    this.employeeId,
     this.designation,
     this.department,
     this.employeeName,
@@ -1009,6 +1016,9 @@ class SearchedResultForLetter {
   Map<String, dynamic> toJson() {
     return {
       'empId': empId,
+      'employeeId': employeeId,
+      'designation': designation,
+      'department': department,
       'employeeName': employeeName,
       'severity': severity,
     };
