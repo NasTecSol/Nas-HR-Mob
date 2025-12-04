@@ -71,6 +71,8 @@ class SingletonClass {
 
   bool initialized = false;
   String? baseURL;
+  String? env;
+  String? envToggle;
   int unreadCount = 0;
   LoginModel? _loginModel;
   JWTData? _jwtData;
