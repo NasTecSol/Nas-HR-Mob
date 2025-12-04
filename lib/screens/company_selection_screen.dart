@@ -86,7 +86,7 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
             Column(
               children: [
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.25,
+                  height: MediaQuery.of(context).size.height * 0.29,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(
@@ -107,35 +107,74 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_hasBaseUrl)
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Container(
-                                  height: 40,
-                                  width: 40,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
+                            if (_hasBaseUrl)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    icon: Container(
+                                      height: 40,
+                                      width: 40,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.4),
+                                            spreadRadius: 5,
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                      child: const Icon(
+                                        Icons.arrow_back_ios_new_outlined,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.arrow_back_ios_new_outlined,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                                ],
                               ),
+                            Spacer(),
+                            if(singletonClass.env == "staging")...[
+                              Row(
+                                children: [
+                                  Text(
+                                    "Dev",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Switch(
+                                    value: singletonClass.envToggle == "prod",
+                                    onChanged: (value) {
+                                      setState(() {
+                                        singletonClass.envToggle = value ? "prod" : "dev";
+                                        if(singletonClass.envToggle == "prod" ){
+                                          singletonClass.baseURL = "https://www.nashrms.com/api";
+                                        } else {
+                                          singletonClass.baseURL = "https://dev.nashrms.com/api";
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  Text(
+                                    "Prod",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                   Expanded(
