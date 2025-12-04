@@ -42,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isBiometricEnabled = false;
   final LocalAuthentication _localAuth = LocalAuthentication();
   String version = '';
-  final env =  Environment.detectEnv();
 
   @override
   void initState() {
@@ -173,6 +172,42 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if(singletonClass.env == "staging")...[
+                          Row(
+                            children: [
+                              Text(
+                                "Dev",
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Switch(
+                                value: singletonClass.envToggle == "prod",
+                                onChanged: (value) {
+                                  setState(() {
+                                    singletonClass.envToggle = value ? "prod" : "dev";
+                                    if(singletonClass.envToggle == "prod" ){
+                                      singletonClass.baseURL = "https://www.nashrms.com/api";
+                                    } else {
+                                      singletonClass.baseURL = "https://dev.nashrms.com/api";
+                                    }
+                                  });
+                                },
+                              ),
+                              Text(
+                                "Prod",
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                          ),
+                        Spacer(),
+                        ],
                         if (singletonClass.companyName != null &&
                             singletonClass.companyName!.isNotEmpty) ...[
                           Container(
@@ -227,9 +262,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           );
                         }),
+
                       ],
                     ),
-                    if ( env == "staging") ...[
+                    if ( singletonClass.env == "staging") ...[
                       Text(
                         "You're in debug mode",
                         style: GoogleFonts.inter(
