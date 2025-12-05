@@ -574,20 +574,36 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final templates = jsonData['data']?['data'] as List<dynamic>?;
-
-      final defaultTemplate = templates?.firstWhere(
-        (template) =>
-            template is Map<String, dynamic> &&
-            template['templateType']?.toString() == 'Doc_Shared_Template' &&
-            template['default'] == true,
-        orElse: () => null,
-      );
-
-      if (defaultTemplate != null) {
-        final fileUrl =
-            defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
-        if (fileUrl != null) {
-          templateDocUrl = fileUrl;
+      final locale = WidgetsBinding.instance.window.locale.languageCode;
+      if (locale == "ar"){
+        final defaultTemplate = templates?.firstWhere(
+              (template) =>
+          template is Map<String, dynamic> &&
+              template['templateType']?.toString() == 'Doc_Shared_Template' &&
+              template['default'] == true && template['lang'] == 'ar',
+          orElse: () => null,
+        );
+        if (defaultTemplate != null) {
+          final fileUrl =
+          defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
+          if (fileUrl != null) {
+            templateDocUrl = fileUrl;
+          }
+        }
+      } else {
+        final defaultTemplate = templates?.firstWhere(
+              (template) =>
+          template is Map<String, dynamic> &&
+              template['templateType']?.toString() == 'Doc_Shared_Template' &&
+              template['default'] == true && template['lang'] == 'en',
+          orElse: () => null,
+        );
+        if (defaultTemplate != null) {
+          final fileUrl =
+          defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
+          if (fileUrl != null) {
+            templateDocUrl = fileUrl;
+          }
         }
       }
     }
