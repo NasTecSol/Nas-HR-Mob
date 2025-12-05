@@ -20,7 +20,6 @@ import 'package:local_auth/local_auth.dart';
 import '../Controller/language_change_controller.dart';
 import '../request_controller/login_model.dart';
 import '../widgets/loader.dart';
-import 'package:nashr/enviroment/enviroment.dart';
 
 enum Language { english, arabic }
 
