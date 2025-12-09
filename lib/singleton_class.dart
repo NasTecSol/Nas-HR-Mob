@@ -740,7 +740,7 @@ class SingletonClass {
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" : "2002"
+      "x-tenant-id" : tenantId.toString()
     };
   }
 
