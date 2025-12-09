@@ -723,25 +723,42 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       String xmlContent = utf8.decode(documentFile.content!);
       final documentXml = xml.XmlDocument.parse(xmlContent);
 
-      // Fetch employee and sender data
-      final emp = _selectedEmployees.first;
       final now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final senderInfo = singletonClass.employeeDataList.first.data!.employeeInfo!.first;
 
-      final senderInfo =
-          singletonClass.employeeDataList.first.data!.employeeInfo!.first;
+      String combinedNames = '';
+      String combinedDesignations = '';
+      String combinedDepartments = '';
+
+      if (_selectedEmployees.length > 1) {
+        combinedNames = _selectedEmployees
+            .map((e) => e?.employeeName ?? 'N/A')
+            .join(', ');
+
+        combinedDesignations = _selectedEmployees
+            .map((e) => e?.designation ?? 'N/A')
+            .join(', ');
+
+        combinedDepartments = _selectedEmployees
+            .map((e) => e?.department ?? 'N/A')
+            .join(', ');
+      } else {
+        final emp = _selectedEmployees.first;
+        combinedNames = emp?.employeeName ?? 'N/A';
+        combinedDesignations = emp?.designation ?? 'N/A';
+        combinedDepartments = emp?.department ?? 'N/A';
+      }
 
       final replacements = {
         'currentDate': now,
-        'employeeName': emp?.employeeName ?? 'N/A',
-        'employeeDesignation': emp?.designation ?? 'N/A',
-        'employeeDepartment': emp?.department ?? 'N/A',
+        'employeeName': combinedNames,
+        'employeeDesignation': combinedDesignations,
+        'employeeDepartment': combinedDepartments,
         'letterSubject': _letterSubject.text,
-        'senderName':
-            singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
+        'senderName': singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
         'senderDepartment': senderInfo.depName ?? 'HR Department',
       };
 
-      // --- Replace placeholders across paragraphs ---
       for (final node in documentXml.findAllElements('w:t')) {
         for (var entry in replacements.entries) {
           String text = node.innerText;
