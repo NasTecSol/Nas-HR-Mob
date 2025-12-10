@@ -244,8 +244,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onSelected: (Language item) {
                               if (Language.english.name == item.name) {
                                 provider.changeLanguage(const Locale('en'));
+                                SingletonClass().local = 'en';
                               } else {
                                 provider.changeLanguage(const Locale('ar'));
+                                SingletonClass().local = 'ar';
                               }
                             },
                             itemBuilder: (BuildContext context) =>
