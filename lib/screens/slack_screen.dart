@@ -672,7 +672,7 @@ class _SlackScreenState extends State<SlackScreen> {
 
   /// Search Employee
   Future<void> getSearchEmployeeData(String query) async {
-    final employeeId = query.trim().toUpperCase();
+    final employeeId = query;
     if (employeeId.isEmpty) return;
 
     setState(() {
@@ -684,7 +684,7 @@ class _SlackScreenState extends State<SlackScreen> {
     try {
       var client = http.Client();
       var uri = Uri.parse(
-          '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+          '${singletonClass.baseURL}/employee/search?emp=$employeeId');
       var response =
       await client.get(uri, headers: singletonClass.getHeaders());
 
@@ -695,8 +695,8 @@ class _SlackScreenState extends State<SlackScreen> {
         var employeeData = SearchEmployeeData.fromJson(responseBody);
 
         if (employeeData.data != null &&
-            employeeData.data!.isNotEmpty) {
-          final emp = employeeData.data!.first;
+            employeeData.data!.employees!.isNotEmpty) {
+          final emp = employeeData.data!.employees!.first;
           final empInfo = emp.employeeInfo != null &&
               emp.employeeInfo!.isNotEmpty
               ? emp.employeeInfo!.first

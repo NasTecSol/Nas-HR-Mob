@@ -61,7 +61,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
           key: _formKey,
           child: Stack(
               children: [
-            ListView(
+                ListView(
               padding: EdgeInsets.zero,
               children: [ Column(
                 children: [
@@ -228,6 +228,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                         child: TextFormField(
                           cursorColor: Colors.grey,
                           controller: _searchController,
+                          onFieldSubmitted: (value){
+                            getSearchEmployeeData();
+                          },
                           decoration: InputDecoration(
                             hintText: '${AppLocalizations.of(context)!.search}...',
                             border: InputBorder.none,
@@ -236,9 +239,8 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                       ),
                       IconButton(
                         onPressed: () {
-                          setState(() {
-                            getSearchEmployeeData();
-                          });
+                          print("ButTON TAPPEd");
+                          getSearchEmployeeData();
                         },
                         icon: Icon(
                           Icons.search,
@@ -504,8 +506,11 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                 ],
               ),]
             ),
-                if(_isLoading == true)...[
-                  Loader()
+                if(_isLoading)...[
+                    IgnorePointer(
+                      ignoring: true,   // DOES NOT BLOCK CLICKS
+                      child: Loader(),
+                    ),
                 ]
           ]),
         ),
@@ -515,31 +520,30 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 
   /// Call for search
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim().toUpperCase();
-    if (employeeId.isEmpty) return;
-
+    String employeeId = _searchController.text;
     setState(() {
       _isLoading = true;
     });
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
 
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     setState(() {
       _isLoading = false;
     });
+    print(uri);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);
 
       // Create a SearchedResult instance
       SearchedResultForLetter result = SearchedResultForLetter(
-        empId: employeeData.data?.first.employeeInfo!.first.empId,
-        employeeId: employeeData.data?.first.id,
-        employeeName: "${employeeData.data?.first.firstName} ${employeeData.data?.first.lastName}",
-        department: employeeData.data?.first.employeeInfo!.first.depName,
-        designation: employeeData.data?.first.employeeInfo!.first.designation,
+        empId: employeeData.data?.employees!.first.employeeInfo!.first.empId,
+        employeeId: employeeData.data?.employees!.first.id,
+        employeeName: "${employeeData.data?.employees!.first.firstName} ${employeeData.data?.employees!.first.lastName}",
+        department: employeeData.data?.employees!.first.employeeInfo!.first.depName,
+        designation: employeeData.data?.employees!.first.employeeInfo!.first.designation,
       );
 
       print(">>>>$result");
