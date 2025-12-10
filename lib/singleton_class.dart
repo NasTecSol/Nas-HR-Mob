@@ -139,6 +139,7 @@ class SingletonClass {
   List<Map<String, String>> chatMessages = [];
   bool hasShownGreeting = false;
   bool isFirstTimeSelectionDone = false;
+  String? local;
 
 
   init() async {

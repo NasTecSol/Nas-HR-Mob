@@ -13,6 +13,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/colors.dart';
 
@@ -57,8 +58,14 @@ class _DocumentScreenState extends State<DocumentScreen> {
     super.initState();
     singletonClass.getHRLetter();
     setState(() {
-
+      loadLanguage();
     });
+  }
+
+  Future<void> loadLanguage() async {
+    String? lang = await SharedPreferences.getInstance()
+        .then((sp) => sp.getString("Language") ?? "en");
+    singletonClass.local = lang;
   }
   @override
   Widget build(BuildContext context) {
@@ -3610,7 +3617,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         });
       },
       child: SizedBox(
-        height: 70,
+        height: 90,
         width: 140,
         child: Card(
           color:
