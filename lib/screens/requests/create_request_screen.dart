@@ -3045,12 +3045,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   }
 
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim();
+    String employeeId = _searchController.text;
     if (employeeId.isEmpty) return;
 
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
 
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     if (response.statusCode == 200) {
@@ -3059,8 +3059,8 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
 
       // Create a SearchedResult instance
       SearchedResult result = SearchedResult(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.first.firstName,
+        empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.employees!.first.firstName,
       );
 
       print(">>>>$result");
