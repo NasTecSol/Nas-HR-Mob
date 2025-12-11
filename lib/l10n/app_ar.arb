@@ -886,7 +886,8 @@
       "transactionType": "نوع المعاملة",
       "purpose": "الغرض",
       "allowance":"البدل",
-      "hrLetter": "خطاب الموارد البشرية"
+      "hrLetter": "خطاب الموارد البشرية",
+      "approver":"المعتمدون"
 
 
 

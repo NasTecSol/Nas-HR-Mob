@@ -2344,4 +2344,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hrLetter => 'خطاب الموارد البشرية';
+
+  @override
+  String get approver => 'المعتمدون';
 }

@@ -576,9 +576,11 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                 buildOptionsCard(0, AppLocalizations.of(context)!.all),
                 buildOptionsCard(1, AppLocalizations.of(context)!.present),
                 buildOptionsCard(2, AppLocalizations.of(context)!.absent),
-                buildOptionsCard(3, AppLocalizations.of(context)!.missingCheckInOut),
-                buildOptionsCard(4, AppLocalizations.of(context)!.late),
-                buildOptionsCard(5, AppLocalizations.of(context)!.earlyCheckOut),
+                buildOptionsCard(3, AppLocalizations.of(context)!.leave),
+                buildOptionsCard(4, AppLocalizations.of(context)!.missingCheckInOut),
+                buildOptionsCard(5, AppLocalizations.of(context)!.late),
+                buildOptionsCard(6, AppLocalizations.of(context)!.earlyCheckOut),
+
               ],
             ),
           ),
@@ -915,15 +917,21 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         if (_selectedOptionIndex == 0) return true;
                         if (_selectedOptionIndex == 1) return status == 'present';
                         if (_selectedOptionIndex == 2) return status == 'absent';
-                        if (_selectedOptionIndex == 3) {
+                        if (_selectedOptionIndex == 4) {
                           final normalized = status.replaceAll('-', ' ');
                           return normalized == 'missing checkin/out' ||
                               normalized == 'missing checkin' ||
                               normalized == 'missing checkout';
                         }
-                        if (_selectedOptionIndex == 4) return (attendance.lateMinutes ?? 0) > 0;
-                        if (_selectedOptionIndex == 5) return (attendance.earlyCheckOut ?? 0) > 0;
-
+                        if (_selectedOptionIndex == 5) return (attendance.lateMinutes ?? 0) > 0;
+                        if (_selectedOptionIndex == 6) return (attendance.earlyCheckOut ?? 0) > 0;
+                        if (_selectedOptionIndex == 3) {
+                          final normalized = status.replaceAll('-', ' ');
+                          return normalized == 'on-leave' ||
+                              normalized == 'leave' ||
+                              normalized == 'annualLeave' ||
+                              normalized == 'on leave';
+                        }
                         return false;
                       });
                       return  hasMatchingData
@@ -936,10 +944,13 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             final status = attendance.status?.toLowerCase();
                             if ((_selectedOptionIndex == 1 && status != 'present') ||
                                 (_selectedOptionIndex == 2 && status != 'absent') ||
-                                (_selectedOptionIndex == 3 && !['missing checkin/out', 'missing checkin', 'missing checkout']
+                                (_selectedOptionIndex == 4 && !['missing checkin/out', 'missing checkin', 'missing checkout']
                                     .contains(status.replaceAll('-', ' '))) ||
-                                (_selectedOptionIndex == 4 && (attendance.lateMinutes ?? 0) <= 0) ||
-                                (_selectedOptionIndex == 5 && (attendance.earlyCheckOut ?? 0) <= 0)) {
+                                (_selectedOptionIndex == 5 && (attendance.lateMinutes ?? 0) <= 0) ||
+                                (_selectedOptionIndex == 6 && (attendance.earlyCheckOut ?? 0) <= 0) ||
+                                (_selectedOptionIndex == 3 && !['on-leave', 'leave', 'on leave']
+                                    .contains(status.replaceAll('-', ' ')))
+                            ) {
                               return const SizedBox.shrink();
                             }
                           }
@@ -1100,77 +1111,92 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
                                     ],
                                   ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context)!.shifts,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                  if(attendance.status != "On-Leave")...[SizedBox(height: 10),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          AppLocalizations.of(context)!.shifts,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                      Spacer(),
-                                      Builder(builder: (_) {
-                                        final int workedMinutes = attendance.totalHoursWorked ?? 0;
-                                        final int totalWorkingMinutes = 11 * 60;
-                                        final double progress = (workedMinutes / totalWorkingMinutes).clamp(0.0, 1.0);
+                                        Spacer(),
+                                        Builder(builder: (_) {
+                                          final int workedMinutes = attendance.totalHoursWorked ?? 0;
+                                          final int totalWorkingMinutes = 11 * 60;
+                                          final double progress = (workedMinutes / totalWorkingMinutes).clamp(0.0, 1.0);
 
-                                        return Column(
-                                          children: [
-                                            Text(
-                                              "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 5),
-                                            SizedBox(
-                                              width: 80,
-                                              height: 8,
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: LinearProgressIndicator(
-                                                  value: progress,
-                                                  backgroundColor: Colors.grey[300],
-                                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                                    progress >= 1.0
-                                                        ? Colors.green
-                                                        : Colors.orange,
-                                                  ),
-                                                  minHeight: 8,
+                                          return Column(
+                                            children: [
+                                              Text(
+                                                "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'fullTime')...[
-                                            Text(
-                                              attendance.shiftInfo != null &&
-                                                  attendance.shiftInfo!.timefrom != null &&
-                                                  attendance.shiftInfo!.timeTo != null
-                                                  ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
-                                                  : "---",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                              const SizedBox(height: 5),
+                                              SizedBox(
+                                                width: 80,
+                                                height: 8,
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: LinearProgressIndicator(
+                                                    value: progress,
+                                                    backgroundColor: Colors.grey[300],
+                                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                                      progress >= 1.0
+                                                          ? Colors.green
+                                                          : Colors.orange,
+                                                    ),
+                                                    minHeight: 8,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              width: 180,
-                                              child: Text(
+                                            ],
+                                          );
+                                        }),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Column(
+                                          children: [
+                                            if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'fullTime')...[
+                                              Text(
+                                                attendance.shiftInfo != null &&
+                                                    attendance.shiftInfo!.timefrom != null &&
+                                                    attendance.shiftInfo!.timeTo != null
+                                                    ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
+                                                    : "---",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 180,
+                                                child: Text(
+                                                  maxLines: 5,
+                                                  attendance.shiftInfo != null &&
+                                                      attendance.shiftInfo!.shiftName != null
+                                                      ? "${attendance.shiftInfo!.shiftName}"
+                                                      : "---",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'flexibleShift')...[
+                                              Text(
                                                 maxLines: 5,
                                                 attendance.shiftInfo != null &&
                                                     attendance.shiftInfo!.shiftName != null
@@ -1182,59 +1208,45 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                                   color: Colors.black,
                                                 ),
                                               ),
-                                            ),
+                                            ],
+                                            if (attendance.shiftInfo != null &&
+                                                attendance.shiftInfo!.shiftType == 'timeTableShift') ...[
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: attendance.slots!.take(2).map<Widget>((slot) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
+                                                        const SizedBox(width: 6),
+                                                        Text(
+                                                          "${singletonClass.formatCheckInTime(slot.slotStart , context)} - ${singletonClass.formatCheckInTime(slot.slotEnd, context)}",
+                                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              )
+                                            ],
                                           ],
-                                          if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'flexibleShift')...[
-                                            Text(
-                                              maxLines: 5,
-                                              attendance.shiftInfo != null &&
-                                                  attendance.shiftInfo!.shiftName != null
-                                                  ? "${attendance.shiftInfo!.shiftName}"
-                                                  : "---",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                          if (attendance.shiftInfo != null &&
-                                              attendance.shiftInfo!.shiftType == 'timeTableShift') ...[
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: attendance.slots!.take(2).map<Widget>((slot) {
-                                                return Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
-                                                      const SizedBox(width: 6),
-                                                      Text(
-                                                        "${singletonClass.formatCheckInTime(slot.slotStart , context)} - ${singletonClass.formatCheckInTime(slot.slotEnd, context)}",
-                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }).toList(),
-                                            )
-                                          ],
-                                        ],
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        "$breakTime ${AppLocalizations.of(context)!.minutes}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
                                         ),
-                                      ),
-                                      const Icon(Icons.coffee,
-                                          size: 20, color: Colors.brown),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
+                                        const Spacer(),
+                                        Text(
+                                          "$breakTime ${AppLocalizations.of(context)!.minutes}",
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const Icon(Icons.coffee,
+                                            size: 20, color: Colors.brown),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
                                   Divider(
                                     color: Colors.grey,
                                   ),
@@ -1244,7 +1256,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                       color: Colors.grey.shade200,
                                       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
                                     ),
-                                    child: Row(
+                                    child: attendance.status != "On-Leave" ? Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Column(
@@ -1337,7 +1349,98 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                                           ],
                                         ),
                                       ],
-                                    ),
+                                    ) : Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.leaveType,
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "${attendance.leaveDetails!.requestInfo!.subType}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 5),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.startDate,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              singletonClass.formatDate2("${attendance.leaveDetails!.requestInfo!.requestData!.first.startDate}", context),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 5),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.endDate,
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              singletonClass.formatDate2("${attendance.leaveDetails!.requestInfo!.requestData!.first.endDate}", context),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 5),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.duration,
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "${attendance.leaveDetails!.requestInfo!.requestData!.first.duration}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
                                   ),
                                 ],
                               ),
@@ -1392,21 +1495,28 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         return filteredAttendanceDataList.where(
               (e) => (e.status?.toLowerCase() ?? "") == "absent",
         ).length;
-      case 3:
+      case 4:
         return filteredAttendanceDataList.where((e) {
           final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
           return status == "missing checkin/out" ||
               status == "missing checkin" ||
               status == "missing checkout";
         }).length;
-      case 4:
+      case 5:
         return filteredAttendanceDataList.where(
               (e) => (e.lateMinutes ?? 0) > 0,
         ).length;
-      case 5:
+      case 6:
         return filteredAttendanceDataList.where(
               (e) => (e.earlyCheckOut ?? 0) > 0,
         ).length;
+      case 3:
+        return filteredAttendanceDataList.where((e) {
+          final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
+          return status == "on-leave" ||
+              status == "leave" ||
+              status == "on leave";
+        }).length;
       default:
         return 0;
     }
@@ -1427,6 +1537,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         return localizations.pending;
       case 'Missing CheckIn/Out':
         return localizations.missingCheckInOut;
+      case 'On-Leave':
+        return localizations.onLeaves;
       default:
         return status;
     }
@@ -1506,6 +1618,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         return localizations.outOffShift;
       case 'Full-Day':
         return localizations.fullDay;
+      case 'annualLeave':
+        return localizations.annualLeave;
       default:
         return status;
     }
@@ -1614,10 +1728,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         case 2:
           return NasColors.red;
         case 3:
-          return NasColors.pending;
+          return NasColors.darkBlue;
         case 4:
           return NasColors.pending;
         case 5:
+          return NasColors.pending;
+        case 6:
           return NasColors.onTime;
         default:
           return NasColors.darkBlue;
@@ -1634,10 +1750,12 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         case 2:
           return NasColors.red;
         case 3:
-          return NasColors.pending;
+          return NasColors.darkBlue;
         case 4:
           return NasColors.pending;
         case 5:
+          return NasColors.pending;
+        case 6:
           return NasColors.onTime;
         default:
           return NasColors.darkBlue;
@@ -1649,7 +1767,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         setState(() {
           _selectedOptionIndex = index;
         });
-        filterAttendanceData();  // ✅ filter list based on selected card
+        filterAttendanceData();
       },
       child: SizedBox(
         height: 70,

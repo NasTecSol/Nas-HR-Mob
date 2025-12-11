@@ -73,7 +73,7 @@ class TeamAttendanceData {
   dynamic breakTime;
   dynamic lateMinutes;
   List<Penalties>? penalties;
-  dynamic leaveDetails;
+  LeaveDetails? leaveDetails;
   dynamic shift;
   ShiftInfo? shiftInfo;
   List<Slots>? slots;
@@ -106,7 +106,7 @@ class TeamAttendanceData {
     penalties = json["penalties"] == null
         ? null
         : (json["penalties"] as List).whereType<Map<String, dynamic>>().map((e) => Penalties.fromJson(e)).toList();
-    leaveDetails = json["leaveDetails"];
+    leaveDetails = json["leaveDetails"] == null ? null : LeaveDetails.fromJson(json["leaveDetails"]);
     shift = json["shift"];
     shiftInfo = json["shiftInfo"] == null ? null : ShiftInfo.fromJson(json["shiftInfo"]);
     slots = json["slots"] == null
@@ -143,7 +143,9 @@ class TeamAttendanceData {
     if(penalties != null) {
       _data["penalties"] = penalties?.map((e) => e.toJson()).toList();
     }
-    _data["leaveDetails"] = leaveDetails;
+    if(leaveDetails != null) {
+      _data["leaveDetails"] = leaveDetails?.toJson();
+    }
     _data["shift"] = shift;
     if(shiftInfo != null) {
       _data["shiftInfo"] = shiftInfo?.toJson();
@@ -157,6 +159,157 @@ class TeamAttendanceData {
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
+    return _data;
+  }
+}
+
+class LeaveDetails {
+  String? leaveType;
+  String? leaveRequestId;
+  bool? isCompensatory;
+  RequestInfo? requestInfo;
+
+  LeaveDetails({this.leaveType, this.leaveRequestId, this.isCompensatory, this.requestInfo});
+
+  LeaveDetails.fromJson(Map<String, dynamic> json) {
+    leaveType = json["leaveType"];
+    leaveRequestId = json["leaveRequestId"];
+    isCompensatory = json["isCompensatory"];
+    requestInfo = json["requestInfo"] == null ? null : RequestInfo.fromJson(json["requestInfo"]);
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["leaveType"] = leaveType;
+    _data["leaveRequestId"] = leaveRequestId;
+    _data["isCompensatory"] = isCompensatory;
+    if(requestInfo != null) {
+      _data["requestInfo"] = requestInfo?.toJson();
+    }
+    return _data;
+  }
+}
+class RequestInfo {
+  String? id;
+  String? employeeId;
+  String? employeeName;
+  String? empId;
+  String? companyId;
+  String? branchId;
+  String? policyId;
+  String? requestType;
+  String? subType;
+  List<RequestData>? requestData;
+  List<Approvers>? approvers;
+  String? reason;
+  List<dynamic>? attachments;
+  String? createdAt;
+  String? updatedAt;
+  int? v;
+  String? status;
+
+  RequestInfo({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
+
+  RequestInfo.fromJson(Map<String, dynamic> json) {
+    id = json["_id"];
+    employeeId = json["employeeId"];
+    employeeName = json["employeeName"];
+    empId = json["empId"];
+    companyId = json["companyId"];
+    branchId = json["branchId"];
+    policyId = json["policyId"];
+    requestType = json["requestType"];
+    subType = json["subType"];
+    requestData = json["requestData"] == null ? null : (json["requestData"] as List).map((e) => RequestData.fromJson(e)).toList();
+    approvers = json["approvers"] == null ? null : (json["approvers"] as List).map((e) => Approvers.fromJson(e)).toList();
+    reason = json["reason"];
+    attachments = json["attachments"] ?? [];
+    createdAt = json["createdAt"];
+    updatedAt = json["updatedAt"];
+    v = json["__v"];
+    status = json["status"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["_id"] = id;
+    _data["employeeId"] = employeeId;
+    _data["employeeName"] = employeeName;
+    _data["empId"] = empId;
+    _data["companyId"] = companyId;
+    _data["branchId"] = branchId;
+    _data["policyId"] = policyId;
+    _data["requestType"] = requestType;
+    _data["subType"] = subType;
+    if(requestData != null) {
+      _data["requestData"] = requestData?.map((e) => e.toJson()).toList();
+    }
+    if(approvers != null) {
+      _data["approvers"] = approvers?.map((e) => e.toJson()).toList();
+    }
+    _data["reason"] = reason;
+    if(attachments != null) {
+      _data["attachments"] = attachments;
+    }
+    _data["createdAt"] = createdAt;
+    _data["updatedAt"] = updatedAt;
+    _data["__v"] = v;
+    _data["status"] = status;
+    return _data;
+  }
+}
+class Approvers {
+  String? approverId;
+  String? approverName;
+  bool? isRequired;
+  String? status;
+  String? timeStamps;
+  String? comments;
+
+  Approvers({this.approverId, this.approverName, this.isRequired, this.status, this.timeStamps, this.comments});
+
+  Approvers.fromJson(Map<String, dynamic> json) {
+    approverId = json["approverId"];
+    approverName = json["approverName"];
+    isRequired = json["isRequired"];
+    status = json["status"];
+    timeStamps = json["timeStamps"];
+    comments = json["comments"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["approverId"] = approverId;
+    _data["approverName"] = approverName;
+    _data["isRequired"] = isRequired;
+    _data["status"] = status;
+    _data["timeStamps"] = timeStamps;
+    _data["comments"] = comments;
+    return _data;
+  }
+}
+
+class RequestData {
+  String? leaveType;
+  String? startDate;
+  String? endDate;
+  String? duration;
+
+  RequestData({this.leaveType, this.startDate, this.endDate, this.duration});
+
+  RequestData.fromJson(Map<String, dynamic> json) {
+    leaveType = json["leaveType"];
+    startDate = json["startDate"];
+    endDate = json["endDate"];
+    duration = json["duration"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["leaveType"] = leaveType;
+    _data["startDate"] = startDate;
+    _data["endDate"] = endDate;
+    _data["duration"] = duration;
     return _data;
   }
 }
