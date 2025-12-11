@@ -4747,6 +4747,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HR Letter'**
   String get hrLetter;
+
+  /// No description provided for @approver.
+  ///
+  /// In en, this message translates to:
+  /// **'Approvers'**
+  String get approver;
 }
 
 class _AppLocalizationsDelegate

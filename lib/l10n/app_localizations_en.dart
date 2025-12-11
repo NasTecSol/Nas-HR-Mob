@@ -2352,4 +2352,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hrLetter => 'HR Letter';
+
+  @override
+  String get approver => 'Approvers';
 }
