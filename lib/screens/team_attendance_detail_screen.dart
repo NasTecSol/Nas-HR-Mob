@@ -113,8 +113,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                           ),
                         ),
                         Text(
-                          singletonClass
-                              .formatDate2(widget.attendanceData!.createdAt! , context),
+                          singletonClass.formatDate2(
+                              widget.attendanceData!.createdAt!, context),
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -165,15 +165,20 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         children: [
                           if (widget.attendanceData!.status != null)
                             Container(
-                              height: widget.attendanceData!.status == "Missing CheckIn/Out" ? 60 : 40,
+                              height: widget.attendanceData!.status ==
+                                      "Missing CheckIn/Out"
+                                  ? 60
+                                  : 40,
                               width: 120,
                               decoration: BoxDecoration(
-                                color: getStatusColor(widget.attendanceData!.status!),
+                                color: getStatusColor(
+                                    widget.attendanceData!.status!),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
                                 child: Text(
-                                  _translateStatus(widget.attendanceData!.status!, context),
+                                  _translateStatus(
+                                      widget.attendanceData!.status!, context),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -183,20 +188,24 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                 ),
                               ),
                             ),
-
                           SizedBox(height: 5),
-
                           if (widget.attendanceData!.secondaryStatus != null)
                             Container(
-                              height: widget.attendanceData!.secondaryStatus == "Missing-CheckOut" ? 60 : 40,
+                              height: widget.attendanceData!.secondaryStatus ==
+                                      "Missing-CheckOut"
+                                  ? 60
+                                  : 40,
                               width: 120,
                               decoration: BoxDecoration(
-                                color: getStatusColor(widget.attendanceData!.secondaryStatus!),
+                                color: getStatusColor(
+                                    widget.attendanceData!.secondaryStatus!),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
                                 child: Text(
-                                  translateSecondaryStatus(widget.attendanceData!.secondaryStatus!, context),
+                                  translateSecondaryStatus(
+                                      widget.attendanceData!.secondaryStatus!,
+                                      context),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
@@ -208,7 +217,6 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                             ),
                         ],
                       )
-
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -252,7 +260,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               SizedBox(width: 20),
                               Text(
                                 singletonClass.formatCheckInTime(
-                                    widget.attendanceData!.clockInTime , context),
+                                    widget.attendanceData!.clockInTime,
+                                    context),
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -304,7 +313,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                               SizedBox(width: 20),
                               Text(
                                 singletonClass.formatCheckInTime(
-                                    widget.attendanceData!.clockOutTime , context),
+                                    widget.attendanceData!.clockOutTime,
+                                    context),
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -318,7 +328,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                 color: NasColors.onTime,
                               ),
                               Text(
-                               "${ AppLocalizations.of(context)!.earlyLeft}:",
+                                "${AppLocalizations.of(context)!.earlyLeft}:",
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.normal,
@@ -364,6 +374,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+
                   ///Break
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -755,6 +766,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+
                   ///Penalities
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -836,7 +848,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                     color: NasColors.darkBlue,
                                   ),
                                 ),
-                               Spacer(),
+                                Spacer(),
                                 Text(
                                   AppLocalizations.of(context)!.details,
                                   style: GoogleFonts.inter(
@@ -868,55 +880,82 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                               .attendanceData!
                                               .penalties![index];
                                           return Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 10.0),
-                                            child:Row(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 15.0),
-                                                  child: Text(
-                                                    maxLines: 3,
-                                                    overflow: TextOverflow.fade,
-                                                    (penalities.action?.isNotEmpty ?? false) ? "${penalities.action}" : "---",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
-                                                      color: NasColors.darkBlue,
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 10.0),
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 15.0),
+                                                    child: Text(
+                                                      maxLines: 3,
+                                                      overflow:
+                                                          TextOverflow.fade,
+                                                      (penalities.action
+                                                                  ?.isNotEmpty ??
+                                                              false)
+                                                          ? "${penalities.action}"
+                                                          : "---",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color:
+                                                            NasColors.darkBlue,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
                                                     ),
-                                                    textAlign: TextAlign.center,
                                                   ),
-                                                ),
-                                                Spacer(),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 15.0),
-                                                  child: Text(
-                                                     penalities.lateMinute != null
-                                                        ? singletonClass.formatMinutes(penalities.lateMinute!, context)
-                                                        : "---",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.normal,
-                                                      color: NasColors.darkBlue,
+                                                  Spacer(),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 15.0),
+                                                    child: Text(
+                                                      penalities.lateMinute !=
+                                                              null
+                                                          ? singletonClass
+                                                              .formatMinutes(
+                                                                  penalities
+                                                                      .lateMinute!,
+                                                                  context)
+                                                          : "---",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color:
+                                                            NasColors.darkBlue,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
                                                     ),
-                                                    textAlign: TextAlign.center,
                                                   ),
-                                                ),
-                                                Spacer(),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 10.0),
-                                                  child: Text(
-                                                    penalities.percentage != null ? "${penalities.percentage} SAR" : "---",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.normal,
-                                                      color: NasColors.darkBlue,
+                                                  Spacer(),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 10.0),
+                                                    child: Text(
+                                                      penalities.percentage !=
+                                                              null
+                                                          ? "${penalities.percentage} SAR"
+                                                          : "---",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        color:
+                                                            NasColors.darkBlue,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
                                                     ),
-                                                    textAlign: TextAlign.center,
                                                   ),
-                                                ),
-                                              ],
-                                            )
-                                          );
+                                                ],
+                                              ));
                                         }),
                                   )
                                 : Center(
@@ -951,8 +990,10 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                   ),
                   SizedBox(height: 20),
+
                   ///Slots
-                  if (widget.attendanceData!.shiftInfo!.shiftType == 'timeTableShift') ...[
+                  if (widget.attendanceData!.shiftInfo!.shiftType ==
+                      'timeTableShift') ...[
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 400,
@@ -1029,32 +1070,62 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                   ? SizedBox(
                                       height: 220,
                                       child:
-                                          widget.attendanceData?.slots?.isNotEmpty == true
+                                          widget.attendanceData?.slots
+                                                      ?.isNotEmpty ==
+                                                  true
                                               ? ListView.builder(
                                                   padding: EdgeInsets.zero,
-                                                  itemCount: widget.attendanceData?.slots?.length ?? 0,
-                                                  itemBuilder: (context, index) {
-                                                    final slots = widget.attendanceData!.slots![index];
-                                                    DateTime? checkIn = parseTime(slots.checkInTime?.toString() ?? '')?.toLocal();
-                                                    DateTime? checkOut = parseTime(slots.checkOutTime?.toString() ?? '')?.toLocal();
+                                                  itemCount: widget
+                                                          .attendanceData
+                                                          ?.slots
+                                                          ?.length ??
+                                                      0,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final slots = widget
+                                                        .attendanceData!
+                                                        .slots![index];
+                                                    DateTime? checkIn =
+                                                        parseTime(slots
+                                                                    .checkInTime
+                                                                    ?.toString() ??
+                                                                '')
+                                                            ?.toLocal();
+                                                    DateTime? checkOut =
+                                                        parseTime(slots
+                                                                    .checkOutTime
+                                                                    ?.toString() ??
+                                                                '')
+                                                            ?.toLocal();
 
                                                     return Padding(
-                                                      padding: const EdgeInsets.all(5),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              5),
                                                       child: Container(
-                                                        decoration: BoxDecoration(
-                                                          borderRadius: BorderRadius.zero,
-                                                          color: NasColors.lightGrey,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.zero,
+                                                          color: NasColors
+                                                              .lightGrey,
                                                           boxShadow: [
                                                             BoxShadow(
-                                                              color: Colors.grey.withOpacity(0.4),
+                                                              color: Colors.grey
+                                                                  .withOpacity(
+                                                                      0.4),
                                                               spreadRadius: 1,
                                                               blurRadius: 1,
-                                                              offset: const Offset(0, 3),
+                                                              offset:
+                                                                  const Offset(
+                                                                      0, 3),
                                                             ),
                                                           ],
                                                         ),
                                                         child: Padding(
-                                                          padding: const EdgeInsets.all(10.0),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(10.0),
                                                           child: Column(
                                                             children: [
                                                               Row(
@@ -1062,22 +1133,35 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                   Row(
                                                                     children: [
                                                                       const Icon(
-                                                                          Icons.exit_to_app_outlined,
-                                                                          size: 20,
-                                                                          color: Colors.black),
-                                                                      const SizedBox(width: 4),
+                                                                          Icons
+                                                                              .exit_to_app_outlined,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              Colors.black),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockIn}:",
-                                                                        style: GoogleFonts.inter(
-                                                                          fontSize: 13,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Colors.black,
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 4),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
-                                                                        checkIn != null
-                                                                            ? singletonClass.formatCheckInTime(slots.checkInTime, context)
+                                                                        checkIn !=
+                                                                                null
+                                                                            ? singletonClass.formatCheckInTime(slots.checkInTime,
+                                                                                context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1091,23 +1175,36 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(width: 10),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          10),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons.error,
-                                                                          size: 20,
-                                                                          color: NasColors.pending),
-                                                                      const SizedBox(width: 4),
+                                                                          Icons
+                                                                              .error,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              NasColors.pending),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.late}:",
-                                                                        style: GoogleFonts.inter(
-                                                                          fontSize: 13,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: NasColors.pending,
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              NasColors.pending,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 4),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         (slots.lateMinutes?.toString().isNotEmpty ??
                                                                                 false)
@@ -1123,22 +1220,35 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               Colors.black,
                                                                         ),
                                                                       ),
-                                                                      SizedBox(width: 4),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Container(
-                                                                        height: 25,
-                                                                        width: 80,
-                                                                        decoration: BoxDecoration(
-                                                                          color: getStatusColor(slots.status ?? ''),
-                                                                          borderRadius: BorderRadius.circular(10),
+                                                                        height:
+                                                                            25,
+                                                                        width:
+                                                                            80,
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              getStatusColor(slots.status ?? ''),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(10),
                                                                         ),
-                                                                        child: Center(
-                                                                          child: FittedBox(
-                                                                            fit: BoxFit.scaleDown, // scales text if too large
-                                                                            child: Text(
+                                                                        child:
+                                                                            Center(
+                                                                          child:
+                                                                              FittedBox(
+                                                                            fit:
+                                                                                BoxFit.scaleDown,
+                                                                            // scales text if too large
+                                                                            child:
+                                                                                Text(
                                                                               _translateStatus(slots.status ?? '', context),
                                                                               textAlign: TextAlign.center,
                                                                               maxLines: 1,
-                                                                              overflow: TextOverflow.ellipsis, // adds "..." if clipped
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              // adds "..." if clipped
                                                                               style: GoogleFonts.inter(
                                                                                 fontWeight: FontWeight.bold,
                                                                                 color: Colors.white,
@@ -1152,7 +1262,10 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                   ),
                                                                 ],
                                                               ),
-                                                              Divider(color: Colors.grey.shade400),
+                                                              Divider(
+                                                                  color: Colors
+                                                                      .grey
+                                                                      .shade400),
                                                               Row(
                                                                 children: [
                                                                   Row(
@@ -1163,24 +1276,36 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                         alignment:
                                                                             Alignment.center,
                                                                         child: const Icon(
-                                                                            Icons.exit_to_app_outlined,
-                                                                            size: 20,
-                                                                            color: Colors.black),
+                                                                            Icons
+                                                                                .exit_to_app_outlined,
+                                                                            size:
+                                                                                20,
+                                                                            color:
+                                                                                Colors.black),
                                                                       ),
-                                                                      const SizedBox(width: 4),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.clockOut}:",
-                                                                        style: GoogleFonts.inter(
-                                                                          fontSize: 13,
-                                                                          fontWeight: FontWeight.w500,
-                                                                          color: Colors.black,
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              13,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color:
+                                                                              Colors.black,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 4),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         checkOut !=
                                                                                 null
-                                                                            ? singletonClass.formatCheckInTime(slots.checkOutTime, context)
+                                                                            ? singletonClass.formatCheckInTime(slots.checkOutTime,
+                                                                                context)
                                                                             : "___",
                                                                         style: GoogleFonts
                                                                             .inter(
@@ -1194,14 +1319,21 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(width: 20),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          20),
                                                                   Row(
                                                                     children: [
                                                                       Icon(
-                                                                          Icons.directions_run_outlined,
-                                                                          size: 20,
-                                                                          color: NasColors.onTime),
-                                                                      const SizedBox(width: 4),
+                                                                          Icons
+                                                                              .directions_run_outlined,
+                                                                          size:
+                                                                              20,
+                                                                          color:
+                                                                              NasColors.onTime),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         "${AppLocalizations.of(context)!.earlyLeft}:",
                                                                         style: GoogleFonts
@@ -1214,7 +1346,9 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                                                                               NasColors.onTime,
                                                                         ),
                                                                       ),
-                                                                      const SizedBox(width: 4),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              4),
                                                                       Text(
                                                                         (slots.earlyCheckOut?.toString().isNotEmpty ??
                                                                                 false)
@@ -1307,6 +1441,7 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                     ),
                     SizedBox(height: 20),
                   ],
+
                   ///Leave information
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -1357,23 +1492,228 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
                         ),
                         SizedBox(height: 20),
                         if (_leaveExpanded) ...[
-                          Text(
-                            widget.attendanceData?.leaveDetails?.isNotEmpty ==
-                                    true
-                                ? widget.attendanceData!.leaveDetails!
-                                : '___',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                              color: NasColors.darkBlue,
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Column(
+                              children: [
+                                ///Leave Type
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.leaveType,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.grey),
+                                    ),
+                                    Spacer(),
+                                    Expanded(
+                                      child: Text(
+                                        "${widget.attendanceData!.leaveDetails!.requestInfo!.requestData!.first.leaveType}",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+
+                                ///Reason
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.reason,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.grey),
+                                    ),
+                                    SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        "${widget.attendanceData!.leaveDetails!.requestInfo!.reason}",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+
+                                ///Final Status
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.status,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.grey),
+                                    ),
+                                    Spacer(),
+                                    Expanded(
+                                      child: Text(
+                                        widget.attendanceData!.leaveDetails!.requestInfo!.status ==
+                                            "approved"
+                                            ? AppLocalizations.of(context)!.approved
+                                            : widget.attendanceData!.leaveDetails!.requestInfo!.status ==
+                                            "rejected"
+                                            ? AppLocalizations.of(context)!.rejected
+                                            : AppLocalizations.of(context)!.pending,
+                                        style: GoogleFonts.inter(
+                                          fontWeight:
+                                          FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+
+                                ///Duration
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.duration,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.grey),
+                                    ),
+                                    Spacer(),
+                                    Expanded(
+                                      child: Text(
+                                        "${widget.attendanceData!.leaveDetails!.requestInfo!.requestData!.first.startDate} - ${widget.attendanceData!.leaveDetails!.requestInfo!.requestData!.first.endDate}",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                ///Approver Name
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.approver,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Spacer(
+                                      flex: 1,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        for (var approver in widget
+                                            .attendanceData!
+                                            .leaveDetails!
+                                            .requestInfo!
+                                            .approvers!)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                /// -------- NAME --------
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      "${approver.approverName}",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 5),
+                                                    Text(
+                                                      approver.status ==
+                                                              "approved"
+                                                          ? "✅"
+                                                          : approver.status ==
+                                                                  "rejected"
+                                                              ? "❌"
+                                                              : "⏳",
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 4),
+
+                                                /// -------- COMMENT --------
+                                                if (approver.comments != null &&
+                                                    approver
+                                                        .comments!.isNotEmpty)
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.comments}: ${approver.comments}",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 13,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+
+                                                SizedBox(height: 4),
+
+                                                /// -------- TIMESTAMP --------
+                                                if (approver.timeStamps != null)
+                                                  Text(
+                                                    "${AppLocalizations.of(context)!.timeStamp}: ${singletonClass.formatDateTime(approver.timeStamps!)}",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          )
+                                      ],
+                                    ),
+                                  ],
+                                )
+                              ],
                             ),
                           ),
-                          SizedBox(height: 20),
                         ]
                       ],
                     ),
                   ),
                   const SizedBox(height: 30),
+
                   ///Remarks Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1452,6 +1792,8 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
         return localizations.quarterly;
       case 'Missing CheckIn/Out':
         return localizations.missingCheckInOut;
+      case 'On-Leave':
+        return localizations.annualLeave;
       default:
         return status;
     }
@@ -1532,11 +1874,12 @@ class _TeamAttendanceDetailScreenState extends State<TeamAttendanceDetailScreen>
         return localizations.outOffShift;
       case 'Full-Day':
         return localizations.fullDay;
+      case 'annualLeave':
+        return localizations.annualLeave;
       default:
         return status;
     }
   }
-
 
   DateTime? parseTime(String? dateTimeString) {
     if (dateTimeString == null || dateTimeString.isEmpty) return null;

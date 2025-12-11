@@ -1224,7 +1224,8 @@
     "transactionType": "Transaction Type",
     "purpose": "Purpose",
     "allowance":"Allowance",
-    "hrLetter":"HR Letter"
+    "hrLetter":"HR Letter",
+    "approver":"Approvers"
 
 
 
