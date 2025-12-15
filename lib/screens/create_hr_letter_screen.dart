@@ -940,10 +940,10 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final file = File(filePath);
       await file.writeAsBytes(_generatedDocxBytes!);
 
-      // // Upload using your existing method
-      // final result = await uploadFileToS3FromPath(filePath);
-      //
-      // print("📤 Upload Result: $result");
+      // Upload using your existing method
+      final result = await uploadFileToS3FromPath(filePath);
+
+      print("📤 Upload Result: $result");
 
 
       if (kDebugMode) {

@@ -703,6 +703,19 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         );
         return;
       }
+
+      if (selectedFile == null) {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: AppLocalizations.of(context)!.attachDocuments,
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
+          showConfirmBtn: false,
+        );
+        return;
+      }
+
       final List<Map<String, dynamic>> attachments = [];
       if (selectedFile != null) {
         if (singletonClass.attachmentResponseDataList.isNotEmpty && singletonClass.attachmentResponseDataList.first.data != null) {
