@@ -247,17 +247,20 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: documentInfo.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final documents = documentInfo[index];
-                    final url = documents.remarks ?? '';
+                    final documents = documentInfo.reversed.toList()[index];
+                    const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
+                    final String url = [
+                      documents?.url,
+                      documents?.remarks,
+                    ].firstWhere(
+                          (value) => value != null && value.contains(s3BaseUrl),
+                      orElse: () => '',
+                    );
                     final fileType = url.split('.').last.toLowerCase();
                     final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
                     final searchText =
                     searchController.text.toLowerCase();
-                    if (isSearching &&
-                        !(documents.type
-                            ?.toLowerCase()
-                            .contains(searchText) ??
-                            false)) {
+                    if (isSearching && !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
                       return const SizedBox.shrink();
                     }
                     if(documents.type == "Doc_editor_shared"){
@@ -267,7 +270,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       offset: Offset(0, index == 0 ? 0 : -10),
                       child: GestureDetector(
                         onTap: () async {
-                          if (url != null && url.isNotEmpty) {
+                          if (url.isNotEmpty) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -335,7 +338,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ? Image.network(
                                       url,
                                       height: 60,
-                                      width: double.infinity,
+                                      width: 100,
                                       fit: BoxFit.cover,
                                       alignment: Alignment.topCenter,
                                     )
@@ -348,7 +351,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Spacer(),
                                   GestureDetector(
                                     onTap: () async {
-                                      if (url != null && url.isNotEmpty) {
+                                      if (url.isNotEmpty) {
                                         final uri = Uri.parse(url);
                                         if (await canLaunchUrl(uri)) {
                                           await launchUrl(uri, mode: LaunchMode.externalApplication);

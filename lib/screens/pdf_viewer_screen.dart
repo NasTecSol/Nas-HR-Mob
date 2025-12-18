@@ -1,4 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -21,10 +27,10 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
 
-  bool get isPdf => widget.fileName.toLowerCase().endsWith('.pdf');
-  bool get isExcel => widget.fileName.toLowerCase().endsWith('.xlsx');
-  bool get isDoc => widget.fileName.toLowerCase().endsWith('.docx');
-  bool get isPpt => widget.fileName.toLowerCase().endsWith('.pptx');
+  bool get isPdf => widget.url.toLowerCase().endsWith('.pdf');
+  bool get isExcel => widget.url.toLowerCase().endsWith('.xlsx');
+  bool get isDoc => widget.url.toLowerCase().endsWith('.docx');
+  bool get isPpt => widget.url.toLowerCase().endsWith('.pptx');
   bool get isImg {
     final imageExtensions = [
       '.jpg',
@@ -38,7 +44,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       '.tiff',
     ];
 
-    final lower = widget.fileName.toLowerCase();
+    final lower = widget.url.toLowerCase();
     return imageExtensions.any((ext) => lower.endsWith(ext));
   }
 
@@ -77,6 +83,17 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
             overflow: TextOverflow.ellipsis),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        actions: [
+          if (isPdf)
+          IconButton(onPressed: () async {
+            setState(() => _isLoading = true);
+
+            final file = await _downloadFile(widget.url);
+
+            await _printPdf(file);
+            setState(() => _isLoading = false);
+          }, icon: Icon(Icons.print))
+        ],
       ),
       body: Stack(
         children: [
@@ -102,6 +119,24 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
             ),
         ],
       ),
+    );
+  }
+  ///Helper method to open file
+  Future<File> _downloadFile(String url) async {
+    final response = await http.get(Uri.parse(url));
+
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName = url.split('/').last;
+    final file = File('${dir.path}/$fileName');
+
+    return file.writeAsBytes(response.bodyBytes);
+  }
+
+  Future<void> _printPdf(File file) async {
+    final bytes = await file.readAsBytes();
+
+    await Printing.layoutPdf(
+      onLayout: (_) => bytes,
     );
   }
 }
