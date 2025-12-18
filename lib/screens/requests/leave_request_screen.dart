@@ -39,6 +39,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   DateTime? startDate;
   DateTime? endDate;
   PlatformFile? selectedFile;
+  TimeOfDay? startTime;
+  TimeOfDay? endTime;
+
   @override
   Widget build(BuildContext context) {
     final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
@@ -136,196 +139,428 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                     }).toList(),
 
                     onChanged: (SubTypes? newValue) {
-                      if (newValue != null) {
-                          double? remainingBalance =
-                          _getRemainingLeaveBalance(newValue.requestType);
-                          if (remainingBalance == null ||
-                              remainingBalance <= 0) {
-                            _showWarningDialog(context,
-                                '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
+                      if(newValue!.requestName == 'Short Leave' || newValue.requestName == 'UnPaid Leave '){
+                        setState(() {
+                          _selectedSubType = newValue;
+                        });
+                      } else {
+                        double? remainingBalance = _getRemainingLeaveBalance(newValue.requestType);
+                        if (remainingBalance == null ||
+                            remainingBalance <= 0) {
+                          _showWarningDialog(context,
+                              '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
 
-                            _selectedSubType = null;
-                          } else {
-                            setState(() {
-                              _selectedSubType = newValue;
-                            });
-                          }
+                          _selectedSubType = null;
+                        } else {
+                          setState(() {
+                            _selectedSubType = newValue;
+                          });
+                        }
                       }
                     },
                   ),
                 ),
                 const SizedBox(height: 20),
-                ///Duration
-                Text(AppLocalizations.of(context)!.duration,
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.grey[700])),
-                const SizedBox(height: 6),
                 ///Date Picker
-                Row(
-                  children: [
-                    ///Start Date
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          DateTime? date = await showDatePicker(
-                            context: context,
-                            initialDate: startDate ?? DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2101),
+                if(_selectedSubType?.requestName == 'Short Leave')...[
+                  ///Duration
+                  Text(AppLocalizations.of(context)!.date,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      ///Start Date
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            DateTime? date = await showDatePicker(
+                              context: context,
+                              initialDate: startDate ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
 
-                            builder: (BuildContext context, Widget? child) {
-                              return Theme(
-                                data: ThemeData.light().copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: NasColors.darkBlue,
-                                    onPrimary: Colors.white,
-                                    onSurface: Colors.black,
-                                  ),
-                                  dialogBackgroundColor: Colors.white,
-                                  textButtonTheme: TextButtonThemeData(
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: NasColors.darkBlue,
+                              builder: (BuildContext context, Widget? child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: NasColors.darkBlue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                    dialogBackgroundColor: Colors.white,
+                                    textButtonTheme: TextButtonThemeData(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: NasColors.darkBlue,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
-                          if (date != null) {
-                            setState(() {
-                              startDate = date;
-                            });
-                            calculateTotalDays();
-                          }
-                        },
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (date != null) {
+                              setState(() {
+                                startDate = date;
+                              });
+                              calculateTotalDays();
+                            }
+                          },
 
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                startDate == null
-                                    ? AppLocalizations.of(context)!.selectDate
-                                    : DateFormat('MMM yyyy').format(startDate!),
-                                style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                              ),
-                              const Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                            ],
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  startDate == null
+                                      ? AppLocalizations.of(context)!.selectDate
+                                      : DateFormat('MMM yyyy').format(startDate!),
+                                  style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                                ),
+                                const Icon(Icons.calendar_today_outlined, color: Colors.grey),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(AppLocalizations.of(context)!.to,
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: Colors.grey[700])),
-                    const SizedBox(width: 5),
-                    /// END DATE
-                    Expanded(
-                      child:
-                      InkWell(
-                        onTap: () async {
-                          DateTime? date = await showDatePicker(
-                            context: context,
-                            initialDate: endDate ?? DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2101),
-
-                            builder: (BuildContext context, Widget? child) {
-                              return Theme(
-                                data: ThemeData.light().copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: NasColors.darkBlue,
-                                    onPrimary: Colors.white,
-                                    onSurface: Colors.black,
-                                  ),
-                                  dialogBackgroundColor: Colors.white,
-                                  textButtonTheme: TextButtonThemeData(
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: NasColors.darkBlue,
-                                    ),
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
-                          if (date != null) {
-                            setState(() => endDate = date);
-                            calculateTotalDays();
-                          }
-                        },
-
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                endDate == null
-                                    ? AppLocalizations.of(context)!.selectDate
-                                    : DateFormat('MMM yyyy').format(endDate!),
-                                style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                              ),
-                              const Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ///No of Days
-                Text(AppLocalizations.of(context)!.totalDays,
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context)!.time,
                     style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.grey[700])),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _totalDays,
-                  readOnly: true,
-                  enabled: false, // completely non-editable
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: Colors.black87,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: "0",
-                    hintStyle: GoogleFonts.inter(color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Colors.grey[700],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      /// START TIME
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: startTime ?? TimeOfDay.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: NasColors.darkBlue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+
+                            if (picked != null) {
+                              setState(() {
+                                startTime = picked;
+                                updateTotalTime();
+                              });
+
+                            }
+                          },
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  startTime == null
+                                      ? AppLocalizations.of(context)!.startTime
+                                      : startTime!.format(context),
+                                  style: GoogleFonts.inter(fontSize: 15),
+                                ),
+                                const Icon(Icons.access_time, color: Colors.grey),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      /// END TIME
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: endTime ?? TimeOfDay.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: NasColors.darkBlue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+
+                            if (picked != null) {
+                              setState(() {
+                                endTime = picked;
+                                updateTotalTime();
+                              });
+
+                            }
+                          },
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  endTime == null
+                                      ? AppLocalizations.of(context)!.endTime
+                                      : endTime!.format(context),
+                                  style: GoogleFonts.inter(fontSize: 15),
+                                ),
+                                const Icon(Icons.access_time, color: Colors.grey),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "${AppLocalizations.of(context)!.totalHours}",
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _totalDays,
+                    readOnly: true,
+                    enabled: false,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "0h 0m",
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  ///Duration
+                  Text(AppLocalizations.of(context)!.duration,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      ///Start Date
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            DateTime? date = await showDatePicker(
+                              context: context,
+                              initialDate: startDate ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+
+                              builder: (BuildContext context, Widget? child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: NasColors.darkBlue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                    dialogBackgroundColor: Colors.white,
+                                    textButtonTheme: TextButtonThemeData(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (date != null) {
+                              setState(() {
+                                startDate = date;
+                              });
+                              calculateTotalDays();
+                            }
+                          },
+
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  startDate == null
+                                      ? AppLocalizations.of(context)!.selectDate
+                                      : DateFormat('MMM yyyy').format(startDate!),
+                                  style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                                ),
+                                const Icon(Icons.calendar_today_outlined, color: Colors.grey),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(AppLocalizations.of(context)!.to,
+                          style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: Colors.grey[700])),
+                      const SizedBox(width: 5),
+                      /// END DATE
+                      Expanded(
+                        child:
+                        InkWell(
+                          onTap: () async {
+                            DateTime? date = await showDatePicker(
+                              context: context,
+                              initialDate: endDate ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+
+                              builder: (BuildContext context, Widget? child) {
+                                return Theme(
+                                  data: ThemeData.light().copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: NasColors.darkBlue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                    dialogBackgroundColor: Colors.white,
+                                    textButtonTheme: TextButtonThemeData(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: NasColors.darkBlue,
+                                      ),
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (date != null) {
+                              setState(() => endDate = date);
+                              calculateTotalDays();
+                            }
+                          },
+
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  endDate == null
+                                      ? AppLocalizations.of(context)!.selectDate
+                                      : DateFormat('MMM yyyy').format(endDate!),
+                                  style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                                ),
+                                const Icon(Icons.calendar_today_outlined, color: Colors.grey),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ///No of Days
+                  Text(AppLocalizations.of(context)!.totalDays,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _totalDays,
+                    readOnly: true,
+                    enabled: false, // completely non-editable
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "0",
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 ///Notes
                 Text(AppLocalizations.of(context)!.notes,
@@ -725,6 +960,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           });
         }
       }
+      final bool isShortLeave = selectedSubType.toLowerCase() == 'short leave' ||
+              selectedSubType.toLowerCase() == 'shortleave';
+
       final Map<String, dynamic> data = {
         "empId": empId,
         "employeeId": employeeId,
@@ -735,17 +973,25 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         "requestType": selectedRequestType,
         "subType": selectedSubType,
         "requestData": [
-          {
+          isShortLeave
+              ? {
+            "leaveType": "shortLeave",
+            "startDate": _combineDateAndTime(startDate!, startTime!).toIso8601String(),
+            "endDate": _combineDateAndTime(startDate!, endTime!).toIso8601String(),
+            "duration": _calculateDurationInHours(),
+          }
+              : {
             "leaveType": selectedSubType,
             "startDate": startDate!.toIso8601String().split('T').first,
             "endDate": endDate!.toIso8601String().split('T').first,
-            "duration": _totalDays.text
+            "duration": _totalDays.text,
           }
         ],
         "approvers": [],
         "reason": _notes.text,
         "attachments": attachments,
       };
+
 
       if (kDebugMode) print("REQUEST JSON POST: ${jsonEncode(data)}");
 
@@ -820,15 +1066,60 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       print('Checking entry: ${entry.key}');
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
         print('Found entry: ${entry.key}: ${entry.value}');
+
+        if (entry.key == 'UnPaid Leave ' || entry.key == 'Short Leave') {
+          print('No balance check needed for ${entry.key}');
+          return null; // or any sentinel value indicating balance not required
+        }
         var remaining = entry.value['remaining'];
         print('Remaining for ${entry.key}: $remaining');
 
         return remaining is num ? remaining.toDouble() : null;
       }
     }
-
     return null;
   }
+  String calculateTotalTime() {
+    if (startTime == null || endTime == null) {
+      return '0h 0m';
+    }
+
+    final startMinutes = startTime!.hour * 60 + startTime!.minute;
+    final endMinutes = endTime!.hour * 60 + endTime!.minute;
+
+    if (endMinutes <= startMinutes) {
+      return '0h 0m';
+    }
+
+    final diffMinutes = endMinutes - startMinutes;
+    final hours = diffMinutes ~/ 60;
+    final minutes = diffMinutes % 60;
+
+    return '${hours}h ${minutes}m';
+  }
+  void updateTotalTime() {
+    _totalDays.text = calculateTotalTime();
+  }
+  DateTime _combineDateAndTime(DateTime date, TimeOfDay time) {
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    ).toUtc();
+  }
+
+  double _calculateDurationInHours() {
+    if (startTime == null || endTime == null) return 0;
+
+    final startMinutes = startTime!.hour * 60 + startTime!.minute;
+    final endMinutes = endTime!.hour * 60 + endTime!.minute;
+
+    final diffMinutes = endMinutes - startMinutes;
+    return diffMinutes / 60;
+  }
+
 
   ///Alert Dialogue
   void _showWarningDialog(BuildContext context, String message) {

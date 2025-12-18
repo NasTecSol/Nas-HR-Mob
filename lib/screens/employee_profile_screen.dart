@@ -7,6 +7,7 @@ import 'package:nashr/request_controller/branch_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_model.dart';
 import 'package:nashr/screens/employee_details_screen_assets.dart';
+import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:nashr/screens/register_biometric_device_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
@@ -1302,45 +1303,43 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                     shrinkWrap: true,
                                     itemCount: singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo?.length ?? 0,
                                     itemBuilder: (BuildContext context, int index) {
-                                      final documents = singletonClass
-                                          .employeeDetailsDataList
-                                          .first
-                                          .data!
-                                          .first
-                                          .documentsInfo![index];
+                                      final documents = singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo?.reversed.toList()[index];
+                                      const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
 
-                                      final fileType =
-                                      documents.format?.split('.').last.toLowerCase();
-                                      final isImage = fileType != null &&
-                                          ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-                                      final isPdf = fileType == 'pdf';
-
+                                      final String url = [
+                                        documents?.url,
+                                        documents?.remarks,
+                                      ].firstWhere(
+                                            (value) => value != null && value.contains(s3BaseUrl),
+                                        orElse: () => '',
+                                      );
+                                      final fileType = url.split('.').last.toLowerCase();
+                                      final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+                                      if(documents!.type == "Doc_editor_shared"){
+                                        return SizedBox.shrink();
+                                      }
                                       return Transform.translate(
                                         offset: Offset(0, index == 0 ? 0 : -10),
                                         child: GestureDetector(
                                           onTap: () async {
-                                            if (isImage || isPdf) {
-                                              if (documents.url != null &&
-                                                  await canLaunchUrl(documents.url!)) {
-                                                await launchUrl(documents.url!);
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(
-                                                      content: Text('Could not open the document!')),
-                                                );
-                                              }
-                                            } else {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(
-                                                    content: Text('Unsupported file type!')),
+                                            if (url.isNotEmpty) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => FileViewerScreen(
+                                                    url: url,
+                                                    fileName: "${documents.type}",
+                                                  ),
+                                                ),
                                               );
+                                            } else {
+                                              debugPrint('Invalid attachment URL');
                                             }
                                           },
                                           child: Container(
                                             padding: const EdgeInsets.only(
-                                                top: 10.0, left: 30, right: 30),
+                                                top: 10.0, left: 30, right: 10),
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(12),
                                               color: Colors.white,
                                               boxShadow: [
                                                 if (index != 0)
@@ -1358,11 +1357,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                               ],
                                             ),
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  "${documents.type ?? ''}",
+                                                  documents.type == "Doc_Contract_Emp"
+                                                      ? AppLocalizations.of(context)!
+                                                      .employmentContract
+                                                      :  documents.type == "Doc_Uploaded_EMP" ? AppLocalizations.of(context)!.uploadedDocument : documents.type ?? '',
                                                   maxLines: 2,
                                                   style: GoogleFonts.inter(
                                                     fontSize: 18,
@@ -1371,24 +1373,57 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                                   ),
                                                 ),
                                                 const SizedBox(height: 10),
-                                                ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: isImage && documents.url != null
-                                                      ? Image.network(
-                                                    documents.url!,
-                                                    height: 60,
-                                                    width: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                    alignment: Alignment.topCenter,
-                                                  )
-                                                      : Icon(
-                                                    isPdf
-                                                        ? Icons.picture_as_pdf
-                                                        : Icons.insert_drive_file,
-                                                    size: 60,
-                                                    color: NasColors.darkBlue,
-                                                  ),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  children: [
+                                                    Icon(Icons.arrow_forward_ios_outlined,
+                                                      color: Colors.grey,
+                                                      size: 20,
+                                                    )
+                                                  ],
                                                 ),
+                                                Row(
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                      child: isImage
+                                                          ? Image.network(
+                                                        url,
+                                                        height: 60,
+                                                        width: double.infinity,
+                                                        fit: BoxFit.cover,
+                                                        alignment: Alignment.topCenter,
+                                                      )
+                                                          : Image.asset(
+                                                        _getFileIcon(url),
+                                                        height: 60,
+                                                        width: 60,
+                                                      ),
+                                                    ),
+                                                    Spacer(),
+                                                    GestureDetector(
+                                                      onTap: () async {
+                                                        if (url.isNotEmpty) {
+                                                          final uri = Uri.parse(url);
+                                                          if (await canLaunchUrl(uri)) {
+                                                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                          } else {
+                                                            debugPrint('Could not launch $url');
+                                                          }
+                                                        } else {
+                                                          debugPrint('Invalid download URL');
+                                                        }
+                                                      },
+                                                      child:  Image.asset(
+                                                        'images/download.png',
+                                                        height: 35,
+                                                        width: 35,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 20),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 10),
                                               ],
                                             ),
                                           ),
@@ -1590,6 +1625,25 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
             ),
           ),
         ]));
+  }
+
+  String _getFileIcon(String fileUrl) {
+    final extension = fileUrl.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return 'images/pdf.png';
+      case 'doc':
+      case 'docx':
+        return 'images/word.png';
+      case 'xls':
+      case 'xlsx':
+        return 'images/excel.png';
+      case 'ppt':
+      case 'pptx':
+        return 'images/powerPoint.png';
+      default:
+        return 'images/documentIcons.png';
+    }
   }
 
   String formatMinutes(dynamic minutes) {
