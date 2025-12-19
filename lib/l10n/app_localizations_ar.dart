@@ -1147,7 +1147,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم يتم بتسجيل الدخول بعد. يرجى تسجيل الدخول أولاً.';
 
   @override
-  String get currentLocationNotAvailable => 'الموقع الحالي غير متاح.';
+  String get currentLocationNotAvailable => 'الموقع الحالي غير متوفر';
 
   @override
   String get sorryYouAreOutOfTheLocationRadius =>
@@ -2347,4 +2347,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get approver => 'المعتمدون';
+
+  @override
+  String get outOfRadiusRange => 'خارج نطاق الموقع';
+
+  @override
+  String get locationAttendanceRangeInfo =>
+      'يمكن تسجيل الحضور بالموقع فقط عندما تكون ضمن النطاق المحدد';
+
+  @override
+  String get confirmCheckoutInRange =>
+      'أنت ضمن نطاق الموقع. هل تريد تسجيل الخروج؟';
+
+  @override
+  String get confirmCheckinInRange =>
+      'أنت ضمن نطاق الموقع. هل تريد تسجيل الدخول؟';
+
+  @override
+  String get currentLocation => 'الموقع الحالي';
 }
