@@ -1147,7 +1147,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have not checked in yet. Please check in first.';
 
   @override
-  String get currentLocationNotAvailable => 'Current location not available.';
+  String get currentLocationNotAvailable => 'Current location is not available';
 
   @override
   String get sorryYouAreOutOfTheLocationRadius =>
@@ -2355,4 +2355,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get approver => 'Approvers';
+
+  @override
+  String get outOfRadiusRange => 'Out of radius range';
+
+  @override
+  String get locationAttendanceRangeInfo =>
+      'Location attendance can be checked-in when you are in range of the decided location';
+
+  @override
+  String get confirmCheckoutInRange =>
+      'You are in range of the location. Do you want to check out?';
+
+  @override
+  String get confirmCheckinInRange =>
+      'You are in range of the location. Do you want to check in?';
+
+  @override
+  String get currentLocation => 'Current Location';
 }
