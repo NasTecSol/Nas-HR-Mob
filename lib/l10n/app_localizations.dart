@@ -2369,7 +2369,7 @@ abstract class AppLocalizations {
   /// No description provided for @currentLocationNotAvailable.
   ///
   /// In en, this message translates to:
-  /// **'Current location not available.'**
+  /// **'Current location is not available'**
   String get currentLocationNotAvailable;
 
   /// No description provided for @sorryYouAreOutOfTheLocationRadius.
@@ -4753,6 +4753,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Approvers'**
   String get approver;
+
+  /// No description provided for @outOfRadiusRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of radius range'**
+  String get outOfRadiusRange;
+
+  /// No description provided for @locationAttendanceRangeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Location attendance can be checked-in when you are in range of the decided location'**
+  String get locationAttendanceRangeInfo;
+
+  /// No description provided for @confirmCheckoutInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in range of the location. Do you want to check out?'**
+  String get confirmCheckoutInRange;
+
+  /// No description provided for @confirmCheckinInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in range of the location. Do you want to check in?'**
+  String get confirmCheckinInRange;
+
+  /// No description provided for @currentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get currentLocation;
 }
 
 class _AppLocalizationsDelegate

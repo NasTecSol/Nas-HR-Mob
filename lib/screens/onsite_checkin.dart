@@ -153,8 +153,19 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   }
 
   void _showOutOfLocationMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
+    AlertDialog(
+      title: Text(AppLocalizations.of(context)!.outOfRadiusRange),
+      content: Text(
+        AppLocalizations.of(context)!.locationAttendanceRangeInfo,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text(AppLocalizations.of(context)!.ok),
+        ),
+      ],
     );
   }
 
@@ -166,8 +177,8 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           title: Text(isCheckedIn ? AppLocalizations.of(context)!.checkOut : AppLocalizations.of(context)!.checkIn),
           content: Text(
             isCheckedIn
-                ? AppLocalizations.of(context)!.areYouSure
-                : AppLocalizations.of(context)!.youHaveNotCheckedInYet,
+                ? AppLocalizations.of(context)!.confirmCheckoutInRange
+                : AppLocalizations.of(context)!.confirmCheckinInRange,
           ),
           actions: [
             TextButton(
@@ -231,8 +242,19 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     if (_currentLocation != null) {
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.currentLocationNotAvailable)),
+      AlertDialog(
+        title: Text(AppLocalizations.of(context)!.currentLocation),
+        content: Text(
+          AppLocalizations.of(context)!.currentLocationNotAvailable,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(AppLocalizations.of(context)!.ok),
+          ),
+        ],
       );
     }
   }

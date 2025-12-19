@@ -1225,7 +1225,13 @@
     "purpose": "Purpose",
     "allowance":"Allowance",
     "hrLetter":"HR Letter",
-    "approver":"Approvers"
+    "approver":"Approvers",
+    "outOfRadiusRange": "Out of radius range",
+    "locationAttendanceRangeInfo": "Location attendance can be checked-in when you are in range of the decided location",
+    "confirmCheckoutInRange": "You are in range of the location. Do you want to check out?",
+    "confirmCheckinInRange": "You are in range of the location. Do you want to check in?",
+    "currentLocation": "Current Location",
+    "currentLocationNotAvailable": "Current location is not available"
 
 
 

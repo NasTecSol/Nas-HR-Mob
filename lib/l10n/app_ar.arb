@@ -887,7 +887,13 @@
       "purpose": "الغرض",
       "allowance":"البدل",
       "hrLetter": "خطاب الموارد البشرية",
-      "approver":"المعتمدون"
+      "approver":"المعتمدون",
+      "outOfRadiusRange": "خارج نطاق الموقع",
+      "locationAttendanceRangeInfo": "يمكن تسجيل الحضور بالموقع فقط عندما تكون ضمن النطاق المحدد",
+      "confirmCheckoutInRange": "أنت ضمن نطاق الموقع. هل تريد تسجيل الخروج؟",
+      "confirmCheckinInRange": "أنت ضمن نطاق الموقع. هل تريد تسجيل الدخول؟",
+      "currentLocation": "الموقع الحالي",
+      "currentLocationNotAvailable": "الموقع الحالي غير متوفر"
 
 
 
