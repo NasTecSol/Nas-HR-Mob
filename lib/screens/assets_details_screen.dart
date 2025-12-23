@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
@@ -13,6 +14,8 @@ import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
 import '../request_controller/employee_model.dart';
 import '../widgets/loader.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class AssetsDetailsScreen extends StatefulWidget {
   final AssetsInfo? assetsInfo;
@@ -228,7 +231,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                 children: [
                                   Text(AppLocalizations.of(context)!.type, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                   Text(AppLocalizations.of(context)!.name, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                                  SizedBox(width: 40, child: Text(AppLocalizations.of(context)!.expiryDate, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey))),
+                                  SizedBox(width: 40, child: Text(AppLocalizations.of(context)!.expiryDate, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey))),
                                   Text(AppLocalizations.of(context)!.status, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
@@ -316,88 +319,218 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     if (!mounted) return;
 
     try {
-      await Printing.layoutPdf(onLayout: (format) async {
-        final objDetails = cachedObjectDetails;
-        final assetDetails = cachedAssetDetails;
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async {
+          final pdf = pw.Document();
+          final objDetails = cachedObjectDetails;
+          final assetDetails = cachedAssetDetails;
 
-        final StringBuffer contentBuffer = StringBuffer();
+          // Load Arabic font
+          final arabicFont = await rootBundle.load("images/fonts/Tajawal-Regular.ttf");
+          final ttf = pw.Font.ttf(arabicFont);
 
-        contentBuffer.write('<div style="margin-bottom: 10px;"><strong>Asset Name:</strong> <span>');
-        contentBuffer.write(objDetails?.objectName ?? 'N/A');
-        contentBuffer.write('</span></div>');
+          // Load header and footer images
+          pw.ImageProvider? headerImage;
+          pw.ImageProvider? footerImage;
 
-        if (assetDetails?.data?.first.templateType != null) {
-          contentBuffer.write('<div style="margin-bottom: 10px;"><strong>Type:</strong> <span>');
-          contentBuffer.write((assetDetails!.data!.first.templateType ?? '').split('_').where((word) => word.toLowerCase() != 'asset').join(', '));
-          contentBuffer.write('</span></div>');
-        }
-
-        if (objDetails?.img != null && objDetails!.img!.isNotEmpty) {
-          final String imgSrc = objDetails.img!.startsWith('http') ? objDetails.img! : 'data:image/png;base64,${objDetails.img!}';
-          contentBuffer.write('<div style="margin: 20px 0;"><img src="');
-          contentBuffer.write(imgSrc);
-          contentBuffer.write('" alt="Asset Image" style="max-width: 300px; max-height: 300px; margin: 20px 0; border-radius: 8px;" /></div>');
-        }
-
-        if (objDetails?.parameters != null && objDetails!.parameters!.isNotEmpty) {
-          contentBuffer.write('<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">Parameters</h3>');
-          objDetails.parameters!.forEach((key, value) {
-            contentBuffer.write('<div style="margin-bottom: 10px;"><strong>');
-            contentBuffer.write(key);
-            contentBuffer.write(':</strong> <span>');
-            contentBuffer.write(value?.toString() ?? 'N/A');
-            contentBuffer.write('</span></div>');
-          });
-          contentBuffer.write('</div>');
-        }
-
-        if (objDetails?.childObjs != null && objDetails!.childObjs!.isNotEmpty) {
-          contentBuffer.write('<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">Child Objects</h3>');
-          for (var child in objDetails.childObjs!) {
-            contentBuffer.write('<div style="background-color: #f5f5f5; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><h4 style="margin: 0 0 10px 0; color: black;">');
-            contentBuffer.write(child.objectName ?? 'N/A');
-            contentBuffer.write('</h4>');
-
-            if (child.parameters != null && child.parameters!.isNotEmpty) {
-              child.parameters!.forEach((key, value) {
-                contentBuffer.write('<div style="margin-bottom: 10px;"><strong>');
-                contentBuffer.write(key);
-                contentBuffer.write(':</strong> <span>');
-                contentBuffer.write(value?.toString() ?? 'N/A');
-                contentBuffer.write('</span></div>');
-              });
+          try {
+            if (singletonClass.headerUrl.isNotEmpty) {
+              final headerResponse = await http.get(Uri.parse(singletonClass.headerUrl));
+              if (headerResponse.statusCode == 200) {
+                headerImage = pw.MemoryImage(headerResponse.bodyBytes);
+              }
             }
-
-            if (child.additionalInfo != null && child.additionalInfo!.isNotEmpty) {
-              child.additionalInfo!.forEach((key, value) {
-                contentBuffer.write('<div style="margin-bottom: 10px;"><strong>');
-                contentBuffer.write(key);
-                contentBuffer.write(':</strong> <span>');
-                contentBuffer.write(value?.toString() ?? 'N/A');
-                contentBuffer.write('</span></div>');
-              });
+            if (singletonClass.footerUrl.isNotEmpty) {
+              final footerResponse = await http.get(Uri.parse(singletonClass.footerUrl));
+              if (footerResponse.statusCode == 200) {
+                footerImage = pw.MemoryImage(footerResponse.bodyBytes);
+              }
             }
-
-            contentBuffer.write('</div>');
+          } catch (e) {
+            if (kDebugMode) print('Error loading header/footer images: $e');
           }
-          contentBuffer.write('</div>');
-        }
 
-        final String content = contentBuffer.toString();
+          // Text style with Arabic support
+          final textStyle = pw.TextStyle(font: ttf, fontSize: 14);
+          final boldTextStyle = pw.TextStyle(font: ttf, fontSize: 14, fontWeight: pw.FontWeight.bold);
+          final headingStyle = pw.TextStyle(font: ttf, fontSize: 16, fontWeight: pw.FontWeight.bold);
+          final smallTextStyle = pw.TextStyle(font: ttf, fontSize: 12);
+          final smallBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 12, fontWeight: pw.FontWeight.bold);
+          final childTextStyle = pw.TextStyle(font: ttf, fontSize: 11);
+          final childBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 11, fontWeight: pw.FontWeight.bold);
 
-        final StringBuffer htmlBuffer = StringBuffer();
-        htmlBuffer.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body { font-family: Arial, sans-serif; margin: 0; padding: 0; } img { display: block; width: 100%; } .header-img, .footer-img { margin: 0; padding: 0; } .content { margin: 20px; padding: 20px; } strong { color: black; font-weight: bold; } span { color: black; } div { line-height: 1.6; } h3, h4 { color: black; font-weight: bold; margin: 20px 0 15px 0; }</style></head><body><img class="header-img" src="');
-        htmlBuffer.write(singletonClass.headerUrl);
-        htmlBuffer.write('" alt="Header Image"/><div class="content">');
-        htmlBuffer.write(content);
-        htmlBuffer.write('</div><img class="footer-img" src="');
-        htmlBuffer.write(singletonClass.footerUrl);
-        htmlBuffer.write('" alt="Footer Image"/></body></html>');
+          // Build content widgets
+          final List<pw.Widget> contentWidgets = [];
 
-        final String html = htmlBuffer.toString();
+          // Asset Name
+          contentWidgets.add(
+            pw.Row(
+              children: [
+                pw.Text('Asset Name: ', style: boldTextStyle),
+                pw.Expanded(child: pw.Text(objDetails?.objectName ?? 'N/A', style: textStyle)),
+              ],
+            ),
+          );
+          contentWidgets.add(pw.SizedBox(height: 10));
 
-        return await Printing.convertHtml(format: format, html: html);
-      });
+          // Template Type
+          if (assetDetails?.data?.first.templateType != null) {
+            final tags = (assetDetails!.data!.first.templateType ?? '')
+                .split('_')
+                .where((word) => word.toLowerCase() != 'asset')
+                .join(', ');
+            contentWidgets.add(
+              pw.Row(
+                children: [
+                  pw.Text('Type: ', style: boldTextStyle),
+                  pw.Expanded(child: pw.Text(tags, style: textStyle)),
+                ],
+              ),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+          }
+
+          // Asset Image
+          if (objDetails?.img != null && objDetails!.img!.isNotEmpty) {
+            try {
+              pw.ImageProvider? assetImage;
+              if (objDetails.img!.startsWith('http')) {
+                final imgResponse = await http.get(Uri.parse(objDetails.img!));
+                if (imgResponse.statusCode == 200) {
+                  assetImage = pw.MemoryImage(imgResponse.bodyBytes);
+                }
+              } else {
+                assetImage = pw.MemoryImage(base64Decode(objDetails.img!));
+              }
+
+              if (assetImage != null) {
+                contentWidgets.add(
+                  pw.Container(
+                    height: 200,
+                    width: 200,
+                    child: pw.Image(assetImage, fit: pw.BoxFit.contain),
+                  ),
+                );
+                contentWidgets.add(pw.SizedBox(height: 20));
+              }
+            } catch (e) {
+              if (kDebugMode) print('Error loading asset image: $e');
+            }
+          }
+
+          // Parameters
+          if (objDetails?.parameters != null && objDetails!.parameters!.isNotEmpty) {
+            contentWidgets.add(
+              pw.Text('Parameters', style: headingStyle),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+
+            objDetails.parameters!.forEach((key, value) {
+              contentWidgets.add(
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('$key: ', style: smallBoldTextStyle),
+                    pw.Expanded(
+                      child: pw.Text(value?.toString() ?? 'N/A', style: smallTextStyle),
+                    ),
+                  ],
+                ),
+              );
+              contentWidgets.add(pw.SizedBox(height: 5));
+            });
+            contentWidgets.add(pw.SizedBox(height: 10));
+          }
+
+          // Child Objects
+          if (objDetails?.childObjs != null && objDetails!.childObjs!.isNotEmpty) {
+            contentWidgets.add(
+              pw.Text('Child Objects', style: headingStyle),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+
+            for (var child in objDetails.childObjs!) {
+              contentWidgets.add(
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.grey300,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        child.objectName ?? 'N/A',
+                        style: pw.TextStyle(font: ttf, fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(height: 8),
+                      if (child.parameters != null && child.parameters!.isNotEmpty)
+                        ...child.parameters!.entries.map((entry) => pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 4),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('${entry.key}: ', style: childBoldTextStyle),
+                              pw.Expanded(
+                                child: pw.Text(entry.value?.toString() ?? 'N/A', style: childTextStyle),
+                              ),
+                            ],
+                          ),
+                        )),
+                      if (child.additionalInfo != null && child.additionalInfo!.isNotEmpty)
+                        ...child.additionalInfo!.entries.map((entry) => pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 4),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('${entry.key}: ', style: childBoldTextStyle),
+                              pw.Expanded(
+                                child: pw.Text(entry.value?.toString() ?? 'N/A', style: childTextStyle),
+                              ),
+                            ],
+                          ),
+                        )),
+                    ],
+                  ),
+                ),
+              );
+              contentWidgets.add(pw.SizedBox(height: 10));
+            }
+          }
+
+          // Add pages with header and footer on each page
+          pdf.addPage(
+            pw.MultiPage(
+              pageFormat: format,
+              margin: const pw.EdgeInsets.all(20),
+              theme: pw.ThemeData.withFont(
+                base: ttf,
+                bold: ttf,
+              ),
+              build: (pw.Context context) => contentWidgets,
+              header: (pw.Context context) {
+                return headerImage != null
+                    ? pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 10),
+                  child: pw.Image(headerImage, fit: pw.BoxFit.fitWidth),
+                )
+                    : pw.SizedBox();
+              },
+              footer: (pw.Context context) {
+                return footerImage != null
+                    ? pw.Container(
+                  margin: const pw.EdgeInsets.only(top: 10),
+                  child: pw.Image(footerImage, fit: pw.BoxFit.fitWidth),
+                )
+                    : pw.SizedBox();
+              },
+            ),
+          );
+
+          return pdf.save();
+        },
+      );
     } catch (e) {
       if (kDebugMode) print('Error printing PDF: $e');
       if (mounted) {

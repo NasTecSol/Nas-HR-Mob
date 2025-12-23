@@ -142,6 +142,7 @@ class SingletonClass {
   String? local;
   String headerUrl = '';
   String footerUrl = '';
+  String? token ;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -442,7 +443,9 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = getJWTModel()?.companyId;
+    String? companyId =  (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
+        ? selectedCompanyId
+        : getJWTModel()?.companyId;
 
     if (companyId == null || companyId.isEmpty) {
       log("❌ No companyId available from selectedCompanyId or JWT!");
@@ -739,10 +742,12 @@ class SingletonClass {
   }
   ///Header for api call
   Map<String, String> getHeaders() {
+
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" : tenantId.toString()
+      "x-tenant-id" : tenantId.toString(),
+      "Authorization": "Bearer $token",
     };
   }
 
