@@ -8,15 +8,14 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-import 'dart:ui' as ui;
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:flutter/rendering.dart';
 import '../request_controller/company_assets_details_model.dart';
 import '../request_controller/company_model.dart';
 import '../widgets/loader.dart';
-
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class CompanyAssetsDetailsScreen extends StatefulWidget {
   final Assets? assetsInfo;
@@ -28,8 +27,9 @@ class CompanyAssetsDetailsScreen extends StatefulWidget {
 
 class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen> {
   SingletonClass singletonClass = SingletonClass();
-  final GlobalKey _captureKey = GlobalKey();
   int _selectedOptionIndex = 0;
+  CompanyAssetsDetailsModel? cachedAssetDetails;
+  ObjectDetails? cachedObjectDetails;
 
   @override
   void initState() {
@@ -133,9 +133,7 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                         )
                             : Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: RepaintBoundary(
-                            key: _captureKey,
-                            child: Container(
+                          child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 15),
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.all(Radius.circular(15)),
@@ -167,10 +165,7 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        IconButton(
-                                          onPressed: () => _captureAndShare(),
-                                          icon: const Icon(Icons.print , color:  Colors.black, size: 30,),
-                                        ),
+                                        IconButton(onPressed: _printPdf, icon: const Icon(Icons.print, color: Colors.black, size: 30)),
                                       ],
                                     ),
                                     const SizedBox(height: 10),
@@ -295,7 +290,6 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
                                 ),
                               ),
                             ),
-                          ),
                         );
                       } else {
                         return Center(
@@ -536,33 +530,232 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
     return null;
   }
 
-  Future<void> _captureAndShare() async {
+  Future<void> _printPdf() async {
+    if (!mounted) return;
+
     try {
-      await Future.delayed(Duration(milliseconds: 100));
-      await WidgetsBinding.instance.endOfFrame;
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async {
+          final pdf = pw.Document();
+          final objDetails = cachedObjectDetails;
+          final assetDetails = cachedAssetDetails;
 
-      final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) {
-        debugPrint("Capture boundary is null");
-        return;
-      }
+          // Load Arabic font
+          final arabicFont = await rootBundle.load("images/fonts/Tajawal-Regular.ttf");
+          final ttf = pw.Font.ttf(arabicFont);
 
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) {
-        debugPrint("ByteData is null");
-        return;
-      }
+          // Load header and footer images
+          pw.ImageProvider? headerImage;
+          pw.ImageProvider? footerImage;
 
-      final pngBytes = byteData.buffer.asUint8List();
+          try {
+            if (singletonClass.headerUrl.isNotEmpty) {
+              final headerResponse = await http.get(Uri.parse(singletonClass.headerUrl));
+              if (headerResponse.statusCode == 200) {
+                headerImage = pw.MemoryImage(headerResponse.bodyBytes);
+              }
+            }
+            if (singletonClass.footerUrl.isNotEmpty) {
+              final footerResponse = await http.get(Uri.parse(singletonClass.footerUrl));
+              if (footerResponse.statusCode == 200) {
+                footerImage = pw.MemoryImage(footerResponse.bodyBytes);
+              }
+            }
+          } catch (e) {
+            if (kDebugMode) print('Error loading header/footer images: $e');
+          }
 
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/asset_capture.png').create();
-      await file.writeAsBytes(pngBytes);
+          // Text style with Arabic support
+          final textStyle = pw.TextStyle(font: ttf, fontSize: 14);
+          final boldTextStyle = pw.TextStyle(font: ttf, fontSize: 14, fontWeight: pw.FontWeight.bold);
+          final headingStyle = pw.TextStyle(font: ttf, fontSize: 16, fontWeight: pw.FontWeight.bold);
+          final smallTextStyle = pw.TextStyle(font: ttf, fontSize: 12);
+          final smallBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 12, fontWeight: pw.FontWeight.bold);
+          final childTextStyle = pw.TextStyle(font: ttf, fontSize: 11);
+          final childBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 11, fontWeight: pw.FontWeight.bold);
 
-      await Share.shareXFiles([XFile(file.path)], text: 'Captured Asset Screenshot');
+          // Build content widgets
+          final List<pw.Widget> contentWidgets = [];
+
+          // Asset Name
+          contentWidgets.add(
+            pw.Row(
+              children: [
+                pw.Text('Asset Name: ', style: boldTextStyle),
+                pw.Expanded(child: pw.Text(objDetails?.objectName ?? 'N/A', style: textStyle)),
+              ],
+            ),
+          );
+          contentWidgets.add(pw.SizedBox(height: 10));
+
+          // Template Type
+          if (assetDetails?.data?.first.templateType != null) {
+            final tags = (assetDetails!.data!.first.templateType ?? '')
+                .split('_')
+                .where((word) => word.toLowerCase() != 'asset')
+                .join(', ');
+            contentWidgets.add(
+              pw.Row(
+                children: [
+                  pw.Text('Type: ', style: boldTextStyle),
+                  pw.Expanded(child: pw.Text(tags, style: textStyle)),
+                ],
+              ),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+          }
+
+          // Asset Image
+          if (objDetails?.img != null && objDetails!.img!.isNotEmpty) {
+            try {
+              pw.ImageProvider? assetImage;
+              if (objDetails.img!.startsWith('http')) {
+                final imgResponse = await http.get(Uri.parse(objDetails.img!));
+                if (imgResponse.statusCode == 200) {
+                  assetImage = pw.MemoryImage(imgResponse.bodyBytes);
+                }
+              } else {
+                assetImage = pw.MemoryImage(base64Decode(objDetails.img!));
+              }
+
+              if (assetImage != null) {
+                contentWidgets.add(
+                  pw.Container(
+                    height: 200,
+                    width: 200,
+                    child: pw.Image(assetImage, fit: pw.BoxFit.contain),
+                  ),
+                );
+                contentWidgets.add(pw.SizedBox(height: 20));
+              }
+            } catch (e) {
+              if (kDebugMode) print('Error loading asset image: $e');
+            }
+          }
+
+          // Parameters
+          if (objDetails?.parameters != null && objDetails!.parameters!.isNotEmpty) {
+            contentWidgets.add(
+              pw.Text('Parameters', style: headingStyle),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+
+            objDetails.parameters!.forEach((key, value) {
+              contentWidgets.add(
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('$key: ', style: smallBoldTextStyle),
+                    pw.Expanded(
+                      child: pw.Text(value?.toString() ?? 'N/A', style: smallTextStyle),
+                    ),
+                  ],
+                ),
+              );
+              contentWidgets.add(pw.SizedBox(height: 5));
+            });
+            contentWidgets.add(pw.SizedBox(height: 10));
+          }
+
+          // Child Objects
+          if (objDetails?.childObjs != null && objDetails!.childObjs!.isNotEmpty) {
+            contentWidgets.add(
+              pw.Text('Child Objects', style: headingStyle),
+            );
+            contentWidgets.add(pw.SizedBox(height: 10));
+
+            for (var child in objDetails.childObjs!) {
+              contentWidgets.add(
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.grey300,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        child.objectName ?? 'N/A',
+                        style: pw.TextStyle(font: ttf, fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(height: 8),
+                      if (child.parameters != null && child.parameters!.isNotEmpty)
+                        ...child.parameters!.entries.map((entry) => pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 4),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('${entry.key}: ', style: childBoldTextStyle),
+                              pw.Expanded(
+                                child: pw.Text(entry.value?.toString() ?? 'N/A', style: childTextStyle),
+                              ),
+                            ],
+                          ),
+                        )),
+                      if (child.additionalInfo != null && child.additionalInfo!.isNotEmpty)
+                        ...child.additionalInfo!.entries.map((entry) => pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 4),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('${entry.key}: ', style: childBoldTextStyle),
+                              pw.Expanded(
+                                child: pw.Text(entry.value?.toString() ?? 'N/A', style: childTextStyle),
+                              ),
+                            ],
+                          ),
+                        )),
+                    ],
+                  ),
+                ),
+              );
+              contentWidgets.add(pw.SizedBox(height: 10));
+            }
+          }
+
+          // Add pages with header and footer on each page
+          pdf.addPage(
+            pw.MultiPage(
+              pageFormat: format,
+              margin: const pw.EdgeInsets.all(20),
+              theme: pw.ThemeData.withFont(
+                base: ttf,
+                bold: ttf,
+              ),
+              build: (pw.Context context) => contentWidgets,
+              header: (pw.Context context) {
+                return headerImage != null
+                    ? pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 10),
+                  child: pw.Image(headerImage, fit: pw.BoxFit.fitWidth),
+                )
+                    : pw.SizedBox();
+              },
+              footer: (pw.Context context) {
+                return footerImage != null
+                    ? pw.Container(
+                  margin: const pw.EdgeInsets.only(top: 10),
+                  child: pw.Image(footerImage, fit: pw.BoxFit.fitWidth),
+                )
+                    : pw.SizedBox();
+              },
+            ),
+          );
+
+          return pdf.save();
+        },
+      );
     } catch (e) {
-      debugPrint('Error capturing image: $e');
+      if (kDebugMode) print('Error printing PDF: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

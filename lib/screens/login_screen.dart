@@ -82,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveTokenLocally(String token) async {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString('token', token);
+    singletonClass.token = preferences.getString('token');
     setState(() {
       _isTokenSaved = true;
     });
