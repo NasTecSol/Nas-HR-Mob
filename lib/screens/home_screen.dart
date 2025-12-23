@@ -10,6 +10,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
+import 'package:nashr/screens/company_notifications.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
@@ -1509,6 +1510,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               singletonClass.branchID = null;
                                               singletonClass.branchName = null;
                                               singletonClass.getBranchesData();
+                                              singletonClass.getCompanyData();
                                             });
                                           },
                                         ),
@@ -2447,7 +2449,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (hasComplaints)...[
+                                  if (hasComplaints)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2496,8 +2498,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(width: 20),
-                                  ],
+                                  const SizedBox(width: 20),
                                   if (hasPenaltiesAndFines)
                                     Column(
                                       children: [
@@ -2697,6 +2698,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" || singletonClass.getJWTModel()?.grade == "L2")
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const CompanyNotifications()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/pc.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .companyNotifications,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
