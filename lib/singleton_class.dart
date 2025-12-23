@@ -140,7 +140,8 @@ class SingletonClass {
   bool hasShownGreeting = false;
   bool isFirstTimeSelectionDone = false;
   String? local;
-
+  String headerUrl = '';
+  String footerUrl = '';
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -795,6 +796,31 @@ class SingletonClass {
     } catch (e) {
       log('Error Approver Data: $e');
       return null;
+    }
+  }
+
+  Future<void> fetchCompanyHeaderFooter(String companyId) async {
+    try {
+      final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
+      final response = await http.get(url, headers: getHeaders());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'] as List? ?? [];
+        if (data.isNotEmpty) {
+          final doc = data.first;
+          headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
+          footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
+          if (kDebugMode) {
+            print('Header URL: $headerUrl');
+            print('Footer URL: $footerUrl');
+          }
+        } else {
+          if (kDebugMode) print('No documents found for this company.');
+        }
+      } else {
+        if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error fetching company documents: $e');
     }
   }
 

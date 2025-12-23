@@ -59,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedCompanyId;
   String? selectedBranchId;
   bool isLoadingBranches = false;
-  Duration _accumulatedWorkedDuration = Duration.zero;
   DateTime? _currentCheckIn;
   Timer? _timer;
   String _displayWorkedHours = '00:00:00';
@@ -76,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
     singletonClass.getHRLetter();
+    singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -178,25 +178,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _updateWorkedTime() {
-    Duration total = _accumulatedWorkedDuration;
     if (_currentCheckIn != null) {
-      total += DateTime.now().difference(_currentCheckIn!);
+      final Duration total = DateTime.now().difference(_currentCheckIn!);
+
+      _displayWorkedHours = '${total.inHours.toString().padLeft(2, '0')}:'
+          '${(total.inMinutes % 60).toString().padLeft(2, '0')}:'
+          '${(total.inSeconds % 60).toString().padLeft(2, '0')}';
+
+      if (mounted) setState(() {});
     }
-
-    _displayWorkedHours = '${total.inHours.toString().padLeft(2, '0')}:'
-        '${(total.inMinutes % 60).toString().padLeft(2, '0')}:'
-        '${(total.inSeconds % 60).toString().padLeft(2, '0')}';
-
-    if (mounted) setState(() {});
   }
 
   void calculateTodayWorkedTime() {
     try {
       final today = DateTime.now();
-      final dataList = singletonClass.clockingDataList.first.data;
+      final dataList = singletonClass.attendanceDataList.first.data!.data;
+
       if (dataList == null || dataList.isEmpty) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
+        _currentCheckIn = null;
         return;
       }
 
@@ -208,80 +209,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             createdAt.day == today.day;
       }).toList();
 
-      _accumulatedWorkedDuration = Duration.zero;
-      _currentCheckIn = null;
-
       if (todayEntries.isEmpty) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
+        _currentCheckIn = null;
         return;
       }
 
       final todayData = todayEntries.last;
-      final checkInTime = todayData.checkInTime;
-      final checkOutTime = todayData.checkOutTime;
+      final checkInTime = todayData.clockInTime;
+      final checkOutTime = todayData.clockOutTime;
 
-      // 🔹 Both checkin/checkout empty → no work today
-      if ((checkInTime == null || checkInTime.isEmpty) &&
-          (checkOutTime == null || checkOutTime.isEmpty)) {
-        stopWorkTimer();
-        _displayWorkedHours = "00:00:00";
-        return;
-      }
-
-      // 🔹 Case 1: Only check-in available → running session
-      if (checkInTime != null &&
-          checkInTime.isNotEmpty &&
+      // Only check-in available → Start running session
+      if (checkInTime != null && checkInTime.isNotEmpty &&
           (checkOutTime == null || checkOutTime.isEmpty)) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
-        startWorkTimer();
-        return;
-      }
-
-      // 🔹 Case 2: Only checkout available → no active session
-      if (checkOutTime != null &&
-          checkOutTime.isNotEmpty &&
-          (checkInTime == null || checkInTime.isEmpty)) {
-        stopWorkTimer();
-        _updateWorkedTime();
-        return;
-      }
-
-      // 🔹 Case 3: Both checkin & checkout available → check latest raw biometric
-      if (checkInTime != null &&
-          checkOutTime != null &&
-          checkInTime.isNotEmpty &&
-          checkOutTime.isNotEmpty) {
-        String? lastBioType;
-        DateTime? lastBioTimestamp;
-
-        if (todayData.rawBiometrics != null &&
-            todayData.rawBiometrics!.isNotEmpty) {
-          todayData.rawBiometrics!.sort((a, b) {
-            final t1 = DateTime.tryParse(a.timestamp ?? '') ?? DateTime(1970);
-            final t2 = DateTime.tryParse(b.timestamp ?? '') ?? DateTime(1970);
-            return t1.compareTo(t2);
-          });
-          final lastBio = todayData.rawBiometrics!.last;
-          lastBioType = lastBio.type?.toLowerCase();
-          lastBioTimestamp = DateTime.tryParse(lastBio.timestamp ?? '');
-        }
-
-        if (lastBioType == "check-in" && lastBioTimestamp != null) {
-          _currentCheckIn = lastBioTimestamp;
+        if (_currentCheckIn != null) {
           startWorkTimer();
-        } else {
+        }
+      }
+      // Both check-in and check-out available → Keep timer running with check-in to current time
+      else if (checkInTime != null && checkInTime.isNotEmpty &&
+          checkOutTime != null && checkOutTime.isNotEmpty) {
+        _currentCheckIn = DateTime.tryParse(checkInTime);
+        if (_currentCheckIn != null) {
           stopWorkTimer();
           _updateWorkedTime();
         }
-        return;
+      }
+      else {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        _currentCheckIn = null;
       }
 
-      // Default fallback
-      stopWorkTimer();
-      _displayWorkedHours = "00:00:00";
     } catch (e) {
+      print('Error: $e');
       _displayWorkedHours = '00:00:00';
+      _currentCheckIn = null;
       stopWorkTimer();
     }
   }
@@ -2052,18 +2017,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                             ),
                                           ),
-                                          _displayWorkedHours != "00:00:00" ?
-                                          SizedBox(
+                                          _timer != null && _timer!.isActive
+                                              ? SizedBox(
                                             height: 50,
                                             width: 50,
-                                            child: Lottie.asset(
-                                                'images/working.json'),
-                                          ) :
-                                          SizedBox(
+                                            child: Lottie.asset('images/working.json'),
+                                          )
+                                              : SizedBox(
                                             height: 50,
                                             width: 50,
-                                            child: Lottie.asset(
-                                                'images/totalWork.json'),
+                                            child: Lottie.asset('images/totalWork.json'),
                                           ),
                                         ],
                                       ),
@@ -3340,8 +3303,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
@@ -3358,7 +3320,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       "timeZone": timeZoneName
     };
     String body = json.encode(data);
-    print("body of check in $body");
     var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
@@ -3370,7 +3331,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         body: body,
         headers: singletonClass.getHeaders(),
       );
-      print(response.body);
       setState(() {
         isLoading = false;
       });
@@ -3386,7 +3346,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           context: context,
           type: QuickAlertType.success,
           title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkInComplete,
+          text: AppLocalizations.of(context)!.success,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
@@ -3437,113 +3397,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-  ///CHECK OUT API CALL
-  Future<void> checkOut() async {
-    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
-    String? empId = singletonClass.getJWTModel()?.empId;
-    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    String deviceIp = await _getLocalIpAddress();
-    String? timeZoneName = timeZoneIdentifier;
-    print(currentTime);
-
-    Map<String, dynamic> data = {
-      "deviceUserId": "$empId",
-      "sn": sn,
-      "timestamp": currentTime,
-      "status": 1,
-      "verify_type": 0,
-      "deviceIp": deviceIp,
-      "deviceName": "Remote",
-      "captureTime": currentTime,
-      "timeZone": timeZoneName
-    };
-    print(data);
-
-    String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final response = await http.post(
-        uri,
-        body: body,
-        headers: singletonClass.getHeaders(),
-      );
-
-      setState(() {
-        isLoading = false;
-      });
-      print(response.body);
-
-      if (response.statusCode == 201) {
-        setState(() {
-          _dragPosition = 0; // Reset drag position
-          _isSliderCompleted = false; // Reset slider completion flag
-          singletonClass.getClockingData();
-        });
-        await singletonClass.getClockingData();
-        await singletonClass.getEmployeeAttendanceData();
-        await QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkOutComplete,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        setState(() {
-          calculateTodayWorkedTime();
-          singletonClass.getEmployeeAttendanceData();
-        });
-      } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else {
-        // Handle other error statuses
-        print('Error: ${response.statusCode}');
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'An unexpected error occurred. Please try again.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print('Error: $e');
-
-      // Show error alert for exceptions
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'An error occurred. Please check your network connection.',
-        autoCloseDuration: const Duration(seconds: 5),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-      );
-    }
-  }
-
   ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
@@ -3615,9 +3468,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       position.latitude,
       position.longitude,
     );
-    if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true){
+    final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
+    final today = DateTime.now();
+    final todayEntries = dataList.where((entry) {
+      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+      return createdAt != null && createdAt.year == today.year && createdAt.month == today.month && createdAt.day == today.day;
+    }).toList();
+    final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
+    String? checkInTime = todayData?.clockInTime;
+    String? checkOutTime = todayData?.clockOutTime;
+    if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true && (checkInTime != null || checkInTime!.isNotEmpty) &&
+        (checkOutTime == null || checkOutTime.isEmpty)){
       if (distance > allowedRadius) {
-        checkOut();
+        checkIn("biometric");
       }
     }
     return '${position.latitude}|${position.longitude}';
