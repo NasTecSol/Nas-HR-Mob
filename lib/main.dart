@@ -38,7 +38,7 @@ void main() {
       SingletonClass().env = "staging";
     }
     if ( env == "production") {
-      SingletonClass().baseURL = "https://www.nashrms.com/api";
+      SingletonClass().baseURL = "https://dev.nashrms.com/api";
     }
 
     if (kProfileMode) {

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -31,15 +30,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   final TextEditingController _comment = TextEditingController();
-  String headerUrl = '';
-  String footerUrl = '';
 
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -2619,7 +2610,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
   Future<void> printPdf() async {
     try {
-      final html = await generateFullHtml(headerUrl: headerUrl, footerUrl: footerUrl);
+      final html = await generateFullHtml(headerUrl: singletonClass.headerUrl, footerUrl: singletonClass.footerUrl);
       await Printing.layoutPdf(onLayout: (format) async {
         try {
           return await Printing.convertHtml(format: format, html: html);
@@ -2633,34 +2624,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: ${e.toString()}'), backgroundColor: Colors.red));
       }
-    }
-  }
-  ///API CALL
-  Future<void> fetchCompanyHeaderFooter(String companyId) async {
-    try {
-      final url = Uri.parse(
-        '${singletonClass.baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval',
-      );
-
-      final response = await http.get(url, headers: singletonClass.getHeaders());
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body)['data'] as List? ?? [];
-
-        if (data.isNotEmpty) {
-          final doc = data.first; // Take first document
-          headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
-          footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
-          print('Header URL: $headerUrl');
-          print('Footer URL: $footerUrl');
-        } else {
-          print('No documents found for this company.');
-        }
-      } else {
-        print('Failed to fetch documents. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching company documents: $e');
     }
   }
 }
