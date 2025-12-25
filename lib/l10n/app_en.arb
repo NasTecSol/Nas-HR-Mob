@@ -1231,7 +1231,17 @@
     "confirmCheckoutInRange": "You are in range of the location. Do you want to check out?",
     "confirmCheckinInRange": "You are in range of the location. Do you want to check in?",
     "currentLocation": "Current Location",
-    "currentLocationNotAvailable": "Current location is not available"
+    "currentLocationNotAvailable": "Current location is not available",
+    "selectAllowanceType": "Select allowance type",
+    "basedOn": "Based on",
+    "selectOption": "Select option",
+    "allowancePercentage": "Allowance percentage %",
+    "enterPercentage": "Enter percentage",
+    "allowanceAmount": "Allowance amount",
+    "enterAmount": "Enter amount",
+    "selectDeductionType": "Select deduction type",
+    "deductionAmount": "Deduction amount",
+    "deductionPercentage": "Deduction percentage %"
 
 
 

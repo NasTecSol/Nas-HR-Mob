@@ -44,7 +44,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final degreeType = TextEditingController();
   final basicSalary = TextEditingController();
   final bankName = TextEditingController();
-  final accountNox = TextEditingController();
+  final accountNo = TextEditingController();
+  final allowancePercentage = TextEditingController();
+  final deductionPercentage = TextEditingController();
+  final allowanceAmount = TextEditingController();
+  final deductionAmount = TextEditingController();
   bool isLoading = false;
   PlatformFile? selectedFile;
   String? profilePicUrl;
@@ -60,6 +64,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? contractType = "Permanent";
   String? currency;
   String? salaryPeriod;
+  String? deductionType;
+  String? basedOn;
+  String? allowanceType;
+  String? deductionBasedOn;
   DateTime? selectedDate;
   DateTime? contractEndDate;
 
@@ -86,6 +94,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Map<String, String>> departments = [];
   List<Map<String, String>> supervisors = [];
   List<Map<String, String>> shifts = [];
+  bool salaryExpanded = false ;
+  bool allowanceExpanded = false ;
+  bool deductionExpanded = false ;
 
   @override
   void initState() {
@@ -330,7 +341,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           currency == null ||
           salaryPeriod == null ||
           bankName.text.isEmpty ||
-          accountNox.text.isEmpty) {
+          accountNo.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
@@ -448,7 +459,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ],
                 ),
                 const SizedBox(height: 25),
-
                 /// Steps
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -493,7 +503,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 /// PageView
                 Expanded(
                   child: PageView(
@@ -569,7 +578,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onCompanySelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Branch Dropdown
                             RichText(
                               text: TextSpan(
@@ -622,7 +630,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onBranchSelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Department Dropdown
                             RichText(
                               text: TextSpan(
@@ -675,7 +682,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onDepartmentSelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Supervisor Dropdown
                             RichText(
                               text: TextSpan(
@@ -748,7 +754,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   : (value) => _onSupervisorSelected(value),
                             ),
                             const SizedBox(height: 16),
-
                             /// Shift Dropdown
                             RichText(
                               text: TextSpan(
@@ -774,6 +779,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               dropdownColor: Colors.white,
+                              isExpanded: true,
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -815,7 +821,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ],
                         ),
                       ),
-
                       ///Page 2
                       SingleChildScrollView(
                         child: Padding(
@@ -1728,7 +1733,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-
                       ///Page 3
                       SingleChildScrollView(
                         child: Padding(
@@ -2036,7 +2040,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-
                       ///page 4
                       SingleChildScrollView(
                         child: Padding(
@@ -2044,17 +2047,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                AppLocalizations.of(context)!.salaryInformation,
-                                style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-
+                             Text(
+                                    AppLocalizations.of(context)!.salaryInformation,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                             ),
                               SizedBox(height: 20),
-
-                              // Basic Salary
+                              ///Basic Salary
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2101,10 +2102,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
-
                               SizedBox(height: 12),
-
-                              // Currency
+                              /// Currency
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2156,10 +2155,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 12, vertical: 14),
                                 ),
                               ),
-
                               SizedBox(height: 12),
-
-                              // Salary Period
+                              /// Salary Period
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2211,10 +2208,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 12, vertical: 14),
                                 ),
                               ),
-
                               SizedBox(height: 12),
-
-                              // Bank Name
+                              /// Bank Name
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2257,10 +2252,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
-
                               SizedBox(height: 12),
-
-                              // Account No
+                              /// Account No
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2285,7 +2278,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               const SizedBox(height: 8),
                               TextFormField(
                                   keyboardType: TextInputType.text,
-                                  controller: accountNox,
+                                  controller: accountNo,
                                   decoration: InputDecoration(
                                     hintText: AppLocalizations.of(context)!
                                         .enterAccountNo,
@@ -2304,6 +2297,450 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    allowanceExpanded = !allowanceExpanded;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.allowance,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Spacer(),
+                                    IconButton(
+                                      icon: Icon(
+                                        allowanceExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          allowanceExpanded = !allowanceExpanded;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if(allowanceExpanded == true)...[
+                                const SizedBox(height: 12),
+                                /// Allowance Type
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.type}",
+                                        style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      ),
+                                      TextSpan(
+                                        text: " *",
+                                        style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                DropdownButtonFormField<String>(
+                                  dropdownColor: Colors.white,
+                                  value: allowanceType,
+                                  items: ["Fixed", "Variable"]
+                                      .map((e) => DropdownMenuItem(
+                                      value: e, child: Text(e)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    setState(() => allowanceType = val);
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: AppLocalizations.of(context)!.selectAllowanceType,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide:
+                                      const BorderSide(color: Colors.grey),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Colors.black, width: 1.5),
+                                    ),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 14),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                if(allowanceType == "Variable")...[
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.basedOn,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DropdownButtonFormField<String>(
+                                    dropdownColor: Colors.white,
+                                    value: basedOn,
+                                    items: ["Salary"]
+                                        .map((e) => DropdownMenuItem(
+                                        value: e, child: Text(e)))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      setState(() => basedOn = val);
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: AppLocalizations.of(context)!.selectOption,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide:
+                                        const BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.black, width: 1.5),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 14),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.allowancePercentage,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      controller: allowancePercentage,
+                                      decoration: InputDecoration(
+                                        hintText: AppLocalizations.of(context)!.enterPercentage,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide:
+                                          const BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black, width: 1.5),
+                                        ),
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8)),
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 14),
+                                      )),
+                                ],
+                                if (allowanceType == "Fixed")...[
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.allowanceAmount,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      controller: allowanceAmount,
+                                      decoration: InputDecoration(
+                                        hintText: AppLocalizations.of(context)!.enterAmount,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide:
+                                          const BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black, width: 1.5),
+                                        ),
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8)),
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 14),
+                                      )),
+                                ],
+                              ],
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    deductionExpanded = !deductionExpanded;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.deductions,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Spacer(),
+                                    IconButton(
+                                      icon: Icon(
+                                        deductionExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          deductionExpanded = !deductionExpanded;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              if(deductionExpanded == true)...[
+                                /// Deductions
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.type}",
+                                        style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      ),
+                                      TextSpan(
+                                        text: " *",
+                                        style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                DropdownButtonFormField<String>(
+                                  dropdownColor: Colors.white,
+                                  value: deductionType,
+                                  items: ["Fixed", "Variable"]
+                                      .map((e) => DropdownMenuItem(
+                                      value: e, child: Text(e)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    setState(() => deductionType = val);
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: AppLocalizations.of(context)!.selectDeductionType,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide:
+                                      const BorderSide(color: Colors.grey),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color: Colors.black, width: 1.5),
+                                    ),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 14),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                if(deductionType == "Variable")...[
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.basedOn,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DropdownButtonFormField<String>(
+                                    dropdownColor: Colors.white,
+                                    value: deductionBasedOn,
+                                    items: ["Salary"]
+                                        .map((e) => DropdownMenuItem(
+                                        value: e, child: Text(e)))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      setState(() => deductionBasedOn = val);
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: AppLocalizations.of(context)!.selectOption,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide:
+                                        const BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.black, width: 1.5),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 14),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.deductionPercentage,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      controller: deductionPercentage,
+                                      decoration: InputDecoration(
+                                        hintText: AppLocalizations.of(context)!.enterPercentage,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide:
+                                          const BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black, width: 1.5),
+                                        ),
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8)),
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 14),
+                                      )),
+                                ],
+                                if (deductionType == "Fixed")...[
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.deductionAmount,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        TextSpan(
+                                          text: " *",
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      controller: deductionAmount,
+                                      decoration: InputDecoration(
+                                        hintText: AppLocalizations.of(context)!.enterAmount,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide:
+                                          const BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black, width: 1.5),
+                                        ),
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8)),
+                                        contentPadding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 14),
+                                      )),
+                                ],
+                              ],
                             ],
                           ),
                         ),
@@ -2452,7 +2889,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       "bankingInfo": [
         {
           "title": bankName.text.isNotEmpty ? bankName.text : "",
-          "accountNumber": accountNox.text.isNotEmpty ? accountNox.text : "",
+          "accountNumber": accountNo.text.isNotEmpty ? accountNo.text : "",
           "branchCode": "",
           "accountType": "",
           "country": "",
@@ -2494,8 +2931,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         "baseSalary": basicSalary.text.isNotEmpty ? basicSalary.text : "",
         "currency": currency?.toString() ?? "",
         "timeCycle_Period": salaryPeriod?.toString() ?? "",
-        "allowance_Benefits": [],
-        "deductions": [],
+        "allowance_Benefits": [
+          {
+            "allowanceTitle": "",
+            "allowanceType": allowanceType!.toUpperCase(),
+            "basedOn": allowanceType == "Variable"
+                ? basedOn ?? ""
+                : "",
+            "amount": allowanceType == "Fixed"
+                ? allowanceAmount.text
+                : calculatePercentageAmount(
+              baseSalary: basicSalary.text,
+              percentage: allowancePercentage.text,
+            ),
+          }
+        ],
+        "deductions": [
+          {
+            "deductionTitle": "",
+            "deductionType": deductionType!.toUpperCase(), // FIXED / VARIABLE
+            "basedOn": deductionType == "Variable"
+                ? deductionBasedOn ?? ""
+                : "",
+            "amount": deductionType == "Fixed"
+                ? deductionAmount.text
+                : calculatePercentageAmount(
+              baseSalary: basicSalary.text,
+              percentage: deductionPercentage.text,
+            ),
+          }
+        ],
         "taxInfo": {
           "taxPercentage": "",
           "deductableAmount": "",
@@ -2618,7 +3083,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-// helper method
+/// helper method
   int _calculateAge(String? birthDateString) {
     if (birthDateString == null || birthDateString.isEmpty) return 0;
     final birthDate = DateTime.tryParse(birthDateString);
@@ -2631,4 +3096,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     return age;
   }
+
+  String calculatePercentageAmount({
+    required String baseSalary,
+    required String percentage,
+  }) {
+    final double salary = double.tryParse(baseSalary) ?? 0;
+    final double percent = double.tryParse(percentage) ?? 0;
+
+    final double amount = (salary * percent) / 100;
+    return amount.toStringAsFixed(2);
+  }
+
 }
