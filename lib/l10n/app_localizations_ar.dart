@@ -2365,4 +2365,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get currentLocation => 'الموقع الحالي';
+
+  @override
+  String get selectAllowanceType => 'اختر نوع البدل';
+
+  @override
+  String get basedOn => 'يعتمد على';
+
+  @override
+  String get selectOption => 'اختر خيارًا';
+
+  @override
+  String get allowancePercentage => 'نسبة البدل %';
+
+  @override
+  String get enterPercentage => 'أدخل النسبة';
+
+  @override
+  String get allowanceAmount => 'قيمة البدل';
+
+  @override
+  String get enterAmount => 'أدخل المبلغ';
+
+  @override
+  String get selectDeductionType => 'اختر نوع الخصم';
+
+  @override
+  String get deductionAmount => 'قيمة الخصم';
+
+  @override
+  String get deductionPercentage => 'نسبة الخصم %';
 }
