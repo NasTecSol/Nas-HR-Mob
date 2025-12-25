@@ -2373,4 +2373,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentLocation => 'Current Location';
+
+  @override
+  String get selectAllowanceType => 'Select allowance type';
+
+  @override
+  String get basedOn => 'Based on';
+
+  @override
+  String get selectOption => 'Select option';
+
+  @override
+  String get allowancePercentage => 'Allowance percentage %';
+
+  @override
+  String get enterPercentage => 'Enter percentage';
+
+  @override
+  String get allowanceAmount => 'Allowance amount';
+
+  @override
+  String get enterAmount => 'Enter amount';
+
+  @override
+  String get selectDeductionType => 'Select deduction type';
+
+  @override
+  String get deductionAmount => 'Deduction amount';
+
+  @override
+  String get deductionPercentage => 'Deduction percentage %';
 }

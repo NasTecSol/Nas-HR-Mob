@@ -893,8 +893,15 @@
       "confirmCheckoutInRange": "أنت ضمن نطاق الموقع. هل تريد تسجيل الخروج؟",
       "confirmCheckinInRange": "أنت ضمن نطاق الموقع. هل تريد تسجيل الدخول؟",
       "currentLocation": "الموقع الحالي",
-      "currentLocationNotAvailable": "الموقع الحالي غير متوفر"
-
-
-
+      "currentLocationNotAvailable": "الموقع الحالي غير متوفر",
+      "selectAllowanceType": "اختر نوع البدل",
+      "basedOn": "يعتمد على",
+      "selectOption": "اختر خيارًا",
+      "allowancePercentage": "نسبة البدل %",
+      "enterPercentage": "أدخل النسبة",
+      "allowanceAmount": "قيمة البدل",
+      "enterAmount": "أدخل المبلغ",
+      "selectDeductionType": "اختر نوع الخصم",
+      "deductionAmount": "قيمة الخصم",
+      "deductionPercentage": "نسبة الخصم %"
 }

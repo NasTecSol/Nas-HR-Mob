@@ -102,20 +102,14 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = true;
           });
-          final SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+          final SharedPreferences preferences = await SharedPreferences.getInstance();
+          singletonClass.token = preferences.getString('token');
           String? token = preferences.getString('token');
           decodeJwt(token!.trim());
           setState(() {
             isLoading = false;
           });
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const MainScreen(
-                      index: 0,
-                    selectedIndex: 0
-                    )),
+          await Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 0, selectedIndex: 0)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

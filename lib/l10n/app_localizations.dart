@@ -4783,6 +4783,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current Location'**
   String get currentLocation;
+
+  /// No description provided for @selectAllowanceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select allowance type'**
+  String get selectAllowanceType;
+
+  /// No description provided for @basedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on'**
+  String get basedOn;
+
+  /// No description provided for @selectOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select option'**
+  String get selectOption;
+
+  /// No description provided for @allowancePercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance percentage %'**
+  String get allowancePercentage;
+
+  /// No description provided for @enterPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter percentage'**
+  String get enterPercentage;
+
+  /// No description provided for @allowanceAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance amount'**
+  String get allowanceAmount;
+
+  /// No description provided for @enterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get enterAmount;
+
+  /// No description provided for @selectDeductionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select deduction type'**
+  String get selectDeductionType;
+
+  /// No description provided for @deductionAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction amount'**
+  String get deductionAmount;
+
+  /// No description provided for @deductionPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction percentage %'**
+  String get deductionPercentage;
 }
 
 class _AppLocalizationsDelegate
