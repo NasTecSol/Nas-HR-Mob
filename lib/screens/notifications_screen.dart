@@ -98,7 +98,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     );
                   } else if (snapshot.hasData) {
                     final notificationsList = singletonClass.notificationModelList.first.data ?? [];
-
                     if (notificationsList.isEmpty) {
                       return Center(
                         child: Padding(

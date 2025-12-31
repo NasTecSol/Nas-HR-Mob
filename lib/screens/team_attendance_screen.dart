@@ -1473,7 +1473,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           ),
                         )
                       );
-                    })),
+                    })
+            ),
         ],
       ),
     );

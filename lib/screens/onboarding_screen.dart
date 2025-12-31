@@ -49,6 +49,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final deductionPercentage = TextEditingController();
   final allowanceAmount = TextEditingController();
   final deductionAmount = TextEditingController();
+  final allowanceName = TextEditingController();
+  final deductionName = TextEditingController();
   bool isLoading = false;
   PlatformFile? selectedFile;
   String? profilePicUrl;
@@ -97,6 +99,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool salaryExpanded = false ;
   bool allowanceExpanded = false ;
   bool deductionExpanded = false ;
+  List<AllowanceFormModel> allowances = [AllowanceFormModel()];
+  List<DeductionFormModel> deductions = [DeductionFormModel()];
 
   @override
   void initState() {
@@ -2326,198 +2330,283 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         });
                                       },
                                     ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setState(() {
+                                          allowances.add(AllowanceFormModel());
+                                        });
+                                      },
+                                    ),
                                   ],
                                 ),
                               ),
                               if(allowanceExpanded == true)...[
-                                const SizedBox(height: 12),
-                                /// Allowance Type
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.type}",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black),
-                                      ),
-                                      TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  dropdownColor: Colors.white,
-                                  value: allowanceType,
-                                  items: ["Fixed", "Variable"]
-                                      .map((e) => DropdownMenuItem(
-                                      value: e, child: Text(e)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    setState(() => allowanceType = val);
+                                ///Listview
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: allowances.length,
+                                  padding: EdgeInsets.zero,
+                                  itemBuilder: (context, index) {
+                                    final item = allowances[index];
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${index + 1}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                  color: Colors.grey
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            if (allowances.length > 1)
+                                              IconButton(
+                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    allowances.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                            keyboardType: TextInputType.text,
+                                            controller: item.title,
+                                            decoration: InputDecoration(
+                                              hintText: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            )),
+                                        const SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.type}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<String>(
+                                          dropdownColor: Colors.white,
+                                          value: item.type,
+                                          items: ["Fixed", "Variable"]
+                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            setState(() => item.type = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            hintText: AppLocalizations.of(context)!.selectAllowanceType,
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide:
+                                              const BorderSide(color: Colors.grey),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.black, width: 1.5),
+                                            ),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8)),
+                                            contentPadding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 14),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        if(item.type == "Variable")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.basedOn,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            dropdownColor: Colors.white,
+                                            value: item.basedOn,
+                                            items: ["Salary"]
+                                                .map((e) => DropdownMenuItem(
+                                                value: e, child: Text(e)))
+                                                .toList(),
+                                            onChanged: (val) {
+                                              setState(() => item.basedOn = val);
+                                            },
+                                            decoration: InputDecoration(
+                                              hintText: AppLocalizations.of(context)!.selectOption,
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.allowancePercentage,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.percentage,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterPercentage,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        if (item.type == "Fixed")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.allowanceAmount,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.amount,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterAmount,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        const Divider(height: 32),
+                                      ],
+                                    );
                                   },
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.selectAllowanceType,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  ),
                                 ),
-                                const SizedBox(height: 12),
-                                if(allowanceType == "Variable")...[
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.basedOn,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  DropdownButtonFormField<String>(
-                                    dropdownColor: Colors.white,
-                                    value: basedOn,
-                                    items: ["Salary"]
-                                        .map((e) => DropdownMenuItem(
-                                        value: e, child: Text(e)))
-                                        .toList(),
-                                    onChanged: (val) {
-                                      setState(() => basedOn = val);
-                                    },
-                                    decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.selectOption,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.black, width: 1.5),
-                                      ),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 14),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.allowancePercentage,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      controller: allowancePercentage,
-                                      decoration: InputDecoration(
-                                        hintText: AppLocalizations.of(context)!.enterPercentage,
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black, width: 1.5),
-                                        ),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 14),
-                                      )),
-                                ],
-                                if (allowanceType == "Fixed")...[
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.allowanceAmount,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      controller: allowanceAmount,
-                                      decoration: InputDecoration(
-                                        hintText: AppLocalizations.of(context)!.enterAmount,
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black, width: 1.5),
-                                        ),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 14),
-                                      )),
-                                ],
                               ],
                               const SizedBox(height: 12),
                               GestureDetector(
@@ -2548,198 +2637,285 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         });
                                       },
                                     ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setState(() {
+                                          deductions.add(DeductionFormModel());
+                                        });
+                                      },
+                                    ),
                                   ],
                                 ),
                               ),
                               const SizedBox(height: 12),
                               if(deductionExpanded == true)...[
-                                /// Deductions
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.type}",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black),
-                                      ),
-                                      TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  dropdownColor: Colors.white,
-                                  value: deductionType,
-                                  items: ["Fixed", "Variable"]
-                                      .map((e) => DropdownMenuItem(
-                                      value: e, child: Text(e)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    setState(() => deductionType = val);
+                                ///List view
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: deductions.length,
+                                  itemBuilder: (context, index) {
+                                    final item = deductions[index];
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${index + 1}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            if (deductions.length > 1)
+                                              IconButton(
+                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    deductions.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                            keyboardType: TextInputType.text,
+                                            controller: item.title,
+                                            decoration: InputDecoration(
+                                              hintText: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            )),
+                                        const SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.type}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<String>(
+                                          dropdownColor: Colors.white,
+                                          value: item.type,
+                                          items: ["Fixed", "Variable"]
+                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            setState(() => item.type = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            hintText: AppLocalizations.of(context)!.selectDeductionType,
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide:
+                                              const BorderSide(color: Colors.grey),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.black, width: 1.5),
+                                            ),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8)),
+                                            contentPadding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 14),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        if(item.type  == "Variable")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.basedOn,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            dropdownColor: Colors.white,
+                                            value: item.basedOn,
+                                            items: ["Salary"]
+                                                .map((e) => DropdownMenuItem(
+                                                value: e, child: Text(e)))
+                                                .toList(),
+                                            onChanged: (val) {
+                                              setState(() => item.basedOn = val);
+                                            },
+                                            decoration: InputDecoration(
+                                              hintText: AppLocalizations.of(context)!.selectOption,
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.deductionPercentage,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.percentage,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterPercentage,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        if (item.type  == "Fixed")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.deductionAmount,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.amount,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterAmount,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        const Divider(height: 32),
+                                      ],
+                                    );
                                   },
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!.selectDeductionType,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  ),
                                 ),
-                                const SizedBox(height: 12),
-                                if(deductionType == "Variable")...[
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.basedOn,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  DropdownButtonFormField<String>(
-                                    dropdownColor: Colors.white,
-                                    value: deductionBasedOn,
-                                    items: ["Salary"]
-                                        .map((e) => DropdownMenuItem(
-                                        value: e, child: Text(e)))
-                                        .toList(),
-                                    onChanged: (val) {
-                                      setState(() => deductionBasedOn = val);
-                                    },
-                                    decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.selectOption,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.black, width: 1.5),
-                                      ),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 14),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.deductionPercentage,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      controller: deductionPercentage,
-                                      decoration: InputDecoration(
-                                        hintText: AppLocalizations.of(context)!.enterPercentage,
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black, width: 1.5),
-                                        ),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 14),
-                                      )),
-                                ],
-                                if (deductionType == "Fixed")...[
-                                  RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.deductionAmount,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      controller: deductionAmount,
-                                      decoration: InputDecoration(
-                                        hintText: AppLocalizations.of(context)!.enterAmount,
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black, width: 1.5),
-                                        ),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 14),
-                                      )),
-                                ],
+
                               ],
                             ],
                           ),
@@ -2817,6 +2993,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> createEmployee() async {
     final today = DateTime.now().toIso8601String().split('T').first;
     String? organizationID = singletonClass.getJWTModel()?.organizationId;
+    List<Map<String, dynamic>> allowanceBenefits = allowances.map((e) {
+      return {
+        "allowanceTitle": e.title.text,
+        "allowanceType": e.type!.toUpperCase(),
+        "basedOn": e.type == "Variable" ? "Salary" : "",
+        "amount": e.type == "Fixed"
+            ? e.amount.text
+            : calculatePercentageAmount(
+          baseSalary: basicSalary.text,
+          percentage: e.percentage.text,
+        ),
+      };
+    }).toList();
+
+    List<Map<String, dynamic>> deductionList = deductions.map((e) {
+      return {
+        "deductionTitle": e.title.text,
+        "deductionType": e.type!.toUpperCase(),
+        "basedOn": e.type == "Variable" ? "Salary" : "",
+        "amount": e.type == "Fixed"
+            ? e.amount.text
+            : calculatePercentageAmount(
+          baseSalary: basicSalary.text,
+          percentage: e.percentage.text,
+        ),
+      };
+    }).toList();
+
+
     final Map<String, dynamic> data = {
       "userName": userName.text.isNotEmpty ? userName.text : "",
       "password": password.text.isNotEmpty ? password.text : "",
@@ -2931,36 +3136,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         "baseSalary": basicSalary.text.isNotEmpty ? basicSalary.text : "",
         "currency": currency?.toString() ?? "",
         "timeCycle_Period": salaryPeriod?.toString() ?? "",
-        "allowance_Benefits": [
-          {
-            "allowanceTitle": "",
-            "allowanceType": allowanceType!.toUpperCase(),
-            "basedOn": allowanceType == "Variable"
-                ? basedOn ?? ""
-                : "",
-            "amount": allowanceType == "Fixed"
-                ? allowanceAmount.text
-                : calculatePercentageAmount(
-              baseSalary: basicSalary.text,
-              percentage: allowancePercentage.text,
-            ),
-          }
-        ],
-        "deductions": [
-          {
-            "deductionTitle": "",
-            "deductionType": deductionType!.toUpperCase(), // FIXED / VARIABLE
-            "basedOn": deductionType == "Variable"
-                ? deductionBasedOn ?? ""
-                : "",
-            "amount": deductionType == "Fixed"
-                ? deductionAmount.text
-                : calculatePercentageAmount(
-              baseSalary: basicSalary.text,
-              percentage: deductionPercentage.text,
-            ),
-          }
-        ],
+        "allowance_Benefits": allowanceBenefits,
+        "deductions": deductionList,
         "taxInfo": {
           "taxPercentage": "",
           "deductableAmount": "",
@@ -3014,6 +3191,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         body: body,
         headers: singletonClass.getHeaders(),
       );
+
       log("++++++${response.body}");
       if (response.statusCode == 200) {
         setState(() => isLoading = false);
@@ -3109,3 +3287,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
 }
+
+///Static Models
+class AllowanceFormModel {
+  final TextEditingController title = TextEditingController();
+  final TextEditingController amount = TextEditingController();
+  final TextEditingController percentage = TextEditingController();
+
+  String? type;
+  String? basedOn;
+}
+
+class DeductionFormModel {
+  final TextEditingController title = TextEditingController();
+  final TextEditingController amount = TextEditingController();
+  final TextEditingController percentage = TextEditingController();
+
+  String? type;
+  String? basedOn;
+}
+
+
