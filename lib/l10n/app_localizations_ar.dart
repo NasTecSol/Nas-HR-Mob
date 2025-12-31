@@ -2395,4 +2395,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deductionPercentage => 'نسبة الخصم %';
+
+  @override
+  String get nearToExpire => 'قريب من الانتهاء';
+
+  @override
+  String get expired => 'منتهي الصلاحية';
+
+  @override
+  String get company => 'الشركة';
 }

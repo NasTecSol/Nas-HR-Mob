@@ -4843,6 +4843,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deduction percentage %'**
   String get deductionPercentage;
+
+  /// No description provided for @nearToExpire.
+  ///
+  /// In en, this message translates to:
+  /// **'Near to expiry'**
+  String get nearToExpire;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @company.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get company;
 }
 
 class _AppLocalizationsDelegate

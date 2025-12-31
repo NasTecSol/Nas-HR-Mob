@@ -903,5 +903,8 @@
       "enterAmount": "أدخل المبلغ",
       "selectDeductionType": "اختر نوع الخصم",
       "deductionAmount": "قيمة الخصم",
-      "deductionPercentage": "نسبة الخصم %"
+      "deductionPercentage": "نسبة الخصم %",
+      "nearToExpire": "قريب من الانتهاء",
+      "expired": "منتهي الصلاحية",
+      "company": "الشركة"
 }

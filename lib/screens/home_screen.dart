@@ -72,6 +72,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     _parseCompanyLocation();
     singletonClass.getRoleAndAccessData();
+    singletonClass.getCompanyNotificationData();
+    singletonClass.getTeamBranchData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
@@ -512,7 +514,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
       return false;
     });
-    Future<List<Map<String, String>>> loadQuickActions() async {
+
+    ///Company notifications
+    final hasCompanyNotifications = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+     Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
       List<Map<String, String>> defaultQuickActions = [
@@ -551,6 +564,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/schedule.png",
           "label": AppLocalizations.of(context)!.onBoarding
+        },
+        {
+          "icon": "images/pc.png",
+          "label": AppLocalizations.of(context)!.companyNotifications
         },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
@@ -672,6 +689,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   !hasManageShifts) {
                                 return false;
                               }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .companyNotifications &&
+                                  !hasCompanyNotifications) {
+                                return false;
+                              }
                               return true;
                             }).map((item) {
                               return GestureDetector(
@@ -757,6 +780,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               ManageTimeScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .companyNotifications) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CompanyNotifications()),
                                     );
                                   }
                                 },
@@ -867,6 +900,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return e.subMenu?.any((sub) =>
                 (sub.title == "Complaints" || sub.title == "complaints") &&
                 sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+    final hasCompanyNotifications = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
+            sub.hidden == false) ??
             false;
       }
       return false;
@@ -1511,6 +1553,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               singletonClass.branchName = null;
                                               singletonClass.getBranchesData();
                                               singletonClass.getCompanyData();
+                                              singletonClass.getTeamBranchData();
                                             });
                                           },
                                         ),
@@ -2699,7 +2742,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" || singletonClass.getJWTModel()?.grade == "L2")
+                                  if (hasCompanyNotifications)
                                   Column(
                                     children: [
                                       GestureDetector(

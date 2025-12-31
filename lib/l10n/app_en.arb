@@ -1241,8 +1241,10 @@
     "enterAmount": "Enter amount",
     "selectDeductionType": "Select deduction type",
     "deductionAmount": "Deduction amount",
-    "deductionPercentage": "Deduction percentage %"
-
+    "deductionPercentage": "Deduction percentage %",
+    "nearToExpire":"Near to expiry",
+    "expired":"Expired",
+    "company":"Company"
 
 
 }

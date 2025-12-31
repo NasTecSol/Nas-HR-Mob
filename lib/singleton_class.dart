@@ -18,7 +18,9 @@ import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/companies_data_model.dart';
 import 'package:nashr/request_controller/company_assets_details_model.dart';
+import 'package:nashr/request_controller/company_details_document_notification_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
+import 'package:nashr/request_controller/company_notification_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
@@ -77,6 +79,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<CompanyNotificationModel> companyNotificationDataList = [];
   List<DocumentSharedTemplate> documentSharedTemplateDataList = [];
   List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
@@ -122,6 +125,7 @@ class SingletonClass {
   List<TimeTableShiftModel> timeTableShiftsDataList = [];
   List<BranchesModel> branchesModelDataList = [];
   List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
+  List<CompanyDetailsDocumentNotificationModel> companyDetailDocumentNotificationDataList = [];
   List<SocketModel> socketDataList = [];
   List<SlackModel> slackDataList = [];
   String? checkInStatus ;
@@ -379,7 +383,23 @@ class SingletonClass {
       policyModelDataList.addAll([policyData]);
       return policyData;
     }
-    return null ; // Print the response body
+    return null ;
+  }
+
+  Future<CompanyNotificationModel?> getCompanyNotificationData() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/doc-notifications');
+    var response = await client.get(uri,
+        headers: getHeaders());
+    if (response.statusCode == 200) {
+      log("company Notification ${response.body}");
+      var responseBody = json.decode(response.body);
+      var companyNotification = CompanyNotificationModel.fromJson(responseBody);
+      companyNotificationDataList.clear();
+      companyNotificationDataList.addAll([companyNotification]);
+      return companyNotification;
+    }
+    return null ;
   }
 
   Future<EmployeeData?> getEmployeeData() async {
@@ -750,7 +770,6 @@ class SingletonClass {
       "Authorization": "Bearer $token",
     };
   }
-
 
   ///Request Screen API Calls
   Future<ApproverRequestData?> getApproverData(

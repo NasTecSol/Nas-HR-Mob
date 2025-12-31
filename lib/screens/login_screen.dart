@@ -511,6 +511,7 @@ class _LoginScreenState extends State<LoginScreen> {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
             singletonClass.sendFCMToken();
+            singletonClass.getCompanyNotificationData();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
               isLoading = false;
