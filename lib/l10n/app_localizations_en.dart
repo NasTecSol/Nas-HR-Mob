@@ -2403,4 +2403,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deductionPercentage => 'Deduction percentage %';
+
+  @override
+  String get nearToExpire => 'Near to expiry';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String get company => 'Company';
 }
