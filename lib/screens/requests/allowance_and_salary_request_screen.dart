@@ -945,7 +945,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0)),
+            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0 , showBanner: false,)),
           );
         });
       } else {

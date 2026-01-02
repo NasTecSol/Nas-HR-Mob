@@ -255,20 +255,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _parseCompanyLocation() {
-    final String? locString = singletonClass.remoteAttendanceModelList.isNotEmpty &&
-        singletonClass.remoteAttendanceModelList.first.data!.isNotEmpty &&
-        singletonClass.remoteAttendanceModelList.first.data!.first.remoteAttendanceLoc!.isNotEmpty
-        ? singletonClass.remoteAttendanceModelList.first.data!.first.remoteAttendanceLoc
-        : null;
+    final list = singletonClass.remoteAttendanceModelList;
 
-    if (locString != null && locString.contains('|')) {
-      final parts = locString.split('|');
-      if (parts.length == 2) {
-        _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
-        _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
-      }
-    }
+    if (list.isEmpty) return;
+
+    final dataList = list.first.data;
+    if (dataList == null || dataList.isEmpty) return;
+
+    final locString = dataList.first.remoteAttendanceLoc;
+    if (locString == null || locString.isEmpty) return;
+
+    final parts = locString.split('|');
+    if (parts.length != 2) return;
+
+    _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
+    _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
   }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -1017,6 +1020,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       showDropdown = false;
     }
 
+    final bool shouldShowDropdown =
+        showDropdown &&
+            companies.isNotEmpty &&
+            companies.any(
+                  (company) =>
+                  (company.branches ?? []).any(
+                        (branch) =>
+                    (branch.branchId != null &&
+                        branch.branchId!.trim().isNotEmpty) ||
+                        (branch.branchName != null &&
+                            branch.branchName!.trim().isNotEmpty),
+                  ),
+            );
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -1438,7 +1454,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )
                             ],
                           ),
-                          if (showDropdown)
+                          if (showDropdown && shouldShowDropdown)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
@@ -3597,6 +3613,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return null;
   }
-
-  ///Notifications handle Helper method
 }
