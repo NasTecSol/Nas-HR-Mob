@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = false;
           });
-          await Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 0, selectedIndex: 0)),
+          await Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 0, selectedIndex: 0 , showBanner: true,)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -511,6 +511,7 @@ class _LoginScreenState extends State<LoginScreen> {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
             singletonClass.sendFCMToken();
+            await singletonClass.getNotifications();
             singletonClass.getCompanyNotificationData();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
@@ -528,8 +529,9 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
               MaterialPageRoute(
                   builder: (context) => const MainScreen(
-                        index: 0,
+                    index: 0,
                     selectedIndex: 0,
+                    showBanner: true,
                       )),
             );
           }

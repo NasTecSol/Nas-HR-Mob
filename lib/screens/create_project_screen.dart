@@ -1027,7 +1027,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           );
           if (!mounted) return;
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1 , selectedIndex: 0,)));
+              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1 , selectedIndex: 0,showBanner: false)));
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),

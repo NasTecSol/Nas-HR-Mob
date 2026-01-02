@@ -237,17 +237,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     final type = typeRaw.toLowerCase();
 
                                     if (type.contains('leave')) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0)));
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0, showBanner: false)));
                                     } else if (type.contains('employee') && type.contains('late')) {
                                       Navigator.push(context, MaterialPageRoute(builder: (_) => TeamAttendanceScreen()));
                                     } else if (type.contains('meeting')) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 3, selectedIndex: 0)));
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 3, selectedIndex: 0,showBanner: false)));
                                     } else if (type.contains('complain')) {
                                       Navigator.push(context, MaterialPageRoute(builder: (_) => Complaints()));
                                     } else if (type.contains('penalty') || type.contains('fine')) {
                                       Navigator.push(context, MaterialPageRoute(builder: (_) => PenaltyAndFineScreen()));
                                     } else if (type.contains('request')) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0)));
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => MainScreen(index: 2, selectedIndex: 0, showBanner: false)));
                                     }
                                   },
                                   child: Container(

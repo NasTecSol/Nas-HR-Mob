@@ -758,7 +758,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             type: QuickAlertType.success,
           );
 
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen(index: 1,selectedIndex: 0,)));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>const MainScreen(index: 1,selectedIndex: 0,showBanner: false)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
