@@ -6,13 +6,16 @@ import 'package:nashr/screens/profile_screen.dart';
 import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/screens/project_screen.dart';
 import 'package:nashr/singleton_class.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/colors.dart';
 import 'home_screen.dart';
+import 'notice_board_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int index;
   final int selectedIndex;
-  const MainScreen({super.key, required this.index, required this.selectedIndex});
+  final bool showBanner;
+  const MainScreen({super.key, required this.index, required this.selectedIndex, required this.showBanner});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -22,6 +25,7 @@ class _MainScreenState extends State<MainScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _currentIndex = 0;
   bool isLoading = false;
+  bool _noticeShown = false;
   final imageIconList = <String>[
     'images/homeScreen.png',
     'images/projectScreen.png',
@@ -83,6 +87,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoading &&
+        widget.showBanner == true &&
+        !_noticeShown) {
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _noticeShown = true;
+        _showNoticeBoardOverlay(context);
+      });
+    }
     final List<Widget> screens = [
       const HomeScreen(),
       const ProjectScreen(),
@@ -256,6 +270,77 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
+    );
+  }
+  ///Notifications handle Helper method
+  Future<bool> _shouldShowOnce(String notificationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final shown = prefs.getBool('notice_$notificationId') ?? false;
+
+    if (!shown) {
+      await prefs.setBool('notice_$notificationId', true);
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> _showNoticeBoardOverlay(BuildContext context) async {
+    if (singletonClass.notificationModelList.isEmpty) return;
+
+    final allNotifications =
+        singletonClass.notificationModelList.first.data ?? [];
+
+    // 1️⃣ Filter valid notice board notifications
+    final validNotices = allNotifications.where((n) {
+      if (n.notificationType != 'noticeBoard') return false;
+
+      final duration = n.durationSettings;
+      if (duration == null) return false;
+
+      final expiry = DateTime.tryParse("${duration.expiryDate}");
+      if (expiry == null) return false;
+
+      final today = DateTime.now();
+      if (expiry.isBefore(DateTime(today.year, today.month, today.day))) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+
+    if (validNotices.isEmpty) return;
+
+    // 2️⃣ Sort by createdAt DESC (latest first)
+    validNotices.sort((a, b) {
+      final aDate = DateTime.tryParse(a.createdAt ?? '') ?? DateTime(1970);
+      final bDate = DateTime.tryParse(b.createdAt ?? '') ?? DateTime(1970);
+      return bDate.compareTo(aDate);
+    });
+
+    // 3️⃣ Pick ONLY latest
+    final latestNotice = validNotices.first;
+
+    // 4️⃣ Handle one-time display
+    if (latestNotice.durationSettings?.displaySetting == 'one time') {
+      final canShow = await _shouldShowOnce("${latestNotice.id}");
+      if (!canShow) return;
+    }
+
+    // 5️⃣ Show overlay
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'NoticeBoard',
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (_, __, ___) {
+        return NoticeBoardOverlay(notice: latestNotice);
+      },
+      transitionBuilder: (_, anim, __, child) {
+        return Transform.scale(
+          scale: Curves.easeOutBack.transform(anim.value),
+          child: Opacity(opacity: anim.value, child: child),
+        );
+      },
     );
   }
 }

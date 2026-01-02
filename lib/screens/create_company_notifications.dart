@@ -1334,7 +1334,7 @@ class _CreateCompanyNotificationsState
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => MainScreen(index: 0, selectedIndex: 0)),
+                builder: (context) => MainScreen(index: 0, selectedIndex: 0 , showBanner: false)),
           );
         });
       } else {

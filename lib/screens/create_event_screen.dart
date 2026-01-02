@@ -1011,7 +1011,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const MainScreen(index: 3 , selectedIndex: 0,)));
+                  builder: (context) => const MainScreen(index: 3 , selectedIndex: 0,showBanner: false)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400 ||
             decodedResponse['statusCode'] == 500) {
