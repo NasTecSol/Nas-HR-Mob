@@ -2404,4 +2404,129 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get company => 'الشركة';
+
+  @override
+  String get stores => 'متاجر';
+
+  @override
+  String get createStore => 'إنشاء متجر';
+
+  @override
+  String get storeType => 'نوع المتجر';
+
+  @override
+  String get storeName => 'اسم المتجر';
+
+  @override
+  String get locationSelectedSuccessfully => 'تم تحديد الموقع بنجاح';
+
+  @override
+  String get locationSelected => 'تم تحديد الموقع';
+
+  @override
+  String get tapToSelectLocation => 'اضغط لاختيار الموقع';
+
+  @override
+  String get lat => 'خط العرض';
+
+  @override
+  String get lng => 'خط الطول';
+
+  @override
+  String get storeAddressIsRequired => 'عنوان المتجر مطلوب';
+
+  @override
+  String get enterStoreAddressHere => 'أدخل عنوان المتجر هنا...!';
+
+  @override
+  String get ownerName => 'اسم المالك';
+
+  @override
+  String get storeOwnerNameIsRequired => 'اسم مالك المتجر مطلوب';
+
+  @override
+  String get enterStoreOwnerNameHere => 'أدخل اسم مالك المتجر هنا...!';
+
+  @override
+  String get area => 'المنطقة';
+
+  @override
+  String get storeAreaIsRequired => 'منطقة المتجر مطلوبة';
+
+  @override
+  String get enterStoreAreaHere => 'أدخل منطقة المتجر هنا...!';
+
+  @override
+  String get areaCode => 'الرمز البريدي للمنطقة';
+
+  @override
+  String get storeAreaCodeIsRequired => 'رمز منطقة المتجر مطلوب';
+
+  @override
+  String get enterStoreAreaCodeHere => 'أدخل رمز منطقة المتجر هنا...!';
+
+  @override
+  String get contactDetail => 'تفاصيل الاتصال';
+
+  @override
+  String get enterStoreContactPersonNameHere =>
+      'أدخل اسم شخص الاتصال بالمتجر هنا...!';
+
+  @override
+  String get contactNumber => 'رقم الاتصال';
+
+  @override
+  String get enterStoreContactNumberHere => 'أدخل رقم الاتصال بالمتجر هنا...!';
+
+  @override
+  String get enterContactPersonDesignationHere =>
+      'أدخل مسمى وظيفة شخص الاتصال هنا...!';
+
+  @override
+  String get storePicture => 'صورة المتجر';
+
+  @override
+  String get storeDetail => 'تفاصيل المتجر';
+
+  @override
+  String get storeInfo => 'معلومات المتجر';
+
+  @override
+  String get contactInfo => 'معلومات الاتصال';
+
+  @override
+  String get orderInfo => 'معلومات الطلب';
+
+  @override
+  String get storeInformation => 'معلومات المتجر';
+
+  @override
+  String get storeLocation => 'موقع المتجر';
+
+  @override
+  String get contactInformation => 'معلومات الاتصال';
+
+  @override
+  String get contactName => 'اسم جهة الاتصال';
+
+  @override
+  String get orderInformation => 'معلومات الطلب';
+
+  @override
+  String get orderName => 'اسم الطلب';
+
+  @override
+  String get orderNumber => 'رقم الطلب';
+
+  @override
+  String get orderTime => 'وقت الطلب';
+
+  @override
+  String get selectStoreLocation => 'اختر موقع المتجر';
+
+  @override
+  String get enterStoreNameHere => 'أدخل اسم المتجر هنا...!';
+
+  @override
+  String get storeNameIsRequired => 'اسم المتجر مطلوب';
 }
