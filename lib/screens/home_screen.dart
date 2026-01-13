@@ -22,6 +22,7 @@ import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/slack_screen.dart';
 import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
+import 'package:nashr/screens/stores_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
@@ -438,6 +439,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
 
+    /// Check for Stores
+    final hasStores = uiSettings.any((e) =>
+    (e.title == "stores" || e.title == "Stores") && e.hidden == false);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -572,6 +576,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           "icon": "images/pc.png",
           "label": AppLocalizations.of(context)!.companyNotifications
         },
+        {
+          "icon": "images/thisMonth.png",
+          "label": AppLocalizations.of(context)!.stores
+        },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
       if (savedOrder != null && savedOrder.isNotEmpty) {
@@ -698,6 +706,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   !hasCompanyNotifications) {
                                 return false;
                               }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .stores &&
+                                  !hasStores) {
+                                return false;
+                              }
                               return true;
                             }).map((item) {
                               return GestureDetector(
@@ -794,6 +808,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           builder: (context) =>
                                               CompanyNotifications()),
                                     );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .stores) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              StoresScreen()),
+                                    );
                                   }
                                 },
                                 child: Column(
@@ -888,6 +912,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
 
+    /// Check for stores
+    final hasStores = uiSettings.any((e) =>
+    (e.title == "Stores" || e.title == "stores") && e.hidden == false);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -2799,6 +2826,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       Text(
                                         AppLocalizations.of(context)!
                                             .companyNotifications,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  if (hasStores)
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const StoresScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/thisMonth.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .stores,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,

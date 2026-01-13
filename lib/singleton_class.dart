@@ -49,6 +49,7 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/slack_model.dart';
 import 'package:nashr/request_controller/socket_model.dart';
+import 'package:nashr/request_controller/stores_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/team_clocking_model.dart';
@@ -128,6 +129,7 @@ class SingletonClass {
   List<CompanyDetailsDocumentNotificationModel> companyDetailDocumentNotificationDataList = [];
   List<SocketModel> socketDataList = [];
   List<SlackModel> slackDataList = [];
+  List<StoresModel> storeModelDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
