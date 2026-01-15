@@ -842,6 +842,12 @@ abstract class AppLocalizations {
   /// **'Swipe to Check-In'**
   String get swipeToCheckIn;
 
+  /// No description provided for @swipeToCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to Check-Out'**
+  String get swipeToCheckOut;
+
   /// No description provided for @loans.
   ///
   /// In en, this message translates to:
@@ -5107,6 +5113,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Store name is required'**
   String get storeNameIsRequired;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @startChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Chat'**
+  String get startChat;
 }
 
 class _AppLocalizationsDelegate

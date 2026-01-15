@@ -530,54 +530,56 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.address,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
+                                      if(widget.isTeamMate == true)...[
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            AppLocalizations.of(context)!.address,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[400],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.address?.streetAddress ?? '___' : '___'}",
-                                          maxLines: 2,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.address?.streetAddress ?? '___' : '___'}",
+                                            maxLines: 2,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey[700],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .passportNo,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
+                                        const SizedBox(height: 10),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            AppLocalizations.of(context)!
+                                                .passportNo,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[400],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.passport?.id ?? '___' : '___'}",
-                                          maxLines: 2,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.passport?.id ?? '___' : '___'}",
+                                            maxLines: 2,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey[700],
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ],
                                   ),
                                 ),

@@ -58,21 +58,9 @@ class _SettingScreenState extends State<SettingScreen> {
   final AuthService _authService = AuthService();
 
   logout() async {
-    final SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.remove('token');
-    singletonClass.branchDataList.clear();
-    singletonClass.branchesDataList.clear();
-    singletonClass.companyDataList.clear();
-    singletonClass.companiesDataList.clear();
-    singletonClass.selectedCompanyId = null;
-    singletonClass.companiesDataList.clear();
-    singletonClass.branchesModelDataList.clear();
-    singletonClass.branchesDataList.clear();
-    singletonClass.branchShiftsDataList.clear();
-    singletonClass.branchID = null;
-    singletonClass.branchName = null;
-    singletonClass.chatMessages.clear();
-    singletonClass.hasShownGreeting = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    singletonClass.reset();
     SocketService2().socket!.disconnect();
     SocketService().socket!.disconnect();
   }

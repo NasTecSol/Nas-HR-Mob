@@ -383,6 +383,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swipeToCheckIn => 'Swipe to Check-In';
 
   @override
+  String get swipeToCheckOut => 'Swipe to Check-Out';
+
+  @override
   String get loans => 'Loans';
 
   @override
@@ -2538,4 +2541,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storeNameIsRequired => 'Store name is required';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get startChat => 'Start Chat';
 }
