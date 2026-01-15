@@ -850,6 +850,87 @@ class SingletonClass {
     }
   }
 
+
+  ///Clear all data lists
+  void reset() {
+    employeeDataList.clear();
+    companyNotificationDataList.clear();
+    documentSharedTemplateDataList.clear();
+    reportManagerDataList.clear();
+    roleAndAccessModelDataList.clear();
+    biometricDevicesModelDataList.clear();
+    organizationModelDataList.clear();
+    companiesDataList.clear();
+    branchesDataList.clear();
+    documentNotificationDataList.clear();
+    tenantIDDataList.clear();
+    complaintsApproverDataList.clear();
+    penaltiesApproverDataList.clear();
+    signatureModelList.clear();
+    remoteAttendanceModelList.clear();
+    projectsDataList.clear();
+    taskAttachmentDataList.clear();
+    taskModelList.clear();
+    projectsLogoModelList.clear();
+    penaltiesDataList.clear();
+    notificationModelList.clear();
+    complaintsDataList.clear();
+    profileResponseDataList.clear();
+    attachmentResponseDataList.clear();
+    searchEmployeeDataList.clear();
+    assetsDetailsModel.clear();
+    employeeDetailsAssetsModel.clear();
+    employeeDetailsAttendanceDataList.clear();
+    attendanceDataList.clear();
+    teamAttendanceDataList.clear();
+    approverDataList.clear();
+    companyDataList.clear();
+    requestDataList.clear();
+    employeeDetailsDataList.clear();
+    employeeDetailsClockingDataList.clear();
+    checkInDataList.clear();
+    clockingDataList.clear();
+    teamClockingDataList.clear();
+    branchDataList.clear();
+    teamBranchDataList.clear();
+    eventDataList.clear();
+    policyModelDataList.clear();
+    uiSettingsModelDataList.clear();
+    branchShiftsDataList.clear();
+    timeTableShiftsDataList.clear();
+    branchesModelDataList.clear();
+    companyAssetsDataList.clear();
+    companyDetailDocumentNotificationDataList.clear();
+    socketDataList.clear();
+    slackDataList.clear();
+    storeModelDataList.clear();
+    availableBranches.clear();
+    chatMessages.clear();
+    baseURL = null;
+    env = null;
+    envToggle = null;
+    unreadCount = 0;
+    _loginModel = null;
+    _jwtData = null;
+    checkInStatus = null;
+    selectedCompanyId = null;
+    checkOutStatus = null;
+    fcmToken = null;
+    tenantId = null;
+    tenantLogo = null;
+    companyName = null;
+    branchID = null;
+    branchName = null;
+    activeChatRoomId = null;
+    activeScreen = null;
+    hasShownGreeting = false;
+    isFirstTimeSelectionDone = false;
+    local = null;
+    headerUrl = '';
+    footerUrl = '';
+    token = null;
+  }
+
 }
 
 

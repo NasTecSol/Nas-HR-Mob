@@ -2704,11 +2704,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         Object exception,
                                                         StackTrace?
                                                         stackTrace) {
-                                                      return Icon(
-                                                        Icons.broken_image,
-                                                        size: 30,
-                                                        color: NasColors
-                                                            .darkBlue,
+                                                      return Text(AppLocalizations.of(context)!.noSignature,
+                                                        style: GoogleFonts.inter(
+                                                         fontSize: 12,
+                                                         fontWeight: FontWeight.normal,
+                                                         color: Colors.black
+                                                        ),
                                                       );
                                                     },
                                                   ),
@@ -3417,6 +3418,44 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 key: ValueKey(DateTime.now().millisecondsSinceEpoch),
                 future: singletonClass.getHRLetter(),
                 builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: Loader());
+                  }
+                  final allDocuments = singletonClass
+                      .documentSharedTemplateDataList.first.data?.data ?? [];
+
+                  final filteredDocuments = allDocuments.where((documents) {
+                    final employeeId = singletonClass.getJWTModel()?.employeeId;
+                    final createdBy = documents.objectDetails?.createdBy;
+                    final allowedEmployees =
+                        documents.objectDetails?.parameters?.employees ?? [];
+                    return createdBy == employeeId || allowedEmployees.contains(employeeId);
+                  }).toList();
+                  if (filteredDocuments.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
                   return RefreshIndicator(
                     color: NasColors.darkBlue,
                     backgroundColor: Colors.white,
@@ -3424,29 +3463,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       await fetchLatestDocumentData();
                       setState(() {});
                     },
-                    child: (snapshot.connectionState == ConnectionState.waiting)
-                        ? Center(child: Loader())
-                        : singletonClass.documentSharedTemplateDataList.first.data!.data!.isNotEmpty
-                        ? ListView.builder(
+                    child: ListView.builder(
                       padding: EdgeInsets.zero,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: singletonClass.documentSharedTemplateDataList
-                          .first.data!.data!.length,
+                      itemCount: filteredDocuments.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final documents = singletonClass
-                            .documentSharedTemplateDataList
-                            .first
-                            .data!
-                            .data![index];
+                        final documents = filteredDocuments[index];
 
                         final url = documents.objectDetails!.parameters!.documentUrl ?? '';
                         final fileType = url.split('.').last.toLowerCase();
-                        final isImage =
-                        ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-
-                        if (documents.objectDetails!.createdBy != singletonClass.getJWTModel()?.employeeId &&
-                            !(documents.objectDetails!.parameters!.employees?.contains(singletonClass.getJWTModel()?.employeeId) ?? false))
-                          return SizedBox.shrink();
+                        final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
 
                         return Transform.translate(
                           offset: Offset(0, index == 0 ? 0 : -10),
@@ -3458,8 +3484,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => FileViewerScreen(
                                       url: url,
-                                      fileName:
-                                      "${documents.objectDetails!.objectName}",
+                                      fileName: "${documents.objectDetails!.objectName}",
                                     ),
                                   ),
                                 );
@@ -3468,8 +3493,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                               }
                             },
                             child: Container(
-                              padding:
-                              const EdgeInsets.only(top: 10, left: 30, right: 10),
+                              padding: const EdgeInsets.only(top: 10, left: 30, right: 10),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 boxShadow: [
@@ -3494,9 +3518,10 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                     "${documents.objectDetails!.objectName}",
                                     maxLines: 2,
                                     style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.darkBlue),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
@@ -3516,7 +3541,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                           height: 60,
                                           width: double.infinity,
                                           fit: BoxFit.cover,
-                                          alignment: Alignment.topCenter,
                                         )
                                             : Image.asset(
                                           _getFileIcon(url),
@@ -3555,35 +3579,11 @@ class _DocumentScreenState extends State<DocumentScreen> {
                           ),
                         );
                       },
-                    )
-                        : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/empty.json'),
-                              ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.noData,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   );
                 },
               ),
-            )
+            ),
           ],
         ],
       )

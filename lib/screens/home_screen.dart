@@ -61,12 +61,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedCompanyId;
   String? selectedBranchId;
   bool isLoadingBranches = false;
-  DateTime? _currentCheckIn;
-  Timer? _timer;
-  String _displayWorkedHours = '00:00:00';
   double allowedRadius = 50;
   double? _companyLatitude;
   double? _companyLongitude;
+  Duration _accumulatedWorkedDuration = Duration.zero;
+  DateTime? _currentCheckIn;
+  Timer? _timer;
+  String _displayWorkedHours = '00:00:00';
 
   @override
   void initState() {
@@ -168,93 +169,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() => singletonClass.unreadCount = 0);
     }
   }
-
-  void startWorkTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _updateWorkedTime();
-    });
-  }
-
-  void stopWorkTimer() {
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  void _updateWorkedTime() {
-    if (_currentCheckIn != null) {
-      final Duration total = DateTime.now().difference(_currentCheckIn!);
-
-      _displayWorkedHours = '${total.inHours.toString().padLeft(2, '0')}:'
-          '${(total.inMinutes % 60).toString().padLeft(2, '0')}:'
-          '${(total.inSeconds % 60).toString().padLeft(2, '0')}';
-
-      if (mounted) setState(() {});
-    }
-  }
-
-  void calculateTodayWorkedTime() {
-    try {
-      final today = DateTime.now();
-      final dataList = singletonClass.attendanceDataList.first.data!.data;
-
-      if (dataList == null || dataList.isEmpty) {
-        stopWorkTimer();
-        _displayWorkedHours = "00:00:00";
-        _currentCheckIn = null;
-        return;
-      }
-
-      final todayEntries = dataList.where((entry) {
-        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-        return createdAt != null &&
-            createdAt.year == today.year &&
-            createdAt.month == today.month &&
-            createdAt.day == today.day;
-      }).toList();
-
-      if (todayEntries.isEmpty) {
-        stopWorkTimer();
-        _displayWorkedHours = "00:00:00";
-        _currentCheckIn = null;
-        return;
-      }
-
-      final todayData = todayEntries.last;
-      final checkInTime = todayData.clockInTime;
-      final checkOutTime = todayData.clockOutTime;
-
-      // Only check-in available → Start running session
-      if (checkInTime != null && checkInTime.isNotEmpty &&
-          (checkOutTime == null || checkOutTime.isEmpty)) {
-        _currentCheckIn = DateTime.tryParse(checkInTime);
-        if (_currentCheckIn != null) {
-          startWorkTimer();
-        }
-      }
-      // Both check-in and check-out available → Keep timer running with check-in to current time
-      else if (checkInTime != null && checkInTime.isNotEmpty &&
-          checkOutTime != null && checkOutTime.isNotEmpty) {
-        _currentCheckIn = DateTime.tryParse(checkInTime);
-        if (_currentCheckIn != null) {
-          stopWorkTimer();
-          _updateWorkedTime();
-        }
-      }
-      else {
-        stopWorkTimer();
-        _displayWorkedHours = "00:00:00";
-        _currentCheckIn = null;
-      }
-
-    } catch (e) {
-      print('Error: $e');
-      _displayWorkedHours = '00:00:00';
-      _currentCheckIn = null;
-      stopWorkTimer();
-    }
-  }
-
   void _parseCompanyLocation() {
     final list = singletonClass.remoteAttendanceModelList;
 
@@ -271,6 +185,94 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
     _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
+  }
+
+  ///Timer
+  void startWorkTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateWorkedTime();
+    });
+  }
+
+  void stopWorkTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _updateWorkedTime() {
+    Duration total = _accumulatedWorkedDuration;
+    if (_currentCheckIn != null) {
+      total += DateTime.now().difference(_currentCheckIn!);
+    }
+
+    _displayWorkedHours = '${total.inHours.toString().padLeft(2, '0')}:'
+        '${(total.inMinutes % 60).toString().padLeft(2, '0')}:'
+        '${(total.inSeconds % 60).toString().padLeft(2, '0')}';
+
+    if (mounted) setState(() {});
+  }
+
+  void calculateTodayWorkedTime() {
+    try {
+      final today = DateTime.now();
+      final dataList = singletonClass.attendanceDataList.first.data!.data;
+      if (dataList == null || dataList.isEmpty) {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
+      }
+
+      final todayEntries = dataList.where((entry) {
+        final createdAt = DateTime.tryParse(entry.date ?? '');
+        return createdAt != null &&
+            createdAt.year == today.year &&
+            createdAt.month == today.month &&
+            createdAt.day == today.day;
+      }).toList();
+
+      _accumulatedWorkedDuration = Duration.zero;
+      _currentCheckIn = null;
+
+      if (todayEntries.isEmpty) {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
+      }
+
+      final todayData = todayEntries.last;
+      final checkInTime = todayData.clockInTime;
+      final checkOutTime = todayData.clockOutTime;
+
+      // 🔹 Both checkin/checkout empty → no work today
+      if ((checkInTime == null || checkInTime.isEmpty) &&
+          (checkOutTime == null || checkOutTime.isEmpty)) {
+        stopWorkTimer();
+        _displayWorkedHours = "00:00:00";
+        return;
+      }
+
+      // 🔹 Case 1: Only check-in available → running session
+      if (checkInTime != null &&
+          checkInTime.isNotEmpty) {
+        _currentCheckIn = DateTime.tryParse(checkInTime);
+        startWorkTimer();
+        return;
+      }
+
+      if (checkOutTime != null &&
+          checkOutTime.isNotEmpty) {
+        stopWorkTimer();
+        _updateWorkedTime();
+        return;
+      }
+      // Default fallback
+      stopWorkTimer();
+      _displayWorkedHours = "00:00:00";
+    } catch (e) {
+      _displayWorkedHours = '00:00:00';
+      stopWorkTimer();
+    }
   }
 
   @override
@@ -298,8 +300,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     updateRemoteLocation();
   }
 
-  final DraggableScrollableController _draggableScrollableController =
-      DraggableScrollableController();
+  final DraggableScrollableController _draggableScrollableController = DraggableScrollableController();
 
   ///Slider
   OverlayEntry? _overlayEntry;
@@ -331,9 +332,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (singletonClass.remoteAttendanceModelList.first.data!.first
-                          .isRemoteAttendance ==
-                      true) ...[
+                  if ( singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
+                    final title = (e.title ?? '').toLowerCase();
+                    if (title == 'dashboard' && e.hidden == false) {
+                      return e.onSiteCheckIn == true;
+                    }
+                    return false;
+                  })) ...[
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -367,55 +372,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ],
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () async {
-                      if (!(await _authService.checkBiometricAvailability())) {
-                        _removeOverlay();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                            AppLocalizations.of(context)!.pleaseSetupBiometric,
-                            style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white),
-                          )),
-                        );
-                        return;
-                      }
+                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
+                    final title = (e.title ?? '').toLowerCase();
+                    if (title == 'dashboard' && e.hidden == false) {
+                      return e.biometricCheckIn == true;
+                    }
+                    return false;
+                  }))...[
+                    GestureDetector(
+                      onTap: () async {
+                        if (!(await _authService.checkBiometricAvailability())) {
+                          _removeOverlay();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!.pleaseSetupBiometric,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white),
+                                )),
+                          );
+                          return;
+                        }
 
-                      bool isAuthenticated = await _authService
-                          .authenticateWithBiometrics(context);
-                      if (isAuthenticated) {
-                        _removeOverlay();
-                        await checkIn('biometric');
-                      } else {
-                        _removeOverlay();
-                      }
-                    },
-                    child: Container(
-                      height: 90,
-                      width: 90,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Image.asset("images/fingerprint.png"),
+                        bool isAuthenticated = await _authService
+                            .authenticateWithBiometrics(context);
+                        if (isAuthenticated) {
+                          _removeOverlay();
+                          await checkIn('biometric');
+                        } else {
+                          _removeOverlay();
+                        }
+                      },
+                      child: Container(
+                        height: 90,
+                        width: 90,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Image.asset("images/fingerprint.png"),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    AppLocalizations.of(context)!.biometricCheckIn,
-                    textAlign: TextAlign.left,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    const SizedBox(height: 5),
+                    Text(
+                      AppLocalizations.of(context)!.biometricCheckIn,
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
+                  ]
                 ],
               ),
             ),
@@ -2180,21 +2193,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
                                     String? checkInTime = todayData?.clockInTime;
                                     String? checkOutTime = todayData?.clockOutTime;
-
-                                    // Determine what action to show
                                     String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
 
                                     if ((checkInTime == null || checkInTime.isEmpty) &&
                                         (checkOutTime == null || checkOutTime.isEmpty)) {
-                                      // No check-in and no check-out → Show Check-In
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
-                                      // Check-in available but no check-out → Show Check-Out
-                                      displayText = AppLocalizations.of(context)!.checkOut;
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty)) {
+                                      displayText = AppLocalizations.of(context)!.swipeToCheckOut;
                                     } else if ((checkInTime != null && checkInTime.isNotEmpty) &&
                                         (checkOutTime != null && checkOutTime.isNotEmpty)) {
-                                      // Both available → Show Check-In
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
                                     }
 
@@ -3529,6 +3536,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         await singletonClass.getClockingData();
         await singletonClass.getEmployeeAttendanceData();
+        print("<><><>${response.body}");
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
