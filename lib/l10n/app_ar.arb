@@ -949,5 +949,11 @@
       "selectStoreLocation": "اختر موقع المتجر",
       "enterStoreNameHere": "أدخل اسم المتجر هنا...!",
       "enterContactPersonDesignationHere": "أدخل مسمى وظيفة شخص الاتصال هنا...!",
-      "storeNameIsRequired": "اسم المتجر مطلوب"
+      "storeNameIsRequired": "اسم المتجر مطلوب",
+      "swipeToCheckOut": "اسحب لتسجيل الخروج",
+      "open": "فتح",
+      "startChat": "بدء الدردشة"
+
+
+
 }

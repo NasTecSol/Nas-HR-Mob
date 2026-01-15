@@ -105,6 +105,8 @@ class UiModule {
   String? type;
   bool? hidden;
   bool? nasMudeer;
+  bool? onSiteCheckIn;
+  bool? biometricCheckIn;
   AccessLevel? accessLevel;
   AccessType? accessType;
   List<SubMenu>? subMenu;
@@ -128,6 +130,8 @@ class UiModule {
     type = json['type'];
     hidden = json['hidden'];
     nasMudeer = json['nasMudeer'];
+    onSiteCheckIn = json['onSiteCheckIn'];
+    biometricCheckIn = json['biometricCheckIn'];
     accessLevel = json['accessLevel'] != null
         ? AccessLevel.fromJson(json['accessLevel'])
         : null;
@@ -151,6 +155,8 @@ class UiModule {
     data['type'] = type;
     data['hidden'] = hidden;
     data['nasMudeer'] = nasMudeer;
+    data['onSiteCheckIn'] = onSiteCheckIn;
+    data['biometricCheckIn'] = biometricCheckIn;
     if (accessLevel != null) {
       data['accessLevel'] = accessLevel!.toJson();
     }

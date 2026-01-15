@@ -383,6 +383,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swipeToCheckIn => 'اسحب لتسجيل الحضور';
 
   @override
+  String get swipeToCheckOut => 'اسحب لتسجيل الخروج';
+
+  @override
   String get loans => 'القروض';
 
   @override
@@ -2529,4 +2532,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get storeNameIsRequired => 'اسم المتجر مطلوب';
+
+  @override
+  String get open => 'فتح';
+
+  @override
+  String get startChat => 'بدء الدردشة';
 }

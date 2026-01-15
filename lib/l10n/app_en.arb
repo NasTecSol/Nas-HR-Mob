@@ -125,6 +125,7 @@
   "lateComings": "Late Comings",
   "worked": "Worked",
   "swipeToCheckIn": "Swipe to Check-In",
+  "swipeToCheckOut": "Swipe to Check-Out",
   "loans": "Loans",
   "activity": "Activity",
   "tasks": "Tasks",
@@ -1287,7 +1288,9 @@
     "selectStoreLocation":"Select store Location",
     "enterStoreNameHere":"Enter store name here...!",
     "enterContactPersonDesignationHere":"Enter contact person designation here...!",
-    "storeNameIsRequired":"Store name is required"
+    "storeNameIsRequired":"Store name is required",
+    "open":"Open",
+    "startChat":"Start Chat"
 
 
 }

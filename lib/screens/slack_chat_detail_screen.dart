@@ -396,6 +396,11 @@ class _SlackChatDetailScreenState extends State<SlackChatDetailScreen> {
                                   crossAxisAlignment:
                                   isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                                   children: [
+                                    if(roomType == "group")
+                                    Text(
+                                      senderName ?? "",
+                                      style: GoogleFonts.inter(fontSize: 12, color: Colors.white),
+                                    ),
                                     Text(
                                       msg.content ?? "",
                                       style: GoogleFonts.inter(fontSize: 16, color: Colors.white),
