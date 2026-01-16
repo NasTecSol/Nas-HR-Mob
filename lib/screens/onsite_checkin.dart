@@ -87,7 +87,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
 
     final checkInTime = todayData?.clockInTime;
-    final checkOutTime = todayData?.clockInTime;
+    final checkOutTime = todayData?.clockOutTime;
     setState(() {
       isCheckedIn = checkInTime != null && checkInTime.isNotEmpty && checkInTime == '' ;
       isCheckedOut = checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime == '';
