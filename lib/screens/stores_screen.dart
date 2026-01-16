@@ -183,7 +183,7 @@ class _StoresScreenState extends State<StoresScreen> {
                           return Loader();
                         }  if (!snapshot.hasData ||
                             singletonClass
-                                .companyNotificationDataList.isEmpty) {
+                                .companyNotificationDataList.first.data!.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),

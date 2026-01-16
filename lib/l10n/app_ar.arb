@@ -952,8 +952,6 @@
       "storeNameIsRequired": "اسم المتجر مطلوب",
       "swipeToCheckOut": "اسحب لتسجيل الخروج",
       "open": "فتح",
-      "startChat": "بدء الدردشة"
-
-
-
+      "startChat": "بدء الدردشة",
+      "passwordMustBeSixDigit": "يجب أن تتكون كلمة المرور من 6 أرقام"
 }
