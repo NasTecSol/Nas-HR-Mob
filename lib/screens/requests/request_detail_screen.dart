@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +14,8 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../request_controller/approver_request_data_model.dart';
+import 'package:flutter/foundation.dart';
+import 'package:printing/printing.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final DataApprover dataApprover;
@@ -29,6 +30,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   final TextEditingController _comment = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         child: Stack(children: [
           ListView(
             padding: EdgeInsets.zero,
-            children: [ Column(
+            children: [
+              Column(
               children: [
                 ///Header
                 Row(
@@ -94,6 +97,32 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: NasColors.darkBlue,
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    IconButton(
+                      onPressed:(){
+                        printPdf();
+                      },
+                      icon: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.4),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.print_outlined,
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -1085,8 +1114,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date, context)
+                        (widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.date != null)
+                            ? singletonClass.formatDate2(
+                          widget.dataApprover.requestData!.first.date!,
+                          context,
+                        )
                             : AppLocalizations.of(context)!.noData,
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
@@ -1213,81 +1247,188 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ),
                 ],
                 if(widget.dataApprover.requestType == 'leaveRequest')...[
-                  ///date
-                  Row(
-                    children: [
-                      Align(
-                          alignment:
-                          Alignment.topLeft,
-                          child: Text(
-                            "${AppLocalizations.of(context)!.date}:",
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 15,
-                            ),
-                          )
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.startDate , context)
-                            : AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          fontSize: 15,
+                  if(widget.dataApprover.subType == "shortLeave")...[
+                    ///date
+                    Row(
+                      children: [
+                        Align(
+                            alignment:
+                            Alignment.topLeft,
+                            child: Text(
+                              "${AppLocalizations.of(context)!.date}:",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            )
                         ),
-                      ),
-                      Text(
-                        " - ",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          fontSize: 15,
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.startDate , context)
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
-                      Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.endDate, context)
-                            : AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          fontSize: 15,
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    ///Time
+                    Row(
+                      children: [
+                        Align(
+                            alignment:
+                            Alignment.topLeft,
+                            child: Text(
+                              "${AppLocalizations.of(context)!.time}:",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            )
                         ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  ///duration
-                  Row(
-                    children: [
-                      Align(
-                          alignment:
-                          Alignment.topLeft,
-                          child: Text(
-                            "${AppLocalizations.of(context)!.duration}:",
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 15,
-                            ),
-                          )
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? "${widget.dataApprover.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.days}"
-                            : AppLocalizations.of(context)!.noData,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          fontSize: 15,
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? singletonClass.formatDateTime(widget.dataApprover.requestData!.first.startDate)
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        Text(
+                          " - ",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? singletonClass.formatDateTime(widget.dataApprover.requestData!.first.endDate)
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    ///duration
+                    Row(
+                      children: [
+                        Align(
+                            alignment:
+                            Alignment.topLeft,
+                            child: Text(
+                              "${AppLocalizations.of(context)!.duration}:",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            )
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? "${widget.dataApprover.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.h}"
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    ///date
+                    Row(
+                      children: [
+                        Align(
+                            alignment:
+                            Alignment.topLeft,
+                            child: Text(
+                              "${AppLocalizations.of(context)!.date}:",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            )
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.startDate , context)
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          " - ",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.endDate, context)
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    ///duration
+                    Row(
+                      children: [
+                        Align(
+                            alignment:
+                            Alignment.topLeft,
+                            child: Text(
+                              "${AppLocalizations.of(context)!.duration}:",
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15,
+                              ),
+                            )
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                              ? "${widget.dataApprover.requestData!.first.duration ?? "---"} ${AppLocalizations.of(context)!.days}"
+                              : AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 15),
                   /// Note
                   Row(
@@ -1835,285 +1976,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           if (isLoading) Loader()
         ]),
       ),
-      bottomNavigationBar: (widget.dataApprover.approvers != null &&
-              widget.dataApprover.approvers!.any(
-                (approver) =>
-                    approver.approverId ==
-                        singletonClass.getJWTModel()?.employeeId &&
-                    approver.status == 'pending',
-              ))
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              backgroundColor: Colors.white,
-                              title: Text(
-                                AppLocalizations.of(context)!.comment,
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                  fontSize: 23,
-                                ),
-                              ),
-                              content: SingleChildScrollView(
-                                // 🔧 Fixes overflow
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    border: Border.all(
-                                      color: NasColors.darkBlue,
-                                      width: 1.0,
-                                    ),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        blurRadius: 15,
-                                        offset: Offset(0.10, 10.0),
-                                      ),
-                                    ],
-                                  ),
-                                  child: TextField(
-                                    textAlign: TextAlign.center,
-                                    controller: _comment,
-                                    minLines: 1,
-                                    maxLines: null,
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 10, horizontal: 10),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: NasColors.darkBlue),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: NasColors.darkBlue),
-                                      ),
-                                    ),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 12,
-                                    ),
-                                    autofocus: false,
-                                    textInputAction: TextInputAction.done,
-                                    cursorColor: Colors.black,
-                                    onTapOutside: (event) {
-                                      FocusManager.instance.primaryFocus
-                                          ?.unfocus();
-                                    },
-                                  ),
-                                ),
-                              ),
-                              actions: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          patchRequestData(
-                                              widget.dataApprover.id,
-                                              'rejected',
-                                              widget.dataApprover.toJson());
-                                          _comment.clear();
-                                        },
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .rejected,
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          });
-                    },
-                    child: Container(
-                      height: 60,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                        ),
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF4D4D4D),
-                            Color(0xFFE64545),
-                            Color(0xFFCF3E3E),
-                            Color(0xFFC13A3A),
-                            Color(0xFF992E2E),
-                          ],
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                        ),
-                      ),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          AppLocalizations.of(context)!.cancel,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            backgroundColor: Colors.white,
-                            title: Text(
-                              AppLocalizations.of(context)!.comment,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w500,
-                                color: NasColors.darkBlue,
-                                fontSize: 23,
-                              ),
-                            ),
-                            content: SingleChildScrollView(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  border: Border.all(
-                                    color: NasColors.darkBlue,
-                                    width: 1.0,
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      blurRadius: 15,
-                                      offset: Offset(0.10, 10.0),
-                                    ),
-                                  ],
-                                ),
-                                child: TextField(
-                                  textAlign: TextAlign.center,
-                                  controller: _comment,
-                                  minLines: 1,
-                                  maxLines: null,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 10),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: NasColors.darkBlue),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: NasColors.darkBlue),
-                                    ),
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
-                                  ),
-                                  autofocus: false,
-                                  textInputAction: TextInputAction.done,
-                                  cursorColor: Colors.black,
-                                  onTapOutside: (event) {
-                                    FocusManager.instance.primaryFocus
-                                        ?.unfocus();
-                                  },
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: NasColors.completed,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        patchRequestData(
-                                            widget.dataApprover.id,
-                                            'approved',
-                                            widget.dataApprover.toJson());
-                                        _comment.clear();
-                                      },
-                                      child: Text(
-                                        AppLocalizations.of(context)!.accept,
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Container(
-                      height: 60,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF47734D),
-                            Color(0xFF5B9362),
-                            Color(0xFF66A56E),
-                            Color(0xFF76BE7F),
-                            Color(0xFF86D991),
-                          ],
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                        ),
-                      ),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          AppLocalizations.of(context)!.acceptRequest,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : const SizedBox.shrink(),
     );
   }
 
@@ -2274,6 +2136,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 builder: (context) => MainScreen(
                       index: 2,
                       selectedIndex: 1,
+                    showBanner: false
                     )));
       } else {
         await QuickAlert.show(
@@ -2298,6 +2161,191 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         title: 'Failed to send data. Error: $error',
         type: QuickAlertType.error,
       );
+    }
+  }
+
+  String htmlRow(String label, String value) {
+    final escapedValue = value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    return '<div style="margin-bottom: 10px;"><strong>$label:</strong> <span>$escapedValue</span></div>';
+  }
+
+  String buildApproversWorkflow() {
+    final data = widget.dataApprover;
+    if (data.approvers == null || data.approvers!.isEmpty) {
+      return '<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">Approval Workflow</h3><div style="display: flex; align-items: center; justify-content: center;"><div style="text-align: center; margin: 0 10px;"><div style="width: 25px; height: 25px; border-radius: 50%; background-color: #4CAF50; margin: 0 auto 5px;"></div><span>➡️</span></div><div style="width: 40px; height: 2px; background-color: #ccc;"></div><div style="text-align: center; margin: 0 10px;"><span>---</span></div><div style="width: 40px; height: 2px; background-color: #ccc;"></div><div style="text-align: center; margin: 0 10px;"><div style="width: 25px; height: 25px; border-radius: 50%; background-color: #FFA726; margin: 0 auto 5px;"></div><span>⏳</span></div></div></div>';
+    }
+
+    bool allApproved = data.approvers!.every((a) => a.status == 'approved');
+    bool allRejected = data.approvers!.any((a) => a.status == 'rejected');
+    String finalColor = allApproved ? '#4CAF50' : allRejected ? '#F44336' : '#FFA726';
+    String finalEmoji = allApproved ? '✅' : allRejected ? '❌' : '⏳';
+    String approversHtml = '';
+
+    for (int i = 0; i < data.approvers!.length; i++) {
+      final approver = data.approvers![i];
+      String statusColor = _getColorForApproverStatus(approver.status).value.toRadixString(16).substring(2);
+      String statusText = approver.status ?? 'pending';
+      String statusEmoji = approver.status == 'approved' ? '✅' : approver.status == 'rejected' ? '❌' : '⏳';
+      approversHtml += '<div style="text-align: center; margin: 0 10px;"><div style="width: 25px; height: 25px; border-radius: 50%; background-color: #$statusColor; margin: 0 auto 5px; position: relative;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div></div><p style="font-size: 12px; margin: 5px 0 0 0;">${approver.approverName ?? '---'}</p><p style="font-size: 10px; margin: 2px 0 0 0; color: #666;">$statusEmoji $statusText</p></div>';
+      if (i < data.approvers!.length - 1) approversHtml += '<div style="width: 40px; height: 2px; background-color: #ccc;"></div>';
+    }
+
+    return '<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">Approval Workflow</h3><div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap;"><div style="text-align: center; margin: 0 10px;"><div style="width: 25px; height: 25px; border-radius: 50%; background-color: #4CAF50; margin: 0 auto 5px; position: relative;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div></div><span>➡️</span></div><div style="width: 40px; height: 2px; background-color: #ccc;"></div>$approversHtml<div style="width: 40px; height: 2px; background-color: #ccc;"></div><div style="text-align: center; margin: 0 10px;"><div style="width: 25px; height: 25px; border-radius: 50%; background-color: $finalColor; margin: 0 auto 5px; position: relative;"><div style="width: 10px; height: 10px; border-radius: 50%; background-color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div></div><span>$finalEmoji</span></div></div></div>';
+  }
+
+  String buildCommentsSection() {
+    final data = widget.dataApprover;
+    final t = AppLocalizations.of(context)!;
+    List approversWithComments = [];
+    if (data.approvers != null) approversWithComments = data.approvers!.where((a) => a.comments != null && a.comments!.isNotEmpty).toList();
+    if (approversWithComments.isEmpty) return '<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">${t.comments}</h3><p>Not Available</p></div>';
+    String commentsHtml = '';
+    for (var comment in approversWithComments) {
+      final name = comment.approverName ?? '---';
+      final timestamp = comment.timeStamps != null ? singletonClass.formatDate2(comment.timeStamps.toString(), context) : '---';
+      final commentText = comment.comments ?? '---';
+      commentsHtml += '<div style="background-color: #f5f5f5; border-radius: 8px; padding: 10px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><p style="font-size: 13px; font-weight: bold; margin: 0 0 10px 0; color: black;">$name • $timestamp</p><p style="font-size: 15px; color: black; margin: 0;">$commentText</p></div>';
+    }
+    return '<div style="margin: 20px 0;"><h3 style="margin-bottom: 15px;">${t.comments}</h3>$commentsHtml</div>';
+  }
+
+  String buildHtmlContent() {
+    try {
+      final t = AppLocalizations.of(context)!;
+      final data = widget.dataApprover;
+      String content = '';
+      if (data.requestType == 'allowanceIncrement') {
+        content += htmlRow(t.date, data.requestData != null && data.requestData!.isNotEmpty ? singletonClass.formatDate2(data.requestData!.first.date, context) : t.noData);
+        content += htmlRow(t.amount, data.requestData != null && data.requestData!.isNotEmpty ? "${data.requestData!.first.amount ?? '---'}" : t.noData);
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'overTimeRequest') {
+        content += htmlRow(t.date, data.requestData != null && data.requestData!.isNotEmpty ? singletonClass.formatDate2(data.requestData!.first.date, context) : t.noData);
+        content += htmlRow(t.overTime, data.requestData != null && data.requestData!.isNotEmpty ? "${data.requestData!.first.overTimeHours ?? '---'} ${t.h}" : t.noData);
+        if (data.requestData != null && data.requestData!.isNotEmpty && data.requestData!.first.paidAs != null) {
+          final paidAs = data.requestData!.first.paidAs!;
+          content += '<div style="margin: 15px 0;"><strong>${t.paidAs}:</strong></div>';
+          content += htmlRow(t.type, paidAs['type']?.toString() ?? '---');
+          content += htmlRow(t.amount, paidAs['amount']?.toString() ?? '---');
+          content += htmlRow(t.totalAmount, paidAs['totalAmount']?.toString() ?? '---');
+        }
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'loanRequest') {
+        final r = data.requestData?.first;
+        content += htmlRow(t.duration, r != null ? "${r.loanDuration ?? '---'} ${t.month}" : '---');
+        content += htmlRow(t.totalLoanAmount, r?.loanAmount?.toString() ?? '---');
+        content += htmlRow(t.loanInstallment, r?.loanInstallment?.toString() ?? '---');
+        content += htmlRow(t.loanCycle, r?.loanCycle ?? '---');
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'attendanceRequest') {
+        final r = data.requestData?.first;
+        content += htmlRow(t.date, r != null ? singletonClass.formatDate2(r.attendanceDate, context) : '---');
+        content += htmlRow(t.time, r?.attendanceTime ?? '---');
+        content += htmlRow(t.type, r?.punchingType ?? '---');
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'expenseRequest') {
+        final r = data.requestData?.first;
+        content += htmlRow('${t.expense} ${t.date}', r != null ? singletonClass.formatDate2(r.expenseDate, context) : '---');
+        content += htmlRow(t.amount, r?.amount?.toString() ?? '---');
+        content += htmlRow(t.purpose, r?.purpose ?? '---');
+        content += htmlRow(t.category, r?.category ?? '---');
+        content += htmlRow(t.paymentMethods, r?.paymentMethod ?? '---');
+        content += htmlRow(t.transactionType, r?.transactionType ?? '---');
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'documentRequest') {
+        final r = data.requestData?.first;
+        content += htmlRow(t.date, r != null && r.date != null ? singletonClass.formatDate2(r.date!, context) : t.noData);
+        content += htmlRow('${t.document} ${t.type}', r?.documentType ?? '---');
+        content += htmlRow('${t.document} ${t.name}', r?.documentName ?? '---');
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'leaveRequest') {
+        final r = data.requestData?.first;
+        if (data.subType == 'shortLeave') {
+          content += htmlRow(t.date, r != null ? singletonClass.formatDate2(r.startDate, context) : t.noData);
+          content += htmlRow(t.time, r != null ? "${singletonClass.formatDateTime(r.startDate)} - ${singletonClass.formatDateTime(r.endDate)}" : t.noData);
+          content += htmlRow(t.duration, r != null ? "${r.duration ?? '---'} ${t.h}" : '---');
+        } else {
+          content += htmlRow(t.date, r != null ? "${singletonClass.formatDate2(r.startDate, context)} - ${singletonClass.formatDate2(r.endDate, context)}" : t.noData);
+          content += htmlRow(t.duration, r != null ? "${r.duration ?? '---'} ${t.days}" : '---');
+        }
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else if (data.requestType == 'specialLeaveRequest') {
+        final r = data.requestData?.first;
+        content += htmlRow(t.date, r != null ? "${singletonClass.formatDate2(r.startDate, context)} - ${singletonClass.formatDate2(r.endDate, context)}" : t.noData);
+        content += htmlRow(t.duration, r != null ? "${r.duration ?? '---'} ${t.days}" : '---');
+        content += htmlRow(t.note, data.reason ?? '---');
+        content += htmlRow('Request Type', data.requestType ?? '---');
+      } else {
+        content += htmlRow('Request Type', data.requestType ?? 'Unknown');
+        content += htmlRow(t.note, data.reason ?? '---');
+      }
+      return content;
+    } catch (e) {
+      if (kDebugMode) print('Error building HTML content: $e');
+      return '<div><strong>Error:</strong> Unable to generate content</div>';
+    }
+  }
+
+  Future<String> generateFullHtml({required String headerUrl, required String footerUrl}) async {
+    try {
+      final body = buildHtmlContent();
+      final approversWorkflow = buildApproversWorkflow();
+      final commentsSection = buildCommentsSection();
+      return '''
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+          img { display: block; width: 100%; }
+          .header-img, .footer-img { margin: 0; padding: 0; }
+          .content { margin: 20px; padding: 20px; }
+          strong { color: black; font-weight: bold; }
+          span { color: black; }
+          div { line-height: 1.6; }
+          h3 { color: black; font-weight: bold; margin: 20px 0 15px 0; }
+        </style>
+      </head>
+      <body>
+        <img class="header-img" src="$headerUrl" alt="Header"/>
+        <div class="content">$body</div>
+        $approversWorkflow
+        $commentsSection
+        <img class="footer-img" src="$footerUrl" alt="Footer"/>
+      </body>
+    </html>
+    ''';
+    } catch (e) {
+      if (kDebugMode) print('Error generating HTML: $e');
+      rethrow;
+    }
+  }
+
+
+  Future<void> printPdf() async {
+    try {
+      final html = await generateFullHtml(headerUrl: singletonClass.headerUrl, footerUrl: singletonClass.footerUrl);
+      await Printing.layoutPdf(onLayout: (format) async {
+        try {
+          return await Printing.convertHtml(format: format, html: html);
+        } catch (e) {
+          if (kDebugMode) print('Error converting HTML to PDF: $e');
+          rethrow;
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) print('Error printing PDF: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: ${e.toString()}'), backgroundColor: Colors.red));
+      }
     }
   }
 }

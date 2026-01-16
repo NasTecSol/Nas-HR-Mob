@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:nashr/l10n/app_localizations.dart';
@@ -93,6 +94,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                       onChanged: (Locale? value) {
                         setState(() {
                           _selectedLocale = value;
+                          SingletonClass().local = value!.languageCode;
                         });
                         if (_selectedLocale != null) {
                           _languageController.changeLanguage(_selectedLocale!);
@@ -115,6 +117,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                       onChanged: (Locale? value) {
                         setState(() {
                           _selectedLocale = value;
+                          SingletonClass().local = value!.languageCode;
                         });
                         if (_selectedLocale != null) {
                           _languageController.changeLanguage(_selectedLocale!);

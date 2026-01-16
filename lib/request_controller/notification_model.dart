@@ -36,6 +36,8 @@ class Data {
   String? notificationMessage;
   String? status;
   String? requestId;
+  String? attachment;
+  DurationSettings? durationSettings;
   String? createdAt;
   String? updatedAt;
   int? v;
@@ -51,6 +53,8 @@ class Data {
     this.notificationMessage,
     this.status,
     this.requestId,
+    this.attachment,
+    this.durationSettings,
     this.createdAt,
     this.updatedAt,
     this.v,
@@ -76,6 +80,8 @@ class Data {
     notificationMessage = json["notificationMessage"];
     status = json["status"];
     requestId = json["requestId"];
+    attachment = json["attachment"];
+    durationSettings = json["durationSettings"] == null ? null : DurationSettings.fromJson(json["durationSettings"]);
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
     v = json["__v"];
@@ -97,6 +103,11 @@ class Data {
     _data["notificationMessage"] = notificationMessage;
     _data["status"] = status;
     _data["requestId"] = requestId;
+    _data["requestId"] = requestId;
+    _data["attachment"] = attachment;
+    if(durationSettings != null) {
+      _data["durationSettings"] = durationSettings?.toJson();
+    }
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
     _data["__v"] = v;
@@ -104,6 +115,24 @@ class Data {
   }
 }
 
+class DurationSettings {
+  String? expiryDate;
+  String? displaySetting;
+
+  DurationSettings({this.expiryDate, this.displaySetting});
+
+  DurationSettings.fromJson(Map<String, dynamic> json) {
+    expiryDate = json["expiryDate"];
+    displaySetting = json["displaySetting"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["expiryDate"] = expiryDate;
+    _data["displaySetting"] = displaySetting;
+    return _data;
+  }
+}
 
 class To {
   String? email;

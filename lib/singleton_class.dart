@@ -18,10 +18,13 @@ import 'package:nashr/request_controller/check_in_model.dart';
 import 'package:nashr/request_controller/clocking_model.dart';
 import 'package:nashr/request_controller/companies_data_model.dart';
 import 'package:nashr/request_controller/company_assets_details_model.dart';
+import 'package:nashr/request_controller/company_details_document_notification_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
+import 'package:nashr/request_controller/company_notification_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
+import 'package:nashr/request_controller/document_shared_template.dart';
 import 'package:nashr/request_controller/employee_details_assets_model.dart';
 import 'package:nashr/request_controller/employee_details_attendance_model.dart';
 import 'package:nashr/request_controller/employee_details_clocking_model.dart';
@@ -46,6 +49,7 @@ import 'package:nashr/request_controller/search_employee_model.dart';
 import 'package:nashr/request_controller/signature_model.dart';
 import 'package:nashr/request_controller/slack_model.dart';
 import 'package:nashr/request_controller/socket_model.dart';
+import 'package:nashr/request_controller/stores_model.dart';
 import 'package:nashr/request_controller/task_attachment_model.dart';
 import 'package:nashr/request_controller/task_model.dart';
 import 'package:nashr/request_controller/team_clocking_model.dart';
@@ -70,10 +74,14 @@ class SingletonClass {
 
   bool initialized = false;
   String? baseURL;
+  String? env;
+  String? envToggle;
   int unreadCount = 0;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<CompanyNotificationModel> companyNotificationDataList = [];
+  List<DocumentSharedTemplate> documentSharedTemplateDataList = [];
   List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
   List<BiometricDevicesModel> biometricDevicesModelDataList = [];
@@ -118,8 +126,10 @@ class SingletonClass {
   List<TimeTableShiftModel> timeTableShiftsDataList = [];
   List<BranchesModel> branchesModelDataList = [];
   List<CompanyAssetsDetailsModel> companyAssetsDataList = [];
+  List<CompanyDetailsDocumentNotificationModel> companyDetailDocumentNotificationDataList = [];
   List<SocketModel> socketDataList = [];
   List<SlackModel> slackDataList = [];
+  List<StoresModel> storeModelDataList = [];
   String? checkInStatus ;
   String? selectedCompanyId ;
   String? checkOutStatus ;
@@ -135,7 +145,10 @@ class SingletonClass {
   List<Map<String, String>> chatMessages = [];
   bool hasShownGreeting = false;
   bool isFirstTimeSelectionDone = false;
-
+  String? local;
+  String headerUrl = '';
+  String footerUrl = '';
+  String? token ;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -266,6 +279,24 @@ class SingletonClass {
     return null ; // Print the response body
   }
 
+  ///Get HR letter Template
+  Future<DocumentSharedTemplate?> getHRLetter() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/documents/getBytemplateType?templateType=Doc_editor_shared&page=0&limit=100');
+    var response = await client.get(
+        uri,
+        headers: getHeaders()
+    );
+    log("GET HR LETTER${response.body}");
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var documentSharedTemplateData = DocumentSharedTemplate.fromJson(responseBody);
+      documentSharedTemplateDataList.addAll([documentSharedTemplateData]);
+      return documentSharedTemplateData;
+    }
+    return null;
+  }
+
   /// Organization call
   Future<OrganizationModel?> getOrganizationData() async {
     String? organizationID = getJWTModel()?.organizationId;
@@ -354,7 +385,23 @@ class SingletonClass {
       policyModelDataList.addAll([policyData]);
       return policyData;
     }
-    return null ; // Print the response body
+    return null ;
+  }
+
+  Future<CompanyNotificationModel?> getCompanyNotificationData() async {
+    var client = http.Client();
+    var uri = Uri.parse('$baseURL/doc-notifications');
+    var response = await client.get(uri,
+        headers: getHeaders());
+    if (response.statusCode == 200) {
+      log("company Notification ${response.body}");
+      var responseBody = json.decode(response.body);
+      var companyNotification = CompanyNotificationModel.fromJson(responseBody);
+      companyNotificationDataList.clear();
+      companyNotificationDataList.addAll([companyNotification]);
+      return companyNotification;
+    }
+    return null ;
   }
 
   Future<EmployeeData?> getEmployeeData() async {
@@ -418,7 +465,9 @@ class SingletonClass {
   }
 
   Future<CompanyData?> getCompanyData() async {
-    String? companyId = getJWTModel()?.companyId;
+    String? companyId =  (selectedCompanyId != null && selectedCompanyId!.isNotEmpty)
+        ? selectedCompanyId
+        : getJWTModel()?.companyId;
 
     if (companyId == null || companyId.isEmpty) {
       log("❌ No companyId available from selectedCompanyId or JWT!");
@@ -715,13 +764,14 @@ class SingletonClass {
   }
   ///Header for api call
   Map<String, String> getHeaders() {
+
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "x-tenant-id" : "2002"
+      "x-tenant-id" : tenantId.toString(),
+      "Authorization": "Bearer $token",
     };
   }
-
 
   ///Request Screen API Calls
   Future<ApproverRequestData?> getApproverData(
@@ -773,6 +823,112 @@ class SingletonClass {
       log('Error Approver Data: $e');
       return null;
     }
+  }
+
+  Future<void> fetchCompanyHeaderFooter(String companyId) async {
+    try {
+      final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
+      final response = await http.get(url, headers: getHeaders());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'] as List? ?? [];
+        if (data.isNotEmpty) {
+          final doc = data.first;
+          headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
+          footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
+          if (kDebugMode) {
+            print('Header URL: $headerUrl');
+            print('Footer URL: $footerUrl');
+          }
+        } else {
+          if (kDebugMode) print('No documents found for this company.');
+        }
+      } else {
+        if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error fetching company documents: $e');
+    }
+  }
+
+
+  ///Clear all data lists
+  void reset() {
+    employeeDataList.clear();
+    companyNotificationDataList.clear();
+    documentSharedTemplateDataList.clear();
+    reportManagerDataList.clear();
+    roleAndAccessModelDataList.clear();
+    biometricDevicesModelDataList.clear();
+    organizationModelDataList.clear();
+    companiesDataList.clear();
+    branchesDataList.clear();
+    documentNotificationDataList.clear();
+    tenantIDDataList.clear();
+    complaintsApproverDataList.clear();
+    penaltiesApproverDataList.clear();
+    signatureModelList.clear();
+    remoteAttendanceModelList.clear();
+    projectsDataList.clear();
+    taskAttachmentDataList.clear();
+    taskModelList.clear();
+    projectsLogoModelList.clear();
+    penaltiesDataList.clear();
+    notificationModelList.clear();
+    complaintsDataList.clear();
+    profileResponseDataList.clear();
+    attachmentResponseDataList.clear();
+    searchEmployeeDataList.clear();
+    assetsDetailsModel.clear();
+    employeeDetailsAssetsModel.clear();
+    employeeDetailsAttendanceDataList.clear();
+    attendanceDataList.clear();
+    teamAttendanceDataList.clear();
+    approverDataList.clear();
+    companyDataList.clear();
+    requestDataList.clear();
+    employeeDetailsDataList.clear();
+    employeeDetailsClockingDataList.clear();
+    checkInDataList.clear();
+    clockingDataList.clear();
+    teamClockingDataList.clear();
+    branchDataList.clear();
+    teamBranchDataList.clear();
+    eventDataList.clear();
+    policyModelDataList.clear();
+    uiSettingsModelDataList.clear();
+    branchShiftsDataList.clear();
+    timeTableShiftsDataList.clear();
+    branchesModelDataList.clear();
+    companyAssetsDataList.clear();
+    companyDetailDocumentNotificationDataList.clear();
+    socketDataList.clear();
+    slackDataList.clear();
+    storeModelDataList.clear();
+    availableBranches.clear();
+    chatMessages.clear();
+    baseURL = null;
+    env = null;
+    envToggle = null;
+    unreadCount = 0;
+    _loginModel = null;
+    _jwtData = null;
+    checkInStatus = null;
+    selectedCompanyId = null;
+    checkOutStatus = null;
+    fcmToken = null;
+    tenantId = null;
+    tenantLogo = null;
+    companyName = null;
+    branchID = null;
+    branchName = null;
+    activeChatRoomId = null;
+    activeScreen = null;
+    hasShownGreeting = false;
+    isFirstTimeSelectionDone = false;
+    local = null;
+    headerUrl = '';
+    footerUrl = '';
+    token = null;
   }
 
 }

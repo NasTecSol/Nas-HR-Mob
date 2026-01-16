@@ -10,8 +10,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/create_hr_letter_screen.dart';
 import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:nashr/singleton_class.dart';
+import 'package:nashr/widgets/loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/colors.dart';
 
@@ -40,6 +42,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
 
     try {
       await singletonClass.getEmployeeData();
+      await singletonClass.getHRLetter();
       setState(() {
         isLoading = false;
       });
@@ -49,6 +52,20 @@ class _DocumentScreenState extends State<DocumentScreen> {
         isLoading = false;
       });
     }
+  }
+  @override
+  void initState() {
+    super.initState();
+    singletonClass.getHRLetter();
+    setState(() {
+      loadLanguage();
+    });
+  }
+
+  Future<void> loadLanguage() async {
+    String? lang = await SharedPreferences.getInstance()
+        .then((sp) => sp.getString("Language") ?? "en");
+    singletonClass.local = lang;
   }
   @override
   Widget build(BuildContext context) {
@@ -62,8 +79,17 @@ class _DocumentScreenState extends State<DocumentScreen> {
     final canCreateHRLetter = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "My HR letters" || sub.title == "My HR letter") &&
-            sub.accessType!.write == true) ??
+        (sub.title == "Manage HR Letters" || sub.title == "Manage HR Letters") &&
+            sub.accessType!.add == true) ??
+            false;
+      }
+      return false;
+    });
+    final canSeeHRLetter = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Manage HR Letters" || sub.title == "Manage HR Letters") &&
+            sub.hidden == false) ??
             false;
       }
       return false;
@@ -111,7 +137,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                       ),
                     ),
                     const Spacer(),
-                    if (canCreateHRLetter)
+                    if (canCreateHRLetter && _selectedOptionIndex == 2)
                       IconButton(
                         onPressed: () {
                           Navigator.push(
@@ -148,9 +174,10 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      buildOptionsCard(
-                          0, AppLocalizations.of(context)!.documents),
+                      buildOptionsCard(0, AppLocalizations.of(context)!.documents),
                       buildOptionsCard(1, AppLocalizations.of(context)!.card),
+                      if(canSeeHRLetter)
+                      buildOptionsCard(2, AppLocalizations.of(context)!.hrLetter),
                     ],
                   ),
                 ),
@@ -220,24 +247,30 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: documentInfo.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final documents = documentInfo[index];
-                    final url = documents.remarks ?? '';
+                    final documents = documentInfo.reversed.toList()[index];
+                    const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
+                    final String url = [
+                      documents?.url,
+                      documents?.remarks,
+                    ].firstWhere(
+                          (value) => value != null && value.contains(s3BaseUrl),
+                      orElse: () => '',
+                    );
                     final fileType = url.split('.').last.toLowerCase();
                     final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
                     final searchText =
                     searchController.text.toLowerCase();
-                    if (isSearching &&
-                        !(documents.type
-                            ?.toLowerCase()
-                            .contains(searchText) ??
-                            false)) {
+                    if (isSearching && !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
                       return const SizedBox.shrink();
+                    }
+                    if(documents.type == "Doc_editor_shared"){
+                      return SizedBox.shrink();
                     }
                     return Transform.translate(
                       offset: Offset(0, index == 0 ? 0 : -10),
                       child: GestureDetector(
                         onTap: () async {
-                          if (url != null && url.isNotEmpty) {
+                          if (url.isNotEmpty) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -305,7 +338,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                         ? Image.network(
                                       url,
                                       height: 60,
-                                      width: double.infinity,
+                                      width: 100,
                                       fit: BoxFit.cover,
                                       alignment: Alignment.topCenter,
                                     )
@@ -318,7 +351,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                   Spacer(),
                                   GestureDetector(
                                     onTap: () async {
-                                      if (url != null && url.isNotEmpty) {
+                                      if (url.isNotEmpty) {
                                         final uri = Uri.parse(url);
                                         if (await canLaunchUrl(uri)) {
                                           await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -2671,11 +2704,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         Object exception,
                                                         StackTrace?
                                                         stackTrace) {
-                                                      return Icon(
-                                                        Icons.broken_image,
-                                                        size: 30,
-                                                        color: NasColors
-                                                            .darkBlue,
+                                                      return Text(AppLocalizations.of(context)!.noSignature,
+                                                        style: GoogleFonts.inter(
+                                                         fontSize: 12,
+                                                         fontWeight: FontWeight.normal,
+                                                         color: Colors.black
+                                                        ),
                                                       );
                                                     },
                                                   ),
@@ -3378,6 +3412,179 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   ))
             ]),
           ],
+          if(_selectedOptionIndex == 2)...[
+            Expanded(
+              child: FutureBuilder(
+                key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                future: singletonClass.getHRLetter(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: Loader());
+                  }
+                  final allDocuments = singletonClass
+                      .documentSharedTemplateDataList.first.data?.data ?? [];
+
+                  final filteredDocuments = allDocuments.where((documents) {
+                    final employeeId = singletonClass.getJWTModel()?.employeeId;
+                    final createdBy = documents.objectDetails?.createdBy;
+                    final allowedEmployees =
+                        documents.objectDetails?.parameters?.employees ?? [];
+                    return createdBy == employeeId || allowedEmployees.contains(employeeId);
+                  }).toList();
+                  if (filteredDocuments.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset('images/empty.json'),
+                            ),
+                            Text(
+                              AppLocalizations.of(context)!.noData,
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    color: NasColors.darkBlue,
+                    backgroundColor: Colors.white,
+                    onRefresh: () async {
+                      await fetchLatestDocumentData();
+                      setState(() {});
+                    },
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: filteredDocuments.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final documents = filteredDocuments[index];
+
+                        final url = documents.objectDetails!.parameters!.documentUrl ?? '';
+                        final fileType = url.split('.').last.toLowerCase();
+                        final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+
+                        return Transform.translate(
+                          offset: Offset(0, index == 0 ? 0 : -10),
+                          child: GestureDetector(
+                            onTap: () async {
+                              if (url.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FileViewerScreen(
+                                      url: url,
+                                      fileName: "${documents.objectDetails!.objectName}",
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                debugPrint('Invalid attachment URL');
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(top: 10, left: 30, right: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  if (index != 0)
+                                    const BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 10,
+                                      spreadRadius: 10,
+                                      offset: Offset(0, -6),
+                                    ),
+                                  const BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${documents.objectDetails!.objectName}",
+                                    maxLines: 2,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Icon(Icons.arrow_forward_ios_outlined,
+                                          color: Colors.grey, size: 20)
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: isImage
+                                            ? Image.network(
+                                          url,
+                                          height: 60,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        )
+                                            : Image.asset(
+                                          _getFileIcon(url),
+                                          height: 60,
+                                          width: 60,
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          if (url.isNotEmpty) {
+                                            final uri = Uri.parse(url);
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(uri,
+                                                  mode: LaunchMode.externalApplication);
+                                            } else {
+                                              debugPrint('Could not launch $url');
+                                            }
+                                          } else {
+                                            debugPrint('Invalid download URL');
+                                          }
+                                        },
+                                        child: Image.asset(
+                                          'images/download.png',
+                                          height: 35,
+                                          width: 35,
+                                        ),
+                                      ),
+                                      SizedBox(width: 20),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
       )
     );
@@ -3413,7 +3620,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         });
       },
       child: SizedBox(
-        height: 70,
+        height: 90,
         width: 140,
         child: Card(
           color:

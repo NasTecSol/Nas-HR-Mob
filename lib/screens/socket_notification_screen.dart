@@ -250,7 +250,7 @@ class _SocketNotificationScreenState extends State<SocketNotificationScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => MainScreen(index: 2 , selectedIndex: 0)),
+                                    builder: (context) => MainScreen(index: 2 , selectedIndex: 0 , showBanner: false)),
                               );
                             }
                           },

@@ -44,7 +44,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final degreeType = TextEditingController();
   final basicSalary = TextEditingController();
   final bankName = TextEditingController();
-  final accountNox = TextEditingController();
+  final accountNo = TextEditingController();
+  final allowancePercentage = TextEditingController();
+  final deductionPercentage = TextEditingController();
+  final allowanceAmount = TextEditingController();
+  final deductionAmount = TextEditingController();
+  final allowanceName = TextEditingController();
+  final deductionName = TextEditingController();
   bool isLoading = false;
   PlatformFile? selectedFile;
   String? profilePicUrl;
@@ -60,6 +66,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String? contractType = "Permanent";
   String? currency;
   String? salaryPeriod;
+  String? deductionType;
+  String? basedOn;
+  String? allowanceType;
+  String? deductionBasedOn;
   DateTime? selectedDate;
   DateTime? contractEndDate;
 
@@ -86,6 +96,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Map<String, String>> departments = [];
   List<Map<String, String>> supervisors = [];
   List<Map<String, String>> shifts = [];
+  bool salaryExpanded = false ;
+  bool allowanceExpanded = false ;
+  bool deductionExpanded = false ;
+  List<AllowanceFormModel> allowances = [AllowanceFormModel()];
+  List<DeductionFormModel> deductions = [DeductionFormModel()];
 
   @override
   void initState() {
@@ -330,7 +345,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           currency == null ||
           salaryPeriod == null ||
           bankName.text.isEmpty ||
-          accountNox.text.isEmpty) {
+          accountNo.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
@@ -448,7 +463,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ],
                 ),
                 const SizedBox(height: 25),
-
                 /// Steps
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -493,7 +507,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 /// PageView
                 Expanded(
                   child: PageView(
@@ -569,7 +582,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onCompanySelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Branch Dropdown
                             RichText(
                               text: TextSpan(
@@ -622,7 +634,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onBranchSelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Department Dropdown
                             RichText(
                               text: TextSpan(
@@ -675,7 +686,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               onChanged: _onDepartmentSelected,
                             ),
                             const SizedBox(height: 16),
-
                             /// Supervisor Dropdown
                             RichText(
                               text: TextSpan(
@@ -748,7 +758,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   : (value) => _onSupervisorSelected(value),
                             ),
                             const SizedBox(height: 16),
-
                             /// Shift Dropdown
                             RichText(
                               text: TextSpan(
@@ -774,6 +783,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               dropdownColor: Colors.white,
+                              isExpanded: true,
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -815,7 +825,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ],
                         ),
                       ),
-
                       ///Page 2
                       SingleChildScrollView(
                         child: Padding(
@@ -1728,7 +1737,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-
                       ///Page 3
                       SingleChildScrollView(
                         child: Padding(
@@ -2036,7 +2044,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-
                       ///page 4
                       SingleChildScrollView(
                         child: Padding(
@@ -2044,17 +2051,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                AppLocalizations.of(context)!.salaryInformation,
-                                style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-
+                             Text(
+                                    AppLocalizations.of(context)!.salaryInformation,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                             ),
                               SizedBox(height: 20),
-
-                              // Basic Salary
+                              ///Basic Salary
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2101,10 +2106,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
-
                               SizedBox(height: 12),
-
-                              // Currency
+                              /// Currency
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2156,10 +2159,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 12, vertical: 14),
                                 ),
                               ),
-
                               SizedBox(height: 12),
-
-                              // Salary Period
+                              /// Salary Period
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2211,10 +2212,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       horizontal: 12, vertical: 14),
                                 ),
                               ),
-
                               SizedBox(height: 12),
-
-                              // Bank Name
+                              /// Bank Name
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2257,10 +2256,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
-
                               SizedBox(height: 12),
-
-                              // Account No
+                              /// Account No
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -2285,7 +2282,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               const SizedBox(height: 8),
                               TextFormField(
                                   keyboardType: TextInputType.text,
-                                  controller: accountNox,
+                                  controller: accountNo,
                                   decoration: InputDecoration(
                                     hintText: AppLocalizations.of(context)!
                                         .enterAccountNo,
@@ -2304,6 +2301,622 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
                                   )),
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    allowanceExpanded = !allowanceExpanded;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.allowance,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Spacer(),
+                                    IconButton(
+                                      icon: Icon(
+                                        allowanceExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          allowanceExpanded = !allowanceExpanded;
+                                        });
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setState(() {
+                                          allowances.add(AllowanceFormModel());
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if(allowanceExpanded == true)...[
+                                ///Listview
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: allowances.length,
+                                  padding: EdgeInsets.zero,
+                                  itemBuilder: (context, index) {
+                                    final item = allowances[index];
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${index + 1}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                  color: Colors.grey
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            if (allowances.length > 1)
+                                              IconButton(
+                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    allowances.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                            keyboardType: TextInputType.text,
+                                            controller: item.title,
+                                            decoration: InputDecoration(
+                                              hintText: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            )),
+                                        const SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.type}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<String>(
+                                          dropdownColor: Colors.white,
+                                          value: item.type,
+                                          items: ["Fixed", "Variable"]
+                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            setState(() => item.type = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            hintText: AppLocalizations.of(context)!.selectAllowanceType,
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide:
+                                              const BorderSide(color: Colors.grey),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.black, width: 1.5),
+                                            ),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8)),
+                                            contentPadding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 14),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        if(item.type == "Variable")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.basedOn,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            dropdownColor: Colors.white,
+                                            value: item.basedOn,
+                                            items: ["Salary"]
+                                                .map((e) => DropdownMenuItem(
+                                                value: e, child: Text(e)))
+                                                .toList(),
+                                            onChanged: (val) {
+                                              setState(() => item.basedOn = val);
+                                            },
+                                            decoration: InputDecoration(
+                                              hintText: AppLocalizations.of(context)!.selectOption,
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.allowancePercentage,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.percentage,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterPercentage,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        if (item.type == "Fixed")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.allowanceAmount,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.amount,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterAmount,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        const Divider(height: 32),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    deductionExpanded = !deductionExpanded;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.deductions,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Spacer(),
+                                    IconButton(
+                                      icon: Icon(
+                                        deductionExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          deductionExpanded = !deductionExpanded;
+                                        });
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () {
+                                        setState(() {
+                                          deductions.add(DeductionFormModel());
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              if(deductionExpanded == true)...[
+                                ///List view
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: deductions.length,
+                                  itemBuilder: (context, index) {
+                                    final item = deductions[index];
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "${index + 1}",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            if (deductions.length > 1)
+                                              IconButton(
+                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    deductions.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextFormField(
+                                            keyboardType: TextInputType.text,
+                                            controller: item.title,
+                                            decoration: InputDecoration(
+                                              hintText: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            )),
+                                        const SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.type}",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              TextSpan(
+                                                text: " *",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        DropdownButtonFormField<String>(
+                                          dropdownColor: Colors.white,
+                                          value: item.type,
+                                          items: ["Fixed", "Variable"]
+                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            setState(() => item.type = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            hintText: AppLocalizations.of(context)!.selectDeductionType,
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide:
+                                              const BorderSide(color: Colors.grey),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.black, width: 1.5),
+                                            ),
+                                            border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8)),
+                                            contentPadding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 14),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        if(item.type  == "Variable")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.basedOn,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          DropdownButtonFormField<String>(
+                                            dropdownColor: Colors.white,
+                                            value: item.basedOn,
+                                            items: ["Salary"]
+                                                .map((e) => DropdownMenuItem(
+                                                value: e, child: Text(e)))
+                                                .toList(),
+                                            onChanged: (val) {
+                                              setState(() => item.basedOn = val);
+                                            },
+                                            decoration: InputDecoration(
+                                              hintText: AppLocalizations.of(context)!.selectOption,
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide:
+                                                const BorderSide(color: Colors.grey),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                                borderSide: const BorderSide(
+                                                    color: Colors.black, width: 1.5),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8)),
+                                              contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 14),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.deductionPercentage,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.percentage,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterPercentage,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        if (item.type  == "Fixed")...[
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: AppLocalizations.of(context)!.deductionAmount,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                TextSpan(
+                                                  text: " *",
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                              keyboardType: TextInputType.text,
+                                              controller: item.amount,
+                                              decoration: InputDecoration(
+                                                hintText: AppLocalizations.of(context)!.enterAmount,
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide:
+                                                  const BorderSide(color: Colors.grey),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.black, width: 1.5),
+                                                ),
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(8)),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 12, vertical: 14),
+                                              )),
+                                        ],
+                                        const Divider(height: 32),
+                                      ],
+                                    );
+                                  },
+                                ),
+
+                              ],
                             ],
                           ),
                         ),
@@ -2380,6 +2993,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> createEmployee() async {
     final today = DateTime.now().toIso8601String().split('T').first;
     String? organizationID = singletonClass.getJWTModel()?.organizationId;
+    List<Map<String, dynamic>> allowanceBenefits = allowances.map((e) {
+      return {
+        "allowanceTitle": e.title.text,
+        "allowanceType": e.type!.toUpperCase(),
+        "basedOn": e.type == "Variable" ? "Salary" : "",
+        "amount": e.type == "Fixed"
+            ? e.amount.text
+            : calculatePercentageAmount(
+          baseSalary: basicSalary.text,
+          percentage: e.percentage.text,
+        ),
+      };
+    }).toList();
+
+    List<Map<String, dynamic>> deductionList = deductions.map((e) {
+      return {
+        "deductionTitle": e.title.text,
+        "deductionType": e.type!.toUpperCase(),
+        "basedOn": e.type == "Variable" ? "Salary" : "",
+        "amount": e.type == "Fixed"
+            ? e.amount.text
+            : calculatePercentageAmount(
+          baseSalary: basicSalary.text,
+          percentage: e.percentage.text,
+        ),
+      };
+    }).toList();
+
+
     final Map<String, dynamic> data = {
       "userName": userName.text.isNotEmpty ? userName.text : "",
       "password": password.text.isNotEmpty ? password.text : "",
@@ -2452,7 +3094,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       "bankingInfo": [
         {
           "title": bankName.text.isNotEmpty ? bankName.text : "",
-          "accountNumber": accountNox.text.isNotEmpty ? accountNox.text : "",
+          "accountNumber": accountNo.text.isNotEmpty ? accountNo.text : "",
           "branchCode": "",
           "accountType": "",
           "country": "",
@@ -2494,8 +3136,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         "baseSalary": basicSalary.text.isNotEmpty ? basicSalary.text : "",
         "currency": currency?.toString() ?? "",
         "timeCycle_Period": salaryPeriod?.toString() ?? "",
-        "allowance_Benefits": [],
-        "deductions": [],
+        "allowance_Benefits": allowanceBenefits,
+        "deductions": deductionList,
         "taxInfo": {
           "taxPercentage": "",
           "deductableAmount": "",
@@ -2549,6 +3191,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         body: body,
         headers: singletonClass.getHeaders(),
       );
+
       log("++++++${response.body}");
       if (response.statusCode == 200) {
         setState(() => isLoading = false);
@@ -2618,7 +3261,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-// helper method
+/// helper method
   int _calculateAge(String? birthDateString) {
     if (birthDateString == null || birthDateString.isEmpty) return 0;
     final birthDate = DateTime.tryParse(birthDateString);
@@ -2631,4 +3274,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     return age;
   }
+
+  String calculatePercentageAmount({
+    required String baseSalary,
+    required String percentage,
+  }) {
+    final double salary = double.tryParse(baseSalary) ?? 0;
+    final double percent = double.tryParse(percentage) ?? 0;
+
+    final double amount = (salary * percent) / 100;
+    return amount.toStringAsFixed(2);
+  }
+
 }
+
+///Static Models
+class AllowanceFormModel {
+  final TextEditingController title = TextEditingController();
+  final TextEditingController amount = TextEditingController();
+  final TextEditingController percentage = TextEditingController();
+
+  String? type;
+  String? basedOn;
+}
+
+class DeductionFormModel {
+  final TextEditingController title = TextEditingController();
+  final TextEditingController amount = TextEditingController();
+  final TextEditingController percentage = TextEditingController();
+
+  String? type;
+  String? basedOn;
+}
+
+

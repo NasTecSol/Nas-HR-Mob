@@ -789,6 +789,17 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
             "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
+        } else {
+          await QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            title: AppLocalizations.of(context)!.internalServerError,
+            text: "Attachment data is missing. Please try again.",
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+          return;
         }
       }
 
@@ -856,7 +867,7 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0)),
+            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0 , showBanner: false)),
           );
         });
       } else {
