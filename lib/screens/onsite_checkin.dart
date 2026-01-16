@@ -89,8 +89,12 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     final checkInTime = todayData?.clockInTime;
     final checkOutTime = todayData?.clockOutTime;
     setState(() {
-      isCheckedIn = checkInTime != null && checkInTime.isNotEmpty && checkInTime == '' ;
-      isCheckedOut = checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime == '';
+      isCheckedIn = checkInTime != null &&
+          checkInTime.trim().isNotEmpty &&
+          checkInTime.trim().toLowerCase() != 'null';
+      isCheckedOut = checkOutTime != null &&
+          checkOutTime.trim().isNotEmpty &&
+          checkOutTime.trim().toLowerCase() != 'null';
     });
   }
 
@@ -227,7 +231,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     } else if (isCheckedOut){
       return AppLocalizations.of(context)!.checkIn;
     } else {
-      return AppLocalizations.of(context)!.clockIn;
+      return AppLocalizations.of(context)!.checkIn;
     }
   }
 
