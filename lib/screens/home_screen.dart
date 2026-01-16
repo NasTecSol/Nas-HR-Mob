@@ -245,8 +245,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final checkOutTime = todayData.clockOutTime;
 
       // 🔹 Both checkin/checkout empty → no work today
-      if ((checkInTime == null || checkInTime.isEmpty) &&
-          (checkOutTime == null || checkOutTime.isEmpty)) {
+      if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
+          (checkOutTime == null || checkOutTime.isEmpty || checkOutTime == 'null')) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
         return;
@@ -254,14 +254,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // 🔹 Case 1: Only check-in available → running session
       if (checkInTime != null &&
-          checkInTime.isNotEmpty) {
+          checkInTime.isNotEmpty && checkInTime != 'null') {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
       if (checkOutTime != null &&
-          checkOutTime.isNotEmpty) {
+          checkOutTime.isNotEmpty && checkOutTime != 'null') {
         stopWorkTimer();
         _updateWorkedTime();
         return;
@@ -2195,13 +2195,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     String? checkOutTime = todayData?.clockOutTime;
                                     String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
 
-                                    if ((checkInTime == null || checkInTime.isEmpty) &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
+                                        (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty)) {
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty) &&
-                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
+                                        (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
                                     }
 
@@ -2212,7 +2212,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
+                                            _timer != null && _timer!.isActive ?
                                             Container(
+                                              width: 60,
+                                              height: 50,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                color: Colors.white,
+                                              ),
+                                              child: Lottie.asset('images/working.json'),
+                                            ) : Container(
                                               width: 60,
                                               height: 50,
                                               decoration: const BoxDecoration(
@@ -2266,9 +2275,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
-                                  if (hasAttendance)
+                                  if (hasAttendance)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2317,8 +2326,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasDocuments)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasDocuments)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2410,8 +2420,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasAssets)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasAssets)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2492,8 +2503,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasTeams)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasTeams)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2541,8 +2553,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasComplaints)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasComplaints)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2591,8 +2604,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasPenaltiesAndFines)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasPenaltiesAndFines)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2641,8 +2655,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasManageShifts)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasManageShifts)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2691,8 +2706,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasBiometricCheckins)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasBiometricCheckins)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2741,8 +2757,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasOnboarding)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasOnboarding)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2791,9 +2808,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasCompanyNotifications)
-                                  Column(
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasCompanyNotifications)...[
+                                    Column(
                                     children: [
                                       GestureDetector(
                                         onTap: () {
@@ -2831,8 +2849,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
-                                        AppLocalizations.of(context)!
-                                            .companyNotifications,
+                                        AppLocalizations.of(context)!.documentNotification,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -2841,8 +2858,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 20),
-                                  if (hasStores)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasStores)...[
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -2891,6 +2909,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ],
                                   ),
+                                    const SizedBox(width: 20),
+                                  ],
                                 ],
                               ),
                             ),
