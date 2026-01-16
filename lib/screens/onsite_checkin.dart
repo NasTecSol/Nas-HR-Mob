@@ -87,7 +87,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
 
     final checkInTime = todayData?.clockInTime;
-    final checkOutTime = todayData?.clockInTime;
+    final checkOutTime = todayData?.clockOutTime;
     setState(() {
       isCheckedIn = checkInTime != null && checkInTime.isNotEmpty && checkInTime == '' ;
       isCheckedOut = checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime == '';
@@ -313,36 +313,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          '${AppLocalizations.of(context)!.checkInComplete}. Tap done to check out.',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.green.shade900,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (isCheckedIn && _showCheckInCard)
-            Positioned(
-              top: 16.0,
-              left: 16.0,
-              right: 16.0,
-              child: Card(
-                color: Colors.green.shade50,
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 24),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          '${AppLocalizations.of(context)!.checkInComplete}. Tap done to check out.',
+                          '${AppLocalizations.of(context)!.checkInComplete}. Tap on out button to check out.',
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             color: Colors.green.shade900,
