@@ -11,6 +11,7 @@ import 'package:newrelic_mobile/config.dart';
 import 'package:newrelic_mobile/newrelic_mobile.dart';
 import 'package:newrelic_mobile/newrelic_navigation_observer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'enviroment/enviroment.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:nashr/screens/splash_screen.dart';
@@ -27,16 +28,16 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
+    final env = await Environment.detectEnv();
     await SingletonClass().init();
     await NotificationService.init();
 
-    if (kDebugMode) {
-      print("App is running in Debug mode.");
+    if (env == "staging") {
+      debugPrint("App is running in Debug mode.");
       SingletonClass().baseURL = "https://dev.nashrms.com/api";
+      SingletonClass().env = "staging";
     }
-
-    if (kReleaseMode) {
+    if ( env == "production") {
       SingletonClass().baseURL = "https://www.nashrms.com/api";
     }
 
@@ -48,8 +49,7 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    MapboxOptions.setAccessToken(
-        "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA"
+    MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA"
     );
 
     final prefs = await SharedPreferences.getInstance();

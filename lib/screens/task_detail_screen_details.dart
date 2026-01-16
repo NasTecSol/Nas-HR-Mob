@@ -1528,7 +1528,7 @@ class _TaskDetailScreenDetailsState extends State<TaskDetailScreenDetails> {
             type: QuickAlertType.success,
           );
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const MainScreen(index: 1 , selectedIndex: 0,)));
+              context, MaterialPageRoute(builder: (context) => const MainScreen(index: 1 , selectedIndex: 0,showBanner: false)));
           singletonClass.taskModelList.clear();
           singletonClass.taskAttachmentDataList.clear();
         } else {

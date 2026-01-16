@@ -1,4 +1,4 @@
-//Login Model
+///Login Model
 class LoginModel {
   final int? statusCode;
   final String? statusMessage;

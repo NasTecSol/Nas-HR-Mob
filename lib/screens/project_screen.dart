@@ -160,8 +160,8 @@ class _ProjectScreenState extends State<ProjectScreen> {
                             itemCount: singletonClass.projectsDataList.first.data!
                                 .length,
                             itemBuilder: (BuildContext context, int index) {
-                              final project = singletonClass.projectsDataList.first
-                                  .data![index];
+                              final project = singletonClass.projectsDataList.first.data![index];
+                              final taskCount = getTaskCountForProject("${project.id}");
                               return Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                                 child: GestureDetector(
@@ -250,7 +250,27 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                               SizedBox(height: 25),
                                             ],
                                           ),
-                                        ]
+                                        ],
+                                        Spacer(),
+                                        Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 18,
+                                            minHeight: 18,
+                                          ),
+                                          child: Text(
+                                            '$taskCount',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -336,11 +356,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
                           }
                           return ListView.builder(
                             padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass.projectsDataList.first.data!
-                                .length,
+                            itemCount: singletonClass.projectsDataList.first.data!.length,
                             itemBuilder: (BuildContext context, int index) {
-                              final project = singletonClass.projectsDataList.first
-                                  .data![index];
+                              final project = singletonClass.projectsDataList.first.data![index];
+                              final taskCount = getTaskCountForProject("${project.id}");
                               return Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                                 child: GestureDetector(
@@ -429,7 +448,27 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                               SizedBox(height: 25),
                                             ],
                                           ),
-                                        ]
+                                        ],
+                                        Spacer(),
+                                        Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 18,
+                                            minHeight: 18,
+                                          ),
+                                          child: Text(
+                                            '$taskCount',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -516,11 +555,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
                         }
                         return ListView.builder(
                           padding: const EdgeInsets.all(5),
-                          itemCount: singletonClass.projectsDataList.first.data!
-                              .length,
+                          itemCount: singletonClass.projectsDataList.first.data!.length,
                           itemBuilder: (BuildContext context, int index) {
-                            final project = singletonClass.projectsDataList.first
-                                .data![index];
+                            final project = singletonClass.projectsDataList.first.data![index];
+                            final taskCount = getTaskCountForProject("${project.id}");
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10.0),
                               child: GestureDetector(
@@ -609,7 +647,27 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                             SizedBox(height: 25),
                                           ],
                                         ),
-                                      ]
+                                      ],
+                                      Spacer(),
+                                      Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          '$taskCount',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -665,38 +723,89 @@ class _ProjectScreenState extends State<ProjectScreen> {
       child: SizedBox(
         height: 70,
         width: 140,
-        child: Card(
-              color: _selectedOptionIndex == index
-                  ? NasColors.darkBlue
-                  : Colors.white,
-              margin: const EdgeInsets.all(10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-                side: BorderSide(
-                  color: _selectedOptionIndex == index
-                      ? Colors.white
-                      : Colors.white,
-                  width: 0,
+        child: Stack(
+          children: [ Card(
+                color: _selectedOptionIndex == index
+                    ? NasColors.darkBlue
+                    : Colors.white,
+                margin: const EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  side: BorderSide(
+                    color: _selectedOptionIndex == index
+                        ? Colors.white
+                        : Colors.white,
+                    width: 0,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: _selectedOptionIndex == index
+                            ? Colors.white
+                            : NasColors.darkBlue,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: _selectedOptionIndex == index
-                          ? Colors.white
-                          : NasColors.darkBlue,
-                    ),
+            if (index == 0)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${singletonClass.projectsDataList.isNotEmpty && singletonClass.projectsDataList.first.data != null ? singletonClass.projectsDataList.first.data!.length : 0}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-            ),
+            if (index == 1)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '${singletonClass.projectsDataList.isNotEmpty && singletonClass.projectsDataList.first.data != null ? singletonClass.projectsDataList.first.data!.length : 0}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+        ]),
+
       ),
     );
   }
@@ -717,6 +826,19 @@ class _ProjectScreenState extends State<ProjectScreen> {
       return projectsData;
     }
     return null;
+  }
+
+  int getTaskCountForProject(String projectId) {
+    int count = 0;
+
+    for (final taskModel in singletonClass.taskModelList) {
+      final tasks = taskModel.data;
+      if (tasks == null) continue;
+
+      count += tasks.where((task) => task.projectId == projectId).length;
+    }
+
+    return count;
   }
 
   ///Admin project data all projects

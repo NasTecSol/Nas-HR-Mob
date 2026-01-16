@@ -1011,7 +1011,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const MainScreen(index: 3 , selectedIndex: 0,)));
+                  builder: (context) => const MainScreen(index: 3 , selectedIndex: 0,showBanner: false)));
           singletonClass.taskModelList.clear();
         } else if (decodedResponse['statusCode'] == 400 ||
             decodedResponse['statusCode'] == 500) {
@@ -1052,14 +1052,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim().toUpperCase();
+    String employeeId = _searchController.text;
     if (employeeId.isEmpty) return;
     setState(() {
       isLoading = true;
     });
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
 
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     setState(() {
@@ -1070,10 +1070,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);
       EventSearchedResults result = EventSearchedResults(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.first.firstName,
-        employeeId: employeeData.data?.first.id,
-        designation: employeeData.data?.first.employeeInfo?.first.designation,
+        empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.employees!.first.firstName,
+        employeeId: employeeData.data?.employees!.first.id,
+        designation: employeeData.data?.employees!.first.employeeInfo?.first.designation,
       );
 
       print(">>>>$result");

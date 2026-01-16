@@ -383,6 +383,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swipeToCheckIn => 'Swipe to Check-In';
 
   @override
+  String get swipeToCheckOut => 'Swipe to Check-Out';
+
+  @override
   String get loans => 'Loans';
 
   @override
@@ -1147,7 +1150,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have not checked in yet. Please check in first.';
 
   @override
-  String get currentLocationNotAvailable => 'Current location not available.';
+  String get currentLocationNotAvailable => 'Current location is not available';
 
   @override
   String get sorryYouAreOutOfTheLocationRadius =>
@@ -2349,4 +2352,199 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allowance => 'Allowance';
+
+  @override
+  String get hrLetter => 'HR Letter';
+
+  @override
+  String get approver => 'Approvers';
+
+  @override
+  String get outOfRadiusRange => 'Out of radius range';
+
+  @override
+  String get locationAttendanceRangeInfo =>
+      'Location attendance can be checked-in when you are in range of the decided location';
+
+  @override
+  String get confirmCheckoutInRange =>
+      'You are in range of the location. Do you want to check out?';
+
+  @override
+  String get confirmCheckinInRange =>
+      'You are in range of the location. Do you want to check in?';
+
+  @override
+  String get currentLocation => 'Current Location';
+
+  @override
+  String get selectAllowanceType => 'Select allowance type';
+
+  @override
+  String get basedOn => 'Based on';
+
+  @override
+  String get selectOption => 'Select option';
+
+  @override
+  String get allowancePercentage => 'Allowance percentage %';
+
+  @override
+  String get enterPercentage => 'Enter percentage';
+
+  @override
+  String get allowanceAmount => 'Allowance amount';
+
+  @override
+  String get enterAmount => 'Enter amount';
+
+  @override
+  String get selectDeductionType => 'Select deduction type';
+
+  @override
+  String get deductionAmount => 'Deduction amount';
+
+  @override
+  String get deductionPercentage => 'Deduction percentage %';
+
+  @override
+  String get nearToExpire => 'Near to expiry';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String get company => 'Company';
+
+  @override
+  String get stores => 'Stores';
+
+  @override
+  String get createStore => 'Create Store';
+
+  @override
+  String get storeType => 'Store Type';
+
+  @override
+  String get storeName => 'Store Name';
+
+  @override
+  String get locationSelectedSuccessfully => 'Location selected successfully';
+
+  @override
+  String get locationSelected => 'Location Selected';
+
+  @override
+  String get tapToSelectLocation => 'Tap to select location';
+
+  @override
+  String get lat => 'Lat';
+
+  @override
+  String get lng => 'Lng';
+
+  @override
+  String get storeAddressIsRequired => 'Store address is required';
+
+  @override
+  String get enterStoreAddressHere => 'Enter store address here...!';
+
+  @override
+  String get ownerName => 'Owner name';
+
+  @override
+  String get storeOwnerNameIsRequired => 'Store Owner Name is required';
+
+  @override
+  String get enterStoreOwnerNameHere => 'Enter store owner name here...!';
+
+  @override
+  String get area => 'Area';
+
+  @override
+  String get storeAreaIsRequired => 'Store Area is required';
+
+  @override
+  String get enterStoreAreaHere => 'Enter store area here...!';
+
+  @override
+  String get areaCode => 'Area Code';
+
+  @override
+  String get storeAreaCodeIsRequired => 'Store Area Code is required';
+
+  @override
+  String get enterStoreAreaCodeHere => 'Enter store area code here...!';
+
+  @override
+  String get contactDetail => 'Contact detail';
+
+  @override
+  String get enterStoreContactPersonNameHere =>
+      'Enter store contact person name here...!';
+
+  @override
+  String get contactNumber => 'Contact Number';
+
+  @override
+  String get enterStoreContactNumberHere =>
+      'Enter store contact number here...!';
+
+  @override
+  String get enterContactPersonDesignationHere =>
+      'Enter contact person designation here...!';
+
+  @override
+  String get storePicture => 'Store Picture';
+
+  @override
+  String get storeDetail => 'Store Detail';
+
+  @override
+  String get storeInfo => 'Store Info';
+
+  @override
+  String get contactInfo => 'Contact Info';
+
+  @override
+  String get orderInfo => 'Order Info';
+
+  @override
+  String get storeInformation => 'Store Information';
+
+  @override
+  String get storeLocation => 'Store Location';
+
+  @override
+  String get contactInformation => 'Contact Information';
+
+  @override
+  String get contactName => 'Contact Name';
+
+  @override
+  String get orderInformation => 'Order Information';
+
+  @override
+  String get orderName => 'Order Name';
+
+  @override
+  String get orderNumber => 'Order Number';
+
+  @override
+  String get orderTime => 'Order Time';
+
+  @override
+  String get selectStoreLocation => 'Select store Location';
+
+  @override
+  String get enterStoreNameHere => 'Enter store name here...!';
+
+  @override
+  String get storeNameIsRequired => 'Store name is required';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get startChat => 'Start Chat';
 }

@@ -61,7 +61,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
           key: _formKey,
           child: Stack(
               children: [
-            ListView(
+                ListView(
               padding: EdgeInsets.zero,
               children: [ Column(
                 children: [
@@ -127,7 +127,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                             children: [
                               // Main container for the employee tile
                               Container(
-                                margin: const EdgeInsets.all(3),
+                                margin: const EdgeInsets.all(1),
                                 decoration: BoxDecoration(
                                   borderRadius:
                                       const BorderRadius.all(Radius.circular(15)),
@@ -141,46 +141,47 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                                     ),
                                   ],
                                 ),
-                                width: 150,
-                                // Set a fixed width for each employee tile
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      height: 30,
-                                      width: 40,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: AssetImage("images/DP.png"),
-                                          fit: BoxFit.fill,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 30,
+                                        width: 40,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: AssetImage("images/DP.png"),
+                                            fit: BoxFit.fill,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          employee!.employeeName ?? "Unknown",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                      const SizedBox(width: 5),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            employee!.employeeName ?? "Unknown",
+                                            maxLines: 1,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                            overflow: TextOverflow.ellipsis, // Optional: Handle long text
                                           ),
-                                          overflow: TextOverflow
-                                              .ellipsis, // Optional: Handle long text
-                                        ),
-                                        Text(
-                                          employee.empId ?? "Unknown",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
+                                          Text(
+                                            employee.empId ?? "Unknown",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -227,6 +228,9 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                         child: TextFormField(
                           cursorColor: Colors.grey,
                           controller: _searchController,
+                          onFieldSubmitted: (value){
+                            getSearchEmployeeData();
+                          },
                           decoration: InputDecoration(
                             hintText: '${AppLocalizations.of(context)!.search}...',
                             border: InputBorder.none,
@@ -235,9 +239,8 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                       ),
                       IconButton(
                         onPressed: () {
-                          setState(() {
-                            getSearchEmployeeData();
-                          });
+                          print("ButTON TAPPEd");
+                          getSearchEmployeeData();
                         },
                         icon: Icon(
                           Icons.search,
@@ -420,6 +423,8 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                       setState(() {
                       });
                     },
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context)!.enterLetterBodyHere,
                       hintStyle: GoogleFonts.inter(
@@ -501,8 +506,11 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                 ],
               ),]
             ),
-                if(_isLoading == true)...[
-                  Loader()
+                if(_isLoading)...[
+                    IgnorePointer(
+                      ignoring: true,   // DOES NOT BLOCK CLICKS
+                      child: Loader(),
+                    ),
                 ]
           ]),
         ),
@@ -512,30 +520,30 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 
   /// Call for search
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim().toUpperCase();
-    if (employeeId.isEmpty) return;
-
+    String employeeId = _searchController.text;
     setState(() {
       _isLoading = true;
     });
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
 
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     setState(() {
       _isLoading = false;
     });
+    print(uri);
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       var employeeData = SearchEmployeeData.fromJson(responseBody);
 
       // Create a SearchedResult instance
       SearchedResultForLetter result = SearchedResultForLetter(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.first.firstName,
-        department: employeeData.data?.first.employeeInfo!.first.depName,
-        designation: employeeData.data?.first.employeeInfo!.first.designation,
+        empId: employeeData.data?.employees!.first.employeeInfo!.first.empId,
+        employeeId: employeeData.data?.employees!.first.id,
+        employeeName: "${employeeData.data?.employees!.first.firstName} ${employeeData.data?.employees!.first.lastName}",
+        department: employeeData.data?.employees!.first.employeeInfo!.first.depName,
+        designation: employeeData.data?.employees!.first.employeeInfo!.first.designation,
       );
 
       print(">>>>$result");
@@ -573,20 +581,35 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final templates = jsonData['data']?['data'] as List<dynamic>?;
-
-      final defaultTemplate = templates?.firstWhere(
-        (template) =>
-            template is Map<String, dynamic> &&
-            template['templateType']?.toString() == 'Doc_Shared_Template' &&
-            template['default'] == true,
-        orElse: () => null,
-      );
-
-      if (defaultTemplate != null) {
-        final fileUrl =
-            defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
-        if (fileUrl != null) {
-          templateDocUrl = fileUrl;
+      if (singletonClass.local == "ar"){
+        final defaultTemplate = templates?.firstWhere(
+              (template) =>
+          template is Map<String, dynamic> &&
+              template['templateType']?.toString() == 'Doc_Shared_Template' &&
+              template['default'] == true && template['lang'] == 'ar',
+          orElse: () => null,
+        );
+        if (defaultTemplate != null) {
+          final fileUrl =
+          defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
+          if (fileUrl != null) {
+            templateDocUrl = fileUrl;
+          }
+        }
+      } else {
+        final defaultTemplate = templates?.firstWhere(
+              (template) =>
+          template is Map<String, dynamic> &&
+              template['templateType']?.toString() == 'Doc_Shared_Template' &&
+              template['default'] == true && template['lang'] == 'en',
+          orElse: () => null,
+        );
+        if (defaultTemplate != null) {
+          final fileUrl =
+          defaultTemplate['objectDetails']?['parameters']?['documentUrl'];
+          if (fileUrl != null) {
+            templateDocUrl = fileUrl;
+          }
         }
       }
     }
@@ -696,7 +719,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final bytes = response.bodyBytes;
       final originalArchive = ZipDecoder().decodeBytes(bytes);
 
-      // Find document.xml inside the archive
       final documentFile = originalArchive.firstWhere(
         (file) => file.name == 'word/document.xml',
         orElse: () => throw Exception("DOCX content not found"),
@@ -706,78 +728,122 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       String xmlContent = utf8.decode(documentFile.content!);
       final documentXml = xml.XmlDocument.parse(xmlContent);
 
-      // Fetch employee and sender data
-      final emp = _selectedEmployees.first;
       final now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final senderInfo = singletonClass.employeeDataList.first.data!.employeeInfo!.first;
 
-      final senderInfo =
-          singletonClass.employeeDataList.first.data!.employeeInfo!.first;
+      String combinedNames = '';
+      String combinedDesignations = '';
+      String combinedDepartments = '';
+
+      if (_selectedEmployees.length > 1) {
+        combinedNames = _selectedEmployees
+            .map((e) => e?.employeeName ?? 'N/A')
+            .join(', ');
+
+        combinedDesignations = _selectedEmployees
+            .map((e) => e?.designation ?? 'N/A')
+            .join(', ');
+
+        combinedDepartments = _selectedEmployees
+            .map((e) => e?.department ?? 'N/A')
+            .join(', ');
+      } else {
+        final emp = _selectedEmployees.first;
+        combinedNames = emp?.employeeName ?? 'N/A';
+        combinedDesignations = emp?.designation ?? 'N/A';
+        combinedDepartments = emp?.department ?? 'N/A';
+      }
 
       final replacements = {
         'currentDate': now,
-        'employeeName': emp?.employeeName ?? 'N/A',
-        'employeeDesignation': emp?.designation ?? 'N/A',
-        'employeeDepartment': emp?.department ?? 'N/A',
+        'employeeName': " $combinedNames ",
+        'employeeDesignation': " $combinedDesignations ",
+        'employeeDepartment': " $combinedDepartments ",
         'letterSubject': _letterSubject.text,
-        'senderName':
-            singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
+        'senderName': singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
         'senderDepartment': senderInfo.depName ?? 'HR Department',
       };
 
-      // --- Replace placeholders across paragraphs ---
-      for (final node in documentXml.findAllElements('w:t')) {
-        for (var entry in replacements.entries) {
-          String text = node.innerText;
-          if (text.contains('{${entry.key}}')) {
-            text = text.replaceAll('{${entry.key}}', entry.value);
-            node.innerText = text;
-          }
-        }
-      }
+      /// --- Replace placeholders across paragraphs ---
+      final allReplacements = {
+        ...replacements,
+        'senderDesignation': senderInfo.designation ?? '',
+        'letterBody': _letterBody.text,
+      };
       for (final paragraph in documentXml.findAllElements('w:p')) {
-        final texts = paragraph.findAllElements('w:t');
-        if (texts.isEmpty) continue;
-        String fullText = texts.map((node) => node.innerText).join('');
-        if (fullText.contains('{senderDesignation}')) {
-          fullText = fullText.replaceAll(
-              '{senderDesignation}', senderInfo.designation);
-          for (final node in texts) {
-            node.innerText = '';
-          }
-          texts.first.innerText = fullText;
-        }
-      }
-      for (final paragraph in documentXml.findAllElements('w:p')) {
-        final texts = paragraph.findAllElements('w:t');
-        if (texts.isEmpty) continue;
-        String fullText = texts.map((node) => node.innerText).join();
-        if (fullText.contains('{letterBody}')) {
-          fullText = fullText.replaceAll('{letterBody}', _letterBody.text);
-          for (final node in texts) {
-            node.innerText = '';
-          }
-          texts.first.innerText = fullText;
-        }
-      }
+        final runs = paragraph.findAllElements('w:r').toList();
+        if (runs.isEmpty) continue;
 
-      // --- Handle Signature Insertion ---
+        bool paragraphModified = false;
+
+        for (int runIndex = 0; runIndex < runs.length; runIndex++) {
+          final run = runs[runIndex];
+
+          if (run.findElements('w:br').isNotEmpty && run.findElements('w:t').isEmpty) {
+            continue;
+          }
+
+          String combinedText = '';
+          List<xml.XmlElement> affectedRuns = [run];
+          List<xml.XmlElement> allTextNodes = [];
+          for (int i = runIndex; i < runs.length; i++) {
+            final currentRun = runs[i];
+            if (currentRun.findElements('w:br').isNotEmpty && currentRun.findElements('w:t').isEmpty) {
+              break;
+            }
+            final texts = currentRun.findAllElements('w:t').toList();
+            allTextNodes.addAll(texts);
+            combinedText += texts.map((t) => t.innerText).join();
+
+            if (i > runIndex) {
+              affectedRuns.add(currentRun);
+            }
+            bool hasCompletePlaceholder = false;
+            for (var key in allReplacements.keys) {
+              if (combinedText.contains('{$key}')) {
+                hasCompletePlaceholder = true;
+                break;
+              }
+            }
+            if (hasCompletePlaceholder || combinedText.contains(':')) {
+              break;
+            }
+          }
+          bool hasPlaceholder = false;
+          for (var key in allReplacements.keys) {
+            if (combinedText.contains('{$key}')) {
+              hasPlaceholder = true;
+              break;
+            }
+          }
+
+          if (!hasPlaceholder) continue;
+          String modifiedText = combinedText;
+          allReplacements.forEach((key, value) {
+            modifiedText = modifiedText.replaceAll('{$key}', value);
+          });
+
+          paragraphModified = true;
+          for (int i = 0; i < allTextNodes.length; i++) {
+            allTextNodes[i].innerText = (i == 0) ? modifiedText : '';
+          }
+          runIndex += affectedRuns.length - 1;
+        }
+      }
       final signatureUrl = senderInfo.empSignature;
       if (signatureUrl != null && signatureUrl.isNotEmpty) {
         final imageResponse = await http.get(Uri.parse(signatureUrl));
-
         if (imageResponse.statusCode == 200) {
           final imageBytes = imageResponse.bodyBytes;
-
           if (imageBytes.isNotEmpty) {
             const imageFileName = 'signature.png';
             const mediaPath = 'word/media/$imageFileName';
-            originalArchive
-                .addFile(ArchiveFile(mediaPath, imageBytes.length, imageBytes));
+            originalArchive.addFile(ArchiveFile(mediaPath, imageBytes.length, imageBytes));
             final relationshipsEntry = originalArchive.files.firstWhere(
-              (file) => file.name == 'word/_rels/document.xml.rels',
+                  (file) => file.name == 'word/_rels/document.xml.rels',
             );
             final relationshipsXml =
-                xml.XmlDocument.parse(utf8.decode(relationshipsEntry.content));
+            xml.XmlDocument.parse(utf8.decode(relationshipsEntry.content));
             const imageRelId = 'rId123';
             relationshipsXml.rootElement.children.add(
               xml.XmlElement(
@@ -799,7 +865,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
               final texts = paragraph.findAllElements('w:t');
               if (texts.isEmpty) continue;
               String fullText = texts.map((node) => node.innerText).join();
-              if (fullText.contains('{Signature}')) {
+              if (fullText.contains('{%Signature}')) {
                 for (final node in texts) {
                   node.innerText = '';
                 }
@@ -838,9 +904,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   </w:drawing>
 </w:r>
 ''';
-
-                final newDrawingNode =
-                    xml.XmlDocument.parse(imageXml).rootElement;
+                final newDrawingNode = xml.XmlDocument.parse(imageXml).rootElement;
                 paragraph.children.add(newDrawingNode.copy());
                 if (kDebugMode) {
                   print('Signature image URL: $signatureUrl');
@@ -858,7 +922,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
         }
       }
 
-      // --- Save updated document ---
       final updatedXml = utf8.encode(documentXml.toXmlString());
       final updatedArchive = Archive();
       for (final file in originalArchive) {
@@ -869,19 +932,13 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
           updatedArchive.addFile(file);
         }
       }
-
-      // Rebuild the final DOCX file bytes
       final newDocxBytes = ZipEncoder().encode(updatedArchive);
       _generatedDocxBytes = Uint8List.fromList(newDocxBytes!);
       if (_generatedDocxBytes == null) return;
-
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/generated_hr_letter.docx';
-
       final file = File(filePath);
       await file.writeAsBytes(_generatedDocxBytes!);
-
-      print("📄 Saved Generated DOCX at: $filePath");
 
       // Upload using your existing method
       final result = await uploadFileToS3FromPath(filePath);
@@ -910,22 +967,26 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
   Future<void> uploadHRLetter() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
     String? companyID = singletonClass.getJWTModel()?.companyId;
+    List<String> employees = _selectedEmployees
+        .map((employee) => employee!.employeeId.toString())
+        .toList();
     Map data = {
-      "templateType": "Doc_Shared_Template",
-      "objectDetails": {
-        "Type": "Doc_templates",
-        "objectName": "Letter Templates",
-        "objectIcon": "edit",
-        "parameters": {
-          "documentUrl": singletonClass.attachmentResponseDataList.first.data!.url,
-        },
-        "createdBy": employeeID
-      }
+    "templateType": "Doc_editor_shared",
+    "objectDetails": {
+    "Type": "shared",
+    "objectName": _letterSubject.text,
+    "objectIcon": "edit",
+    "parameters": {
+         "documentUrl": singletonClass.attachmentResponseDataList.first.data!.url,
+         "employees": employees
+     },
+      "createdBy": employeeID,
+      },
     };
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/documents/create/$companyID/documents/$employeeID');
-    print(uri);
-    print(body);
+    log("$uri");
+    log(body);
     setState(() {
       _isLoading = true;
     });
@@ -987,6 +1048,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
 //DUMMY MODEL
 class SearchedResultForLetter {
   dynamic empId;
+  dynamic employeeId;
   dynamic designation;
   dynamic department;
   dynamic employeeName;
@@ -994,6 +1056,7 @@ class SearchedResultForLetter {
 
   SearchedResultForLetter({
     this.empId,
+    this.employeeId,
     this.designation,
     this.department,
     this.employeeName,
@@ -1009,6 +1072,9 @@ class SearchedResultForLetter {
   Map<String, dynamic> toJson() {
     return {
       'empId': empId,
+      'employeeId': employeeId,
+      'designation': designation,
+      'department': department,
       'employeeName': employeeName,
       'severity': severity,
     };

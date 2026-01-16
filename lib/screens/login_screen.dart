@@ -82,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveTokenLocally(String token) async {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString('token', token);
+    singletonClass.token = preferences.getString('token');
     setState(() {
       _isTokenSaved = true;
     });
@@ -101,20 +102,14 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = true;
           });
-          final SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+          final SharedPreferences preferences = await SharedPreferences.getInstance();
+          singletonClass.token = preferences.getString('token');
           String? token = preferences.getString('token');
           decodeJwt(token!.trim());
           setState(() {
             isLoading = false;
           });
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const MainScreen(
-                      index: 0,
-                    selectedIndex: 0
-                    )),
+          await Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 0, selectedIndex: 0 , showBanner: true,)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -171,6 +166,42 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if(singletonClass.env == "staging")...[
+                          Row(
+                            children: [
+                              Text(
+                                "Dev",
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Switch(
+                                value: singletonClass.envToggle == "prod",
+                                onChanged: (value) {
+                                  setState(() {
+                                    singletonClass.envToggle = value ? "prod" : "dev";
+                                    if(singletonClass.envToggle == "prod" ){
+                                      singletonClass.baseURL = "https://www.nashrms.com/api";
+                                    } else {
+                                      singletonClass.baseURL = "https://dev.nashrms.com/api";
+                                    }
+                                  });
+                                },
+                              ),
+                              Text(
+                                "Prod",
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                          ),
+                        Spacer(),
+                        ],
                         if (singletonClass.companyName != null &&
                             singletonClass.companyName!.isNotEmpty) ...[
                           Container(
@@ -208,8 +239,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onSelected: (Language item) {
                               if (Language.english.name == item.name) {
                                 provider.changeLanguage(const Locale('en'));
+                                SingletonClass().local = 'en';
                               } else {
                                 provider.changeLanguage(const Locale('ar'));
+                                SingletonClass().local = 'ar';
                               }
                             },
                             itemBuilder: (BuildContext context) =>
@@ -225,9 +258,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           );
                         }),
+
                       ],
                     ),
-                    if (kDebugMode) ...[
+                    if ( singletonClass.env == "staging") ...[
                       Text(
                         "You're in debug mode",
                         style: GoogleFonts.inter(
@@ -477,6 +511,8 @@ class _LoginScreenState extends State<LoginScreen> {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
             singletonClass.sendFCMToken();
+            await singletonClass.getNotifications();
+            singletonClass.getCompanyNotificationData();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
               isLoading = false;
@@ -493,8 +529,9 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
               MaterialPageRoute(
                   builder: (context) => const MainScreen(
-                        index: 0,
+                    index: 0,
                     selectedIndex: 0,
+                    showBanner: true,
                       )),
             );
           }

@@ -842,6 +842,12 @@ abstract class AppLocalizations {
   /// **'Swipe to Check-In'**
   String get swipeToCheckIn;
 
+  /// No description provided for @swipeToCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to Check-Out'**
+  String get swipeToCheckOut;
+
   /// No description provided for @loans.
   ///
   /// In en, this message translates to:
@@ -2369,7 +2375,7 @@ abstract class AppLocalizations {
   /// No description provided for @currentLocationNotAvailable.
   ///
   /// In en, this message translates to:
-  /// **'Current location not available.'**
+  /// **'Current location is not available'**
   String get currentLocationNotAvailable;
 
   /// No description provided for @sorryYouAreOutOfTheLocationRadius.
@@ -4741,6 +4747,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allowance'**
   String get allowance;
+
+  /// No description provided for @hrLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'HR Letter'**
+  String get hrLetter;
+
+  /// No description provided for @approver.
+  ///
+  /// In en, this message translates to:
+  /// **'Approvers'**
+  String get approver;
+
+  /// No description provided for @outOfRadiusRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of radius range'**
+  String get outOfRadiusRange;
+
+  /// No description provided for @locationAttendanceRangeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Location attendance can be checked-in when you are in range of the decided location'**
+  String get locationAttendanceRangeInfo;
+
+  /// No description provided for @confirmCheckoutInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in range of the location. Do you want to check out?'**
+  String get confirmCheckoutInRange;
+
+  /// No description provided for @confirmCheckinInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in range of the location. Do you want to check in?'**
+  String get confirmCheckinInRange;
+
+  /// No description provided for @currentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get currentLocation;
+
+  /// No description provided for @selectAllowanceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select allowance type'**
+  String get selectAllowanceType;
+
+  /// No description provided for @basedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on'**
+  String get basedOn;
+
+  /// No description provided for @selectOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select option'**
+  String get selectOption;
+
+  /// No description provided for @allowancePercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance percentage %'**
+  String get allowancePercentage;
+
+  /// No description provided for @enterPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter percentage'**
+  String get enterPercentage;
+
+  /// No description provided for @allowanceAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance amount'**
+  String get allowanceAmount;
+
+  /// No description provided for @enterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get enterAmount;
+
+  /// No description provided for @selectDeductionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select deduction type'**
+  String get selectDeductionType;
+
+  /// No description provided for @deductionAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction amount'**
+  String get deductionAmount;
+
+  /// No description provided for @deductionPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction percentage %'**
+  String get deductionPercentage;
+
+  /// No description provided for @nearToExpire.
+  ///
+  /// In en, this message translates to:
+  /// **'Near to expiry'**
+  String get nearToExpire;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @company.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get company;
+
+  /// No description provided for @stores.
+  ///
+  /// In en, this message translates to:
+  /// **'Stores'**
+  String get stores;
+
+  /// No description provided for @createStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Store'**
+  String get createStore;
+
+  /// No description provided for @storeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Type'**
+  String get storeType;
+
+  /// No description provided for @storeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Name'**
+  String get storeName;
+
+  /// No description provided for @locationSelectedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Location selected successfully'**
+  String get locationSelectedSuccessfully;
+
+  /// No description provided for @locationSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Selected'**
+  String get locationSelected;
+
+  /// No description provided for @tapToSelectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select location'**
+  String get tapToSelectLocation;
+
+  /// No description provided for @lat.
+  ///
+  /// In en, this message translates to:
+  /// **'Lat'**
+  String get lat;
+
+  /// No description provided for @lng.
+  ///
+  /// In en, this message translates to:
+  /// **'Lng'**
+  String get lng;
+
+  /// No description provided for @storeAddressIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Store address is required'**
+  String get storeAddressIsRequired;
+
+  /// No description provided for @enterStoreAddressHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store address here...!'**
+  String get enterStoreAddressHere;
+
+  /// No description provided for @ownerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner name'**
+  String get ownerName;
+
+  /// No description provided for @storeOwnerNameIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Owner Name is required'**
+  String get storeOwnerNameIsRequired;
+
+  /// No description provided for @enterStoreOwnerNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store owner name here...!'**
+  String get enterStoreOwnerNameHere;
+
+  /// No description provided for @area.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get area;
+
+  /// No description provided for @storeAreaIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Area is required'**
+  String get storeAreaIsRequired;
+
+  /// No description provided for @enterStoreAreaHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store area here...!'**
+  String get enterStoreAreaHere;
+
+  /// No description provided for @areaCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Area Code'**
+  String get areaCode;
+
+  /// No description provided for @storeAreaCodeIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Area Code is required'**
+  String get storeAreaCodeIsRequired;
+
+  /// No description provided for @enterStoreAreaCodeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store area code here...!'**
+  String get enterStoreAreaCodeHere;
+
+  /// No description provided for @contactDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact detail'**
+  String get contactDetail;
+
+  /// No description provided for @enterStoreContactPersonNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store contact person name here...!'**
+  String get enterStoreContactPersonNameHere;
+
+  /// No description provided for @contactNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Number'**
+  String get contactNumber;
+
+  /// No description provided for @enterStoreContactNumberHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store contact number here...!'**
+  String get enterStoreContactNumberHere;
+
+  /// No description provided for @enterContactPersonDesignationHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter contact person designation here...!'**
+  String get enterContactPersonDesignationHere;
+
+  /// No description provided for @storePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Picture'**
+  String get storePicture;
+
+  /// No description provided for @storeDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Detail'**
+  String get storeDetail;
+
+  /// No description provided for @storeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Info'**
+  String get storeInfo;
+
+  /// No description provided for @contactInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Info'**
+  String get contactInfo;
+
+  /// No description provided for @orderInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Info'**
+  String get orderInfo;
+
+  /// No description provided for @storeInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Information'**
+  String get storeInformation;
+
+  /// No description provided for @storeLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Location'**
+  String get storeLocation;
+
+  /// No description provided for @contactInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get contactInformation;
+
+  /// No description provided for @contactName.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Name'**
+  String get contactName;
+
+  /// No description provided for @orderInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Information'**
+  String get orderInformation;
+
+  /// No description provided for @orderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Name'**
+  String get orderName;
+
+  /// No description provided for @orderNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Number'**
+  String get orderNumber;
+
+  /// No description provided for @orderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Time'**
+  String get orderTime;
+
+  /// No description provided for @selectStoreLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Select store Location'**
+  String get selectStoreLocation;
+
+  /// No description provided for @enterStoreNameHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter store name here...!'**
+  String get enterStoreNameHere;
+
+  /// No description provided for @storeNameIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Store name is required'**
+  String get storeNameIsRequired;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @startChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Chat'**
+  String get startChat;
 }
 
 class _AppLocalizationsDelegate

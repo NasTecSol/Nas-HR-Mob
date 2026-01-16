@@ -1027,7 +1027,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           );
           if (!mounted) return;
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1 , selectedIndex: 0,)));
+              context, MaterialPageRoute(builder: (context) => MainScreen(index: 1 , selectedIndex: 0,showBanner: false)));
         } else if (decodedResponse['statusCode'] == 400) {
           await QuickAlert.show(
             autoCloseDuration: const Duration(seconds: 2),
@@ -1072,7 +1072,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
   ///2ndAPI call
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim().toUpperCase();
+    String employeeId = _searchController.text;
     if (employeeId.isEmpty) return;
 
     setState(() {
@@ -1080,7 +1080,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     });
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
     var response = await client.get(uri,headers: singletonClass.getHeaders());
     setState(() {
       isLoading = false;
@@ -1091,10 +1091,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       // Create a SearchedResult instance
       SearchedResults result = SearchedResults(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.first.firstName,
-        employeeId: employeeData.data?.first.id,
-        designation: employeeData.data?.first.employeeInfo?.first.designation,
+        empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.employees!.first.firstName,
+        employeeId: employeeData.data?.employees!.first.id,
+        designation: employeeData.data?.employees!.first.employeeInfo?.first.designation,
       );
 
       print(">>>>$result");

@@ -10,6 +10,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
+import 'package:nashr/screens/company_notifications.dart';
 import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
@@ -21,6 +22,7 @@ import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/slack_screen.dart';
 import 'package:nashr/screens/socket_notification_screen.dart';
 import 'package:nashr/screens/socket_screen.dart';
+import 'package:nashr/screens/stores_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
@@ -59,6 +61,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String? selectedCompanyId;
   String? selectedBranchId;
   bool isLoadingBranches = false;
+  double allowedRadius = 50;
+  double? _companyLatitude;
+  double? _companyLongitude;
   Duration _accumulatedWorkedDuration = Duration.zero;
   DateTime? _currentCheckIn;
   Timer? _timer;
@@ -67,10 +72,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    _parseCompanyLocation();
     singletonClass.getRoleAndAccessData();
+    singletonClass.getCompanyNotificationData();
+    singletonClass.getTeamBranchData();
     singletonClass.getEmployeeAttendanceData();
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
+    singletonClass.getHRLetter();
+    singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -159,7 +169,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() => singletonClass.unreadCount = 0);
     }
   }
+  void _parseCompanyLocation() {
+    final list = singletonClass.remoteAttendanceModelList;
 
+    if (list.isEmpty) return;
+
+    final dataList = list.first.data;
+    if (dataList == null || dataList.isEmpty) return;
+
+    final locString = dataList.first.remoteAttendanceLoc;
+    if (locString == null || locString.isEmpty) return;
+
+    final parts = locString.split('|');
+    if (parts.length != 2) return;
+
+    _companyLatitude = double.tryParse(parts[0].trim()) ?? 0.0;
+    _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
+  }
+
+  ///Timer
   void startWorkTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -188,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void calculateTodayWorkedTime() {
     try {
       final today = DateTime.now();
-      final dataList = singletonClass.clockingDataList.first.data;
+      final dataList = singletonClass.attendanceDataList.first.data!.data;
       if (dataList == null || dataList.isEmpty) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
@@ -196,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       final todayEntries = dataList.where((entry) {
-        final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+        final createdAt = DateTime.tryParse(entry.date ?? '');
         return createdAt != null &&
             createdAt.year == today.year &&
             createdAt.month == today.month &&
@@ -213,8 +241,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       final todayData = todayEntries.last;
-      final checkInTime = todayData.checkInTime;
-      final checkOutTime = todayData.checkOutTime;
+      final checkInTime = todayData.clockInTime;
+      final checkOutTime = todayData.clockOutTime;
 
       // 🔹 Both checkin/checkout empty → no work today
       if ((checkInTime == null || checkInTime.isEmpty) &&
@@ -226,52 +254,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // 🔹 Case 1: Only check-in available → running session
       if (checkInTime != null &&
-          checkInTime.isNotEmpty &&
-          (checkOutTime == null || checkOutTime.isEmpty)) {
+          checkInTime.isNotEmpty) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
-      // 🔹 Case 2: Only checkout available → no active session
       if (checkOutTime != null &&
-          checkOutTime.isNotEmpty &&
-          (checkInTime == null || checkInTime.isEmpty)) {
+          checkOutTime.isNotEmpty) {
         stopWorkTimer();
         _updateWorkedTime();
         return;
       }
-
-      // 🔹 Case 3: Both checkin & checkout available → check latest raw biometric
-      if (checkInTime != null &&
-          checkOutTime != null &&
-          checkInTime.isNotEmpty &&
-          checkOutTime.isNotEmpty) {
-        String? lastBioType;
-        DateTime? lastBioTimestamp;
-
-        if (todayData.rawBiometrics != null &&
-            todayData.rawBiometrics!.isNotEmpty) {
-          todayData.rawBiometrics!.sort((a, b) {
-            final t1 = DateTime.tryParse(a.timestamp ?? '') ?? DateTime(1970);
-            final t2 = DateTime.tryParse(b.timestamp ?? '') ?? DateTime(1970);
-            return t1.compareTo(t2);
-          });
-          final lastBio = todayData.rawBiometrics!.last;
-          lastBioType = lastBio.type?.toLowerCase();
-          lastBioTimestamp = DateTime.tryParse(lastBio.timestamp ?? '');
-        }
-
-        if (lastBioType == "check-in" && lastBioTimestamp != null) {
-          _currentCheckIn = lastBioTimestamp;
-          startWorkTimer();
-        } else {
-          stopWorkTimer();
-          _updateWorkedTime();
-        }
-        return;
-      }
-
       // Default fallback
       stopWorkTimer();
       _displayWorkedHours = "00:00:00";
@@ -302,11 +296,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> trackBackgroundLocation() async {
+    await getCurrentLatLong();
     updateRemoteLocation();
   }
 
-  final DraggableScrollableController _draggableScrollableController =
-      DraggableScrollableController();
+  final DraggableScrollableController _draggableScrollableController = DraggableScrollableController();
 
   ///Slider
   OverlayEntry? _overlayEntry;
@@ -338,9 +332,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  if (singletonClass.remoteAttendanceModelList.first.data!.first
-                          .isRemoteAttendance ==
-                      true) ...[
+                  if ( singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
+                    final title = (e.title ?? '').toLowerCase();
+                    if (title == 'dashboard' && e.hidden == false) {
+                      return e.onSiteCheckIn == true;
+                    }
+                    return false;
+                  })) ...[
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -374,55 +372,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ],
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () async {
-                      if (!(await _authService.checkBiometricAvailability())) {
-                        _removeOverlay();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                            AppLocalizations.of(context)!.pleaseSetupBiometric,
-                            style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white),
-                          )),
-                        );
-                        return;
-                      }
+                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
+                    final title = (e.title ?? '').toLowerCase();
+                    if (title == 'dashboard' && e.hidden == false) {
+                      return e.biometricCheckIn == true;
+                    }
+                    return false;
+                  }))...[
+                    GestureDetector(
+                      onTap: () async {
+                        if (!(await _authService.checkBiometricAvailability())) {
+                          _removeOverlay();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!.pleaseSetupBiometric,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white),
+                                )),
+                          );
+                          return;
+                        }
 
-                      bool isAuthenticated = await _authService
-                          .authenticateWithBiometrics(context);
-                      if (isAuthenticated) {
-                        _removeOverlay();
-                        await checkIn('biometric');
-                      } else {
-                        _removeOverlay();
-                      }
-                    },
-                    child: Container(
-                      height: 90,
-                      width: 90,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Image.asset("images/fingerprint.png"),
+                        bool isAuthenticated = await _authService
+                            .authenticateWithBiometrics(context);
+                        if (isAuthenticated) {
+                          _removeOverlay();
+                          await checkIn('biometric');
+                        } else {
+                          _removeOverlay();
+                        }
+                      },
+                      child: Container(
+                        height: 90,
+                        width: 90,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Image.asset("images/fingerprint.png"),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    AppLocalizations.of(context)!.biometricCheckIn,
-                    textAlign: TextAlign.left,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    const SizedBox(height: 5),
+                    Text(
+                      AppLocalizations.of(context)!.biometricCheckIn,
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
+                  ]
                 ],
               ),
             ),
@@ -446,6 +452,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
 
+    /// Check for Stores
+    final hasStores = uiSettings.any((e) =>
+    (e.title == "stores" || e.title == "Stores") && e.hidden == false);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -525,7 +534,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
       return false;
     });
-    Future<List<Map<String, String>>> loadQuickActions() async {
+
+    ///Company notifications
+    final hasCompanyNotifications = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+     Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
       List<Map<String, String>> defaultQuickActions = [
@@ -564,6 +584,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/schedule.png",
           "label": AppLocalizations.of(context)!.onBoarding
+        },
+        {
+          "icon": "images/pc.png",
+          "label": AppLocalizations.of(context)!.companyNotifications
+        },
+        {
+          "icon": "images/thisMonth.png",
+          "label": AppLocalizations.of(context)!.stores
         },
       ];
       List<String>? savedOrder = prefs.getStringList("quickActions_$userId");
@@ -685,6 +713,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   !hasManageShifts) {
                                 return false;
                               }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .companyNotifications &&
+                                  !hasCompanyNotifications) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .stores &&
+                                  !hasStores) {
+                                return false;
+                              }
                               return true;
                             }).map((item) {
                               return GestureDetector(
@@ -770,6 +810,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               ManageTimeScreen()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .companyNotifications) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CompanyNotifications()),
+                                    );
+                                  } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .stores) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              StoresScreen()),
                                     );
                                   }
                                 },
@@ -865,6 +925,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
 
+    /// Check for stores
+    final hasStores = uiSettings.any((e) =>
+    (e.title == "Stores" || e.title == "stores") && e.hidden == false);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -880,6 +943,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return e.subMenu?.any((sub) =>
                 (sub.title == "Complaints" || sub.title == "complaints") &&
                 sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+    final hasCompanyNotifications = uiSettings.any((e) {
+      if (e.title == "Document" && e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
+            sub.hidden == false) ??
             false;
       }
       return false;
@@ -988,6 +1060,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       showDropdown = false;
     }
 
+    final bool shouldShowDropdown =
+        showDropdown &&
+            companies.isNotEmpty &&
+            companies.any(
+                  (company) =>
+                  (company.branches ?? []).any(
+                        (branch) =>
+                    (branch.branchId != null &&
+                        branch.branchId!.trim().isNotEmpty) ||
+                        (branch.branchName != null &&
+                            branch.branchName!.trim().isNotEmpty),
+                  ),
+            );
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -1409,7 +1494,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )
                             ],
                           ),
-                          if (showDropdown)
+                          if (showDropdown && shouldShowDropdown)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
@@ -1523,6 +1608,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               singletonClass.branchID = null;
                                               singletonClass.branchName = null;
                                               singletonClass.getBranchesData();
+                                              singletonClass.getCompanyData();
+                                              singletonClass.getTeamBranchData();
                                             });
                                           },
                                         ),
@@ -1793,9 +1880,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                           DateTime.now();
                                                       final dataList =
                                                           singletonClass
-                                                              .clockingDataList
+                                                              .attendanceDataList
                                                               .first
-                                                              .data;
+                                                              .data!.data;
                                                       if (dataList == null ||
                                                           dataList.isEmpty) {
                                                         return '--:--';
@@ -1826,13 +1913,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       final lastEntry =
                                                           todayEntries.last;
                                                       return (lastEntry
-                                                                  .checkInTime
+                                                                  .clockInTime
                                                                   ?.isNotEmpty ??
                                                               false)
                                                           ? singletonClass
                                                               .formatCheckInTime(
                                                                   lastEntry
-                                                                      .checkInTime!,
+                                                                      .clockInTime!,
                                                                   context)
                                                           : '--:--';
                                                     } catch (_) {
@@ -1849,7 +1936,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ],
                                           ),
                                         ),
-
                                         /// 🔹 Check-Out Row
                                         Padding(
                                           padding: const EdgeInsets.only(
@@ -1867,29 +1953,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               const SizedBox(width: 40),
                                               Expanded(
                                                 child: Text(
-                                                  () {
+                                                      () {
                                                     try {
                                                       final today =
-                                                          DateTime.now();
+                                                      DateTime.now();
                                                       final dataList =
                                                           singletonClass
-                                                              .clockingDataList
+                                                              .attendanceDataList
                                                               .first
-                                                              .data;
+                                                              .data!.data;
                                                       if (dataList == null ||
                                                           dataList.isEmpty) {
                                                         return '--:--';
                                                       }
 
                                                       final todayEntries =
-                                                          dataList
-                                                              .where((entry) {
+                                                      dataList
+                                                          .where((entry) {
                                                         final createdAt =
-                                                            DateTime.tryParse(
-                                                                entry.createdAt ??
-                                                                    '');
+                                                        DateTime.tryParse(
+                                                            entry.createdAt ??
+                                                                '');
                                                         return createdAt !=
-                                                                null &&
+                                                            null &&
                                                             createdAt.year ==
                                                                 today.year &&
                                                             createdAt.month ==
@@ -1905,49 +1991,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                                                       final lastEntry =
                                                           todayEntries.last;
-                                                      final rawList = lastEntry
-                                                              .rawBiometrics ??
-                                                          [];
-
-                                                      if (rawList.isEmpty) {
-                                                        return (lastEntry
-                                                                    .checkOutTime
-                                                                    ?.isNotEmpty ??
-                                                                false)
-                                                            ? singletonClass
-                                                                .formatCheckInTime(
-                                                                    lastEntry
-                                                                        .checkOutTime!,
-                                                                    context)
-                                                            : '--:--';
-                                                      }
-
-                                                      // sort by timestamp
-                                                      rawList.sort((a, b) {
-                                                        final t1 =
-                                                            DateTime.tryParse(
-                                                                    a.timestamp ??
-                                                                        '') ??
-                                                                DateTime(1970);
-                                                        final t2 =
-                                                            DateTime.tryParse(
-                                                                    b.timestamp ??
-                                                                        '') ??
-                                                                DateTime(1970);
-                                                        return t1.compareTo(t2);
-                                                      });
-
-                                                      // get latest record
-                                                      final latest =
-                                                          rawList.last;
-                                                      return (latest.type ?? '')
-                                                                  .toLowerCase() ==
-                                                              "check-out"
+                                                      return (lastEntry
+                                                          .clockOutTime
+                                                          ?.isNotEmpty ??
+                                                          false)
                                                           ? singletonClass
-                                                              .formatCheckInTime(
-                                                                  latest
-                                                                      .timestamp!,
-                                                                  context)
+                                                          .formatCheckInTime(
+                                                          lastEntry
+                                                              .clockOutTime!,
+                                                          context)
                                                           : '--:--';
                                                     } catch (_) {
                                                       return '--:--';
@@ -1956,7 +2008,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
                                                     fontWeight:
-                                                        FontWeight.normal,
+                                                    FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
@@ -2066,11 +2118,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                             ),
                                           ),
-                                          SizedBox(
+                                          _timer != null && _timer!.isActive
+                                              ? SizedBox(
                                             height: 50,
                                             width: 50,
-                                            child: Lottie.asset(
-                                                'images/totalWork.json'),
+                                            child: Lottie.asset('images/working.json'),
+                                          )
+                                              : SizedBox(
+                                            height: 50,
+                                            width: 50,
+                                            child: Lottie.asset('images/totalWork.json'),
                                           ),
                                         ],
                                       ),
@@ -2090,167 +2147,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: GestureDetector(
                                 onHorizontalDragUpdate: (details) {
                                   setState(() {
-                                    final dataList = singletonClass
-                                            .clockingDataList.first.data ??
-                                        [];
-                                    final today = DateTime.now();
-
-                                    final todayEntries =
-                                        dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
-                                      return createdAt != null &&
-                                          createdAt.year == today.year &&
-                                          createdAt.month == today.month &&
-                                          createdAt.day == today.day;
-                                    }).toList();
-
-                                    final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.last
-                                        : null;
-
-                                    String? checkInTime =
-                                        todayData?.checkInTime;
-                                    String? checkOutTime =
-                                        todayData?.checkOutTime;
-
-                                    // ✅ last biometrics type
-                                    String? lastBioType;
-                                    if (todayData?.rawBiometrics != null &&
-                                        todayData!.rawBiometrics!.isNotEmpty) {
-                                      todayData.rawBiometrics!.sort((a, b) =>
-                                          DateTime.parse(a.timestamp!)
-                                              .compareTo(DateTime.parse(
-                                                  b.timestamp!)));
-                                      lastBioType =
-                                          todayData.rawBiometrics!.last.type;
-                                    }
-
-                                    bool showCheckIn = false;
-                                    bool showCheckOut = false;
-
-                                    // CASE 1: No check-in & no check-out → Swipe to Check-In
-                                    if ((checkInTime == null ||
-                                            checkInTime.isEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckIn = true;
-                                    }
-                                    // CASE 2: Check-in available but no check-out → Show Check-Out
-                                    else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckOut = true;
-                                    }
-                                    // CASE 3: Both available → Follow last biometric
-                                    else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime != null &&
-                                            checkOutTime.isNotEmpty)) {
-                                      if (lastBioType == "Check-In") {
-                                        showCheckOut = true;
-                                      } else if (lastBioType == "Check-Out") {
-                                        showCheckIn = true;
-                                      }
-                                    }
-
-                                    if (showCheckIn) {
-                                      _dragPosition += details.primaryDelta!;
-                                      if (_dragPosition >
-                                          MediaQuery.of(context).size.width *
-                                              0.7) {
-                                        _isSliderCompleted = true;
-                                      }
-                                    } else if (showCheckOut) {
-                                      _dragPosition += details.primaryDelta!;
-                                      if (_dragPosition <
-                                          -MediaQuery.of(context).size.width *
-                                              0.7) {
-                                        _isSliderCompleted = true;
-                                      }
+                                    _dragPosition += details.primaryDelta!;
+                                    if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
+                                      _isSliderCompleted = true;
                                     }
                                   });
                                 },
                                 onHorizontalDragEnd: (details) {
                                   setState(() {
-                                    final dataList = singletonClass
-                                            .clockingDataList.first.data ??
-                                        [];
-                                    final today = DateTime.now();
-
-                                    final todayEntries =
-                                        dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
-                                      return createdAt != null &&
-                                          createdAt.year == today.year &&
-                                          createdAt.month == today.month &&
-                                          createdAt.day == today.day;
-                                    }).toList();
-
-                                    final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.last
-                                        : null;
-
-                                    String? checkInTime =
-                                        todayData?.checkInTime;
-                                    String? checkOutTime =
-                                        todayData?.checkOutTime;
-
-                                    String? lastBioType;
-                                    if (todayData?.rawBiometrics != null &&
-                                        todayData!.rawBiometrics!.isNotEmpty) {
-                                      todayData.rawBiometrics!.sort((a, b) =>
-                                          DateTime.parse(a.timestamp!)
-                                              .compareTo(DateTime.parse(
-                                                  b.timestamp!)));
-                                      lastBioType =
-                                          todayData.rawBiometrics!.last.type;
+                                    if (_isSliderCompleted) {
+                                      _overlayEntry = _createOverlayEntry();
+                                      Overlay.of(context).insert(_overlayEntry!);
                                     }
-
-                                    bool showCheckIn = false;
-                                    bool showCheckOut = false;
-
-                                    if ((checkInTime == null ||
-                                            checkInTime.isEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckIn = true;
-                                    } else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckOut = true;
-                                    } else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime != null &&
-                                            checkOutTime.isNotEmpty)) {
-                                      if (lastBioType == "Check-In") {
-                                        showCheckOut = true;
-                                      } else if (lastBioType == "Check-Out") {
-                                        showCheckIn = true;
-                                      }
-                                    }
-
-                                    if (showCheckIn) {
-                                      if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx >
-                                              0) {
-                                        _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context)
-                                            .insert(_overlayEntry!);
-                                      }
-                                    } else if (showCheckOut) {
-                                      if (_isSliderCompleted &&
-                                          details.velocity.pixelsPerSecond.dx <
-                                              0) {
-                                        _overlayEntry = _createOverlayEntry();
-                                        Overlay.of(context)
-                                            .insert(_overlayEntry!);
-                                      }
-                                    }
-
                                     _dragPosition = 0;
                                     _isSliderCompleted = false;
                                   });
@@ -2258,8 +2166,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Container(
                                   alignment: Alignment.topLeft,
                                   decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15)),
+                                    borderRadius: BorderRadius.all(Radius.circular(15)),
                                     gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF444658),
@@ -2274,198 +2181,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                   height: 60,
                                   child: (() {
-                                    final dataList = singletonClass
-                                            .clockingDataList.first.data ??
-                                        [];
+                                    final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
                                     final today = DateTime.now();
-
-                                    final todayEntries =
-                                        dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(
-                                          entry.createdAt ?? '');
+                                    final todayEntries = dataList.where((entry) {
+                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
                                       return createdAt != null &&
                                           createdAt.year == today.year &&
                                           createdAt.month == today.month &&
                                           createdAt.day == today.day;
                                     }).toList();
+                                    final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
+                                    String? checkInTime = todayData?.clockInTime;
+                                    String? checkOutTime = todayData?.clockOutTime;
+                                    String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
 
-                                    final todayData = todayEntries.isNotEmpty
-                                        ? todayEntries.last
-                                        : null;
-
-                                    String? checkInTime =
-                                        todayData?.checkInTime;
-                                    String? checkOutTime =
-                                        todayData?.checkOutTime;
-
-                                    String? lastBioType;
-                                    if (todayData?.rawBiometrics != null &&
-                                        todayData!.rawBiometrics!.isNotEmpty) {
-                                      todayData.rawBiometrics!.sort((a, b) =>
-                                          DateTime.parse(a.timestamp!)
-                                              .compareTo(DateTime.parse(
-                                                  b.timestamp!)));
-                                      lastBioType =
-                                          todayData.rawBiometrics!.last.type;
+                                    if ((checkInTime == null || checkInTime.isEmpty) &&
+                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty)) {
+                                      displayText = AppLocalizations.of(context)!.swipeToCheckOut;
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty) &&
+                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
                                     }
 
-                                    bool showCheckIn = false;
-                                    bool showCheckOut = false;
-
-                                    if ((checkInTime == null ||
-                                            checkInTime.isEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckIn = true;
-                                    } else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime == null ||
-                                            checkOutTime.isEmpty)) {
-                                      showCheckOut = true;
-                                    } else if ((checkInTime != null &&
-                                            checkInTime.isNotEmpty) &&
-                                        (checkOutTime != null &&
-                                            checkOutTime.isNotEmpty)) {
-                                      if (lastBioType == "Check-In") {
-                                        showCheckOut = true;
-                                      } else if (lastBioType == "Check-Out") {
-                                        showCheckIn = true;
-                                      }
-                                    }
-
-                                    if (showCheckOut) {
-                                      // ✅ Already checked in → show checkout button
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 5.0, left: 30),
+                                    // Always show swipe UI
+                                    return Transform.translate(
+                                      offset: Offset(_dragPosition, -1),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
-                                            IconButton(
-                                              onPressed: () async {
-                                                showDialog(
-                                                  context: context,
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          AlertDialog(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    title: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceEvenly,
-                                                      children: [
-                                                        const Icon(
-                                                            Icons.warning,
-                                                            color:
-                                                                Colors.yellow),
-                                                        Text(
-                                                          AppLocalizations.of(
-                                                                  context)!
-                                                              .areYouSure,
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: Colors.black,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    actions: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          InkWell(
-                                                            onTap: () =>
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(),
-                                                            child: Row(
-                                                              children: [
-                                                                const Icon(
-                                                                    Icons
-                                                                        .cancel,
-                                                                    color: Colors
-                                                                        .red),
-                                                                const SizedBox(
-                                                                    width: 5),
-                                                                Text(
-                                                                  AppLocalizations.of(
-                                                                          context)!
-                                                                      .cancel,
-                                                                  style:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Colors
-                                                                        .red,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 8),
-                                                          InkWell(
-                                                            onTap: () async {
-                                                              Navigator.pop(
-                                                                  context);
-                                                              await checkOut();
-                                                            },
-                                                            child: Row(
-                                                              children: [
-                                                                const Icon(
-                                                                    Icons
-                                                                        .logout,
-                                                                    color: Colors
-                                                                        .black),
-                                                                const SizedBox(
-                                                                    width: 5),
-                                                                Text(
-                                                                  AppLocalizations.of(
-                                                                          context)!
-                                                                      .yes,
-                                                                  style:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Colors
-                                                                        .black,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                              icon: SizedBox(
-                                                width: 35,
-                                                height: 35,
-                                                child: Image.asset(
-                                                    'images/exit.png'),
+                                            Container(
+                                              width: 60,
+                                              height: 50,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                color: Colors.white,
                                               ),
+                                              child: Lottie.asset('images/swiper.json'),
                                             ),
-                                            const SizedBox(width: 20),
+                                            const SizedBox(width: 50),
                                             Align(
                                               alignment: Alignment.center,
                                               child: Text(
-                                                AppLocalizations.of(context)!
-                                                    .pressButtonToCheckOut,
+                                                displayText,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -2475,49 +2235,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             ),
                                           ],
                                         ),
-                                      );
-                                    } else {
-                                      // ✅ Show Swipe to Check-In
-                                      return Transform.translate(
-                                        offset: Offset(_dragPosition, -1),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 60,
-                                                height: 50,
-                                                decoration: const BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(15)),
-                                                  color: Colors.white,
-                                                ),
-                                                child: Lottie.asset(
-                                                    'images/swiper.json'),
-                                              ),
-                                              const SizedBox(width: 50),
-                                              Align(
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .swipeToCheckIn,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
+                                      ),
+                                    );
                                   })(),
                                 ),
                               ),
-                            ),
+                            )
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -2819,7 +2542,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ],
                                     ),
                                   const SizedBox(width: 20),
-                                  if (hasComplaints)...[
+                                  if (hasComplaints)
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2868,8 +2591,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(width: 20),
-                                  ],
+                                  const SizedBox(width: 20),
                                   if (hasPenaltiesAndFines)
                                     Column(
                                       children: [
@@ -3069,6 +2791,106 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
+                                  const SizedBox(width: 20),
+                                  if (hasCompanyNotifications)
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const CompanyNotifications()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/pc.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .companyNotifications,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  if (hasStores)
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const StoresScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/thisMonth.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .stores,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -3675,8 +3497,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
     print(currentTime);
@@ -3693,7 +3514,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       "timeZone": timeZoneName
     };
     String body = json.encode(data);
-    print("body of check in $body");
     var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
@@ -3705,7 +3525,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         body: body,
         headers: singletonClass.getHeaders(),
       );
-      print(response.body);
       setState(() {
         isLoading = false;
       });
@@ -3717,11 +3536,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         await singletonClass.getClockingData();
         await singletonClass.getEmployeeAttendanceData();
+        print("<><><>${response.body}");
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
           title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkInComplete,
+          text: AppLocalizations.of(context)!.success,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
@@ -3772,113 +3592,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-
-  ///CHECK OUT API CALL
-  Future<void> checkOut() async {
-    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
-    String? empId = singletonClass.getJWTModel()?.empId;
-    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    String deviceIp = await _getLocalIpAddress();
-    String? timeZoneName = timeZoneIdentifier;
-    print(currentTime);
-
-    Map<String, dynamic> data = {
-      "deviceUserId": "$empId",
-      "sn": sn,
-      "timestamp": currentTime,
-      "status": 1,
-      "verify_type": 0,
-      "deviceIp": deviceIp,
-      "deviceName": "Remote",
-      "captureTime": currentTime,
-      "timeZone": timeZoneName
-    };
-    print(data);
-
-    String body = json.encode(data);
-    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final response = await http.post(
-        uri,
-        body: body,
-        headers: singletonClass.getHeaders(),
-      );
-
-      setState(() {
-        isLoading = false;
-      });
-      print(response.body);
-
-      if (response.statusCode == 201) {
-        setState(() {
-          _dragPosition = 0; // Reset drag position
-          _isSliderCompleted = false; // Reset slider completion flag
-          singletonClass.getClockingData();
-        });
-        await singletonClass.getClockingData();
-        await singletonClass.getEmployeeAttendanceData();
-        await QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkOutComplete,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        setState(() {
-          calculateTodayWorkedTime();
-          singletonClass.getEmployeeAttendanceData();
-        });
-      } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else {
-        // Handle other error statuses
-        print('Error: ${response.statusCode}');
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'An unexpected error occurred. Please try again.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print('Error: $e');
-
-      // Show error alert for exceptions
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'An error occurred. Please check your network connection.',
-        autoCloseDuration: const Duration(seconds: 5),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-      );
-    }
-  }
-
   ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
@@ -3896,8 +3609,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
-    String url =
-        '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
     String finalLocation = _openLocation ?? "0.0,0.0";
     Map<String, dynamic> data = {"lastLocation": finalLocation};
     String jsonData = jsonEncode(data);
@@ -3928,7 +3640,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return '0.0,0.0'; // Or handle it differently
+      return '0.0,0.0';
     }
 
     permission = await Geolocator.checkPermission();
@@ -3945,7 +3657,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
+    final distance = Geolocator.distanceBetween(
+      _companyLatitude!,
+      _companyLongitude!,
+      position.latitude,
+      position.longitude,
+    );
+    final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
+    final today = DateTime.now();
+    final todayEntries = dataList.where((entry) {
+      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+      return createdAt != null && createdAt.year == today.year && createdAt.month == today.month && createdAt.day == today.day;
+    }).toList();
+    final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
+    String? checkInTime = todayData?.clockInTime;
+    String? checkOutTime = todayData?.clockOutTime;
+    if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true && (checkInTime != null || checkInTime!.isNotEmpty) &&
+        (checkOutTime == null || checkOutTime.isEmpty)){
+      if (distance > allowedRadius) {
+        checkIn("biometric");
+      }
+    }
     return '${position.latitude}|${position.longitude}';
   }
 
@@ -3966,6 +3698,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     return null;
   }
-
-  ///Notifications handle Helper method
 }

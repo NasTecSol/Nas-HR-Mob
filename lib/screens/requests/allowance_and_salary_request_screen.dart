@@ -863,6 +863,17 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
             "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
+        } else {
+          await QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            title: AppLocalizations.of(context)!.internalServerError,
+            text: "Attachment data is missing. Please try again.",
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+          return;
         }
       }
 
@@ -934,7 +945,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0)),
+            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0 , showBanner: false,)),
           );
         });
       } else {
@@ -962,7 +973,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
 
   ///Search  Employee
   Future<void> getSearchEmployeeData() async {
-    String employeeId = _searchController.text.trim().toUpperCase();
+    String employeeId = _searchController.text;
     if (employeeId.isEmpty) return;
     setState(() {
       isLoading = true;
@@ -970,7 +981,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
     });
     var client = http.Client();
     var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+        '${singletonClass.baseURL}/employee/search?emp=$employeeId');
 
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     setState(() => isLoading = false);
@@ -980,8 +991,8 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
 
       // Create a SearchedResult instance
       SearchedResult result = SearchedResult(
-        empId: employeeData.data?.first.employeeInfo?.first.empId,
-        employeeName: employeeData.data?.first.firstName,
+        empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
+        employeeName: employeeData.data?.employees!.first.firstName,
       );
 
       print(">>>>$result");

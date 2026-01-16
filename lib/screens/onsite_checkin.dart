@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:locale_plus/locale_plus.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -14,6 +15,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../request_controller/attendance_model.dart';
+import 'package:nashr/widgets/loader.dart';
 
 class OnsiteCheckin extends StatefulWidget {
   const OnsiteCheckin({super.key});
@@ -25,12 +27,15 @@ class OnsiteCheckin extends StatefulWidget {
 class _OnsiteCheckinState extends State<OnsiteCheckin> {
   SingletonClass singletonClass = SingletonClass();
   bool isCheckedIn = false;
+  bool isCheckedOut = false;
   bool isLoading = false;
+  bool isWithinRadius = false;
   late MapboxMap _mapboxMap;
   LocationData? _currentLocation;
   final Location _location = Location();
-
-  // Company location (example coordinates)
+  PointAnnotationManager? _pointAnnotationManager;
+  CircleAnnotationManager? _circleAnnotationManager;
+  bool _showCheckInCard = true;
   final double _radiusInMeters = 100.0;
   double? _companyLatitude;
   double? _companyLongitude;
@@ -38,10 +43,15 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _parseCompanyLocation();
-      _getCurrentLocation();
-      _loadMapState();
+    _parseCompanyLocation();
+    _loadMapState();
+    _getCurrentLocation();
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showCheckInCard = false;
+        });
+      }
     });
   }
 
@@ -66,8 +76,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     final dataList = singletonClass.attendanceDataList.first.data?.data ?? [];
     Data1? todayData;
     for (var entry in dataList) {
-      final createdAt = DateTime.tryParse(
-          entry.createdAt ?? '');
+      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
       if (createdAt != null &&
           createdAt.year == today.year &&
           createdAt.month == today.month &&
@@ -78,8 +87,14 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
 
     final checkInTime = todayData?.clockInTime;
+    final checkOutTime = todayData?.clockOutTime;
     setState(() {
-      isCheckedIn = checkInTime != null && checkInTime.isNotEmpty;
+      isCheckedIn = checkInTime != null &&
+          checkInTime.trim().isNotEmpty &&
+          checkInTime.trim().toLowerCase() != 'null';
+      isCheckedOut = checkOutTime != null &&
+          checkOutTime.trim().isNotEmpty &&
+          checkOutTime.trim().toLowerCase() != 'null';
     });
   }
 
@@ -87,18 +102,20 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     PermissionStatus permissionGranted = await _location.requestPermission();
     if (permissionGranted == PermissionStatus.granted) {
       _currentLocation = await _location.getLocation();
-      _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
-      _addCurrentLocationMarker(_currentLocation!);
-      _addCompanyLocationMarker();
-      _checkProximityToCompanyLocation();
+      if (_currentLocation != null) {
+        await _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
+        await _addCurrentLocationMarker(_currentLocation!);
+        await _addCompanyLocationMarker();
+        _checkProximityToCompanyLocation();
+      }
     }
   }
 
-  void _moveToLocation(double latitude, double longitude) {
-    _mapboxMap.easeTo(
+  Future<void> _moveToLocation(double latitude, double longitude) async {
+    await _mapboxMap.easeTo(
       CameraOptions(
         center: Point(coordinates: Position(longitude, latitude)),
-        zoom: 18.0,
+        zoom: 15.0,
       ),
       MapAnimationOptions(
         duration: 1000,
@@ -106,22 +123,28 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     );
   }
 
-  void _addCurrentLocationMarker(LocationData locationData) async {
-    final ByteData bytes = await rootBundle.load('images/placeholder.png');
-    final Uint8List list = bytes.buffer.asUint8List();
+  Future<void> _addCurrentLocationMarker(LocationData locationData) async {
+    try {
+      final ByteData bytes = await rootBundle.load('images/placeholder.png');
+      final Uint8List list = bytes.buffer.asUint8List();
 
-    await _mapboxMap.annotations.createPointAnnotationManager().then((pointAnnotationManager) {
+      _pointAnnotationManager = await _mapboxMap.annotations.createPointAnnotationManager();
+
       final pointAnnotationOptions = PointAnnotationOptions(
         geometry: Point(coordinates: Position(locationData.longitude!, locationData.latitude!)),
         image: list,
         iconSize: 0.2,
       );
-      pointAnnotationManager.create(pointAnnotationOptions);
-    });
+      await _pointAnnotationManager!.create(pointAnnotationOptions);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding current location marker: $e');
+      }
+    }
   }
 
   void _checkProximityToCompanyLocation() {
-    if (_currentLocation != null) {
+    if (_currentLocation != null && _companyLatitude != null && _companyLongitude != null) {
       final double distance = _calculateDistance(
         _currentLocation!.latitude!,
         _currentLocation!.longitude!,
@@ -129,11 +152,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         _companyLongitude!,
       );
 
-      if (distance > _radiusInMeters) {
-        _showOutOfLocationMessage();
-      } else {
-        _showCheckInConfirmationDialog();
-      }
+      setState(() {
+        isWithinRadius = distance <= _radiusInMeters;
+      });
     }
   }
 
@@ -152,65 +173,22 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     return degrees * math.pi / 180;
   }
 
-  void _showOutOfLocationMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.sorryYouAreOutOfTheLocationRadius)),
-    );
-  }
+  Future<void> _addCompanyLocationMarker() async {
+    if (_companyLatitude == null || _companyLongitude == null) return;
 
-  void _showCheckInConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(isCheckedIn ? AppLocalizations.of(context)!.checkOut : AppLocalizations.of(context)!.checkIn),
-          content: Text(
-            isCheckedIn
-                ? AppLocalizations.of(context)!.areYouSure
-                : AppLocalizations.of(context)!.youHaveNotCheckedInYet,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child:  Text(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                if (isCheckedIn) {
-                  checkOut();
-                } else {
-                  if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true) {
-                    checkIn("location");
-                  }
-                }
-                Navigator.pop(context);
-              },
-              child: Text(isCheckedIn ?  AppLocalizations.of(context)!.checkOut : AppLocalizations.of(context)!.checkIn),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    try {
+      final ByteData bytes = await rootBundle.load('images/site.png');
+      final Uint8List list = bytes.buffer.asUint8List();
 
-  // Add a company location marker and draw the radius boundary
-  void _addCompanyLocationMarker() async {
-    final ByteData bytes = await rootBundle.load('images/site.png');
-    final Uint8List list = bytes.buffer.asUint8List();
-
-    // Create a point annotation for the company location
-    await _mapboxMap.annotations.createPointAnnotationManager().then((pointAnnotationManager) {
+      final pointAnnotationManager = await _mapboxMap.annotations.createPointAnnotationManager();
       final pointAnnotationOptions = PointAnnotationOptions(
         geometry: Point(coordinates: Position(_companyLongitude!, _companyLatitude!)),
         image: list,
         iconSize: 0.5,
       );
-      pointAnnotationManager.create(pointAnnotationOptions);
-    });
+      await pointAnnotationManager.create(pointAnnotationOptions);
 
-    await _mapboxMap.annotations.createCircleAnnotationManager().then((circleAnnotationManager) {
+      _circleAnnotationManager = await _mapboxMap.annotations.createCircleAnnotationManager();
       final circleAnnotationOptions = CircleAnnotationOptions(
         geometry: Point(coordinates: Position(_companyLongitude!, _companyLatitude!)),
         circleRadius: _radiusInMeters / 100,
@@ -219,27 +197,68 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         circleStrokeColor: 0x0000FF,
         circleStrokeWidth: 1.0,
       );
-      circleAnnotationManager.create(circleAnnotationOptions);
-    });
+      await _circleAnnotationManager!.create(circleAnnotationOptions);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding company location marker: $e');
+      }
+    }
   }
 
   Future<void> _moveToCompanyLocation() async {
-    _moveToLocation(_companyLatitude!, _companyLongitude!);
+    if (_companyLatitude != null && _companyLongitude != null) {
+      await _moveToLocation(_companyLatitude!, _companyLongitude!);
+    }
   }
 
   void _moveToCurrentLocation() {
     if (_currentLocation != null) {
       _moveToLocation(_currentLocation!.latitude!, _currentLocation!.longitude!);
+    }
+  }
+
+  void _handleCheckInOut() {
+    if (isWithinRadius) {
+      checkIn("location");
+    }
+  }
+
+  String _getAppBarTitle() {
+    if (isCheckedIn) {
+      return AppLocalizations.of(context)!.checkOut;
+    } else if (!isWithinRadius) {
+      return AppLocalizations.of(context)!.outOfRadiusRange;
+    } else if (isCheckedOut){
+      return AppLocalizations.of(context)!.checkIn;
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.currentLocationNotAvailable)),
-      );
+      return AppLocalizations.of(context)!.checkIn;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          _getAppBarTitle(),
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: isWithinRadius || isCheckedIn || isCheckedOut ? Colors.black : Colors.red,
+          ),
+        ),
+        actions: [
+          if(isWithinRadius)
+          IconButton(
+            icon: Icon(
+              (isCheckedIn) ? Icons.logout : Icons.done,
+              color: (isCheckedIn) ? Colors.red : Colors.green,
+            ),
+            onPressed: (isCheckedIn) ? _handleCheckInOut : null,
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           SizedBox.expand(
@@ -253,21 +272,88 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
               },
             ),
           ),
+          if (!isWithinRadius && _currentLocation != null)
+            Positioned(
+              top: 16.0,
+              left: 16.0,
+              right: 16.0,
+              child: Card(
+                color: Colors.red.shade50,
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)!.locationAttendanceRangeInfo,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.red.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (isCheckedIn && _showCheckInCard)
+            Positioned(
+              top: 16.0,
+              left: 16.0,
+              right: 16.0,
+              child: Card(
+                color: Colors.green.shade50,
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 24),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${AppLocalizations.of(context)!.checkInComplete}. Tap on out button to check out.',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.green.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Loader(),
+                ),
+              ),
+            ),
           Positioned(
             bottom: 16.0,
             right: 16.0,
             child: Column(
               children: [
                 FloatingActionButton(
-                  heroTag: 'unique_tag_for_fab_1',
+                  heroTag: 'current_location_fab',
                   backgroundColor: Colors.white,
                   onPressed: _moveToCurrentLocation,
                   tooltip: 'Move to current location',
-                  child: const Icon(Icons.location_on, color: Colors.blue),
+                  child: const Icon(Icons.my_location, color: Colors.blue),
                 ),
                 const SizedBox(height: 16.0),
                 FloatingActionButton(
-                  heroTag: 'unique_tag_for_fab_2',
+                  heroTag: 'company_location_fab',
                   backgroundColor: Colors.white,
                   onPressed: _moveToCompanyLocation,
                   tooltip: 'Move to company location',
@@ -280,7 +366,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       ),
     );
   }
-///check in api call
+
   Future<void> checkIn(String type) async {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
@@ -288,6 +374,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
+
     if (kDebugMode) {
       print(currentTime);
     }
@@ -301,120 +388,14 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       "deviceIp": deviceIp,
       "deviceName": "remoteLocation",
       "captureTime": currentTime,
-      "timeZone" : timeZoneName
+      "timeZone": timeZoneName
     };
+
     String body = json.encode(data);
     if (kDebugMode) {
       print("body of check in $body");
     }
-    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
-    setState(() {
-      isLoading = true;
-    });
 
-    try {
-      final response = await http.post(
-        uri,
-        body: body,
-        headers: singletonClass.getHeaders(),
-      );
-      if (kDebugMode) {
-        print(response.body);
-      }
-      setState(() {
-        isLoading = false;
-      });
-      if (response.statusCode == 201) {
-        setState(() {
-          singletonClass.getClockingData();
-        });
-        await singletonClass.getClockingData();
-        // Show success alert
-        await QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkInComplete,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        setState(() {});
-      } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else {
-        // Handle other error statuses
-        if (kDebugMode) {
-          print('Error: ${response.statusCode}');
-        }
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'An unexpected error occurred. Please try again.',
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-
-      // Show error alert for exceptions
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'An error occurred. Please check your network connection.',
-        autoCloseDuration: const Duration(seconds: 5),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-      );
-    }
-  }
-
-  ///CHECK OUT API CALL
-  Future<void> checkOut() async {
-    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
-    String? empId = singletonClass.getJWTModel()?.empId;
-    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    String deviceIp = await _getLocalIpAddress();
-    String? timeZoneName = timeZoneIdentifier;
-    if (kDebugMode) {
-      print(currentTime);
-    }
-
-    Map<String, dynamic> data = {
-      "deviceUserId": "$empId",
-      "sn": sn,
-      "timestamp": currentTime,
-      "status": 1,
-      "verify_type": 0,
-      "deviceIp": deviceIp,
-      "deviceName": "remoteLocation",
-      "captureTime": currentTime,
-      "timeZone" : timeZoneName
-    };
-    if (kDebugMode) {
-      print(data);
-    }
-
-    String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
     setState(() {
       isLoading = true;
@@ -427,43 +408,42 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
         headers: singletonClass.getHeaders(),
       );
 
-      setState(() {
-        isLoading = false;
-      });
       if (kDebugMode) {
         print(response.body);
       }
 
+      setState(() {
+        isLoading = false;
+      });
+
       if (response.statusCode == 201) {
-        setState(() {
-          singletonClass.getClockingData();
-        });
         await singletonClass.getClockingData();
-        await singletonClass.getClockingData();
-        // Show success alert
+        await _loadMapState();
+
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
           title: AppLocalizations.of(context)!.success,
-          text: AppLocalizations.of(context)!.checkOutComplete,
-          autoCloseDuration: const Duration(seconds: 5),
+          text: isCheckedIn
+              ? AppLocalizations.of(context)!.checkOut
+              : AppLocalizations.of(context)!.checkInComplete,
+          autoCloseDuration: const Duration(seconds: 3),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
+
         setState(() {});
       } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
           title: 'Error',
           text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 5),
+          autoCloseDuration: const Duration(seconds: 3),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
       } else {
-        // Handle other error statuses
         if (kDebugMode) {
           print('Error: ${response.statusCode}');
         }
@@ -472,7 +452,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           type: QuickAlertType.error,
           title: 'Error',
           text: 'An unexpected error occurred. Please try again.',
-          autoCloseDuration: const Duration(seconds: 5),
+          autoCloseDuration: const Duration(seconds: 3),
           showCancelBtn: false,
           showConfirmBtn: false,
         );
@@ -481,25 +461,23 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
       setState(() {
         isLoading = false;
       });
+
       if (kDebugMode) {
         print('Error: $e');
       }
 
-      // Show error alert for exceptions
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
         title: 'Error',
         text: 'An error occurred. Please check your network connection.',
-        autoCloseDuration: const Duration(seconds: 5),
+        autoCloseDuration: const Duration(seconds: 3),
         showCancelBtn: false,
         showConfirmBtn: false,
       );
     }
   }
 
-
-  ///get time zone
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
       for (var addr in interface.addresses) {
@@ -513,4 +491,3 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     return 'Unknown';
   }
 }
-
