@@ -736,7 +736,6 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemCount: filteredBranchTeams.length,
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredBranchTeams[index];
-                        String imageUrl = images[index % images.length];
                         if (singletonClass.getJWTModel()?.employeeId == team.id || team.employeeInfo!.first.employeeStatus == 'suspended') {
                           return SizedBox.shrink();
                         }
@@ -774,13 +773,25 @@ class _TeamScreenState extends State<TeamScreen> {
                                   padding: const EdgeInsets.all(5.0),
                                   child: Row(
                                     children: [
+                                      (team.profilePic == "https://www.profilePic.com" ||
+                                          team.profilePic == null ||
+                                          team.profilePic.isEmpty
+                                      ) ?
+                                      ClipOval(
+                                              child: Image.asset(
+                                                'images/DP.png',
+                                                fit: BoxFit.cover,
+                                                width: 50,
+                                                height: 50,
+                                              )
+                                      ) :
                                       Container(
                                         height: 50,
                                         width: 50,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage(imageUrl),
+                                            image: NetworkImage(team.profilePic),
                                             fit: BoxFit.cover,
                                           ),
                                         ),

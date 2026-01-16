@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/request_controller/approver_request_data_model.dart';
@@ -57,6 +58,9 @@ import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
+import 'package:nashr/widgets/face_id_popup.dart';
+import 'package:nashr/widgets/successful_popup.dart';
+import 'package:nashr/widgets/unsuccessful_popup.dart';
 
 class SingletonClass {
   factory SingletonClass() {
@@ -906,9 +910,6 @@ class SingletonClass {
     storeModelDataList.clear();
     availableBranches.clear();
     chatMessages.clear();
-    baseURL = null;
-    env = null;
-    envToggle = null;
     unreadCount = 0;
     _loginModel = null;
     _jwtData = null;
@@ -916,8 +917,6 @@ class SingletonClass {
     selectedCompanyId = null;
     checkOutStatus = null;
     fcmToken = null;
-    tenantId = null;
-    tenantLogo = null;
     companyName = null;
     branchID = null;
     branchName = null;
@@ -929,6 +928,50 @@ class SingletonClass {
     headerUrl = '';
     footerUrl = '';
     token = null;
+  }
+
+
+  ///POP UPS
+  Future<void> showSuccessPopup(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // prevent tap-to-dismiss
+      builder: (_) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: SuccessfulPopup(),
+        );
+      },
+    );
+  }
+
+  Future<void> showNotSuccessPopup(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // prevent tap-to-dismiss
+      builder: (_) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: UnsuccessfulPopup(),
+        );
+      },
+    );
+  }
+
+  Future<void> showFaceIDSuccessPopup(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // prevent tap-to-dismiss
+      builder: (_) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: FaceIdPopup(),
+        );
+      },
+    );
   }
 
 }

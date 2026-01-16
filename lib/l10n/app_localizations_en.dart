@@ -2547,4 +2547,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startChat => 'Start Chat';
+
+  @override
+  String get passwordMustBeSixDigit => 'Password must be 6 digits';
 }

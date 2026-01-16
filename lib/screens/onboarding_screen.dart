@@ -324,6 +324,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
         return;
       }
+      if (password.text.length < 6){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.passwordMustBeSixDigit),
+          ),
+        );
+        return;
+      }
     }
 
     if (_currentPage == 2) {
@@ -965,7 +973,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           setState(() {
                                             nationality = country.name;
                                             selectedCountryName = country.name;
-                                            print(country.name);
                                           });
                                         },
                                         initialSelection: 'SA',
@@ -1667,12 +1674,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             selectedFile = file;
                                           });
 
-                                          print('Selected file: ${file.name}');
                                           await uploadProfileToS3(file);
                                           setState(
-                                              () {}); // refresh to show image preview
+                                              () {
+
+                                              });
                                         } else {
-                                          print('File selection canceled.');
                                         }
                                       },
                                       child: Text(AppLocalizations.of(context)!
@@ -2969,20 +2976,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // ✅ Send request
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      print('📤 Upload Response: $responseBody');
 
       setState(() => isLoading = false);
 
       if (response.statusCode == 200) {
         final jsonRes = json.decode(responseBody);
         profilePicUrl = jsonRes['data']?['url'] ?? jsonRes['url'] ?? '';
-        print('✅ Profile Picture URL: $profilePicUrl');
       } else {
-        print('❌ Upload failed: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('⚠️ Upload error: $e');
       setState(() => isLoading = false);
       return null;
     }
@@ -2993,10 +2996,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> createEmployee() async {
     final today = DateTime.now().toIso8601String().split('T').first;
     String? organizationID = singletonClass.getJWTModel()?.organizationId;
-    List<Map<String, dynamic>> allowanceBenefits = allowances.map((e) {
+    final List<Map<String, dynamic>> allowanceBenefits =
+    (allowances.isEmpty)
+        ? <Map<String, dynamic>>[]
+        : allowances.map((e) {
       return {
         "allowanceTitle": e.title.text,
-        "allowanceType": e.type!.toUpperCase(),
+        "allowanceType": (e.type ?? "").toUpperCase(),
         "basedOn": e.type == "Variable" ? "Salary" : "",
         "amount": e.type == "Fixed"
             ? e.amount.text
@@ -3007,10 +3013,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       };
     }).toList();
 
-    List<Map<String, dynamic>> deductionList = deductions.map((e) {
+    final List<Map<String, dynamic>> deductionList =
+    (deductions.isEmpty)
+        ? <Map<String, dynamic>>[]
+        : deductions.map((e) {
       return {
         "deductionTitle": e.title.text,
-        "deductionType": e.type!.toUpperCase(),
+        "deductionType": (e.type ?? "").toUpperCase(),
         "basedOn": e.type == "Variable" ? "Salary" : "",
         "amount": e.type == "Fixed"
             ? e.amount.text
@@ -3020,6 +3029,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       };
     }).toList();
+
 
 
     final Map<String, dynamic> data = {
@@ -3244,7 +3254,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           type: QuickAlertType.error,
         );
       } else {
-        print('Error: ${response.statusCode}');
         setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -3257,7 +3266,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     } catch (e) {
       setState(() => isLoading = false);
-      print("❌ Error: $e");
     }
   }
 

@@ -195,8 +195,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                   title: Row(
                                     children: [
                                       Container(
-                                        height: 40,
-                                        width: 70,
+                                        height: 35,
+                                        width: 65,
                                         decoration: BoxDecoration(
                                             color: NasColors.onTime
                                         ),
@@ -209,8 +209,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                         )),
                                       ),
                                       Container(
-                                        height: 40,
-                                        width: 120,
+                                        height: 35,
+                                        width: 115,
                                         decoration: BoxDecoration(
                                             color: NasColors.onTime
                                         ),
@@ -223,8 +223,8 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                         )),
                                       ),
                                       Container(
-                                        height: 40,
-                                        width: 80,
+                                        height: 35,
+                                        width: 75,
                                         decoration: BoxDecoration(
                                             color: NasColors.onTime
                                         ),

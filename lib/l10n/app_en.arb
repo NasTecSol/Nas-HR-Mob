@@ -1290,7 +1290,8 @@
     "enterContactPersonDesignationHere":"Enter contact person designation here...!",
     "storeNameIsRequired":"Store name is required",
     "open":"Open",
-    "startChat":"Start Chat"
+    "startChat":"Start Chat",
+    "passwordMustBeSixDigit":"Password must be 6 digits"
 
 
 }

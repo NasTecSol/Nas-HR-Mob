@@ -104,7 +104,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                       ),
                     ),
                     Text(
-                      AppLocalizations.of(context)!.companyNotifications,
+                      AppLocalizations.of(context)!.documentNotification,
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -224,20 +224,23 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ConnectionState.waiting) {
                           return Loader();
                         }
-                        if (!snapshot.hasData ||
-                            singletonClass
-                                .companyNotificationDataList.isEmpty) {
+                        final notifications = singletonClass
+                            .companyNotificationDataList.first.data ?? [];
+
+                        final filteredNotifications = notifications
+                            .where((n) => n.companyId == singletonClass.selectedCompanyId)
+                            .toList();
+
+                        if (filteredNotifications.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
                                     height: 200,
                                     width: 200,
-                                    child:
-                                    Lottie.asset('images/empty.json'),
+                                    child: Lottie.asset('images/empty.json'),
                                   ),
                                   Text(
                                     AppLocalizations.of(context)!.noData,
@@ -256,9 +259,9 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                         return ListView.builder(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 5),
-                          itemCount: singletonClass.companyNotificationDataList.first.data!.length,
+                          itemCount: filteredNotifications.length,
                           itemBuilder: (ctx, i) {
-                            final notification = singletonClass.companyNotificationDataList.first.data![i];
+                            final notification = filteredNotifications[i];
                             final employee = singletonClass.teamBranchDataList
                                 .first.data!.employees!
                                 .where((e) => e.id == notification.objectId)
@@ -274,9 +277,6 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
                             } catch (_) {}
-                            if(singletonClass.selectedCompanyId != notification.companyId){
-                              return SizedBox.shrink();
-                            }
                             return Container(
                               margin:
                               const EdgeInsets.symmetric(vertical: 10),
@@ -449,20 +449,23 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ConnectionState.waiting) {
                           return Loader();
                         }
-                        if (!snapshot.hasData ||
-                            singletonClass
-                                .companyNotificationDataList.isEmpty) {
+                        final notifications = singletonClass.companyNotificationDataList.first.data ?? [];
+
+                        final filteredNotifications = notifications.where((n) {
+                          return n.companyId == singletonClass.selectedCompanyId && n.objectType == 'company';
+                        }).toList();
+
+
+                        if (filteredNotifications.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
                                     height: 200,
                                     width: 200,
-                                    child:
-                                    Lottie.asset('images/empty.json'),
+                                    child: Lottie.asset('images/empty.json'),
                                   ),
                                   Text(
                                     AppLocalizations.of(context)!.noData,
@@ -477,14 +480,12 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ),
                           );
                         }
-
                         return ListView.builder(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 5),
-                          itemCount: singletonClass.companyNotificationDataList.first.data!.length,
+                          itemCount: filteredNotifications.length,
                           itemBuilder: (ctx, i) {
-                            final notification = singletonClass.companyNotificationDataList.first.data![i];
-
+                            final notification = filteredNotifications[i];
                             String date = '--';
                             try {
                               final parsed =
@@ -493,10 +494,6 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
                             } catch (_) {}
-                            if (singletonClass.selectedCompanyId != notification.companyId ||
-                                notification.objectType != "company") {
-                              return const SizedBox.shrink();
-                            }
                             return Container(
                               margin:
                               const EdgeInsets.symmetric(vertical: 10),
@@ -643,18 +640,31 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ConnectionState.waiting) {
                           return Loader();
                         }
-                        if (!snapshot.hasData || singletonClass.companyNotificationDataList.isEmpty) {
+                        final notifications =
+                            singletonClass.companyNotificationDataList.first.data ?? [];
+
+                        final employees =
+                            singletonClass.teamBranchDataList.first.data?.employees ?? [];
+
+                        final filteredNotifications = notifications.where((notification) {
+                          final employeeExists =
+                          employees.any((e) => e.id == notification.objectId);
+
+                          return notification.companyId == singletonClass.selectedCompanyId &&
+                              notification.objectType == 'employee' &&
+                              employeeExists;
+                        }).toList();
+
+                        if (filteredNotifications.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
                                     height: 200,
                                     width: 200,
-                                    child:
-                                    Lottie.asset('images/empty.json'),
+                                    child: Lottie.asset('images/empty.json'),
                                   ),
                                   Text(
                                     AppLocalizations.of(context)!.noData,
@@ -676,7 +686,6 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                           itemCount: singletonClass.companyNotificationDataList.first.data!.length,
                           itemBuilder: (ctx, i) {
                             final notification = singletonClass.companyNotificationDataList.first.data![i];
-                            final employeeExists = singletonClass.teamBranchDataList.first.data!.employees!.any((e) => e.id == notification.objectId);
                             String date = '--';
                             final employee = singletonClass.teamBranchDataList
                                 .first.data!.employees!
@@ -692,11 +701,6 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
                             } catch (_) {}
-                            if (singletonClass.selectedCompanyId != notification.companyId ||
-                                notification.objectType != "employee" ||
-                                !employeeExists) {
-                              return const SizedBox.shrink();
-                            }
                             return Container(
                               margin:
                               const EdgeInsets.symmetric(vertical: 10),
