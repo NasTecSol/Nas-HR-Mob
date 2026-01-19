@@ -154,8 +154,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         itemCount: singletonClass
                             .companyDataList.first.data!.request!.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final request = singletonClass
-                              .companyDataList.first.data!.request![index];
+                          final request = singletonClass.companyDataList.first.data!.request![index];
                           if ((request.requestType == 'overTimeRequest' &&
                               singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false) ||
                           request.requestType == 'complaintRequest' ||
@@ -164,7 +163,6 @@ class _RequestScreenState extends State<RequestScreen> {
                           ) {
                             return const SizedBox.shrink();
                           }
-
                           /// ✅ Step 1: Collect allowed submenus under "Approval" where accessType.add == true
                           final allowedRequestNames = <String>{};
                           final uiSettings = singletonClass.roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ?? [];
@@ -185,8 +183,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
                                   for (var sub in requestSubMenus) {
                                     final subTitle = sub['title']?.toString().trim() ?? '';
-                                    final hasAddAccess = sub['accessType']?['add'] == false;
-
+                                    final hasAddAccess = sub['accessType']?['add'] == true;
                                     if (subTitle.isNotEmpty && hasAddAccess) {
                                       allowedRequestNames.add(subTitle);
                                     }
@@ -195,7 +192,6 @@ class _RequestScreenState extends State<RequestScreen> {
                               }
                             }
                           }
-
                           /// ✅ Step 2: Normalize both submenu title & request name for flexible comparison
                           String normalize(String text) {
                             return text
