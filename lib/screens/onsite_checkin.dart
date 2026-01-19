@@ -217,12 +217,6 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
     }
   }
 
-  void _handleCheckInOut() {
-    if (isWithinRadius) {
-      checkIn("location");
-    }
-  }
-
   String _getAppBarTitle() {
     if (isCheckedIn) {
       return AppLocalizations.of(context)!.checkOut;
@@ -255,7 +249,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
               (isCheckedIn) ? Icons.logout : Icons.done,
               color: (isCheckedIn) ? Colors.red : Colors.green,
             ),
-            onPressed: (isCheckedIn) ? _handleCheckInOut : null,
+            onPressed: (){
+              checkIn("location");
+            },
           ),
         ],
       ),
