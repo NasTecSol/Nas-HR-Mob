@@ -1605,8 +1605,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                                         children: [
-                                          ElevatedButton(
+                                          IconButton(
                                             onPressed: _resetSignature,
+                                            icon: Icon(Icons.restart_alt_outlined)
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: (){
+                                              setState(() {
+                                                _isEditing = false;
+                                              });
+                                            },
                                             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                             child: Text(AppLocalizations.of(context)!.cancel,
                                               style: GoogleFonts.inter(
