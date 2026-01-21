@@ -10,6 +10,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
+import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -414,8 +415,8 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
 
       if (response.statusCode == 201) {
         await singletonClass.getClockingData();
+        await singletonClass.getEmployeeAttendanceData();
         await _loadMapState();
-
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -427,8 +428,9 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           showCancelBtn: false,
           showConfirmBtn: false,
         );
-
-        setState(() {});
+        setState(() {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 0, selectedIndex: 0, showBanner: false)));
+        });
       } else if (response.statusCode == 400) {
         QuickAlert.show(
           context: context,
