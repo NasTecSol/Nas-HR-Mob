@@ -1118,8 +1118,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(right: 12, top: 50, left: 10),
+                    padding: const EdgeInsets.only(right: 12, top: 50, left: 15),
                     child: AnimatedOpacity(
                       opacity: showHeaderContent ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
@@ -1168,49 +1167,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 55),
-                    child: AnimatedOpacity(
-                      opacity: showHeaderContent ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 55),
+                      child: AnimatedOpacity(
+                        opacity: showHeaderContent ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${dashBoardData?.profession}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${dashBoardData?.profession}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
