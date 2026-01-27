@@ -166,8 +166,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       showDropdown = false;
       showTeamCheckbox = true;
       showOnlyMeCheckbox = true;
-      _isTeamChecked = true;  // Always true
-      _isChecked = false;     // Only Me hidden or unchecked
+      _isTeamChecked = true;
+      _isChecked = false;
     }
 
     /// 🧩 CASE 4: No Companies/Branches, Team == false
@@ -176,7 +176,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       showTeamCheckbox = false;
       showOnlyMeCheckbox = true;
       _isTeamChecked = false;
-      _isChecked = true; // Only Me active
+      _isChecked = true;
     }
 
     /// 🔁 Refresh data based on updated logic
@@ -309,20 +309,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     final grade = singletonClass.getJWTModel()?.grade;
 
     if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3"){
-      if(_isChecked == false && _isTeamChecked == true &&  singletonClass.branchID == null){
+      if(_isChecked == false && _isTeamChecked == true && (singletonClass.branchID!.isEmpty || singletonClass.branchID == null)){
         for (var team in filteredUnderTeams) {
-          log("👥 Checking team: ${team.teamId}");
-          if (team.teamData != null) {
+          log("👥 Processing team: ${team.teamId}");
+          if (team.teamData != null && team.teamData!.isNotEmpty) {
             for (var member in team.teamData!) {
               if (member.employeeId != null && member.employeeId!.isNotEmpty) {
                 employeeIds.add(member.employeeId!);
-                log(" - Found Employee ID: ${member.employeeId}");
+                log(" - Added Employee ID: ${member.employeeId}");
               } else {
-                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+                log(" - ⚠️ Skipping empty employeeId in team: ${team.teamId}");
               }
             }
           } else {
-            log(" - ⚠️ teamData is null for team: ${team.teamId}");
+            log(" - ⚠️ No teamData found for team: ${team.teamId}");
           }
         }
       } else if (_isChecked == false && _isTeamChecked == false && singletonClass.branchID!.isNotEmpty && singletonClass.branchID != null){
