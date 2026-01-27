@@ -268,8 +268,6 @@ class _TeamScreenState extends State<TeamScreen> {
     return {'ownTeams': ownTeams, 'underTeams': underTeams};
   }
 
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
