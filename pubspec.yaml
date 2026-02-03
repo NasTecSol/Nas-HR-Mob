@@ -86,7 +86,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^31.2.2
   webview_flutter: ^4.4.2
   country_code_picker: ^3.4.1
-  newrelic_mobile: ^1.0.0
+  newrelic_mobile: ^1.1.21
   geocoding: ^2.0.5
   jwt_decoder: ^2.0.1
 

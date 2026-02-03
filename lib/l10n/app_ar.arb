@@ -953,5 +953,6 @@
       "swipeToCheckOut": "اسحب لتسجيل الخروج",
       "open": "فتح",
       "startChat": "بدء الدردشة",
-      "passwordMustBeSixDigit": "يجب أن تتكون كلمة المرور من 6 أرقام"
+      "passwordMustBeSixDigit": "يجب أن تتكون كلمة المرور من 6 أرقام",
+      "createdDate":"تاريخ الإنشاء"
 }
