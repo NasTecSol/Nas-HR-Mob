@@ -6,12 +6,14 @@ list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
   file_selector_windows
   firebase_core
+  flutter_sound
   geolocator_windows
   local_auth_windows
   pdfx
   permission_handler_windows
   printing
   share_plus
+  speech_to_text_windows
   syncfusion_pdfviewer_windows
   url_launcher_windows
 )

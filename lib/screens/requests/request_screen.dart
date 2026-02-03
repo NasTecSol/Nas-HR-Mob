@@ -726,7 +726,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     String formatDate(String updatedAt) {
                                       DateTime updatedAtDateTime =
                                           DateTime.parse(updatedAt);
-                                      return DateFormat('dd-MM-yyyy')
+                                      return DateFormat('dd-MM-yyyy hh:mm a')
                                           .format(updatedAtDateTime);
                                     }
 
@@ -836,7 +836,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         alignment:
                                                             Alignment.topRight,
                                                         child: Text(
-                                                          '${AppLocalizations.of(context)!.createAt} $date',
+                                                          '${AppLocalizations.of(context)!.createdDate} $date',
                                                           style:
                                                               GoogleFonts.inter(
                                                             fontSize: 13,
@@ -1404,7 +1404,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       String formatDate(String updatedAt) {
                                         DateTime updatedAtDateTime =
                                             DateTime.parse(updatedAt);
-                                        return DateFormat('dd-MM-yyyy')
+                                        return DateFormat('dd-MM-yyyy hh:mm a')
                                             .format(updatedAtDateTime);
                                       }
 
@@ -1514,7 +1514,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           alignment: Alignment
                                                               .topRight,
                                                           child: Text(
-                                                            '${AppLocalizations.of(context)!.createAt} $date',
+                                                            '${AppLocalizations.of(context)!.createdDate} $date',
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontSize: 13,
@@ -2088,7 +2088,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       String formatDate(String updatedAt) {
                                         DateTime updatedAtDateTime =
                                             DateTime.parse(updatedAt);
-                                        return DateFormat('dd-MM-yyyy')
+                                        return DateFormat('dd-MM-yyyy hh:mm a')
                                             .format(updatedAtDateTime);
                                       }
 
@@ -2199,7 +2199,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           alignment: Alignment
                                                               .topRight,
                                                           child: Text(
-                                                            '${AppLocalizations.of(context)!.createAt} $date',
+                                                            '${AppLocalizations.of(context)!.createdDate} $date',
                                                             style: GoogleFonts
                                                                 .inter(
                                                               fontSize: 13,

@@ -378,7 +378,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                 ),
                 const SizedBox(height: 20),
                 /// Attachment button (only if required)
-                if (widget.selectedRequest?.docRequired == true) ...[
+                if (widget.selectedRequest!.subTypes!.first.docRequired == true)  ...[
                   TextButton(
                     onPressed: () async {
                       FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
