@@ -40,6 +40,8 @@
         </activity>
         <service
             android:name="com.transistorsoft.flutter.backgroundfetch.HeadlessTask"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            tools:ignore="Instantiatable"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.transistorsoft.flutter.backgroundfetch.ACTION_TASK_READY"/>
