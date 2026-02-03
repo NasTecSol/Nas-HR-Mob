@@ -5131,6 +5131,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password must be 6 digits'**
   String get passwordMustBeSixDigit;
+
+  /// No description provided for @createdDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Created Date'**
+  String get createdDate;
 }
 
 class _AppLocalizationsDelegate

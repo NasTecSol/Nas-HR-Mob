@@ -1558,7 +1558,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                         ),
                       ],
                       const SizedBox(height: 10),
-                      if (widget.selectedRequest!.docRequired == true) ...[
+                      if (widget.selectedRequest!.subTypes!.first.docRequired == true)  ...[
                         GestureDetector(
                           onTap: () async {
                             FilePickerResult? result =

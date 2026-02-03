@@ -1291,7 +1291,8 @@
     "storeNameIsRequired":"Store name is required",
     "open":"Open",
     "startChat":"Start Chat",
-    "passwordMustBeSixDigit":"Password must be 6 digits"
+    "passwordMustBeSixDigit":"Password must be 6 digits",
+    "createdDate":"Created Date"
 
 
 }
