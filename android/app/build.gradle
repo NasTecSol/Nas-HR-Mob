@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
+    id "org.jetbrains.kotlin.android"
     id "com.google.gms.google-services"
-    id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -40,13 +40,19 @@ android {
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
     }
-
     defaultConfig {
         applicationId "com.nastecsol.nashr"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 
     signingConfigs {
@@ -63,15 +69,11 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile(
-                    "proguard-android-optimize.txt"
-            ), "proguard-rules.pro"
-
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             ndk {
                 debugSymbolLevel "FULL"
             }
         }
-
         debug {
             ndk {
                 debugSymbolLevel "FULL"
@@ -83,10 +85,10 @@ android {
 flutter {
     source "../.."
 }
-
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "androidx.annotation:annotation:1.7.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
+    implementation "androidx.annotation:annotation:1.9.1"
+    implementation "androidx.core:core-ktx:1.17.0"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "com.transistorsoft:tsbackgroundfetch:1.0.3"
     implementation "com.newrelic.agent.android:android-agent:7.4.0"
