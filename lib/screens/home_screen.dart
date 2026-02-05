@@ -1357,10 +1357,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SlackScreen()),
+                                        builder: (context) => const SlackScreen()),
                                   );
-                                  // Recalculate when returning back from Slack screen
                                   _calculateUnreadCount();
                                 },
                                 icon: Container(
@@ -1371,8 +1369,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.6),
+                                        color: Colors.white.withValues(alpha: 0.6),
                                         spreadRadius: 5,
                                         blurRadius: 10,
                                       ),
@@ -1387,8 +1384,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
-
-                              // 🔴 Badge for unread count
                               if (singletonClass.unreadCount > 0)
                                 Positioned(
                                   right: 4,

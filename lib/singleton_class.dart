@@ -688,7 +688,6 @@ class SingletonClass {
       "pushNotificationId": "$fcmToken",
     };
 
-    /// Convert data to JSON string
     String jsonData = jsonEncode(data);
     try {
       final response = await http.patch(
@@ -697,7 +696,7 @@ class SingletonClass {
         body: jsonData,
       );
       if (kDebugMode) {
-        print("<><><><>${response.body}");
+        print("<><FCM><><>${response.body}");
       }
       if (response.statusCode == 200) {
         if (kDebugMode) {
