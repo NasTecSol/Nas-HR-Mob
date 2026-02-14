@@ -5137,6 +5137,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created Date'**
   String get createdDate;
+
+  /// No description provided for @sendLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Letter'**
+  String get sendLetter;
 }
 
 class _AppLocalizationsDelegate

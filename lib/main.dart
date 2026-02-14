@@ -86,7 +86,7 @@ void main() {
     LanguageChangeController languageController = LanguageChangeController();
     await languageController.loadLanguage();
 
-    // NEW RELIC
+    /// NEW RELIC
     var appToken = "";
     if (Platform.isIOS) {
       appToken = 'AA796b590654035b9f72fb84c72e39173ffbcc165b-NRMA';

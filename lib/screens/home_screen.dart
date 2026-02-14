@@ -86,8 +86,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     trackOpenLocation();
     SocketService2().initSocket();
     setState(() {
-      singletonClass.getChats();
-      _calculateUnreadCount();
+      SocketService2().socket!.on('receiveMessage', (data) async {
+        try {
+          singletonClass.getChats();
+          _calculateUnreadCount();
+          log("🔄 Chats refreshed after receiving new message");
+        } catch (e) {
+          log("⚠️ Error refreshing chats: $e");
+        }
+      });
     });
     final locale = WidgetsBinding.instance.window.locale.languageCode;
     SocketService().initializeSocket('${singletonClass.tenantId}', locale);
@@ -1348,67 +1355,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
-                        if (hasChats)
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              IconButton(
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const SlackScreen()),
-                                  );
-                                  _calculateUnreadCount();
-                                },
-                                icon: Container(
-                                  height: 45,
-                                  width: 45,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(alpha: 0.6),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(9.0),
-                                    child: Image.asset(
-                                      'images/Comments.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              if (singletonClass.unreadCount > 0)
-                                Positioned(
-                                  right: 4,
-                                  top: 4,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(5),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      singletonClass.unreadCount > 99
-                                          ? '99+'
-                                          : singletonClass.unreadCount
-                                              .toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          )
                       ],
                     ),
                   ),
@@ -2273,6 +2219,87 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
+                                  if (hasChats)...[
+                                    Stack(
+                                      children:[ Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () async {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const SlackScreen()),
+                                              );
+                                              _calculateUnreadCount();
+                                            },
+                                            child: Container(
+                                              height: 65,
+                                              width: 65,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.5),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 0.5,
+                                                    offset: const Offset(0, 0),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  'images/Comments.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .chat,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                        if (singletonClass.unreadCount > 0)
+                                          Positioned(
+                                            right: 2,
+                                            top: -3,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(5),
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              constraints:
+                                              const BoxConstraints(
+                                                minWidth: 18,
+                                                minHeight: 18,
+                                              ),
+                                              child: Text(
+                                                singletonClass.unreadCount > 99
+                                                    ? '99+'
+                                                    : singletonClass.unreadCount
+                                                    .toString(),
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ]
+                                    ),
+                                    const SizedBox(width: 20),
+                                  ],
                                   if (hasAttendance)...[
                                     Column(
                                       children: [
@@ -2383,9 +2410,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       const EdgeInsets.all(2),
                                                   decoration: BoxDecoration(
                                                     color: Colors.red,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                                    shape: BoxShape.circle,
                                                   ),
                                                   constraints:
                                                       const BoxConstraints(
@@ -2394,7 +2419,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ),
                                                   child: Text(
                                                     '${singletonClass.employeeDataList.first.data!.documentsInfo!.length}',
-                                                    style: const TextStyle(
+                                                    style: GoogleFonts.inter(
                                                       color: Colors.white,
                                                       fontSize: 12,
                                                     ),
@@ -2466,9 +2491,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     const EdgeInsets.all(2),
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          10),
+                                                      shape: BoxShape.circle,
                                                     ),
                                                     constraints:
                                                     const BoxConstraints(
@@ -2477,7 +2500,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                     child: Text(
                                                       '${singletonClass.employeeDataList.first.data!.assetsInfo!.length}',
-                                                      style: const TextStyle(
+                                                      style: GoogleFonts.inter(
                                                         color: Colors.white,
                                                         fontSize: 12,
                                                       ),
@@ -2907,6 +2930,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                     const SizedBox(width: 20),
                                   ],
+
                                 ],
                               ),
                             ),

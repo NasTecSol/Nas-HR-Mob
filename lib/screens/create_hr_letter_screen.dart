@@ -441,67 +441,150 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
                       ),
                     ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: NasColors.lightBlue, // background color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        // rounded corners
-                        side: BorderSide(
-                            color: Colors.transparent,
-                            width: 2), // border color and width
-                      ),
-                    ),
-                    onPressed: () async {
-                      if(_formKey.currentState!.validate()){
-                        if(_selectedEmployees.isNotEmpty){
-                          await downloadAndSaveDocx(templateDocUrl!);
-                          if (_generatedDocxBytes == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Document is not ready.")),
-                            );
-                            return;
-                          }
-
-                          final tempDir = await getTemporaryDirectory();
-                          final filePath = '${tempDir.path}/generated_hr_letter.docx';
-                          final file = File(filePath);
-                          await file.writeAsBytes(_generatedDocxBytes!);
-
-                          print("File path to open: $filePath");
-                          print(templateDocUrl);
-
-                          // Ensure the file exists before trying to open
-                          if (await file.exists()) {
-                            final result = await OpenFile.open(filePath);
-                            print("OpenFile result: ${result.message}");
-                          } else {
-                            print("File does not exist: $filePath");
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(AppLocalizations.of(context)!.selectAssignee),
-                              duration: Duration(seconds: 4),
-                            ),
-                          );
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(
-                            content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
-                            duration: Duration(seconds: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: NasColors.lightBlue, // background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            // rounded corners
+                            side: BorderSide(
+                                color: Colors.transparent,
+                                width: 2), // border color and width
                           ),
-                        );
-                      }
-                    },
-                    child: Text(
-                      AppLocalizations.of(context)!.previewLetter,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: Colors.white,
+                        ),
+                        onPressed: () async {
+                          if(_formKey.currentState!.validate()){
+                            if(_selectedEmployees.isNotEmpty){
+                              await downloadAndSaveDocx(templateDocUrl!);
+                              if (_generatedDocxBytes == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Document is not ready.")),
+                                );
+                                return;
+                              }
+
+                              final tempDir = await getTemporaryDirectory();
+                              final filePath = '${tempDir.path}/generated_hr_letter.docx';
+                              final file = File(filePath);
+                              await file.writeAsBytes(_generatedDocxBytes!);
+
+                              print("File path to open: $filePath");
+                              print(templateDocUrl);
+
+                              // Ensure the file exists before trying to open
+                              if (await file.exists()) {
+                                final result = await OpenFile.open(filePath);
+                                print("OpenFile result: ${result.message}");
+                              } else {
+                                print("File does not exist: $filePath");
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(AppLocalizations.of(context)!.selectAssignee),
+                                  duration: Duration(seconds: 4),
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
+                                duration: Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Icon(Icons.remove_red_eye,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              AppLocalizations.of(context)!.previewLetter,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: NasColors.lightBlue, // background color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            // rounded corners
+                            side: BorderSide(
+                                color: Colors.transparent,
+                                width: 2), // border color and width
+                          ),
+                        ),
+                        onPressed: () async {
+                          if(_formKey.currentState!.validate()){
+                            if(_selectedEmployees.isNotEmpty){
+                              await downloadAndSaveDocx(templateDocUrl!);
+                              if (_generatedDocxBytes == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Document is not ready.")),
+                                );
+                                return;
+                              }
+
+                              final tempDir = await getTemporaryDirectory();
+                              final filePath = '${tempDir.path}/generated_hr_letter.docx';
+                              final file = File(filePath);
+                              await file.writeAsBytes(_generatedDocxBytes!);
+
+                              debugPrint("File path to open: $filePath");
+                              debugPrint(templateDocUrl);
+
+                              // Ensure the file exists before trying to open
+                              if (await file.exists()) {
+                                uploadHRLetter();
+                              } else {
+                                debugPrint("File does not exist: $filePath");
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(AppLocalizations.of(context)!.selectAssignee),
+                                  duration: Duration(seconds: 4),
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(AppLocalizations.of(context)!.pleaseFillAllFields),
+                                duration: Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Icon(Icons.send_outlined,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              AppLocalizations.of(context)!.sendLetter,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),]
@@ -693,7 +776,6 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
         singletonClass.attachmentResponseDataList
           ..clear()
           ..add(attachmentResponse);
-        uploadHRLetter();
 
         return {"success": true, "message": "Upload Success"};
       } else {
@@ -998,6 +1080,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       );
       print("POST CALL ${response.body}");
       if (response.statusCode == 200) {
+        await singletonClass.getHRLetter();
         Navigator.pop(context);
       } else if (response.statusCode == 405 || response.statusCode == 502) {
         setState(() {

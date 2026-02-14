@@ -777,7 +777,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                                   Row(
                                     children: [
                                       Text(
-                                        "${employee!.firstName} ${employee.lastName}",
+                                        "${employee?.firstName ?? "---"} ${employee?.lastName ?? "---"}",
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: Colors.black,
@@ -785,7 +785,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                                       ),
                                       Spacer(),
                                       Text(
-                                        "${employee.employeeInfo!.first.empId}",
+                                        "${employee?.employeeInfo!.first.empId}",
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: Colors.black,
