@@ -261,7 +261,7 @@ class SingletonClass {
       companiesDataList.addAll([companiesData]);
       return companiesData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
 
@@ -280,7 +280,7 @@ class SingletonClass {
       uiSettingsModelDataList.addAll([uiSettingsData]);
       return uiSettingsData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 
   ///Get HR letter Template
@@ -484,6 +484,7 @@ class SingletonClass {
 
     log("📡 Requesting company data from: $uri");
     log("📦 Headers: ${getHeaders()}");
+    log("📦 FCM: ${fcmToken}");
 
     try {
       var response = await client.get(uri, headers: getHeaders());
@@ -696,6 +697,7 @@ class SingletonClass {
         body: jsonData,
       );
       if (kDebugMode) {
+        print(url);
         print("<><FCM><><>${response.body}");
       }
       if (response.statusCode == 200) {

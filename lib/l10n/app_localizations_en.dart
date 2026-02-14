@@ -2553,4 +2553,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createdDate => 'Created Date';
+
+  @override
+  String get sendLetter => 'Send Letter';
 }

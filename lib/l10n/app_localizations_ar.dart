@@ -2544,4 +2544,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get createdDate => 'تاريخ الإنشاء';
+
+  @override
+  String get sendLetter => 'أرسل رسالة';
 }

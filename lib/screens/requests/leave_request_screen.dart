@@ -760,6 +760,10 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         return localizations.specialDocument;
       case "Maternity Leave":
         return localizations.maternityLeave;
+      case "Short Leave":
+        return localizations.shortLeaves;
+      case "UnPaid Leave ":
+        return localizations.unpaidLeave;
       default:
         return status ?? '';
     }

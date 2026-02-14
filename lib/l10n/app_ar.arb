@@ -954,5 +954,6 @@
       "open": "فتح",
       "startChat": "بدء الدردشة",
       "passwordMustBeSixDigit": "يجب أن تتكون كلمة المرور من 6 أرقام",
-      "createdDate":"تاريخ الإنشاء"
+      "createdDate":"تاريخ الإنشاء",
+      "sendLetter":"أرسل رسالة"
 }
