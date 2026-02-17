@@ -357,7 +357,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "${AppLocalizations.of(context)!.totalHours}",
+                    AppLocalizations.of(context)!.totalHours,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,

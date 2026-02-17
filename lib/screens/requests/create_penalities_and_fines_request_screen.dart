@@ -1168,7 +1168,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
         employeeName: employeeData.data?.employees!.first.firstName,
       );
 
-      print(">>>>$result");
+      debugPrint(">>>>$result");
       setState(() {
         // Remove existing entry with the same empId first
         _employeeSearchResults.removeWhere((e) => e.empId == result.empId);
@@ -1178,7 +1178,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
 
         _showSearchResult = true;
       });
-      print("???$_employeeSearchResults");
+      debugPrint("???$_employeeSearchResults");
     } else {
       setState(() {
         _showSearchResult = false;

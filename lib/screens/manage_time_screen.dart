@@ -874,11 +874,11 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
             // ✅ Only proceed if we actually have employees
             if (timeTableShiftEmployees.isNotEmpty) {
               final employee = timeTableShiftEmployees[0];
-              print(employee['employeeId']);
+              debugPrint(employee['employeeId']);
               selectedEMPID = employee['employeeId'];
               timeTableFuture = getTimeTable(selectedEMPID!);
             } else {
-              print("⚠️ No employees found in timeTableShiftEmployees");
+              debugPrint("⚠️ No employees found in timeTableShiftEmployees");
               selectedEMPID = null;
               timeTableFuture = null;
             }
@@ -941,8 +941,8 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     );
     final response = await http.get(uri, headers: singletonClass.getHeaders());
 
-    print("Shifts uri $uri");
-    print("Shift data: ${response.body}");
+    debugPrint("Shifts uri $uri");
+    debugPrint("Shift data: ${response.body}");
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
@@ -1030,7 +1030,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
     final uri =
     Uri.parse('${singletonClass.baseURL}/branches/branchId/$branchId');
     final response = await http.get(uri, headers: singletonClass.getHeaders());
-    print("shift data update${response.body}");
+    debugPrint("shift data update${response.body}");
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
