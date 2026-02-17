@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 class Environment {
@@ -7,7 +8,7 @@ class Environment {
     try {
       final bool isTestFlight = await _channel.invokeMethod('isTestFlight') ?? false;
       if (isTestFlight) {
-        print("🔥 Running TestFlight build");
+        debugPrint("🔥 Running TestFlight build");
       }
       return isTestFlight ? "staging" : "production";
     } catch (_) {

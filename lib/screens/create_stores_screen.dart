@@ -407,7 +407,6 @@ class _CreateStoresScreenState extends State<CreateStoresScreen> {
                                     onChanged: (country) {
                                       setState(() {
                                         selectedCountryName = country.name;
-                                        print(country.name);
                                       });
                                     },
                                     initialSelection: 'SA',
@@ -847,24 +846,18 @@ class _CreateStoresScreenState extends State<CreateStoresScreen> {
 
       request.fields['attachmentName'] = file.name;
       request.fields['attachmentType'] = file.extension ?? '';
-
-      // ✅ Send request
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      print('📤 Upload Response: $responseBody');
 
       setState(() => isLoading = false);
 
       if (response.statusCode == 200) {
         final jsonRes = json.decode(responseBody);
         profilePicUrl = jsonRes['data']?['url'] ?? jsonRes['url'] ?? '';
-        print('✅ Profile Picture URL: $profilePicUrl');
       } else {
-        print('❌ Upload failed: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('⚠️ Upload error: $e');
       setState(() => isLoading = false);
       return null;
     }
