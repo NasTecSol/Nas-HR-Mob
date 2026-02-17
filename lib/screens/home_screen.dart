@@ -86,8 +86,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     trackOpenLocation();
     SocketService2().initSocket();
     setState(() {
-      singletonClass.getChats();
-      _calculateUnreadCount();
+      SocketService2().socket!.on('receiveMessage', (data) async {
+        try {
+          singletonClass.getChats();
+          _calculateUnreadCount();
+          log("🔄 Chats refreshed after receiving new message");
+        } catch (e) {
+          log("⚠️ Error refreshing chats: $e");
+        }
+      });
     });
     final locale = WidgetsBinding.instance.window.locale.languageCode;
     SocketService().initializeSocket('${singletonClass.tenantId}', locale);
@@ -245,8 +252,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final checkOutTime = todayData.clockOutTime;
 
       // 🔹 Both checkin/checkout empty → no work today
-      if ((checkInTime == null || checkInTime.isEmpty) &&
-          (checkOutTime == null || checkOutTime.isEmpty)) {
+      if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
+          (checkOutTime == null || checkOutTime.isEmpty || checkOutTime == 'null')) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
         return;
@@ -254,14 +261,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // 🔹 Case 1: Only check-in available → running session
       if (checkInTime != null &&
-          checkInTime.isNotEmpty) {
+          checkInTime.isNotEmpty && checkInTime != 'null') {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
       if (checkOutTime != null &&
-          checkOutTime.isNotEmpty) {
+          checkOutTime.isNotEmpty && checkOutTime != 'null') {
         stopWorkTimer();
         _updateWorkedTime();
         return;
@@ -1118,8 +1125,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(right: 12, top: 50, left: 10),
+                    padding: const EdgeInsets.only(right: 12, top: 50, left: 15),
                     child: AnimatedOpacity(
                       opacity: showHeaderContent ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
@@ -1168,49 +1174,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 55),
-                    child: AnimatedOpacity(
-                      opacity: showHeaderContent ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 55),
+                      child: AnimatedOpacity(
+                        opacity: showHeaderContent ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${dashBoardData?.profession}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${dashBoardData?.profession}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1347,72 +1355,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ),
-                        if (hasChats)
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              IconButton(
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SlackScreen()),
-                                  );
-                                  // Recalculate when returning back from Slack screen
-                                  _calculateUnreadCount();
-                                },
-                                icon: Container(
-                                  height: 45,
-                                  width: 45,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.6),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(9.0),
-                                    child: Image.asset(
-                                      'images/Comments.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // 🔴 Badge for unread count
-                              if (singletonClass.unreadCount > 0)
-                                Positioned(
-                                  right: 4,
-                                  top: 4,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(5),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      singletonClass.unreadCount > 99
-                                          ? '99+'
-                                          : singletonClass.unreadCount
-                                              .toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          )
                       ],
                     ),
                   ),
@@ -2195,13 +2137,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     String? checkOutTime = todayData?.clockOutTime;
                                     String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
 
-                                    if ((checkInTime == null || checkInTime.isEmpty) &&
-                                        (checkOutTime == null || checkOutTime.isEmpty)) {
+                                    if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
+                                        (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty)) {
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty) &&
-                                        (checkOutTime != null && checkOutTime.isNotEmpty)) {
+                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
+                                        (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
                                       displayText = AppLocalizations.of(context)!.swipeToCheckIn;
                                     }
 
@@ -2212,7 +2154,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
+                                            _timer != null && _timer!.isActive ?
                                             Container(
+                                              width: 60,
+                                              height: 50,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                color: Colors.white,
+                                              ),
+                                              child: Lottie.asset('images/working.json'),
+                                            ) : Container(
                                               width: 60,
                                               height: 50,
                                               decoration: const BoxDecoration(
@@ -2266,9 +2217,90 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
-                                  if (hasAttendance)
+                                  if (hasChats)...[
+                                    Stack(
+                                      children:[ Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () async {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => const SlackScreen()),
+                                              );
+                                              _calculateUnreadCount();
+                                            },
+                                            child: Container(
+                                              height: 65,
+                                              width: 65,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.5),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 0.5,
+                                                    offset: const Offset(0, 0),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  'images/Comments.png',
+                                                  fit: BoxFit.contain,
+                                                  width: 30,
+                                                  height: 30,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            AppLocalizations.of(context)!
+                                                .chat,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                        if (singletonClass.unreadCount > 0)
+                                          Positioned(
+                                            right: 2,
+                                            top: -3,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(5),
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              constraints:
+                                              const BoxConstraints(
+                                                minWidth: 18,
+                                                minHeight: 18,
+                                              ),
+                                              child: Text(
+                                                singletonClass.unreadCount > 99
+                                                    ? '99+'
+                                                    : singletonClass.unreadCount
+                                                    .toString(),
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ]
+                                    ),
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasAttendance)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2317,8 +2349,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasDocuments)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasDocuments)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2377,9 +2410,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       const EdgeInsets.all(2),
                                                   decoration: BoxDecoration(
                                                     color: Colors.red,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                                    shape: BoxShape.circle,
                                                   ),
                                                   constraints:
                                                       const BoxConstraints(
@@ -2388,7 +2419,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ),
                                                   child: Text(
                                                     '${singletonClass.employeeDataList.first.data!.documentsInfo!.length}',
-                                                    style: const TextStyle(
+                                                    style: GoogleFonts.inter(
                                                       color: Colors.white,
                                                       fontSize: 12,
                                                     ),
@@ -2410,8 +2441,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasAssets)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasAssets)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2459,9 +2491,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     const EdgeInsets.all(2),
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          10),
+                                                      shape: BoxShape.circle,
                                                     ),
                                                     constraints:
                                                     const BoxConstraints(
@@ -2470,7 +2500,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     ),
                                                     child: Text(
                                                       '${singletonClass.employeeDataList.first.data!.assetsInfo!.length}',
-                                                      style: const TextStyle(
+                                                      style: GoogleFonts.inter(
                                                         color: Colors.white,
                                                         fontSize: 12,
                                                       ),
@@ -2492,8 +2522,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasTeams)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasTeams)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2541,8 +2572,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasComplaints)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasComplaints)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2591,8 +2623,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasPenaltiesAndFines)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasPenaltiesAndFines)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2641,8 +2674,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasManageShifts)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasManageShifts)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2691,8 +2725,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasBiometricCheckins)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasBiometricCheckins)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2741,8 +2776,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasOnboarding)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasOnboarding)...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2791,9 +2827,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                       ],
                                     ),
-                                  const SizedBox(width: 20),
-                                  if (hasCompanyNotifications)
-                                  Column(
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasCompanyNotifications)...[
+                                    Column(
                                     children: [
                                       GestureDetector(
                                         onTap: () {
@@ -2831,8 +2868,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
-                                        AppLocalizations.of(context)!
-                                            .companyNotifications,
+                                        AppLocalizations.of(context)!.documentNotification,
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -2841,8 +2877,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 20),
-                                  if (hasStores)
+                                    const SizedBox(width: 20),
+                                  ],
+                                  if (hasStores)...[
                                   Column(
                                     children: [
                                       GestureDetector(
@@ -2891,6 +2928,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                     ],
                                   ),
+                                    const SizedBox(width: 20),
+                                  ],
+
                                 ],
                               ),
                             ),

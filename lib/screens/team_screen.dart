@@ -50,59 +50,82 @@ class _TeamScreenState extends State<TeamScreen> {
 
   void teamCheck() {
     final teamModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
-        .firstWhere((e) => (e.title == "Teams" || e.name == "Teams"),
-    );
+        .firstWhere((e) => (e.title == "Teams" || e.name == "Teams"));
+
     final employeeManagementMenu = teamModule.subMenu!.firstWhere((submenu) =>
     submenu.title == "Employee Management" ||
-        submenu.name == "Employee Management",
-    );
+        submenu.name == "Employee Management");
 
     final access = employeeManagementMenu.accessLevel;
     final companies = access?.companies ?? [];
-    final hasCompanies = companies.isNotEmpty || companies.first.companyId!.isNotEmpty;
-    final hasBranches = hasCompanies &&
+
+    // Check if companies array has valid data (not empty and not just empty strings)
+    final hasValidCompanies = companies.isNotEmpty &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty);
+
+    // Check if any company has valid branches
+    final hasValidBranches = hasValidCompanies &&
         companies.any((c) =>
-        (c.branches != null &&
+        c.branches != null &&
             c.branches!.isNotEmpty &&
-            c.branches!.first.branchId != null &&
-            c.branches!.first.branchId!.isNotEmpty));
+            c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty));
+
     final teamEnabled = access?.team == true;
     final hasBranchId = singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
+
+    // Reset states
     showDropdown = false;
     showTeamCheckbox = false;
     _isTeamChecked = false;
 
-    if (hasCompanies && hasBranches && !teamEnabled) {
-      showDropdown = true;
-      showTeamCheckbox = false;
-      _isTeamChecked = false;
-      _selectedOptionIndex = 2;
-    }
+    if (singletonClass.getJWTModel()?.grade == "L0" ||
+        singletonClass.getJWTModel()?.grade == "L1" ||
+        singletonClass.getJWTModel()?.grade == "L2" ||
+        singletonClass.getJWTModel()?.grade == "L3"){
+      if (hasValidCompanies && hasValidBranches && teamEnabled) {
+        // Companies + Branches + Team = Show both dropdown and checkbox
+        showDropdown = true;
+        showTeamCheckbox = true;
 
-    else if (hasCompanies && hasBranches && teamEnabled) {
-      showDropdown = true;
-      showTeamCheckbox = true;
-
-      if (hasBranchId) {
+        if (hasBranchId) {
+          _isTeamChecked = false;
+          _selectedOptionIndex = 2;
+        } else {
+          _isTeamChecked = true;
+          _selectedOptionIndex = 0;
+        }
+      }
+      else if (hasValidCompanies && hasValidBranches && !teamEnabled) {
+        // Companies + Branches only = Show only dropdown
+        showDropdown = true;
+        showTeamCheckbox = false;
         _isTeamChecked = false;
         _selectedOptionIndex = 2;
-      } else {
-        _isTeamChecked = true;
       }
-    }
-    else if (!hasCompanies && !hasBranches && teamEnabled) {
-      showDropdown = false;
-      showTeamCheckbox = true;
-      _isTeamChecked = true;
-    }
-    else {
+      else if (!hasValidCompanies && teamEnabled) {
+        // No companies but team enabled = Show only team checkbox
+        showDropdown = false;
+        showTeamCheckbox = true;
+        _isTeamChecked = true;
+        _selectedOptionIndex = 0;
+      }
+      else {
+        // Default case
+        showDropdown = false;
+        showTeamCheckbox = false;
+        _isTeamChecked = false;
+        _selectedOptionIndex = 2;
+      }
+    } else{
       showDropdown = false;
       showTeamCheckbox = false;
       _isTeamChecked = false;
     }
 
+
     if (kDebugMode) {
-      print("✅ Access check: showDropdown=$showDropdown | showTeamCheckbox=$showTeamCheckbox | _isTeamChecked=$_isTeamChecked");
+      print("✅ Access check: hasValidCompanies=$hasValidCompanies | hasValidBranches=$hasValidBranches | teamEnabled=$teamEnabled");
+      print("✅ UI State: showDropdown=$showDropdown | showTeamCheckbox=$showTeamCheckbox | _isTeamChecked=$_isTeamChecked | _selectedOptionIndex=$_selectedOptionIndex");
     }
   }
 
@@ -118,13 +141,13 @@ class _TeamScreenState extends State<TeamScreen> {
     // Run access checks to set dropdown + team mode
     teamCheck();
 
-    if(singletonClass.getJWTModel()?.grade == "L0" ||
+    if (singletonClass.getJWTModel()?.grade == "L0" ||
         singletonClass.getJWTModel()?.grade == "L1" ||
         singletonClass.getJWTModel()?.grade == "L2" ||
-        singletonClass.getJWTModel()?.grade == "L3"
-    ){
-      /// Decide which data to load
-      if (_isTeamChecked == false && singletonClass.branchID != null) {
+        singletonClass.getJWTModel()?.grade == "L3") {
+
+      /// Decide which data to load based on mode
+      if (_isTeamChecked == false && singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty) {
         /// ✅ Branch Mode (when branch selected)
         final data = _getBranchEmployees();
         setState(() {
@@ -132,26 +155,33 @@ class _TeamScreenState extends State<TeamScreen> {
           filteredTeams = [];
           filteredUnderTeams = [];
         });
-      } else {
-        /// ✅ Team Mode (when team == true OR branch not selected)
+      } else if (_isTeamChecked == true) {
+        /// ✅ Team Mode (when team checkbox is checked)
         final branchDataList = singletonClass.branchDataList;
         final data = getFilteredTeams(branchDataList, reportingManagerId!);
         setState(() {
           filteredBranchTeams = [];
           filteredTeams = data['ownTeams']!;
           filteredUnderTeams = data['underTeams']!;
+        });
+      } else {
+        /// Default case
+        setState(() {
+          filteredBranchTeams = [];
+          filteredTeams = [];
+          filteredUnderTeams = [];
         });
       }
     } else {
-        final branchDataList = singletonClass.branchDataList;
-        final data = getFilteredTeams(branchDataList, reportingManagerId!);
-        setState(() {
-          filteredBranchTeams = [];
-          filteredTeams = data['ownTeams']!;
-          filteredUnderTeams = data['underTeams']!;
-        });
+      /// For other grades, always use team mode
+      final branchDataList = singletonClass.branchDataList;
+      final data = getFilteredTeams(branchDataList, reportingManagerId!);
+      setState(() {
+        filteredBranchTeams = [];
+        filteredTeams = data['ownTeams']!;
+        filteredUnderTeams = data['underTeams']!;
+      });
     }
-
 
     setState(() {
       isLoading = false;
@@ -238,8 +268,6 @@ class _TeamScreenState extends State<TeamScreen> {
     return {'ownTeams': ownTeams, 'underTeams': underTeams};
   }
 
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -444,15 +472,19 @@ class _TeamScreenState extends State<TeamScreen> {
                 ],
               ),
               SizedBox(height: 5),
+              // Updated Row widget for option cards
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  if(_isTeamChecked == true && singletonClass.branchID == null)...[
+                  // Show "Team Mates" and "My Teams" when team is checked and no branch selected
+                  if (_isTeamChecked == true && (singletonClass.branchID == null || singletonClass.branchID!.isEmpty)) ...[
                     buildOptionsCard(0, AppLocalizations.of(context)!.teamMates),
                     buildOptionsCard(1, AppLocalizations.of(context)!.myTeams),
                   ],
-                  if(_isTeamChecked == false && singletonClass.branchID != null)...[
+                  // Show "All Employees" when branch is selected and team is not checked
+                  if (_isTeamChecked == false && singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty) ...[
                     buildOptionsCard(2, AppLocalizations.of(context)!.allEmployees),
-                  ]
+                  ],
                 ],
               ),
               if (_selectedOptionIndex == 0) ...[
@@ -736,7 +768,6 @@ class _TeamScreenState extends State<TeamScreen> {
                       itemCount: filteredBranchTeams.length,
                       itemBuilder: (BuildContext context, int index) {
                         final team = filteredBranchTeams[index];
-                        String imageUrl = images[index % images.length];
                         if (singletonClass.getJWTModel()?.employeeId == team.id || team.employeeInfo!.first.employeeStatus == 'suspended') {
                           return SizedBox.shrink();
                         }
@@ -774,13 +805,25 @@ class _TeamScreenState extends State<TeamScreen> {
                                   padding: const EdgeInsets.all(5.0),
                                   child: Row(
                                     children: [
+                                      (team.profilePic == "https://www.profilePic.com" ||
+                                          team.profilePic == null ||
+                                          team.profilePic.isEmpty
+                                      ) ?
+                                      ClipOval(
+                                              child: Image.asset(
+                                                'images/DP.png',
+                                                fit: BoxFit.cover,
+                                                width: 50,
+                                                height: 50,
+                                              )
+                                      ) :
                                       Container(
                                         height: 50,
                                         width: 50,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
-                                            image: NetworkImage(imageUrl),
+                                            image: NetworkImage(team.profilePic),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -981,7 +1024,7 @@ class _TeamScreenState extends State<TeamScreen> {
               const SizedBox(height: 20),
               Row(
                 children: [
-                    buildOptionsCard(0, AppLocalizations.of(context)!.myTeams),
+                    buildOptionsCard(0, AppLocalizations.of(context)!.teamMates),
                 ],
               ),
               if (_selectedOptionIndex == 0) ...[

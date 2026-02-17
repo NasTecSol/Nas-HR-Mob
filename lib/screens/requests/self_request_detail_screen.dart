@@ -33,7 +33,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
         approver.status?.toLowerCase() == 'rejected');
     String formatDate(String updatedAt) {
       DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-      return DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+      return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
     }
     String date = formatDate(widget.data1.createdAt!);
     final aprovers = widget.data1.approvers ?? [];
@@ -130,7 +130,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                         Align(
                           alignment: Alignment.topRight,
                           child: Text(
-                            '${AppLocalizations.of(context)!.createAt} $date',
+                            '${AppLocalizations.of(context)!.createdDate} $date',
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight:

@@ -47,7 +47,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching data: $e");
+      debugPrint("Error fetching data: $e");
       setState(() {
         isLoading = false;
       });
@@ -57,6 +57,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
   void initState() {
     super.initState();
     singletonClass.getHRLetter();
+    singletonClass.getEmployeeData();
     setState(() {
       loadLanguage();
     });

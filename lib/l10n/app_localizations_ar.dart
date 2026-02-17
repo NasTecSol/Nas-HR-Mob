@@ -2538,4 +2538,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startChat => 'بدء الدردشة';
+
+  @override
+  String get passwordMustBeSixDigit => 'يجب أن تتكون كلمة المرور من 6 أرقام';
+
+  @override
+  String get createdDate => 'تاريخ الإنشاء';
+
+  @override
+  String get sendLetter => 'أرسل رسالة';
 }

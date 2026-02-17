@@ -108,10 +108,15 @@ class _TeamClockingState extends State<TeamClocking> {
     final access = biometricMenu.accessLevel;
     final companies = access?.companies ?? [];
 
-    final hasCompanies = companies.isNotEmpty;
+    final hasCompanies = companies.isNotEmpty &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty && c.companyId != "");
     final hasBranches =
-        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
-    final teamEnabled = access?.team == true;
+        hasCompanies &&
+            companies.any((c) =>
+            c.branches != null &&
+                c.branches!.isNotEmpty &&
+                c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty && b.branchId != ""));
+    final teamEnabled = access!.team == true;
 
     /// 🧩 CASE 1:
     /// Companies + branches available + team == true

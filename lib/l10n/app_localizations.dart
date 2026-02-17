@@ -5125,6 +5125,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start Chat'**
   String get startChat;
+
+  /// No description provided for @passwordMustBeSixDigit.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be 6 digits'**
+  String get passwordMustBeSixDigit;
+
+  /// No description provided for @createdDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Created Date'**
+  String get createdDate;
+
+  /// No description provided for @sendLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Letter'**
+  String get sendLetter;
 }
 
 class _AppLocalizationsDelegate

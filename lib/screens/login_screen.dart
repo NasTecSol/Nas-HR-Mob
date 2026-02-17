@@ -7,13 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/screens/company_selection_screen.dart';
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
-import 'package:nashr/widgets/buttons.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:local_auth/local_auth.dart';
@@ -35,12 +32,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   bool _obscurePassword = true;
+  bool _isButtonEnabled = false;
   SingletonClass singletonClass = SingletonClass();
   bool isLoading = false;
   bool _isTokenSaved = false;
   bool _isBiometricEnabled = false;
   final LocalAuthentication _localAuth = LocalAuthentication();
   String version = '';
+  bool _isPasswordValid = false;
+  bool _isEmailValid = false;
+
 
   @override
   void initState() {
@@ -48,8 +49,26 @@ class _LoginScreenState extends State<LoginScreen> {
     _checkToken();
     _checkBiometricStatus();
     loadVersion();
+    _email.addListener(_updateButtonState);
+    _password.addListener(_updateButtonState);
+    _password.addListener(() {
+      setState(() {
+        _isPasswordValid = _password.text.length >= 6;
+      });
+    });
+    _email.addListener(() {
+      setState(() {
+        _isEmailValid = _password.text.length >= 6;
+      });
+    });
   }
 
+  void _updateButtonState() {
+    setState(() {
+      _isButtonEnabled =
+          _email.text.isNotEmpty && _password.text.isNotEmpty && _password.text.length >= 6;
+    });
+  }
   void loadVersion() async {
     if (Platform.isAndroid || Platform.isIOS) {
       final info = await PackageInfo.fromPlatform();
@@ -109,42 +128,20 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = false;
           });
+          await singletonClass.showFaceIDSuccessPopup(context);
           await Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen(index: 0, selectedIndex: 0 , showBanner: true,)),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-              AppLocalizations.of(context)!.biometricAuthenticationFailed,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  fontSize: 15),
-            )),
-          );
+          await singletonClass.showNotSuccessPopup(context);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-            AppLocalizations.of(context)!.biometricNotAvailable,
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w500, color: Colors.white, fontSize: 15),
-          )),
-        );
+        await singletonClass.showNotSuccessPopup(context);
       }
     } catch (e) {
       if (kDebugMode) {
         print('Error during biometric authentication: $e');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-          AppLocalizations.of(context)!.anErrorOccurredDuringAuthentication,
-          style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500, color: Colors.white, fontSize: 15),
-        )),
-      );
+      await singletonClass.showNotSuccessPopup(context);
     }
   }
 
@@ -322,6 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextFormField(
                         controller: _email,
                         validator: (value) {
+                          if (_isPasswordValid) return null;
                           if (value!.isEmpty) {
                             return AppLocalizations.of(context)!
                                 .pleaseEnterUsername;
@@ -368,6 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         cursorColor: Colors.grey,
                         validator: (value) {
+                          if (_isPasswordValid) return null;
                           if (value == null || value.isEmpty) {
                             return AppLocalizations.of(context)!
                                 .pleaseEnterPassword;
@@ -429,31 +428,56 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Spacer(),
                       ],
                     ),
-                    NasButton(
-                      text: AppLocalizations.of(context)!.signIn,
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          login();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(AppLocalizations.of(context)!
-                                  .pleaseFillAllFields),
-                              duration: Duration(seconds: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap:  _isButtonEnabled ?(){
+                              if (_formKey.currentState!.validate()) {
+                                login();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!
+                                        .pleaseFillAllFields),
+                                    duration: Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                            } : null ,
+                            child: Container(
+                              width: double.infinity,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                borderRadius:  const BorderRadius.all(Radius.circular(10)),
+                                color: _isButtonEnabled
+                                    ? NasColors.darkBlue
+                                    : Colors.grey,
+                              ),
+                              child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(AppLocalizations.of(context)!.signIn,
+                                    style:  GoogleFonts.inter(
+                                      fontSize: 19,
+                                      color: Colors.white,
+                                    ),
+                                  )),
                             ),
-                          );
-                        }
-                      },
-                    ),
-                    if (_isTokenSaved && _isBiometricEnabled)
-                      IconButton(
-                        onPressed: _authenticateWithBiometrics,
-                        icon: Icon(
-                          Icons.fingerprint,
-                          size: 50,
-                          color: NasColors.darkBlue,
+                          ),
                         ),
-                      ),
+                        if (_isTokenSaved && _isBiometricEnabled)
+                          IconButton(
+                            onPressed: _authenticateWithBiometrics,
+                            icon: Icon(
+                              Icons.fingerprint,
+                              size: 40,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       version.isEmpty ? 'Loading version...' : version,
                       style:
@@ -479,16 +503,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> login() async {
     var uuid = const Uuid();
     var v1 = uuid.v1();
-    print(v1);
     String email = _email.text.trim().toUpperCase();
     String password = _password.text;
     Map data = {"password": password, "empId": email, "macAddress": v1};
-    print(data);
-    print("shared preference id ${singletonClass.tenantId}");
 
     String body = json.encode(data);
     var uri = Uri.parse('${singletonClass.baseURL}/employee/login');
-    print(uri);
     setState(() {
       isLoading = true;
     });
@@ -498,8 +518,6 @@ class _LoginScreenState extends State<LoginScreen> {
         body: body,
         headers: singletonClass.getHeaders(),
       );
-      print(singletonClass.getHeaders());
-      print(response.statusCode);
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
         LoginModel loginModel = LoginModel.fromJson(decodedResponse);
@@ -510,21 +528,14 @@ class _LoginScreenState extends State<LoginScreen> {
           if (data != null && data.data != null) {
             String jwtToken = data.data!.trim();
             decodeJwt(jwtToken);
-            singletonClass.sendFCMToken();
             await singletonClass.getNotifications();
             singletonClass.getCompanyNotificationData();
             await _saveTokenLocally(data.data!.trim());
             setState(() {
               isLoading = false;
             });
-            await QuickAlert.show(
-              autoCloseDuration: const Duration(seconds: 2),
-              showCancelBtn: false,
-              showConfirmBtn: false,
-              context: context,
-              title: AppLocalizations.of(context)!.loginSuccess,
-              type: QuickAlertType.success,
-            );
+            singletonClass.sendFCMToken();
+            await singletonClass.showSuccessPopup(context);
             await Navigator.push(
               context,
               MaterialPageRoute(
@@ -535,80 +546,36 @@ class _LoginScreenState extends State<LoginScreen> {
                       )),
             );
           }
-        } else if (loginResponse.statusCode == 400 ||
-            loginResponse.statusCode == 500) {
+        } else if (loginResponse.statusCode == 400 || loginResponse.statusCode == 500) {
           setState(() {
             isLoading = false;
           });
-          QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.passwordOrUsernameIncorrect,
-            type: QuickAlertType.error,
-          );
+          await singletonClass.showNotSuccessPopup(context);
         } else {
           setState(() {
             isLoading = false;
           });
-          await QuickAlert.show(
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-            context: context,
-            title: AppLocalizations.of(context)!.internalServerError,
-            text: AppLocalizations.of(context)!.tryAgain,
-            type: QuickAlertType.error,
-          );
-          print('Error: ${loginResponse.statusCode}');
+          await singletonClass.showNotSuccessPopup(context);
         }
       } else if (response.statusCode == 405 || response.statusCode == 502) {
         setState(() {
           isLoading = false;
         });
-        await QuickAlert.show(
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-          context: context,
-          title: AppLocalizations.of(context)!.internalServerError,
-          text: AppLocalizations.of(context)!.tryAgain,
-          type: QuickAlertType.error,
-        );
+        await singletonClass.showNotSuccessPopup(context);
       } else {
         setState(() {
           isLoading = false;
         });
-        await QuickAlert.show(
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-          context: context,
-          title: AppLocalizations.of(context)!.internalServerError,
-          text: AppLocalizations.of(context)!.tryAgain,
-          type: QuickAlertType.error,
-        );
-        print('Error: ${response.statusCode}');
+        await singletonClass.showNotSuccessPopup(context);
       }
     } catch (e) {
-      print('Error: $e');
       setState(() {
         isLoading = false;
       });
-      await QuickAlert.show(
-        autoCloseDuration: const Duration(seconds: 5),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-        context: context,
-        title: AppLocalizations.of(context)!.internalServerError,
-        text: AppLocalizations.of(context)!.tryAgain,
-        type: QuickAlertType.error,
-      );
+      await singletonClass.showNotSuccessPopup(context);
     }
   }
 
-  // Decoding Token Data Here
   void decodeJwt(String token) {
     List<String> parts = token.split('.');
     for (int i = 0; i < parts.length; i++) {
@@ -616,18 +583,11 @@ class _LoginScreenState extends State<LoginScreen> {
         parts[i] += '=';
       }
     }
-    String header = parts[0];
     String payload = parts[1];
-    String decodedHeader = utf8.decode(base64Url.decode(header));
     String decodedPayload = utf8.decode(base64Url.decode(payload));
-    print('Full Payload: $decodedPayload');
-    Map<String, dynamic> headerJson = json.decode(decodedHeader);
     Map<String, dynamic> payloadJson = json.decode(decodedPayload);
     JWTData jwtData = JWTData.fromJson(payloadJson);
     singletonClass.setJWTModel(jwtData);
-    JWTData? loginJWTData = singletonClass.getJWTModel();
-    print('${loginJWTData?.employeeId}');
-    print('Header: $headerJson');
-    print('Payload: $payloadJson');
   }
+
 }

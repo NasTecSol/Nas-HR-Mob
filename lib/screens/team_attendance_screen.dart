@@ -108,21 +108,26 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         submenu.name == "Attendance History",
     );
 
+    final access = attendanceHistoryMenu.accessLevel;
+    final companies = access?.companies ?? [];
+    final hasCompanies = companies.isNotEmpty &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty && c.companyId != "");
+    final hasBranches =
+        hasCompanies &&
+        companies.any((c) =>
+        c.branches != null &&
+            c.branches!.isNotEmpty &&
+            c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty && b.branchId != ""));
+    final teamEnabled = access?.team == true;
+    final hasBranchId =
+        singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
+
     /// Reset all UI flags
     showDropdown = false;
     showTeamCheckbox = false;
     showOnlyMeCheckbox = false;
     _isTeamChecked = false;
     _isChecked = false;
-
-    final access = attendanceHistoryMenu.accessLevel;
-    final companies = access?.companies ?? [];
-    final hasCompanies = companies.isNotEmpty;
-    final hasBranches =
-        hasCompanies && companies.any((c) => (c.branches ?? []).isNotEmpty);
-    final teamEnabled = access?.team == true;
-    final hasBranchId =
-        singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
 
     /// 🧩 CASE 1: Companies & Branches available, Team == true
     if (hasCompanies && hasBranches && teamEnabled) {
@@ -161,8 +166,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       showDropdown = false;
       showTeamCheckbox = true;
       showOnlyMeCheckbox = true;
-      _isTeamChecked = true;  // Always true
-      _isChecked = false;     // Only Me hidden or unchecked
+      _isTeamChecked = true;
+      _isChecked = false;
     }
 
     /// 🧩 CASE 4: No Companies/Branches, Team == false
@@ -171,7 +176,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       showTeamCheckbox = false;
       showOnlyMeCheckbox = true;
       _isTeamChecked = false;
-      _isChecked = true; // Only Me active
+      _isChecked = true;
     }
 
     /// 🔁 Refresh data based on updated logic
@@ -304,20 +309,20 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     final grade = singletonClass.getJWTModel()?.grade;
 
     if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3"){
-      if(_isChecked == false && _isTeamChecked == true &&  singletonClass.branchID == null){
+      if(_isChecked == false && _isTeamChecked == true && (singletonClass.branchID!.isEmpty || singletonClass.branchID == null)){
         for (var team in filteredUnderTeams) {
-          log("👥 Checking team: ${team.teamId}");
-          if (team.teamData != null) {
+          log("👥 Processing team: ${team.teamId}");
+          if (team.teamData != null && team.teamData!.isNotEmpty) {
             for (var member in team.teamData!) {
               if (member.employeeId != null && member.employeeId!.isNotEmpty) {
                 employeeIds.add(member.employeeId!);
-                log(" - Found Employee ID: ${member.employeeId}");
+                log(" - Added Employee ID: ${member.employeeId}");
               } else {
-                log(" - ⚠️ Empty employeeId in team: ${team.teamId}");
+                log(" - ⚠️ Skipping empty employeeId in team: ${team.teamId}");
               }
             }
           } else {
-            log(" - ⚠️ teamData is null for team: ${team.teamId}");
+            log(" - ⚠️ No teamData found for team: ${team.teamId}");
           }
         }
       } else if (_isChecked == false && _isTeamChecked == false && singletonClass.branchID!.isNotEmpty && singletonClass.branchID != null){
@@ -458,9 +463,14 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
 
     final access = attendanceHistoryMenu.accessLevel;
     final companies = access!.companies ?? [];
-    final hasCompanies = companies.isNotEmpty;
-    final hasBranches = hasCompanies &&
-        companies.any((c) => (c.branches ?? []).isNotEmpty);
+    final hasCompanies = companies.isNotEmpty &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty && c.companyId != "");
+    final hasBranches =
+        hasCompanies &&
+            companies.any((c) =>
+            c.branches != null &&
+                c.branches!.isNotEmpty &&
+                c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty && b.branchId != ""));
     final teamEnabled = access.team == true;
 
     if (hasCompanies && hasBranches && teamEnabled) {
@@ -921,7 +931,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                           final normalized = status.replaceAll('-', ' ');
                           return normalized == 'missing checkin/out' ||
                               normalized == 'missing checkin' ||
-                              normalized == 'missing checkout';
+                              normalized == 'missing checkout' ||
+                              normalized == 'pending';
                         }
                         if (_selectedOptionIndex == 5) return (attendance.lateMinutes ?? 0) > 0;
                         if (_selectedOptionIndex == 6) return (attendance.earlyCheckOut ?? 0) > 0;
@@ -944,7 +955,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                             final status = attendance.status?.toLowerCase();
                             if ((_selectedOptionIndex == 1 && status != 'present') ||
                                 (_selectedOptionIndex == 2 && status != 'absent') ||
-                                (_selectedOptionIndex == 4 && !['missing checkin/out', 'missing checkin', 'missing checkout']
+                                (_selectedOptionIndex == 4 && !['missing checkin/out', 'missing checkin', 'missing checkout' , 'pending']
                                     .contains(status.replaceAll('-', ' '))) ||
                                 (_selectedOptionIndex == 5 && (attendance.lateMinutes ?? 0) <= 0) ||
                                 (_selectedOptionIndex == 6 && (attendance.earlyCheckOut ?? 0) <= 0) ||
@@ -1501,7 +1512,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
           final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
           return status == "missing checkin/out" ||
               status == "missing checkin" ||
-              status == "missing checkout";
+              status == "missing checkout" ||
+              status == 'pending';
         }).length;
       case 5:
         return filteredAttendanceDataList.where(
@@ -1772,7 +1784,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       },
       child: SizedBox(
         height: 70,
-        width: index == 3 ? 200 : 160,
+        width: (index == 4 || index == 6) ? 210 : 160,
         child: Card(
           color: getCardColor(),
           margin: const EdgeInsets.all(10),

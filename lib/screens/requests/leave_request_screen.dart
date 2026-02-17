@@ -593,7 +593,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 ),
                 const SizedBox(height: 20),
                 /// Attachment button (only if required)
-                if (widget.selectedRequest?.docRequired == true) ...[
+                if (widget.selectedRequest!.subTypes!.first.docRequired == true) ...[
                   TextButton(
                     onPressed: () async {
                       FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -760,6 +760,10 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         return localizations.specialDocument;
       case "Maternity Leave":
         return localizations.maternityLeave;
+      case "Short Leave":
+        return localizations.shortLeaves;
+      case "UnPaid Leave ":
+        return localizations.unpaidLeave;
       default:
         return status ?? '';
     }
