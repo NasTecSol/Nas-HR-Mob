@@ -2461,7 +2461,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      if (widget.selectedRequest!.docRequired == true) ...[
+                      if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
                         TextButton(
                           onPressed: () async {
                             FilePickerResult? result =
