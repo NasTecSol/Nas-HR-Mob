@@ -1597,7 +1597,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 );
                               }
                             } else {
-                              print('File selection canceled.');
+                              debugPrint('File selection canceled.');
                             }
                           },
                           child: Row(
@@ -2461,7 +2461,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      if (widget.selectedRequest!.docRequired == true) ...[
+                      if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
                         TextButton(
                           onPressed: () async {
                             FilePickerResult? result =
@@ -2499,7 +2499,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 );
                               }
                             } else {
-                              print('File selection canceled.');
+                              debugPrint('File selection canceled.');
                             }
                           },
                           child: Row(
@@ -2654,11 +2654,11 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     if (requestName == null) return null;
     var leaveBalance = singletonClass.employeeDataList.first.data!.leaveBalance;
     for (var entry in leaveBalance!.toJson().entries) {
-      print('Checking entry: ${entry.key}');
+      debugPrint('Checking entry: ${entry.key}');
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
-        print('Found entry: ${entry.key}: ${entry.value}');
+        debugPrint('Found entry: ${entry.key}: ${entry.value}');
         var remaining = entry.value['remaining'];
-        print('Remaining for ${entry.key}: $remaining');
+        debugPrint('Remaining for ${entry.key}: $remaining');
 
         return remaining is num ? remaining.toDouble() : null;
       }
@@ -2846,7 +2846,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
 
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      print("API Response Body: $responseBody");
+      debugPrint("API Response Body: $responseBody");
       setState(() {
         isLoading = false;
       });
@@ -2978,7 +2978,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     };
 
     String body = json.encode(data);
-    print("Request JSON POST $body");
+    debugPrint("Request JSON POST $body");
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
 
     setState(() {
@@ -2997,7 +2997,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       });
 
       final decodedResponse = json.decode(response.body);
-      print("REQUEST RESPONSE $decodedResponse");
+      debugPrint("REQUEST RESPONSE $decodedResponse");
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
@@ -3031,7 +3031,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      debugPrint('Error: $e');
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
@@ -3063,7 +3063,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         employeeName: employeeData.data?.employees!.first.firstName,
       );
 
-      print(">>>>$result");
+      debugPrint(">>>>$result");
       setState(() {
         // Remove existing entry with the same empId first
         _employeeSearchResults.removeWhere((e) => e.empId == result.empId);
@@ -3073,7 +3073,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
 
         _showSearchResult = true;
       });
-      print("???$_employeeSearchResults");
+      debugPrint("???$_employeeSearchResults");
     } else {
       setState(() {
         _showSearchResult = false;

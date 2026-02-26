@@ -367,9 +367,9 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
     };
 
     String body = json.encode(data);
-    print(body);
+    debugPrint(body);
     var uri = Uri.parse('${singletonClass.baseURL}/request/create');
-    print(uri);
+    debugPrint("$uri");
     setState(() {
       isLoading = true;
     });
@@ -386,7 +386,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       });
 
       final decodedResponse = json.decode(response.body);
-      print(decodedResponse);
+      debugPrint(decodedResponse);
 
       int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
@@ -419,7 +419,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      debugPrint('Error: $e');
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,

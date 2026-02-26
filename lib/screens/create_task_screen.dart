@@ -488,13 +488,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                 selectedFile = file;
                               });
                               if (kDebugMode) {
-                                print('Selected file: ${file.name}');
+                                debugPrint('Selected file: ${file.name}');
                               }
                               _showConfirmationDialog(
                                   file);
                             } else {
                               if (kDebugMode) {
-                                print('File selection canceled.');
+                                debugPrint('File selection canceled.');
                               }
                             }
                           },
@@ -625,22 +625,19 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
-      print("No file selected.");
       return;
     }
 
     if (selectedFile!.bytes == null) {
-      print("Loading bytes for the selected file...");
       try {
         final file = File(selectedFile!.path!);
         final fileBytes = await file.readAsBytes();
         if (fileBytes.isEmpty) {
-          print("No bytes available for the selected file.");
           return;
         }
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
-        print('Error reading file: $e');
+        debugPrint('Error reading file: $e');
       }
     } else {
       _uploadFileWithBytes(selectedFile!.bytes!);
@@ -656,8 +653,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
     try {
       var request = http.MultipartRequest('POST', uri);
-
-      // Safely get the mime type (fall back to 'application/octet-stream' if mime type is not found)
+      
       final mimeType = lookupMimeType(selectedFile!.path ?? '') ??
           'application/octet-stream';
 
@@ -674,7 +670,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       var response = await request.send();
 
       final responseBody = await response.stream.bytesToString();
-      print("API Response Body: $responseBody");
+      debugPrint("API Response Body: $responseBody");
       setState(() {
         isLoading = false;
       });
@@ -686,10 +682,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         singletonClass.taskAttachmentDataList = [attachmentResponse];
         setState(() {});
       } else {
-        print('Upload failed: ${response.statusCode}');
+        debugPrint('Upload failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
     }
   }
 
@@ -742,7 +738,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         headers: singletonClass.getHeaders(),
         body: jsonData,
       );
-      print(response.body);
+      debugPrint(response.body);
       setState(() {
         isLoading = false;
       });

@@ -118,7 +118,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         return Loader();
                       }
                       if (snapshot.hasError) {
-                        print('Error: ${snapshot.error}');
+                        debugPrint('Error: ${snapshot.error}');
                         return Center(
                           child: Text(
                             AppLocalizations.of(context)!.errorFetchData,
@@ -1754,7 +1754,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     var uri = Uri.parse(
         '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
     var response = await client.get(uri, headers: singletonClass.getHeaders());
-    print(response.body);
+    debugPrint(response.body);
     setState(() {
       isLoading = false;
     });
@@ -1798,10 +1798,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
 
     var response = await client.get(uri, headers: singletonClass.getHeaders());
-    print("Employee Attendance Data${response.body}");
-    print(employeeId);
-    print(firstDateString);
-    print(currentDateString);
+    debugPrint("Employee Attendance Data${response.body}");
+    debugPrint(employeeId);
+    debugPrint(firstDateString);
+    debugPrint(currentDateString);
     setState(() {
       isLoading = false;
     });

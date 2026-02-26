@@ -1606,7 +1606,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             singletonClass.branchID =
                                                 selectedBranchId;
                                             singletonClass.getTeamBranchData();
-                                            print(singletonClass.branchID);
+                                            debugPrint(singletonClass.branchID);
                                             final selectedBranch =
                                                 singletonClass.availableBranches
                                                     .firstWhere((branch) =>
@@ -3540,7 +3540,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
-    print(currentTime);
+    debugPrint(currentTime);
 
     Map<String, dynamic> data = {
       "deviceUserId": "$empId",
@@ -3576,7 +3576,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         await singletonClass.getClockingData();
         await singletonClass.getEmployeeAttendanceData();
-        print("<><><>${response.body}");
+        debugPrint("<><><>${response.body}");
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -3602,8 +3602,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           showConfirmBtn: false,
         );
       } else {
-        // Handle other error statuses
-        print('Error: ${response.statusCode}');
+        debugPrint('Error: ${response.statusCode}');
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
@@ -3618,7 +3617,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      debugPrint('Error: $e');
 
       // Show error alert for exceptions
       QuickAlert.show(
