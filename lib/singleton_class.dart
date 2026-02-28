@@ -304,7 +304,7 @@ class SingletonClass {
   Future<OrganizationModel?> getOrganizationData() async {
     String? organizationID = getJWTModel()?.organizationId;
     if (organizationID == null) {
-      print("⚠️ Organization ID not found");
+      debugPrint("⚠️ Organization ID not found");
       return null;
     }
 
