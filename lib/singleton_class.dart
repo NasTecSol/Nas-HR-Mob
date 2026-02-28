@@ -312,7 +312,7 @@ class SingletonClass {
     final response = await http.get(uri, headers: getHeaders());
 
     if (response.statusCode == 200) {
-      print("ORGANIZATION DATA: ${response.body}");
+      debugPrint("ORGANIZATION DATA: ${response.body}");
       final responseBody = json.decode(response.body);
       final organizationData = OrganizationModel.fromJson(responseBody);
 
