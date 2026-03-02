@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching data: $e");
+      debugPrint("Error fetching data: $e");
       setState(() {
         isLoading = false;
       });
@@ -482,14 +482,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             selectedFile = file;
                                           });
 
-                                          print('Selected file: ${file.name}');
+                                          debugPrint('Selected file: ${file.name}');
                                           _showConfirmationDialog(file);
                                         } else {
-                                          print('File selection canceled.');
+                                          debugPrint('File selection canceled.');
                                         }
                                       },
-                                      color: Colors
-                                          .green,
+                                      color: Colors.green,
                                     ),
                                   ),
                                 ]),
@@ -1829,21 +1828,21 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
-      print("No file selected.");
+      debugPrint("No file selected.");
       return;
     }
     if (selectedFile!.bytes == null) {
-      print("Loading bytes for the selected file...");
+      debugPrint("Loading bytes for the selected file...");
       try {
         final file = File(selectedFile!.path!);
         final fileBytes = await file.readAsBytes();
         if (fileBytes.isEmpty) {
-          print("No bytes available for the selected file.");
+          debugPrint("No bytes available for the selected file.");
           return;
         }
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
-        print('Error reading file: $e');
+        debugPrint('Error reading file: $e');
       }
     } else {
       _uploadFileWithBytes(selectedFile!.bytes!);
@@ -1866,7 +1865,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           quality: 70,
           format: CompressFormat.jpeg,
         );
-        print("Compressed from ${fileBytes.length} to ${compressed.length} bytes");
+        debugPrint("Compressed from ${fileBytes.length} to ${compressed.length} bytes");
         fileBytes = compressed;
       }
 
@@ -1890,7 +1889,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      print("API Response Body: $responseBody");
+      debugPrint("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
@@ -1911,7 +1910,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           type: QuickAlertType.success,
         );
       } else {
-        print('Upload failed: ${response.statusCode}');
+        debugPrint('Upload failed: ${response.statusCode}');
         setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -1923,7 +1922,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (e) {
-      print('Error during upload: $e');
+      debugPrint('Error during upload: $e');
       setState(() => isLoading = false);
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
@@ -1985,7 +1984,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (e) {
-      print('Upload error: $e');
+      debugPrint('Upload error: $e');
     }
   }
 
@@ -2005,12 +2004,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       );
       log("DATA ><><>< $employeeData");
       if (response.statusCode == 200) {
-        print('Employee data updated successfully');
+        debugPrint('Employee data updated successfully');
       } else {
-        print('Failed to update employee data: ${response.statusCode}');
+        debugPrint('Failed to update employee data: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
     }
   }
 
@@ -2067,7 +2066,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           type: QuickAlertType.error,
         );
       } else {
-        print('Error: ${response.statusCode}');
+        debugPrint('Error: ${response.statusCode}');
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
           showCancelBtn: false,
@@ -2078,7 +2077,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (error) {
-      print('Failed to send data. Error: $error');
+      debugPrint('Failed to send data. Error: $error');
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
         showCancelBtn: false,

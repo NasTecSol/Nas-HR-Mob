@@ -69,10 +69,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       filteredTeams = filteredData['ownTeams'] ?? [];
 
       if (filteredTeams.isNotEmpty) {
-        print("✅ Found ${filteredTeams.length} team(s)");
-        print("First teamId: ${filteredTeams.first.teamId}");
+        debugPrint("✅ Found ${filteredTeams.length} team(s)");
+        debugPrint("First teamId: ${filteredTeams.first.teamId}");
       } else {
-        print("⚠️ No teams found for this user (empId: $reportingManagerId)");
+        debugPrint("⚠️ No teams found for this user (empId: $reportingManagerId)");
       }
 
       isLoading = false;
@@ -100,7 +100,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
             if (isUserInTeam || isUserSupervisor) {
               if (kDebugMode) {
-                print(
+                debugPrint(
                     '👤 User (empId: $reportingManagerId) is part of team ${team.teamId}');
               }
               ownTeams.add(team);
@@ -627,11 +627,11 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                 selectedFile = file;
                               });
 
-                              print('Selected file: ${file.name}');
+                              debugPrint('Selected file: ${file.name}');
                               _showConfirmationDialog(
                                   file);
                             } else {
-                              print('File selection canceled.');
+                              debugPrint('File selection canceled.');
                             }
                           },
                           child: Row(
@@ -844,28 +844,28 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
   Future<void> uploadProfile() async {
     if (selectedFile == null) {
-      print("No file selected.");
+      debugPrint("No file selected.");
       return; // Exit the function if no file is selected
     }
 
     // Check if bytes are available
     if (selectedFile!.bytes == null) {
       // Load the bytes of the selected file manually
-      print("Loading bytes for the selected file...");
+      debugPrint("Loading bytes for the selected file...");
       try {
         final file = File(selectedFile!.path!); // Convert PlatformFile to File
         final fileBytes = await file.readAsBytes();
 
         // If bytes are still null, return early
         if (fileBytes.isEmpty) {
-          print("No bytes available for the selected file.");
+          debugPrint("No bytes available for the selected file.");
           return; // Exit the function if no valid bytes are available
         }
 
         // Proceed with uploading the file after loading bytes
         _uploadFileWithBytes(fileBytes);
       } catch (e) {
-        print('Error reading file: $e');
+        debugPrint('Error reading file: $e');
       }
     } else {
       // If bytes are already available, upload directly
@@ -890,7 +890,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           quality: 70,
           format: CompressFormat.jpeg,
         );
-        print("Compressed from ${fileBytes.length} to ${compressed
+        debugPrint("Compressed from ${fileBytes.length} to ${compressed
             .length} bytes");
         fileBytes = compressed;
       }
@@ -914,7 +914,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      print("API Response Body: $responseBody");
+      debugPrint("API Response Body: $responseBody");
 
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
@@ -922,9 +922,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             decodedJson);
         singletonClass.projectsLogoModelList = [profileResponse];
         setState(() => isLoading = false);
-        print("${singletonClass.projectsLogoModelList.first.data!.url}");
+        debugPrint("${singletonClass.projectsLogoModelList.first.data!.url}");
       } else {
-        print('Upload failed: ${response.statusCode}');
+        debugPrint('Upload failed: ${response.statusCode}');
         setState(() => isLoading = false);
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -936,7 +936,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         );
       }
     } catch (e) {
-      print('Error during upload: $e');
+      debugPrint('Error during upload: $e');
       setState(() => isLoading = false);
       await QuickAlert.show(
         autoCloseDuration: const Duration(seconds: 2),
@@ -1009,7 +1009,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       if (!mounted) return;
 
-      print(response.body);
+      debugPrint(response.body);
       setState(() {
         isLoading = false;
       });
@@ -1097,7 +1097,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         designation: employeeData.data?.employees!.first.employeeInfo?.first.designation,
       );
 
-      print(">>>>$result");
+      debugPrint(">>>>$result");
       setState(() {
         final exists = _employeeSearchResults.any((e) => e.empId == result.empId);
 
@@ -1108,7 +1108,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         _showSearchResult = true;
       });
 
-      print("???$_employeeSearchResults");
+      debugPrint("???$_employeeSearchResults");
     } else {
       setState(() {
         _showSearchResult = false;
@@ -1137,7 +1137,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       singletonClass.taskModelList.addAll([taskData]);
       return taskData;
     }
-    return null ; // Print the response body
+    return null ;
   }
 }
 

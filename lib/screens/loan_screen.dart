@@ -34,9 +34,9 @@ class _LoanScreenState extends State<LoanScreen> {
       ) {
     List<Map<String, String>> installments = [];
 
-    print(issueDate);
+    debugPrint(issueDate);
     if (issueDate.trim().isEmpty) {
-      print("Invalid issueDate: empty or null");
+      debugPrint("Invalid issueDate: empty or null");
       return installments;
     }
 
@@ -49,7 +49,7 @@ class _LoanScreenState extends State<LoanScreen> {
         // Fallback to dd-MM-yyyy if not ISO
         startDate = DateFormat('dd-MM-yyyy').parse(issueDate);
       } catch (e) {
-        print("Date parsing failed: $e");
+        debugPrint("Date parsing failed: $e");
         return installments; // Or show error if needed
       }
     }

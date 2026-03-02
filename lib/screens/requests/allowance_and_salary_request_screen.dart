@@ -518,7 +518,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
                 ),
                 const SizedBox(height: 20),
                 /// Attachment button (only if required)
-                if (widget.selectedRequest!.subTypes!.first.docRequired == true)  ...[
+                if (_selectedSubType != null && _selectedSubType!.docRequired == true)  ...[
                   TextButton(
                     onPressed: () async {
                       FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -995,7 +995,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
         employeeName: employeeData.data?.employees!.first.firstName,
       );
 
-      print(">>>>$result");
+      debugPrint(">>>>$result");
       setState(() {
         // Remove existing entry with the same empId first
         _employeeSearchResults.removeWhere((e) => e.empId == result.empId);
@@ -1005,7 +1005,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
 
         _showSearchResult = true;
       });
-      print("???$_employeeSearchResults");
+      debugPrint("???$_employeeSearchResults");
     } else {
       setState(() {
         _showSearchResult = false;

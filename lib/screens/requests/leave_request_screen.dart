@@ -357,7 +357,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "${AppLocalizations.of(context)!.totalHours}",
+                    AppLocalizations.of(context)!.totalHours,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -593,7 +593,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 ),
                 const SizedBox(height: 20),
                 /// Attachment button (only if required)
-                if (widget.selectedRequest!.subTypes!.first.docRequired == true) ...[
+                if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
                   TextButton(
                     onPressed: () async {
                       FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);

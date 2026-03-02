@@ -193,7 +193,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           future: getTranslatedText(),
                           builder: (context, snapshot) {
                             final list = snapshot.data ?? [];
-                            final translatedTitle = list.length > 0 ? list[0] : (notificationData.notificationType ?? '');
+                            final translatedTitle = list.isNotEmpty ? list[0] : (notificationData.notificationType ?? '');
                             final translatedMessage = list.length > 1 ? list[1] : (notificationData.message ?? '');
                             final translateMetaMessage = list.length > 2 ? list[2] : (notificationData.metaData ?? '');
 
