@@ -392,7 +392,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
 
                         if (!success && context.mounted) {
                           setState(() => selectedFile = null);
-                          // keep behavior same but show AlertDialog as in original
+                          /// keep behavior same but show AlertDialog as in original
                           showDialog(
                             context: context,
                             builder: (_) => AlertDialog(
@@ -412,7 +412,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                           );
                         }
                       } else {
-                        // keep original behaviour of printing cancellation
+                        /// keep original behaviour of printing cancellation
                         if (kDebugMode) print('File selection canceled.');
                       }
                     },

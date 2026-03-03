@@ -1808,7 +1808,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 25),
-                ///Attachments
+                /// Attachments
                 Row(
                   children: [
                     Text(
@@ -1865,11 +1865,9 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                               '.heif',
                               '.tiff'
                             ];
-
                             final lower = url.toLowerCase();
                             final isDocs = inlineExtensions
                                 .any((ext) => lower.endsWith(ext));
-
                             if (isDocs) {
                               Navigator.push(
                                 context,

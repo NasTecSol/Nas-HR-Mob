@@ -46,7 +46,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       DateTime updatedAtDateTime = DateTime.parse(updatedAt);
       return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
     }
-
     String date = formatDate(widget.dataApprover.createdAt!);
     final aprovers = widget.dataApprover.approvers ?? [];
     final approversWithComments = aprovers

@@ -331,7 +331,6 @@ class SingletonClass {
     }
     return null;
   }
-
   ///Role and Access Api Call
   Future<RoleAndAccessModel?> getRoleAndAccessData() async {
     String? employeeId = getJWTModel()?.employeeId;
