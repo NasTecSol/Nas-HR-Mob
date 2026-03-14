@@ -46,7 +46,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       DateTime updatedAtDateTime = DateTime.parse(updatedAt);
       return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
     }
-
     String date = formatDate(widget.dataApprover.createdAt!);
     final aprovers = widget.dataApprover.approvers ?? [];
     final approversWithComments = aprovers
@@ -214,14 +213,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       BoxDecoration(
                         shape: BoxShape.rectangle,
                         color: _getColorForVerificationStatus(
-                          "${widget.dataApprover.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status}"),
+                            allApproved ? "approved" : allRejected ? "rejected" : "pending"),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
                         child: Text(
                           _translateStatus(
-                            widget.dataApprover.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status,
-                            context,
+                              allApproved ? "approved" : allRejected ? "rejected" : "pending",
+                            context
                           ),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
@@ -2045,6 +2044,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               ),
                               autofocus: false,
                               textInputAction: TextInputAction.done,
+                              keyboardType: TextInputType.text,
                               cursorColor: Colors.black,
                               onTapOutside: (event) {
                                 FocusManager.instance.primaryFocus
@@ -2177,6 +2177,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             ),
                             autofocus: false,
                             textInputAction: TextInputAction.done,
+                            keyboardType: TextInputType.text,
                             cursorColor: Colors.black,
                             onTapOutside: (event) {
                               FocusManager.instance.primaryFocus

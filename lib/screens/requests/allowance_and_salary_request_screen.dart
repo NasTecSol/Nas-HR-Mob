@@ -497,6 +497,8 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
                 TextFormField(
                   cursorColor: Colors.grey,
                   controller: notesController,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
                   maxLines: 3,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -863,17 +865,6 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
             "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
-        } else {
-          await QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: AppLocalizations.of(context)!.internalServerError,
-            text: "Attachment data is missing. Please try again.",
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-          return;
         }
       }
 

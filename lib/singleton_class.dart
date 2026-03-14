@@ -304,7 +304,7 @@ class SingletonClass {
   Future<OrganizationModel?> getOrganizationData() async {
     String? organizationID = getJWTModel()?.organizationId;
     if (organizationID == null) {
-      print("⚠️ Organization ID not found");
+      debugPrint("⚠️ Organization ID not found");
       return null;
     }
 
@@ -312,7 +312,7 @@ class SingletonClass {
     final response = await http.get(uri, headers: getHeaders());
 
     if (response.statusCode == 200) {
-      print("ORGANIZATION DATA: ${response.body}");
+      debugPrint("ORGANIZATION DATA: ${response.body}");
       final responseBody = json.decode(response.body);
       final organizationData = OrganizationModel.fromJson(responseBody);
 
@@ -331,7 +331,6 @@ class SingletonClass {
     }
     return null;
   }
-
   ///Role and Access Api Call
   Future<RoleAndAccessModel?> getRoleAndAccessData() async {
     String? employeeId = getJWTModel()?.employeeId;

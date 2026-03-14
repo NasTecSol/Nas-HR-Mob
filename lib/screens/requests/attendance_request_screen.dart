@@ -300,6 +300,8 @@ class _AttendanceRequestScreenState extends State<AttendanceRequestScreen> {
                     cursorColor: Colors.grey,
                     controller: _notes,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;

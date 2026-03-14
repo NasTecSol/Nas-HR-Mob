@@ -140,7 +140,7 @@ class SocketService {
           final String? logEmpId = log?['employeeId'];
           if (logEmpId != null && empId != null && logEmpId == empId) {
             shouldNotify = true;
-            print("notifcation sex");
+            debugPrint("notifcation sex");
           }
 
           if (targetAudience is Map<String, dynamic>) {

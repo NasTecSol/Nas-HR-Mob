@@ -572,6 +572,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 TextFormField(
                   cursorColor: Colors.grey,
                   controller: _notes,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
                   maxLines: 3,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -936,18 +938,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           context: context,
           type: QuickAlertType.error,
           text: AppLocalizations.of(context)!.selectDate,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
-
-      if (selectedFile == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.attachDocuments,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,

@@ -2067,32 +2067,28 @@ class _RequestScreenState extends State<RequestScreen> {
                                     itemCount: _approver!.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      final request =
-                                          _approver!.toList()[index];
-                                      final searchText =
-                                          searchController.text.toLowerCase();
+                                      final request = _approver!.toList()[index];
+                                      final searchText = searchController.text.toLowerCase();
                                       if (isSearching) {
-                                        final matchesName = request.employeeName
-                                                ?.toLowerCase()
-                                                .contains(searchText) ??
-                                            false;
-                                        final matchesId = request.empId
-                                                ?.toLowerCase()
-                                                .contains(searchText) ??
-                                            false;
-
+                                        final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;
+                                        final matchesId = request.empId?.toLowerCase().contains(searchText) ?? false;
                                         if (!matchesName && !matchesId) {
                                           return const SizedBox.shrink();
                                         }
                                       }
                                       String formatDate(String updatedAt) {
-                                        DateTime updatedAtDateTime =
-                                            DateTime.parse(updatedAt);
-                                        return DateFormat('dd-MM-yyyy hh:mm a')
-                                            .format(updatedAtDateTime);
+                                        DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                        return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
                                       }
-
                                       String date = formatDate(request.createdAt!);
+                                      final allApproved = request.approvers != null &&
+                                          request.approvers!.isNotEmpty &&
+                                          request.approvers!
+                                              .every((approver) => approver.status?.toLowerCase() == 'approved');
+                                      final allRejected = request.approvers != null &&
+                                          request.approvers!.isNotEmpty &&
+                                          request.approvers!
+                                              .every((approver) => approver.status?.toLowerCase() == 'rejected');
                                       return GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -2300,13 +2296,13 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           BoxDecoration(
                                                             shape: BoxShape.rectangle,
                                                             color: _getColorForVerificationStatus(
-                                                                "${request.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status}"),
+                                                                allApproved ? "approved" : allRejected ? "rejected" : "pending"),
                                                             borderRadius: BorderRadius.circular(10),
                                                           ),
                                                           child: Center(
                                                             child: Text(
                                                               _translateStatus(
-                                                                request.approvers!.firstWhere((approver) => approver.approverId == singletonClass.getJWTModel()?.employeeId,).status,
+                                                                allApproved ? "approved" : allRejected ? "rejected" : "pending",
                                                                 context,
                                                               ),
                                                               textAlign: TextAlign.center,

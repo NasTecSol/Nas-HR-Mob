@@ -729,6 +729,8 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     cursorColor: Colors.grey,
                     controller: notesController,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -1262,6 +1264,8 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     cursorColor: Colors.grey,
                     controller: notesController,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -1563,6 +1567,8 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                       cursorColor: Colors.grey,
                       controller: notesController,
                       maxLines: 3,
+                      textInputAction: TextInputAction.done,
+                      keyboardType: TextInputType.text,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return AppLocalizations.of(context)!.enterNotesValidation;
@@ -1744,8 +1750,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
 
       String formattedFromDate = DateFormat('yyyy-MM-dd').format(dateTime!);
 
-
-      // ✅ Build request body
+      /// ✅ Build request body
       Map<String, dynamic> data = {
         "empId": empId,
         "employeeId": employeeId,

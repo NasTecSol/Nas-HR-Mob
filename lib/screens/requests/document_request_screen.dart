@@ -170,6 +170,8 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
                   cursorColor: Colors.grey,
                   controller: notesController,
                   maxLines: 3,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return AppLocalizations.of(context)!.enterNotesValidation;
