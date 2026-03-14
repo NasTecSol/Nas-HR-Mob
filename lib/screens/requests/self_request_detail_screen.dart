@@ -199,7 +199,7 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
                           BoxDecoration(
                             shape: BoxShape.rectangle,
                             color: _getColorForVerificationStatus(
-                                widget.data1.status ?? 'default'),
+                                widget.data1.status ?? ''),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(

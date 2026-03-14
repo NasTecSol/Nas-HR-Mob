@@ -358,6 +358,8 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                   cursorColor: Colors.grey,
                   controller: _notes,
                   maxLines: 3,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return AppLocalizations.of(context)!.enterNotesValidation;
@@ -742,17 +744,6 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
             "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
-        } else {
-          await QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: AppLocalizations.of(context)!.internalServerError,
-            text: "Attachment data is missing. Please try again.",
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-          return;
         }
       }
       final Map<String, dynamic> data = {

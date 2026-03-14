@@ -424,6 +424,8 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
                     cursorColor: Colors.grey,
                     controller: notesController,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -786,20 +788,10 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
       if (selectedFile != null) {
         if (singletonClass.attachmentResponseDataList.isNotEmpty && singletonClass.attachmentResponseDataList.first.data != null) {
           attachments.add({
-            "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
+            "type": singletonClass.attachmentResponseDataList.first.data!
+                .attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
-        } else {
-          await QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: AppLocalizations.of(context)!.internalServerError,
-            text: "Attachment data is missing. Please try again.",
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-          return;
         }
       }
 
