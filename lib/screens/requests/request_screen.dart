@@ -163,60 +163,6 @@ class _RequestScreenState extends State<RequestScreen> {
                           ) {
                             return const SizedBox.shrink();
                           }
-                          /// ✅ Step 1: Collect allowed submenus under "Approval" where accessType.add == true
-                          final allowedRequestNames = <String>{};
-                          final uiSettings = singletonClass.roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ?? [];
-
-                          for (var module in uiSettings) {
-                            final moduleTitle =
-                                module.title?.toString().trim().toLowerCase() ?? '';
-
-                            if (moduleTitle == 'approval') {
-                              final approvalSubMenus = module.subMenu ?? [];
-
-                              for (var item in approvalSubMenus) {
-                                final itemTitle =
-                                    item.title?.toString().trim().toLowerCase() ?? '';
-
-                                if (itemTitle == 'requests') {
-                                  final requestSubMenus = item.subMenu ?? [];
-
-                                  for (var sub in requestSubMenus) {
-                                    final subTitle = sub['title']?.toString().trim() ?? '';
-                                    final hasAddAccess = sub['accessType']?['add'] == true;
-                                    if (subTitle.isNotEmpty && hasAddAccess) {
-                                      allowedRequestNames.add(subTitle);
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                          /// ✅ Step 2: Normalize both submenu title & request name for flexible comparison
-                          String normalize(String text) {
-                            return text
-                                .trim()
-                                .toLowerCase()
-                                .replaceAll('requests', 'request')
-                                .replaceAll(RegExp(r'\s+'), ' ');
-                          }
-
-                          final requestName =
-                              normalize(request.requestName ?? '')
-                                  .toLowerCase();
-
-                          /// ✅ Step 3: Match if any allowed submenu title corresponds to this request
-                          final isAllowed = allowedRequestNames.any((title) {
-                            final normalized = normalize(title);
-                            return normalized == requestName ||
-                                normalized.contains(requestName) ||
-                                requestName.contains(normalized);
-                          });
-
-                          /// ✅ Step 4: Hide request if not allowed
-                          if (!isAllowed) {
-                            return const SizedBox.shrink();
-                          }
                           return Column(
                             children: [
                               GestureDetector(
