@@ -28,12 +28,16 @@ class NotificationModel {
 class Data {
   String? id;
   String? notificationType;
+  String? notificationTypeAr;
   String? message;
+  String? messageAr;
   String? title;
+  String? titleAr;
   String? metaData;
   List<From>? from;
   List<To>? to;
   String? notificationMessage;
+  String? notificationMessageAr;
   String? status;
   String? requestId;
   String? attachment;
@@ -45,12 +49,16 @@ class Data {
   Data({
     this.id,
     this.notificationType,
+    this.notificationTypeAr,
     this.message,
+    this.messageAr,
     this.title,
+    this.titleAr,
     this.metaData,
     this.from,
     this.to,
     this.notificationMessage,
+    this.notificationMessageAr,
     this.status,
     this.requestId,
     this.attachment,
@@ -63,8 +71,11 @@ class Data {
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     notificationType = json["notificationType"];
+    notificationTypeAr = json["notificationTypeAr"];
     message = json["message"];
+    messageAr = json["messageAr"];
     title = json["title"];
+    titleAr = json["titleAr"];
     metaData = json["metaData"];
     if (json["from"] is List) {
       from = (json["from"] as List)
@@ -78,6 +89,7 @@ class Data {
     }
 
     notificationMessage = json["notificationMessage"];
+    notificationMessageAr = json["notificationMessageAr"];
     status = json["status"];
     requestId = json["requestId"];
     attachment = json["attachment"];
@@ -91,6 +103,7 @@ class Data {
     final Map<String, dynamic> _data = <String, dynamic>{};
     _data["_id"] = id;
     _data["notificationType"] = notificationType;
+    _data["notificationTypeAr"] = notificationTypeAr;
     _data["message"] = message;
     _data["title"] = title;
     _data["metaData"] = metaData;

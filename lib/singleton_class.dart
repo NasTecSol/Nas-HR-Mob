@@ -152,6 +152,7 @@ class SingletonClass {
   String headerUrl = '';
   String footerUrl = '';
   String? token ;
+  bool? rememberMe = true ;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -458,6 +459,7 @@ class SingletonClass {
     print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
+      log("notification response ${response.body}");
       var responseBody = json.decode(response.body);
       var notificationData = NotificationModel.fromJson(responseBody);
       notificationModelList.addAll([notificationData]);

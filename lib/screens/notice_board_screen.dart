@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
-import '../widgets/colors.dart';
-
 class NoticeBoardOverlay extends StatelessWidget {
   final dynamic notice;
   const NoticeBoardOverlay({super.key, required this.notice});
@@ -66,7 +64,7 @@ class NoticeBoardOverlay extends StatelessWidget {
                       end: Alignment.bottomRight,
                     ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
                     child: Text(
-                      notice.title ?? 'Notice',
+                      notice.title ?? notice.titleAr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 18,
@@ -89,7 +87,7 @@ class NoticeBoardOverlay extends StatelessWidget {
 
               /// MESSAGE
               Text(
-                notice.notificationMessage ?? '',
+                notice.notificationMessage ?? notice.notificationMessageAr,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14,

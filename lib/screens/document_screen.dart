@@ -95,6 +95,17 @@ class _DocumentScreenState extends State<DocumentScreen> {
       }
       return false;
     });
+
+    final filteredDocs = documentInfo!
+        .where((doc) => doc.type != "Doc_editor_shared")
+        .toList();
+
+    final searchText = searchController.text.toLowerCase();
+
+    final visibleDocs = filteredDocs.where((doc) {
+      if (!isSearching) return true;
+      return doc.type?.toLowerCase().contains(searchText) ?? false;
+    }).toList();
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -242,13 +253,13 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 color: NasColors.darkBlue,
                 backgroundColor: Colors.white,
                 onRefresh: fetchLatestDocumentData,
-                child: documentInfo!.isNotEmpty
+                child: visibleDocs.isNotEmpty
                     ? ListView.builder(
                   padding: EdgeInsets.zero,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: documentInfo.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final documents = documentInfo.reversed.toList()[index];
+                  itemCount: visibleDocs.length,
+                  itemBuilder: (context, index) {
+                    final documents = visibleDocs.reversed.toList()[index];
                     const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
                     final String url = [
                       documents?.url,
@@ -263,9 +274,6 @@ class _DocumentScreenState extends State<DocumentScreen> {
                     searchController.text.toLowerCase();
                     if (isSearching && !(documents.type?.toLowerCase().contains(searchText) ?? false)) {
                       return const SizedBox.shrink();
-                    }
-                    if(documents.type == "Doc_editor_shared"){
-                      return SizedBox.shrink();
                     }
                     return Transform.translate(
                       offset: Offset(0, index == 0 ? 0 : -10),
