@@ -224,6 +224,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final today = DateTime.now();
       final dataList = singletonClass.attendanceDataList.first.data!.data;
+
       if (dataList == null || dataList.isEmpty) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
@@ -248,40 +249,68 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       final todayData = todayEntries.last;
+
       final checkInTime = todayData.clockInTime;
       final checkOutTime = todayData.clockOutTime;
 
-      // 🔹 Both checkin/checkout empty → no work today
-      if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
-          (checkOutTime == null || checkOutTime.isEmpty || checkOutTime == 'null')) {
+      // Helper flags (clean and reusable)
+      final hasCheckIn = checkInTime != null &&
+          checkInTime.isNotEmpty &&
+          checkInTime != 'null';
+
+      final hasCheckOut = checkOutTime != null &&
+          checkOutTime.isNotEmpty &&
+          checkOutTime != 'null';
+
+      // 🔹 Case 1: دونوں null/empty → show 00:00:00
+      if (!hasCheckIn && !hasCheckOut) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
         return;
       }
 
-      // 🔹 Case 1: Only check-in available → running session
-      if (checkInTime != null &&
-          checkInTime.isNotEmpty && checkInTime != 'null') {
+      // 🔹 Case 2: Only check-in → start timer
+      if (hasCheckIn && !hasCheckOut) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
-      if (checkOutTime != null &&
-          checkOutTime.isNotEmpty && checkOutTime != 'null') {
+      // 🔹 Case 3: Both available → stop timer & show total time
+      if (hasCheckIn && hasCheckOut) {
+        final checkIn = DateTime.tryParse(checkInTime);
+        final checkOut = DateTime.tryParse(checkOutTime);
+
+        if (checkIn != null && checkOut != null) {
+          _accumulatedWorkedDuration = checkOut.difference(checkIn);
+          _displayWorkedHours = _formatDuration(_accumulatedWorkedDuration);
+        } else {
+          _displayWorkedHours = "00:00:00";
+        }
+
         stopWorkTimer();
-        _updateWorkedTime();
         return;
       }
-      // Default fallback
+
+      // fallback
       stopWorkTimer();
       _displayWorkedHours = "00:00:00";
+
     } catch (e) {
-      _displayWorkedHours = '00:00:00';
+      _displayWorkedHours = "00:00:00";
       stopWorkTimer();
     }
   }
 
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final hours = twoDigits(d.inHours);
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+
+    return "$hours:$minutes:$seconds";
+  }
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);

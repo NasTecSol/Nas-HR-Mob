@@ -82,6 +82,7 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getChats(),
      singletonClass.getOrganizationData(),
      singletonClass.getPolicyData(),
+      singletonClass.getCompanyNotificationData(),
     ]);
   }
 
@@ -292,7 +293,7 @@ class _MainScreenState extends State<MainScreen> {
 
     // 1️⃣ Filter valid notice board notifications
     final validNotices = allNotifications.where((n) {
-      if (n.notificationType != 'noticeBoard') return false;
+      if (n.notificationTypeAr != 'noticeBoard' || n.notificationType != 'noticeBoard') return false;
 
       final duration = n.durationSettings;
       if (duration == null) return false;

@@ -261,7 +261,7 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                             ),
                                             SizedBox(
                                               height: 40,
-                                              width: 115,
+                                              width: 100,
                                               child: Center(child: Text(singletonClass.formatCheckInTime(bio.timestamp.toString(), context),
                                                 style: GoogleFonts.inter(
                                                     fontWeight: FontWeight.w500,
@@ -273,10 +273,13 @@ class _MyClockingScreenState extends State<MyClockingScreen> {
                                             SizedBox(
                                               height: 40,
                                               width: 80,
-                                              child: Center(child: Text("${bio.type}",
+                                              child: Center(child:
+                                              Text(
+                                                "${bio.type}",
+                                                maxLines:2,
                                                 style: GoogleFonts.inter(
                                                     fontWeight: FontWeight.w500,
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     color: Colors.black
                                                 ),
                                               )),
