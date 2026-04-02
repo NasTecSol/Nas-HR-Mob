@@ -50,6 +50,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   SingletonClass singletonClass = SingletonClass();
+  final ScrollController specialScrollController = ScrollController();
   double blurAmount = 10.0;
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
@@ -1069,6 +1070,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    ///Slider
+    final hasSlider = singletonClass.roleAndAccessModelDataList.first.data!
+        .uiSettings!.uiModules!
+        .any((e) {
+      final title = (e.title ?? '').toLowerCase();
+      return title == 'dashboard' &&
+          e.hidden == false &&
+          e.biometricCheckIn == true &&
+          e.onSiteCheckIn == true;
+    });
     ///Dashboard module checks
     final dashboardModule = singletonClass
         .roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
@@ -2111,117 +2122,120 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: GestureDetector(
-                                onHorizontalDragUpdate: (details) {
-                                  setState(() {
-                                    _dragPosition += details.primaryDelta!;
-                                    if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
-                                      _isSliderCompleted = true;
-                                    }
-                                  });
-                                },
-                                onHorizontalDragEnd: (details) {
-                                  setState(() {
-                                    if (_isSliderCompleted) {
-                                      _overlayEntry = _createOverlayEntry();
-                                      Overlay.of(context).insert(_overlayEntry!);
-                                    }
-                                    _dragPosition = 0;
-                                    _isSliderCompleted = false;
-                                  });
-                                },
-                                child: Container(
-                                  alignment: Alignment.topLeft,
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF444658),
-                                        Color(0xFF677587),
-                                        Color(0xFF78889D),
-                                        Color(0xFF9DB2CE),
-                                        Color(0xFF8799B1),
-                                      ],
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                    ),
-                                  ),
-                                  height: 60,
-                                  child: (() {
-                                    final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
-                                    final today = DateTime.now();
-                                    final todayEntries = dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                      return createdAt != null &&
-                                          createdAt.year == today.year &&
-                                          createdAt.month == today.month &&
-                                          createdAt.day == today.day;
-                                    }).toList();
-                                    final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
-                                    String? checkInTime = todayData?.clockInTime;
-                                    String? checkOutTime = todayData?.clockOutTime;
-                                    String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-
-                                    if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
-                                        (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
-                                        (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    }
-
-                                    // Always show swipe UI
-                                    return Transform.translate(
-                                      offset: Offset(_dragPosition, -1),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: [
-                                            _timer != null && _timer!.isActive ?
-                                            Container(
-                                              width: 60,
-                                              height: 50,
-                                              decoration: const BoxDecoration(
-                                                borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                              ),
-                                              child: Lottie.asset('images/working.json'),
-                                            ) : Container(
-                                              width: 60,
-                                              height: 50,
-                                              decoration: const BoxDecoration(
-                                                borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                              ),
-                                              child: Lottie.asset('images/swiper.json'),
-                                            ),
-                                            const SizedBox(width: 50),
-                                            Align(
-                                              alignment: Alignment.center,
-                                              child: Text(
-                                                displayText,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
+                          ///SLider
+                          if(hasSlider)...[
+                            Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Directionality(
+                                  textDirection: TextDirection.ltr,
+                                  child: GestureDetector(
+                                    onHorizontalDragUpdate: (details) {
+                                      setState(() {
+                                        _dragPosition += details.primaryDelta!;
+                                        if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
+                                          _isSliderCompleted = true;
+                                        }
+                                      });
+                                    },
+                                    onHorizontalDragEnd: (details) {
+                                      setState(() {
+                                        if (_isSliderCompleted) {
+                                          _overlayEntry = _createOverlayEntry();
+                                          Overlay.of(context).insert(_overlayEntry!);
+                                        }
+                                        _dragPosition = 0;
+                                        _isSliderCompleted = false;
+                                      });
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.topLeft,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFF444658),
+                                            Color(0xFF677587),
+                                            Color(0xFF78889D),
+                                            Color(0xFF9DB2CE),
+                                            Color(0xFF8799B1),
                                           ],
+                                          begin: Alignment.topRight,
+                                          end: Alignment.bottomLeft,
                                         ),
                                       ),
-                                    );
-                                  })(),
-                                ),
-                              ),
-                            )
-                          ),
+                                      height: 60,
+                                      child: (() {
+                                        final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
+                                        final today = DateTime.now();
+                                        final todayEntries = dataList.where((entry) {
+                                          final createdAt = DateTime.tryParse(entry.createdAt ?? '');
+                                          return createdAt != null &&
+                                              createdAt.year == today.year &&
+                                              createdAt.month == today.month &&
+                                              createdAt.day == today.day;
+                                        }).toList();
+                                        final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
+                                        String? checkInTime = todayData?.clockInTime;
+                                        String? checkOutTime = todayData?.clockOutTime;
+                                        String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+
+                                        if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
+                                            (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
+                                          displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+                                        } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
+                                          displayText = AppLocalizations.of(context)!.swipeToCheckOut;
+                                        } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
+                                            (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
+                                          displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+                                        }
+
+                                        // Always show swipe UI
+                                        return Transform.translate(
+                                          offset: Offset(_dragPosition, -1),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                _timer != null && _timer!.isActive ?
+                                                Container(
+                                                  width: 60,
+                                                  height: 50,
+                                                  decoration: const BoxDecoration(
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Lottie.asset('images/working.json'),
+                                                ) : Container(
+                                                  width: 60,
+                                                  height: 50,
+                                                  decoration: const BoxDecoration(
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Lottie.asset('images/swiper.json'),
+                                                ),
+                                                const SizedBox(width: 50),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    displayText,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      })(),
+                                    ),
+                                  ),
+                                )
+                            ),
+                          ],
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -2985,12 +2999,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Column(
                                   children: [
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          AppLocalizations.of(context)!
-                                              .empLeaveBalance,
+                                          AppLocalizations.of(context)!.empLeaveBalance,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -3000,364 +3012,320 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(height: 5),
                                     SizedBox(
-                                        height: 105,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
+                                      height: 150,
+                                      child: StatefulBuilder(
+                                        builder: (context, setState) {
+                                          final PageController controller = PageController();
+                                          int currentPage = 0;
+                                          Future.delayed(Duration.zero, () {
+                                            Timer.periodic(Duration(seconds: 4), (timer) {
+                                              if (controller.hasClients) {
+                                                currentPage++;
+                                                if (currentPage > 1) currentPage = 0;
+                                                controller.animateToPage(
+                                                  currentPage,
+                                                  duration: Duration(milliseconds: 500),
+                                                  curve: Curves.easeIn,
+                                                );
+                                              }
+                                            });
+                                          });
+                                          return PageView(
+                                            controller: controller,
                                             children: [
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 4.0,
+
+                                              /// 🔹 PAGE 1
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 12, bottom: 12),
+                                                child: Column(
+                                                  children: [
+                                                    /// (Annual + Casual)
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Text(AppLocalizations.of(context)!.annualLeave,
+                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                  Spacer(),
+                                                                  Text(
+                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0}",
+                                                                    style: GoogleFonts.inter(fontSize: 11),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(height: 6),
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(20),
+                                                                child: Stack(
+                                                                  children: [
+                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                    FractionallySizedBox(
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0) == 0
+                                                                              ? 1
+                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0)))
+                                                                          .clamp(0.0, 1.0),
+                                                                      child: Container(
+                                                                        height: 8,
+                                                                        decoration: BoxDecoration(
+                                                                          gradient: LinearGradient(colors: [Colors.blue, Colors.lightBlueAccent]),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+
+                                                        SizedBox(width: 12),
+
+                                                        Expanded(
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Text(AppLocalizations.of(context)!.casualLeave,
+                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                  Spacer(),
+                                                                  Text(
+                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0}",
+                                                                    style: GoogleFonts.inter(fontSize: 11),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(height: 6),
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(20),
+                                                                child: Stack(
+                                                                  children: [
+                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                    FractionallySizedBox(
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0) == 0
+                                                                              ? 1
+                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0)))
+                                                                          .clamp(0.0, 1.0),
+                                                                      child: Container(
+                                                                        height: 8,
+                                                                        decoration: BoxDecoration(
+                                                                          gradient: LinearGradient(colors: [Colors.green, Colors.lightGreenAccent]),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
+                                                    const SizedBox(height: 25),
+                                                    /// (Short + Sick)
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Text(AppLocalizations.of(context)!.shortLeaves,
+                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                  Spacer(),
+                                                                  Text(
+                                                                    formatMinutesToHoursAndMinutes(
+                                                                      context,
+                                                                      singletonClass.employeeDataList.first.data!.leaveBalance!
+                                                                          .shortLeavesMonthlyBal!.shortLeavesMinutes!
+                                                                          .toInt(),
+                                                                    ),
+                                                                    style: GoogleFonts.inter(fontSize: 11),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(height: 6),
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(20),
+                                                                child: Stack(
+                                                                  children: [
+                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                    FractionallySizedBox(
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!
+                                                                          .shortLeavesMonthlyBal!.shortLeavesMinutes ??
+                                                                          0) /
+                                                                          480)
+                                                                          .clamp(0.0, 1.0),
+                                                                      child: Container(
+                                                                        height: 8,
+                                                                        decoration: BoxDecoration(
+                                                                          gradient: LinearGradient(colors: [Colors.orange, Colors.deepOrangeAccent]),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+
+                                                        SizedBox(width: 12),
+
+                                                        Expanded(
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Text(AppLocalizations.of(context)!.sickLeave,
+                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                  Spacer(),
+                                                                  Text(
+                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0}",
+                                                                    style: GoogleFonts.inter(fontSize: 11),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(height: 6),
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(20),
+                                                                child: Stack(
+                                                                  children: [
+                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                    FractionallySizedBox(
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0) == 0
+                                                                              ? 1
+                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0)))
+                                                                          .clamp(0.0, 1.0),
+                                                                      child: Container(
+                                                                        height: 8,
+                                                                        decoration: BoxDecoration(
+                                                                          gradient: LinearGradient(colors: [Colors.red, Colors.redAccent]),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
+                                                  ],
                                                 ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .annualLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonthIcon.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(0)}",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 18,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                              ),
+                                              /// 🔹 PAGE 2 (Special Leaves)
+                                              SingleChildScrollView(
+                                                controller: specialScrollController,
+                                                child: Column(
+                                                  children: List.generate(
+                                                    (singletonClass.employeeDataList.first.data!.leaveBalance!.specialLeave!.length / 2).ceil(),
+                                                        (index) {
+                                                      final leaves = singletonClass.employeeDataList.first.data!.leaveBalance!.specialLeave!;
+                                                      final first = leaves[index * 2];
+                                                      final second = (index * 2 + 1 < leaves.length) ? leaves[index * 2 + 1] : null;
+
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(top: 12, bottom: 12),
+                                                        child: Row(
+                                                          children: [
+                                                            /// FIRST ITEM
+                                                            Expanded(
+                                                              child: Column(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Text("${first.leaveName}",
+                                                                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                      Spacer(),
+                                                                      Text("${first.used ?? 0}/${first.entitlement ?? 0}",
+                                                                          style: GoogleFonts.inter(fontSize: 11)),
+                                                                    ],
+                                                                  ),
+                                                                  SizedBox(height: 6),
+                                                                  ClipRRect(
+                                                                    borderRadius: BorderRadius.circular(20),
+                                                                    child: Stack(
+                                                                      children: [
+                                                                        Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                        FractionallySizedBox(
+                                                                          widthFactor: ((first.used ?? 0) /
+                                                                              ((first.entitlement ?? 0) == 0 ? 1 : (first.entitlement ?? 0)))
+                                                                              .clamp(0.0, 1.0),
+                                                                          child: Container(
+                                                                            height: 8,
+                                                                            decoration: BoxDecoration(
+                                                                              gradient: LinearGradient(colors: [NasColors.amber, NasColors.yellow]),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .remoteDaysThisMonth,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/remoteIcon.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "0/0",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .casualLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonth.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement}",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 95,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .shortLeaves,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        12),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/image.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            formatMinutesToHoursAndMinutes(
-                                                                context,
-                                                                singletonClass
-                                                                    .employeeDataList
-                                                                    .first
-                                                                    .data!
-                                                                    .leaveBalance!
-                                                                    .shortLeavesMonthlyBal!
-                                                                    .shortLeavesMinutes!
-                                                                    .toInt()),
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          4.0, // Set the border width
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .sickLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonth.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement}",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
+                                                            SizedBox(width: 12),
+                                                            /// SECOND ITEM (if exists)
+                                                            Expanded(
+                                                              child: second == null
+                                                                  ? SizedBox()
+                                                                  : Column(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Text("${second.leaveName}",
+                                                                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                                                                      Spacer(),
+                                                                      Text("${second.used ?? 0}/${second.entitlement ?? 0}",
+                                                                          style: GoogleFonts.inter(fontSize: 11)),
+                                                                    ],
+                                                                  ),
+                                                                  SizedBox(height: 6),
+                                                                  ClipRRect(
+                                                                    borderRadius: BorderRadius.circular(20),
+                                                                    child: Stack(
+                                                                      children: [
+                                                                        Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+                                                                        FractionallySizedBox(
+                                                                          widthFactor: ((second.used ?? 0) /
+                                                                              ((second.entitlement ?? 0) == 0 ? 1 : (second.entitlement ?? 0)))
+                                                                              .clamp(0.0, 1.0),
+                                                                          child: Container(
+                                                                            height: 8,
+                                                                            decoration: BoxDecoration(
+                                                                              gradient: LinearGradient(colors: [NasColors.onTime, NasColors.completed]),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               )
                                             ],
-                                          ),
-                                        )),
+                                          );
+                                        },
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),

@@ -955,5 +955,7 @@
       "startChat": "بدء الدردشة",
       "passwordMustBeSixDigit": "يجب أن تتكون كلمة المرور من 6 أرقام",
       "createdDate":"تاريخ الإنشاء",
-      "sendLetter":"أرسل رسالة"
+      "sendLetter":"أرسل رسالة",
+      "deductions":"الخصومات",
+      "baseSalary":"الراتب الأساسي"
 }

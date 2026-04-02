@@ -2556,4 +2556,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendLetter => 'Send Letter';
+
+  @override
+  String get baseSalary => 'Base Salary';
 }
