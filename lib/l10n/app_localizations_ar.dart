@@ -926,7 +926,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tax => 'الضرائب';
 
   @override
-  String get deductions => 'Deductions';
+  String get deductions => 'الخصومات';
 
   @override
   String get salaryStructure => 'هيكل الراتب';
@@ -2547,4 +2547,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendLetter => 'أرسل رسالة';
+
+  @override
+  String get baseSalary => 'الراتب الأساسي';
 }

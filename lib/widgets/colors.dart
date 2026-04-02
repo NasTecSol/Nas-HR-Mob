@@ -15,7 +15,6 @@ mixin NasColors {
   static Color pending = const Color(0xffFBC948);
   static Color early = const Color(0xffCBE4E5);
   static Color lateComingText = const Color(0xffFEB700);
-
   ///New colors
   static const Color green = Color(0xFF4CAF50);
   static const Color reds = Color(0xFFF44336);

@@ -1293,7 +1293,8 @@
     "startChat":"Start Chat",
     "passwordMustBeSixDigit":"Password must be 6 digits",
     "createdDate":"Created Date",
-    "sendLetter":"Send Letter"
+    "sendLetter":"Send Letter",
+    "baseSalary":"Base Salary"
 
 
 }

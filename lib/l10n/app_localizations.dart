@@ -5143,6 +5143,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send Letter'**
   String get sendLetter;
+
+  /// No description provided for @baseSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Base Salary'**
+  String get baseSalary;
 }
 
 class _AppLocalizationsDelegate

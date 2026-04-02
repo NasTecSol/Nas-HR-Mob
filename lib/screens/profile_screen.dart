@@ -948,10 +948,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ],
                                           ),
                                           const SizedBox(height: 10),
+                                          ///Salary
                                           Row(
                                             children: [
                                               Text(
-                                                AppLocalizations.of(context)!.salary,
+                                                AppLocalizations.of(context)!.baseSalary,
                                                 maxLines: 2,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 20,
@@ -972,6 +973,186 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             ],
                                           ),
                                           const SizedBox(height: 5),
+                                          ///Allowances
+                                          Column(
+                                            children: (salaryInfo?.allowanceBenefits == null || salaryInfo!.allowanceBenefits!.isEmpty)
+                                                ? [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)!.allowance,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  Text(
+                                                    "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: NasColors.onTime,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]
+                                                : salaryInfo.allowanceBenefits!.map<Widget>((allowance) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 6),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            AppLocalizations.of(context)!.allowance,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 20,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Spacer(),
+                                                        Text(
+                                                          "${allowance.allowanceTitle ?? "---"} ",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Text("${allowance.amount ?? "---"} ${singletonClass.employeeDataList.first.data?.salaryInfo?.currency ?? ""}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          ///Gross Salary
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!.grossSalary,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                "${(
+                                                    (double.tryParse(salaryInfo?.baseSalary?.toString() ?? '0') ?? 0) +
+                                                        (salaryInfo?.allowanceBenefits?.fold<double>(0, (sum, item) {
+                                                          final amount = double.tryParse(item.amount?.toString() ?? '0') ?? 0;
+                                                          return sum + amount;
+                                                        }) ?? 0)
+                                                ).toStringAsFixed(0)} ${singletonClass.employeeDataList.first.data?.salaryInfo?.currency ?? ""}",
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(height: 5),
+                                          ///Deductions
+                                          Column(
+                                            children: (salaryInfo?.deductions == null || salaryInfo!.deductions!.isEmpty)
+                                                ? [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)!.deductions,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  Text(
+                                                    "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]
+                                                : salaryInfo.deductions!.map<Widget>((allowance) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 6),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            AppLocalizations.of(context)!.deductions,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 20,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Spacer(),
+                                                        Text(
+                                                          "${allowance.deductionTitle ?? "---"} ",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.red,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Text("${allowance.amount ?? "---"} ${singletonClass.employeeDataList.first.data?.salaryInfo?.currency ?? ""}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.red,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          /// net salary
                                           Row(
                                             children: [
                                               Text(
@@ -985,31 +1166,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ),
                                               Spacer(),
                                               Text(
-                                                "${salaryInfo?.netSalary}",
-                                                maxLines: 2,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                AppLocalizations.of(context)!.allowance,
-                                                maxLines: 2,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                              Spacer(),
-                                              Text(
-                                                "${salaryInfo?.allowanceContribution ?? "---"}",
+                                                "${salaryInfo?.netSalary ?? 0} ${singletonClass.employeeDataList.first.data!.salaryInfo!.currency}",
                                                 maxLines: 2,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 20,
