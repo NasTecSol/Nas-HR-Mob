@@ -67,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
 
-
   void _resetSignature() {
     _controller.clear();
   }

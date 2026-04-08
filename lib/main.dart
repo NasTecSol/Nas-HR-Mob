@@ -49,8 +49,7 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA"
-    );
+    MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA");
 
     final prefs = await SharedPreferences.getInstance();
     SingletonClass().tenantId = prefs.getString('baseURL') ?? '';

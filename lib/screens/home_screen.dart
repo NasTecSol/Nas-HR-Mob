@@ -70,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Timer? _timer;
   String _displayWorkedHours = '00:00:00';
 
+
   @override
   void initState() {
     super.initState();
@@ -1071,14 +1072,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
 
     ///Slider
-    final hasSlider = singletonClass.roleAndAccessModelDataList.first.data!
+    final hasSlider = singletonClass.roleAndAccessModelDataList
+        .first.data!
         .uiSettings!.uiModules!
         .any((e) {
       final title = (e.title ?? '').toLowerCase();
-      return title == 'dashboard' &&
-          e.hidden == false &&
-          e.biometricCheckIn == true &&
-          e.onSiteCheckIn == true;
+      final showSlider = (e.biometricCheckIn == true || e.onSiteCheckIn == true);
+      return title == 'dashboard' && e.hidden == false && showSlider;
     });
     ///Dashboard module checks
     final dashboardModule = singletonClass
