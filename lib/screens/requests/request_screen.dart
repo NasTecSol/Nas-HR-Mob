@@ -219,6 +219,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   ],
                                                 ),
                                               ),
+
                                               GestureDetector(
                                                 onTap: () {
                                                   Navigator.pop(context);
