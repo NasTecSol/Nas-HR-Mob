@@ -278,7 +278,7 @@ class SubMenu {
   AccessType? accessType;
   bool? hidden;
   bool? nasMudeer;
-  List<dynamic>? subMenu; // Changed from List<SubMenu> to List<UiModules>
+  List<SubMenu>? subMenu; // Changed from List<SubMenu> to List<UiModules>
   bool? showSocketNotifications; // Added for Dashboard special case
 
   SubMenu({
@@ -307,7 +307,7 @@ class SubMenu {
 
     if (json["subMenu"] != null) {
       subMenu = (json["subMenu"] as List)
-          .map((e) => Map<String, dynamic>.from(e))
+          .map((e) => SubMenu.fromJson(Map<String, dynamic>.from(e)))
           .toList();
     }
   }

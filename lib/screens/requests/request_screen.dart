@@ -540,10 +540,8 @@ class _RequestScreenState extends State<RequestScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      buildOptionsCard(
-                          0, AppLocalizations.of(context)!.requests),
-                      buildOptionsCard(
-                          1, AppLocalizations.of(context)!.approvals),
+                      buildOptionsCard(0, AppLocalizations.of(context)!.requests),
+                      buildOptionsCard(1, AppLocalizations.of(context)!.approvals),
                     ],
                   ),
                 ),
@@ -2901,7 +2899,7 @@ class _RequestScreenState extends State<RequestScreen> {
         "documentRequest",
         "specialLeaveRequest",
         "attendanceRequest",
-        "overTimeRequest"
+        "overTimeRequest",
       ],
     };
 
@@ -2948,11 +2946,13 @@ class SearchedResult {
   dynamic empId;
   dynamic employeeName;
   dynamic severity;
+  dynamic netSalary;
 
   SearchedResult({
     this.empId,
     this.employeeName,
     this.severity,
+    this. netSalary
   });
 
   @override
@@ -2966,6 +2966,7 @@ class SearchedResult {
       'empId': empId,
       'employeeName': employeeName,
       'severity': severity,
+      'netSalary': netSalary,
     };
   }
 }
