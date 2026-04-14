@@ -32,6 +32,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../UTILS/auth_services.dart';
 import '../request_controller/attendance_model.dart' hide Data;
+import '../request_controller/role_and_access_model.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -503,23 +504,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         e.hidden == false);
 
     /// Check for Complaints - in Approval submenu
-    final hasComplaints = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "Complaints" || sub.title == "complaints") &&
-                sub.hidden == false) ??
-            false;
+    final hasComplaints = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "Complaints" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
 
     /// Check for Penalties and Fines - in Approval submenu
-    final hasPenaltiesAndFines = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
-                sub.hidden == false) ??
-            false;
+    final hasPenaltiesAndFines = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "PenaltiesandFines" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
@@ -976,12 +1009,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         e.hidden == false);
 
     /// Check for Complaints - in Approval submenu
-    final hasComplaints = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "Complaints" || sub.title == "complaints") &&
-                sub.hidden == false) ??
-            false;
+    final hasComplaints = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "Complaints" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
@@ -996,12 +1045,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
 
     /// Check for Penalties and Fines - in Approval submenu
-    final hasPenaltiesAndFines = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
-                sub.hidden == false) ??
-            false;
+    final hasPenaltiesAndFines = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "PenaltiesandFines" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
