@@ -41,14 +41,32 @@ class _RegisterBiometricDeviceScreenState
   @override
   void initState() {
     super.initState();
-    singletonClass.getBiometricDevices();
+    setState(() {
+      _loadData();
+    });
   }
 
+  Future<void> _loadData() async {
+    try {
+      setState(() => isLoading = true);
+
+      await singletonClass.getBiometricDevices();
+
+    } catch (e) {
+      debugPrint('Error loading initial data: $e');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final empID = widget.empId;
     final name = "${widget.firstName} ${widget.lastName}".trim();
-
+    final devicesList = singletonClass.biometricDevicesModelDataList;
+    final deviceData =
+    devicesList.isNotEmpty ? devicesList.first.data ?? [] : [];
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Stack(
@@ -223,6 +241,10 @@ class _RegisterBiometricDeviceScreenState
                   const SizedBox(height: 20),
 
                   /// 🔹 Device Dropdown
+                  if (!isLoading && deviceData.isEmpty)
+                     Center(
+                      child: Text(AppLocalizations.of(context)!.noData),
+                    ),
                   DropdownButtonFormField<String>(
                     dropdownColor: Colors.white,
                     decoration: InputDecoration(
@@ -232,37 +254,38 @@ class _RegisterBiometricDeviceScreenState
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                        const BorderSide(color: Colors.black, width: 1.5),
+                        borderSide: const BorderSide(color: Colors.black, width: 1.5),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 14),
+                      contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     ),
-                    value: selectedDeviceName,
+                    value: deviceData.any((d) => d.deviceName == selectedDeviceName)
+                        ? selectedDeviceName
+                        : null,
                     hint: Text(AppLocalizations.of(context)!.selectDevice),
-                    items: singletonClass
-                        .biometricDevicesModelDataList.first.data!
-                        .map<DropdownMenuItem<String>>(
-                          (device) {
-                        return DropdownMenuItem<String>(
-                          value: device.deviceName,
-                          child: Text(device.deviceName ?? ''),
-                        );
-                      },
-                    ).toList(),
-                    onChanged: (value) {
+
+                    /// ✅ SAFE ITEMS
+                    items: deviceData.map<DropdownMenuItem<String>>((device) {
+                      return DropdownMenuItem<String>(
+                        value: device.deviceName,
+                        child: Text(device.deviceName ?? ''),
+                      );
+                    }).toList(),
+
+                    onChanged: deviceData.isEmpty
+                        ? null // ✅ disable if empty
+                        : (value) {
                       setState(() {
                         selectedDeviceName = value;
-                        final selectedDevice = singletonClass
-                            .biometricDevicesModelDataList.first.data!
-                            .firstWhere(
+
+                        final selectedDevice = deviceData.firstWhere(
                               (d) => d.deviceName == value,
                         );
+
                         selectedDeviceId = selectedDevice.deviceId ?? '';
                       });
                     },
                   ),
-
                   const SizedBox(height: 80),
                 ],
               ),

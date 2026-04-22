@@ -9,6 +9,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/requests/allowance_and_salary_request_screen.dart';
 import 'package:nashr/screens/requests/attendance_request_screen.dart';
 import 'package:nashr/screens/requests/create_penalities_and_fines_request_screen.dart';
+import 'package:nashr/screens/requests/create_remote_request_screen.dart';
 import 'package:nashr/screens/requests/create_request_screen.dart';
 import 'package:nashr/screens/requests/document_request_screen.dart';
 import 'package:nashr/screens/requests/expense_request_screen.dart';
@@ -278,6 +279,18 @@ class _RequestScreenState extends State<RequestScreen> {
                                     );
                                   }
 
+                                  ///Remote Request
+                                  if (request.requestType == 'remoteRequest') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => CreateRemoteRequestScreen(
+                                          selectedRequest: request,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
                                   /// Expense Request
                                   if (request.requestType == 'expenseRequest') {
                                     Navigator.push(
@@ -371,7 +384,8 @@ class _RequestScreenState extends State<RequestScreen> {
                                       request.requestType != 'leaveRequest' &&
                                       request.requestType != 'specialLeaveRequest' &&
                                       request.requestType != 'attendanceRequest' &&
-                                      request.requestType != 'penalities_fines')
+                                      request.requestType != 'penalities_fines' &&
+                                      request.requestType != 'remoteRequest' )
                                   {
                                     Navigator.push(
                                       context,
@@ -433,11 +447,23 @@ class _RequestScreenState extends State<RequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final showRequest = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
-        .any((module) => module.title?.trim().toLowerCase() == 'approval' &&
-        (module.subMenu ?.where((item) => item.title?.trim().toLowerCase() == 'requests')
-            .expand((item) => item.subMenu ?? [])
-            .any((sub) => sub['accessType']?['add'] == true) ?? false));
+    final showRequest = singletonClass.roleAndAccessModelDataList.first.data
+        ?.uiSettings
+        ?.uiModules
+        ?.any((module) {
+      if (module.title?.trim().toLowerCase() != 'approval') return false;
+
+      final requests = module.subMenu
+          ?.where((item) =>
+      item.title?.trim().toLowerCase() == 'requests')
+          .toList();
+
+      return requests?.any((req) =>
+          (req.subMenu ?? [])
+              .any((sub) => sub.accessType?.add == true)) ??
+          false;
+    }) ??
+        false;
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
@@ -1199,6 +1225,54 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ],
                                                     ),
                                                   ],
+                                                  if(request.requestType == 'remoteRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? singletonClass.formatDate2(request.requestData!.first.startDate, context)
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          " - ",
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? singletonClass.formatDate2(request.requestData!.first.endDate, context)
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ],
                                               ),
                                             ],
@@ -1886,6 +1960,54 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ],
                                                       ),
                                                     ],
+                                                    if(request.requestType == 'remoteRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.startDate, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            " - ",
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.endDate, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
                                               ],
@@ -2556,6 +2678,54 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ],
                                                       ),
                                                     ],
+                                                    if(request.requestType == 'remoteRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.startDate, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            " - ",
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.endDate, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
                                               ],
@@ -2900,6 +3070,7 @@ class _RequestScreenState extends State<RequestScreen> {
         "specialLeaveRequest",
         "attendanceRequest",
         "overTimeRequest",
+        "remoteRequest"
       ],
     };
 
