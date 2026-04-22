@@ -45,6 +45,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
   bool _isInitialLoading = true;
   final ScrollController _scrollController = ScrollController();
   bool isDateRangeSelected = false;
+  bool _isLoading = false;
 
 
   @override
@@ -188,9 +189,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         'Dropdown: $showDropdown | TeamCheckbox: $showTeamCheckbox | OnlyMe: $showOnlyMeCheckbox | '
         '_isTeamChecked: $_isTeamChecked | _isChecked: $_isChecked');
   }
-
   Future<void> extractAllEmployeeIdsForBranch(String? selectedBranchId) async {
-
     await singletonClass.getTeamBranchData();
 
     List<String> allEmployeeIds = [];
@@ -203,28 +202,27 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
       for (var branchItem in singletonClass.teamBranchDataList) {
         final branchData = branchItem.data;
 
-        if (branchData != null && branchData.employees != null) {
-          for (var employee in branchData.employees!) {
+        /// ✅ FILTER BY BRANCH ID
+        if (branchData?.employees!.first.branchId != selectedBranchId) continue;
+
+        if (branchData?.employees != null) {
+          for (var employee in branchData!.employees!) {
             final employeeId = employee.id;
-            if (employeeId != null && employeeId.isNotEmpty && employee.employeeInfo!.first.employeeStatus == 'Active') {
+
+            if (employeeId != null &&
+                employeeId.isNotEmpty &&
+                employee.employeeInfo!.first.employeeStatus == 'Active') {
               allEmployeeIds.add(employeeId);
-              selectedBranchIds.clear();
             }
           }
         }
       }
 
-      // ✅ Remove duplicates
       selectedBranchIds = allEmployeeIds.toSet();
-      loadData();
-      if (kDebugMode) {
-        print('✅ Total Employees Found: ${allEmployeeIds.length}');
-        print('🔍 Unique Employee IDs: $selectedBranchIds');
-      }
+
+      log('✅ Employees for branch ($selectedBranchId): ${selectedBranchIds.length}');
     } else {
-      if (kDebugMode) {
-        print('⚠️ No valid branch ID or empty teamBranchDataList');
-      }
+      log('⚠️ Invalid branch or empty data');
     }
   }
 
@@ -795,7 +793,8 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ),
                     ),
                 ],
-                if (showOnlyMeCheckbox)
+                if (showOnlyMeCheckbox)...[
+                  if (!_isLoading)
                   Padding(
                     padding: const EdgeInsets.only(left: 5, right: 5),
                     child: Column(
@@ -803,27 +802,16 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                         Checkbox(
                           value: _isChecked,
                           activeColor: NasColors.onTime,
-                          onChanged: (bool? value) async {
-                            try {
-                              _isChecked = value ?? false;
-                              singletonClass.teamAttendanceDataList.clear();
-                              selectedBranchIds.clear();
+                          onChanged: (bool? value) {
+                            final newValue = value ?? false;
 
-                              if (hasCompanies && hasBranches && teamEnabled) {
-                                singletonClass.branchID = null;
-                                singletonClass.branchName = null;
-                              }
+                            /// ✅ Immediate UI update
+                            setState(() {
+                              _isChecked = newValue;
+                              _isLoading = true; // ONLY loader
+                            });
 
-                              _initDates(start: _startDate!, end: _endDate!);
-                              singletonClass.getTeamBranchData();
-                              loadData();
-                            } catch (e) {
-                              log("❌ Error toggling only me checkbox: $e");
-                            } finally {
-                              setState(() {
-                                isSearching = false;
-                              });
-                            }
+                            _handleCheckboxChange(newValue);
                           },
                         ),
                         Text(
@@ -837,6 +825,17 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
                       ],
                     ),
                   ),
+                  if (_isLoading)
+                      SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: NasColors.darkBlue,
+                              ),
+                            ),
+                          ),
+                ]
               ],
               if(isSearching == true)
               Expanded(
@@ -1846,5 +1845,48 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     );
   }
 
+/// helper methods
+  Future<void> _handleCheckboxChange(bool isChecked) async {
+    try {
+      singletonClass.teamAttendanceDataList.clear();
+      selectedBranchIds.clear();
 
+      if (!isChecked) {
+        /// 🔁 UNCHECKED → Branch Mode
+
+        if (singletonClass.branchDataList.isNotEmpty) {
+          final firstBranch = singletonClass.branchDataList.first;
+
+          singletonClass.branchID = firstBranch.data?.branch?.id;
+          singletonClass.branchName = firstBranch.data?.branch?.branchName;
+
+          await extractAllEmployeeIdsForBranch(singletonClass.branchID);
+        }
+
+        _isTeamChecked = false;
+      } else {
+        /// 🔁 ONLY ME MODE
+        singletonClass.branchID = null;
+        singletonClass.branchName = null;
+        _isTeamChecked = false;
+      }
+
+      _initDates(start: _startDate!, end: _endDate!);
+
+      /// ⚠️ Run in parallel where possible
+      await Future.wait([
+        singletonClass.getTeamBranchData(),
+        loadData(),
+      ]);
+
+    } catch (e) {
+      log("❌ Error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 }

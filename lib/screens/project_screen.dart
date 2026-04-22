@@ -252,6 +252,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                           ),
                                         ],
                                         Spacer(),
+                                        if(taskCount > 0)
                                         Container(
                                           padding: const EdgeInsets.all(2),
                                           decoration: BoxDecoration(
@@ -450,6 +451,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                           ),
                                         ],
                                         Spacer(),
+                                        if(taskCount > 0)
                                         Container(
                                           padding: const EdgeInsets.all(2),
                                           decoration: BoxDecoration(
@@ -649,6 +651,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                                         ),
                                       ],
                                       Spacer(),
+                                      if(taskCount > 0)
                                       Container(
                                         padding: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(

@@ -793,7 +793,8 @@ class SingletonClass {
         "documentRequest",
         "specialLeaveRequest",
         "attendanceRequest",
-        "overTimeRequest"
+        "overTimeRequest",
+        "remoteRequest"
       ],
     };
     final uri = Uri.parse(
