@@ -1294,7 +1294,9 @@
     "passwordMustBeSixDigit":"Password must be 6 digits",
     "createdDate":"Created Date",
     "sendLetter":"Send Letter",
-    "baseSalary":"Base Salary"
+    "baseSalary":"Base Salary",
+    "remoteRequest":"Remote Request",
+    "attendanceRequest":"Attendance Request"
 
 
 }

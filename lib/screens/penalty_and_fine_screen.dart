@@ -1293,7 +1293,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       case '2':
         return 'images/2.png';
       default:
-        return 'images/3.png'; // Default image for company or other types
+        return 'images/3.png';
     }
   }
 
@@ -1309,7 +1309,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
       case 'cancelled':
         return Colors.red;
       default:
-        return Colors.grey; // or any other default color
+        return Colors.grey;
     }
   }
 
@@ -1317,7 +1317,6 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
   Future<PenaltiesAndFineModel?> getPenalties({int page = 0, int limit = 10}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
 
-    // Request body with the required parameter
     Map<String, dynamic> requestBody = {
       "requestTypes": ["penalties_fines"],
     };

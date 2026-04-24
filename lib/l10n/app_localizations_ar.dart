@@ -2550,4 +2550,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get baseSalary => 'الراتب الأساسي';
+
+  @override
+  String get remoteRequest => 'الطلب عن بعد';
+
+  @override
+  String get attendanceRequest => 'طلب الحضور';
 }
