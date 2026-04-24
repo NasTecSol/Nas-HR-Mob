@@ -957,5 +957,7 @@
       "createdDate":"تاريخ الإنشاء",
       "sendLetter":"أرسل رسالة",
       "deductions":"الخصومات",
-      "baseSalary":"الراتب الأساسي"
+      "baseSalary":"الراتب الأساسي",
+      "remoteRequest":"الطلب عن بعد",
+      "attendanceRequest":"طلب الحضور"
 }

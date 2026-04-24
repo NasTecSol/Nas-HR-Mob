@@ -5149,6 +5149,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Base Salary'**
   String get baseSalary;
+
+  /// No description provided for @remoteRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote Request'**
+  String get remoteRequest;
+
+  /// No description provided for @attendanceRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Request'**
+  String get attendanceRequest;
 }
 
 class _AppLocalizationsDelegate

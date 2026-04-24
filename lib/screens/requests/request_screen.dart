@@ -152,16 +152,30 @@ class _RequestScreenState extends State<RequestScreen> {
                     Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
-                        itemCount: singletonClass
-                            .companyDataList.first.data!.request!.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final request = singletonClass.companyDataList.first.data!.request![index];
-                          if ((request.requestType == 'overTimeRequest' &&
-                              singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false) ||
-                          request.requestType == 'complaintRequest' ||
-                          request.requestType == 'approvalDoc' ||
-                          request.requestType == 'payrollRequest'
-                          ) {
+                        itemCount: singletonClass.companyDataList.isNotEmpty
+                            ? (singletonClass.companyDataList.first.data?.request?.length ?? 0)
+                            : 0,
+                        itemBuilder: (context, index) {
+                          final companyList = singletonClass.companyDataList;
+                          final policyList = singletonClass.policyModelDataList;
+
+                          if (companyList.isEmpty ||
+                              policyList.isEmpty ||
+                              companyList.first.data?.request == null ||
+                              policyList.first.data?.attendancePolicy?.overtimePolicy == null) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final request = companyList.first.data!.request![index];
+
+                          final isOvertimeBlocked =
+                              request.requestType == 'overTimeRequest' &&
+                                  policyList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false;
+
+                          if (isOvertimeBlocked ||
+                              request.requestType == 'complaintRequest' ||
+                              request.requestType == 'approvalDoc' ||
+                              request.requestType == 'payrollRequest') {
                             return const SizedBox.shrink();
                           }
                           return Column(
@@ -364,7 +378,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                   }
 
                                   /// Penalties Request
-                                  if (request.requestType == 'penalities_fines') {
+                                  if (request.requestType == 'penalities_fines' || request.requestType == 'penalties_fines') {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -385,6 +399,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       request.requestType != 'specialLeaveRequest' &&
                                       request.requestType != 'attendanceRequest' &&
                                       request.requestType != 'penalities_fines' &&
+                                      request.requestType != 'penalties_fines' &&
                                       request.requestType != 'remoteRequest' )
                                   {
                                     Navigator.push(
@@ -2934,7 +2949,9 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.leaveRequests;
       case 'Loan Request':
         return localizations.loanRequest;
-      case 'Penalty and Fine Requests':
+      case 'Penalty And Fine Requests':
+        return localizations.penaltiesAndFine;
+      case 'penalties_fines':
         return localizations.penaltiesAndFine;
       case 'OverTime':
         return localizations.overTime;
@@ -2952,6 +2969,12 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.specialLeaveRequest;
       case "Approval Document Request":
         return localizations.approvalDocumentRequest;
+      case "Remote Request":
+        return localizations.remoteRequest;
+      case "Attendance Request":
+        return localizations.attendanceRequest;
+      case "Short Leave":
+        return localizations.shortLeaves;
       default:
         return status!;
     }
@@ -3049,6 +3072,14 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/loan.png';
       case 'complaintRequest':
         return 'images/Complain.png';
+      case 'penalities_fines':
+        return 'images/Penalties.png';
+      case 'attendanceRequest':
+        return 'images/attendance.png';
+      case 'remoteRequest':
+        return 'images/pc.png';
+      case 'shortLeave':
+        return 'images/clocking.png';
       default:
         return 'images/OverTime.png';
     }

@@ -89,8 +89,9 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
-                        cachedAssetDetails = snapshot.data!;
-                        cachedObjectDetails = cachedAssetDetails!.data?.first.objectDetails;
+                        cachedObjectDetails = (snapshot.data?.data?.isNotEmpty ?? false)
+                            ? snapshot.data!.data!.first.objectDetails
+                            : null;
 
                         if (cachedObjectDetails == null) {
                           return Center(

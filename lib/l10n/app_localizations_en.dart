@@ -2559,4 +2559,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get baseSalary => 'Base Salary';
+
+  @override
+  String get remoteRequest => 'Remote Request';
+
+  @override
+  String get attendanceRequest => 'Attendance Request';
 }
