@@ -372,9 +372,9 @@ class _ChatScreenState extends State<ChatScreen> {
                               if (isUser)
                                 CircleAvatar(
                                   radius: 18,
-                                  backgroundImage: (singletonClass.employeeDataList.first.data?.profilePic != null &&
-                                      singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty)
-                                      ? NetworkImage(singletonClass.employeeDataList.first.data!.profilePic!)
+                                  backgroundImage: (singletonClass.employeeDataList.first.data.first.profilePic != null &&
+                                      singletonClass.employeeDataList.first.data.first.profilePic!.isNotEmpty)
+                                      ? NetworkImage(singletonClass.employeeDataList.first.data.first.profilePic!)
                                       : const AssetImage('images/DP.png') as ImageProvider,
                                 ),
                             ],

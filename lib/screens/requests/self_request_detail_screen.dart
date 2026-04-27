@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:nashr/screens/pdf_viewer_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
+import 'package:nashr/widgets/loader.dart';
+import 'package:pdf/pdf.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../request_controller/request_data_model.dart';
 import 'package:printing/printing.dart';
+import 'dart:convert';
 
 class SelfRequestDetailScreen extends StatefulWidget {
   final Data1 data1;
@@ -2327,54 +2331,164 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
       final body = buildHtmlContent();
       final approversWorkflow = buildApproversWorkflow();
       final commentsSection = buildCommentsSection();
+
+      // Convert remote images to base64 to avoid loading issues in convertHtml
+      String headerImgTag = '';
+      String footerImgTag = '';
+
+      try {
+        final headerBytes = await _fetchImageAsBase64(headerUrl);
+        headerImgTag = '<img class="header-img" src="data:image/png;base64,$headerBytes" alt="Header"/>';
+      } catch (_) {
+        headerImgTag = ''; // skip if fails
+      }
+
+      try {
+        final footerBytes = await _fetchImageAsBase64(footerUrl);
+        footerImgTag = '<img class="footer-img" src="data:image/png;base64,$footerBytes" alt="Footer"/>';
+      } catch (_) {
+        footerImgTag = ''; // skip if fails
+      }
+
       return '''
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          img { display: block; width: 100%; }
-          .header-img, .footer-img { margin: 0; padding: 0; }
-          .content { margin: 20px; padding: 20px; }
-          strong { color: black; font-weight: bold; }
-          span { color: black; }
-          div { line-height: 1.6; }
-          h3 { color: black; font-weight: bold; margin: 20px 0 15px 0; }
-        </style>
-      </head>
-      <body>
-        <img class="header-img" src="$headerUrl" alt="Header"/>
-        <div class="content">$body</div>
-        $approversWorkflow
-        $commentsSection
-        <img class="footer-img" src="$footerUrl" alt="Footer"/>
-      </body>
-    </html>
-    ''';
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+      img { display: block; width: 100%; }
+      .header-img, .footer-img { margin: 0; padding: 0; }
+      .content { margin: 20px; padding: 20px; }
+      strong { color: black; font-weight: bold; }
+      span { color: black; }
+      div { line-height: 1.6; }
+      h3 { color: black; font-weight: bold; margin: 20px 0 15px 0; }
+    </style>
+  </head>
+  <body>
+    $headerImgTag
+    <div class="content">$body</div>
+    $approversWorkflow
+    $commentsSection
+    $footerImgTag
+  </body>
+</html>
+''';
     } catch (e) {
       if (kDebugMode) print('Error generating HTML: $e');
       rethrow;
     }
   }
 
+// Helper to fetch image and convert to base64
+  Future<String> _fetchImageAsBase64(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return base64Encode(response.bodyBytes);
+    }
+    throw Exception('Failed to load image: $url');
+  }
+
 
   Future<void> printPdf() async {
     try {
-      final html = await generateFullHtml(headerUrl: singletonClass.headerUrl, footerUrl: singletonClass.footerUrl);
-      await Printing.layoutPdf(onLayout: (format) async {
-        try {
-          return await Printing.convertHtml(format: format, html: html);
-        } catch (e) {
-          if (kDebugMode) print('Error converting HTML to PDF: $e');
-          rethrow;
-        }
-      });
-    } catch (e) {
-      if (kDebugMode) print('Error printing PDF: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: ${e.toString()}'), backgroundColor: Colors.red));
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>  Center(child: Loader()),
+        );
+      }
+
+      final html = await generateFullHtml(
+        headerUrl: singletonClass.headerUrl,
+        footerUrl: singletonClass.footerUrl,
+      );
+
+      // Convert HTML to PDF bytes first
+      final pdfBytes = await Printing.convertHtml(
+        format: PdfPageFormat.a4,
+        html: html,
+        baseUrl: 'about:blank',
+      );
+
+      if (kDebugMode) print('PDF bytes length: ${pdfBytes.length}');
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+
+      // Show bottom sheet with options
+      if (context.mounted) {
+        showModalBottomSheet(
+          context: context,
+          builder: (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.print , color: Colors.black,),
+                  title: Text(AppLocalizations.of(context)!.print,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: Colors.black
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await Printing.layoutPdf(
+                      name: 'Request_Document',
+                      onLayout: (_) async => pdfBytes,
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.share , color: Colors.blue,),
+                  title: Text('Share / Save PDF',
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.blue
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await Printing.sharePdf(
+                      bytes: pdfBytes,
+                      filename: 'Request_Document.pdf',
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cancel, color: Colors.red,),
+                  title:  Text(AppLocalizations.of(context)!.cancel,
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.red
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        try { Navigator.of(context, rootNavigator: true).pop(); } catch (_) {}
+      }
+      if (kDebugMode) {
+        print('Error printing PDF: $e');
+        print('StackTrace: $stackTrace');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

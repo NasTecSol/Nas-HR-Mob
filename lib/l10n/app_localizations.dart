@@ -5161,6 +5161,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attendance Request'**
   String get attendanceRequest;
+
+  /// No description provided for @phoneNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be at least 10 digits'**
+  String get phoneNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @iqamaNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama number must be at least 10 digits'**
+  String get iqamaNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @nationalIDNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID number must be at least 10 digits'**
+  String get nationalIDNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @print.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get print;
+
+  /// No description provided for @shareAndSavePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Share / Save PDF'**
+  String get shareAndSavePdf;
 }
 
 class _AppLocalizationsDelegate

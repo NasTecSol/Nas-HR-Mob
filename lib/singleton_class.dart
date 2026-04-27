@@ -406,19 +406,35 @@ class SingletonClass {
     }
     return null ;
   }
-
   Future<EmployeeData?> getEmployeeData() async {
-    String? employeeId =  getJWTModel()?.employeeId;
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/employee/$employeeId');
-    var response = await client.get(uri,headers: getHeaders());
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var employeeData = EmployeeData.fromJson(responseBody);
-      setEmployeeData([employeeData]);
-      return employeeData;
+    try {
+      String? employeeId = getJWTModel()?.empId;
+
+      var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
+      var response = await http.get(uri, headers: getHeaders());
+
+      log("EMPLOYEE DATA RAW: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+
+        final employeeData = EmployeeData.fromJson(responseBody);
+
+        setEmployeeData([employeeData]);
+
+        // SAFE access now
+        if (employeeData.data.isNotEmpty) {
+          log("USERNAME: ${employeeData.data.first.userName}");
+        }
+
+        return employeeData;
+      }
+    } catch (e, st) {
+      log("EMPLOYEE API ERROR: $e");
+      log("$st");
     }
-    return null ;
+
+    return null;
   }
 
   //Remote Attendance Data
@@ -438,7 +454,7 @@ class SingletonClass {
 
   ///Get supervisor Data
   Future<ReportManagerModel?> getSupervisorData() async {
-    String? employeeId =  employeeDataList.first.data!.employeeInfo!.first.reportingManager;
+    String? employeeId =  employeeDataList.first.data.first.employeeInfo!.first.reportingManager;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
     var response = await client.get(uri,headers: getHeaders());
@@ -481,7 +497,6 @@ class SingletonClass {
 
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
-
     log("📡 Requesting company data from: $uri");
     log("📦 Headers: ${getHeaders()}");
     log("📦 FCM: ${fcmToken}");
@@ -494,6 +509,10 @@ class SingletonClass {
         var responseBody = json.decode(response.body);
         var companyData = CompanyData.fromJson(responseBody);
         setCompanyData([companyData]);
+        headerUrl = "${companyData.data!.headerFooter!.defaultHeader}";
+        footerUrl = "${companyData.data!.headerFooter!.defaultFooter}";
+        print("HEADER${headerUrl}");
+        print("footer${footerUrl}");
         return companyData;
       } else {
         log("❌ Failed to fetch company data. Status: ${response.statusCode}");
@@ -831,30 +850,30 @@ class SingletonClass {
     }
   }
 
-  Future<void> fetchCompanyHeaderFooter(String companyId) async {
-    try {
-      final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
-      final response = await http.get(url, headers: getHeaders());
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body)['data'] as List? ?? [];
-        if (data.isNotEmpty) {
-          final doc = data.first;
-          headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
-          footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
-          if (kDebugMode) {
-            print('Header URL: $headerUrl');
-            print('Footer URL: $footerUrl');
-          }
-        } else {
-          if (kDebugMode) print('No documents found for this company.');
-        }
-      } else {
-        if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (kDebugMode) print('Error fetching company documents: $e');
-    }
-  }
+  // Future<void> fetchCompanyHeaderFooter(String companyId) async {
+  //   try {
+  //     final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
+  //     final response = await http.get(url, headers: getHeaders());
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body)['data'] as List? ?? [];
+  //       if (data.isNotEmpty) {
+  //         final doc = data.first;
+  //         headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
+  //         footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
+  //         if (kDebugMode) {
+  //           print('Header URL: $headerUrl');
+  //           print('Footer URL: $footerUrl');
+  //         }
+  //       } else {
+  //         if (kDebugMode) print('No documents found for this company.');
+  //       }
+  //     } else {
+  //       if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) print('Error fetching company documents: $e');
+  //   }
+  // }
 
 
   ///Clear all data lists

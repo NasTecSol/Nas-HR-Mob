@@ -2652,7 +2652,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   ///Other methods
   double? _getRemainingLeaveBalance(String? requestName) {
     if (requestName == null) return null;
-    var leaveBalance = singletonClass.employeeDataList.first.data!.leaveBalance;
+    var leaveBalance = singletonClass.employeeDataList.first.data.first.leaveBalance;
     for (var entry in leaveBalance!.toJson().entries) {
       debugPrint('Checking entry: ${entry.key}');
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
@@ -2873,9 +2873,9 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     String? companyId = singletonClass.getJWTModel()?.companyId;
     String? branchId = singletonClass.getJWTModel()?.branchId;
-    String? firstName = singletonClass.employeeDataList.first.data!.firstName;
-    String? middleName = singletonClass.employeeDataList.first.data!.middleName;
-    String? lastName = singletonClass.employeeDataList.first.data!.lastName;
+    String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+    String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+    String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
     String? policyId =
         singletonClass.companyDataList.first.data!.policies!.first.policyId;
     String? employeeName = [firstName, middleName, lastName]

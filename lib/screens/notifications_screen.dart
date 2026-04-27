@@ -167,8 +167,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             final empList = singletonClass.employeeDataList;
                             if (empList.isEmpty) return '';
                             final empData = empList.first.data;
-                            if (empData == null) return '';
-                            final emails = empData.email;
+                            final emails = empData.first.email;
                             if (emails == null || emails.isEmpty) return '';
                             return emails.first.workEmail ?? '';
                           } catch (_) {

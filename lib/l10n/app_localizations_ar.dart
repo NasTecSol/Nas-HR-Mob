@@ -2556,4 +2556,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get attendanceRequest => 'طلب الحضور';
+
+  @override
+  String get phoneNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل';
+
+  @override
+  String get iqamaNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الإقامة من 10 أرقام على الأقل';
+
+  @override
+  String get nationalIDNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الهوية الوطنية من 10 أرقام على الأقل';
+
+  @override
+  String get print => 'مطبعة';
+
+  @override
+  String get shareAndSavePdf => 'مشاركة / حفظ PDF';
 }

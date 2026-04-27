@@ -2,9 +2,9 @@ PODS:
   - audioplayers_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
-  - background_fetch (1.5.0):
+  - background_fetch (1.6.2):
     - Flutter
-    - TSBackgroundFetch (~> 4.0)
+    - TSBackgroundFetch (~> 4.1.0)
   - CwlCatchException (2.2.1):
     - CwlCatchExceptionSupport (~> 2.2.1)
   - CwlCatchExceptionSupport (2.2.1)
@@ -102,9 +102,9 @@ PODS:
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
-  - GoogleMaps (10.8.0):
-    - GoogleMaps/Maps (= 10.8.0)
-  - GoogleMaps/Maps (10.8.0)
+  - GoogleMaps (10.12.0):
+    - GoogleMaps/Maps (= 10.12.0)
+  - GoogleMaps/Maps (10.12.0)
   - GoogleUtilities/AppDelegateSwizzler (8.1.0):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -153,27 +153,27 @@ PODS:
   - Mantle (2.2.0):
     - Mantle/extobjc (= 2.2.0)
   - Mantle/extobjc (2.2.0)
-  - mapbox_maps_flutter (2.18.0):
+  - mapbox_maps_flutter (2.22.0):
     - Flutter
-    - MapboxMaps (= 11.18.0)
+    - MapboxMaps (= 11.22.0)
     - Turf (= 4.0.0)
-  - MapboxCommon (24.18.0):
+  - MapboxCommon (24.22.0):
     - Turf (= 4.0.0)
-  - MapboxCoreMaps (11.18.0):
-    - MapboxCommon (= 24.18.0)
-  - MapboxMaps (11.18.0):
-    - MapboxCommon (= 24.18.0)
-    - MapboxCoreMaps (= 11.18.0)
+  - MapboxCoreMaps (11.22.0):
+    - MapboxCommon (= 24.22.0)
+  - MapboxMaps (11.22.0):
+    - MapboxCommon (= 24.22.0)
+    - MapboxCoreMaps (= 11.22.0)
     - Turf (= 4.0.0)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - newrelic_mobile (1.1.21):
+  - newrelic_mobile (1.2.2):
     - Flutter
-    - NewRelicAgent (~> 7.6.1)
-  - NewRelicAgent (7.6.1)
+    - NewRelicAgent (~> 7.7.0)
+  - NewRelicAgent (7.7.1)
   - open_file_ios (1.0.3):
     - Flutter
   - package_info_plus (0.4.5):
@@ -188,9 +188,9 @@ PODS:
   - printing (1.0.0):
     - Flutter
   - PromisesObjC (2.4.0)
-  - SDWebImage (5.21.5):
-    - SDWebImage/Core (= 5.21.5)
-  - SDWebImage/Core (5.21.5)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - SDWebImageWebPCoder (0.15.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -206,7 +206,7 @@ PODS:
   - SwiftyGif (5.4.5)
   - syncfusion_flutter_pdfviewer (0.0.1):
     - Flutter
-  - TSBackgroundFetch (4.0.6)
+  - TSBackgroundFetch (4.1.1)
   - Turf (4.0.0)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -342,8 +342,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
-  audioplayers_darwin: 4f9ca89d92d3d21cec7ec580e78ca888e5fb68bd
-  background_fetch: 7457cb2c7be3086b37d87207866f30bed2f9fb58
+  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
+  background_fetch: 31b1fd797189ec25dc022e4ae5e97bebc6f0935d
   CwlCatchException: 7acc161b299a6de7f0a46a6ed741eae2c8b4d75a
   CwlCatchExceptionSupport: 54ccab8d8c78907b57f99717fb19d4cc3bce02dc
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
@@ -367,7 +367,7 @@ SPEC CHECKSUMS:
   Google-Maps-iOS-Utils: bed22fa703c919259b3901449434d60d994fae20
   google_maps_flutter_ios: 17552876e72723da1d41accc22f03b5f7afbde69
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
-  GoogleMaps: fe4035acb768ed14ce732811363f232550ba55af
+  GoogleMaps: 52bbc0302f08e6d8bafb818c331b36f75875bc10
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -375,13 +375,13 @@ SPEC CHECKSUMS:
   locale_plus: ed29e4100d650f84061473f1b9c6178a920da4c5
   location: 155caecf9da4f280ab5fe4a55f94ceccfab838f8
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
-  mapbox_maps_flutter: 2ebdee9cbabc4c093fecbdeca179f9e01cbabfd6
-  MapboxCommon: 7dc22ef3ccd162e54b28ddf97e9a6a293a72875c
-  MapboxCoreMaps: fa266f524b2ab0c4d4c76d94db6411b243969b37
-  MapboxMaps: e8a15728a4600e9fef4e11a29bc21c4bf9c4cbc3
+  mapbox_maps_flutter: 3c576050b18a56061d850a0a7dc6554c3f6ee85a
+  MapboxCommon: 6289d93c415c56767eccf00054f967387dead18d
+  MapboxCoreMaps: 0890befe3a181edbc6b65a418437157929c25271
+  MapboxMaps: 892b9a4c38213096104531df0e50f3f54863b8d3
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  newrelic_mobile: d6eae416b78df278e4e52dcdbd405502276e9bf3
-  NewRelicAgent: 9a34b078de9be60a9c7ef5fde1a0ad028ab6c873
+  newrelic_mobile: dfd1ecf71e6f58ef8c5138cc0e4ed1e87a57b2d5
+  NewRelicAgent: 87691cbb1000642ca1e22d3f5dd80a13129f6eb0
   open_file_ios: 46184d802ee7959203f6392abcfa0dd49fdb5be0
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   pdfrx: 310e84d01e06fd2af26e16507a0e48c27e99195c
@@ -389,18 +389,18 @@ SPEC CHECKSUMS:
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  SDWebImage: e9c98383c7572d713c1a0d7dd2783b10599b9838
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   syncfusion_flutter_pdfviewer: 90dc48305d2e33d4aa20681d1e98ddeda891bc14
-  TSBackgroundFetch: 0afbeaae4e1132866e1d4b6e55265af26b5958ae
+  TSBackgroundFetch: 18918b6449a1e3f01eb0f5b44d6d79ce6160a5a5
   Turf: c9eb11a65d96af58cac523460fd40fec5061b081
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
-PODFILE CHECKSUM: 872ef4b2cec4b51079f8cbc18142135c56e67471
+PODFILE CHECKSUM: 7918032f9ee6978d238efec5a95a049cc0b5a06f
 
 COCOAPODS: 1.16.2

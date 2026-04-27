@@ -318,9 +318,9 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     String? companyId = singletonClass.getJWTModel()?.companyId;
     String? branchId = singletonClass.getJWTModel()?.branchId;
-    String? firstName = singletonClass.employeeDataList.first.data!.firstName;
-    String? middleName = singletonClass.employeeDataList.first.data!.middleName;
-    String? lastName = singletonClass.employeeDataList.first.data!.lastName;
+    String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+    String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+    String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
     String? employeeName = [firstName, middleName, lastName]
         .where((name) => name != null && name.isNotEmpty)
         .join(' ');

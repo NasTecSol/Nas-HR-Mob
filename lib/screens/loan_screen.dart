@@ -80,9 +80,8 @@ class _LoanScreenState extends State<LoanScreen> {
     final employeeDataList = singletonClass.employeeDataList;
 
     if (employeeDataList.isEmpty ||
-        employeeDataList.first.data == null ||
-        employeeDataList.first.data!.loanInfo == null ||
-        employeeDataList.first.data!.loanInfo!.isEmpty) {
+        employeeDataList.first.data.first.loanInfo == null ||
+        employeeDataList.first.data.first.loanInfo!.isEmpty) {
       return  Scaffold(
         backgroundColor: Colors.white,
         body: Center(
@@ -112,7 +111,7 @@ class _LoanScreenState extends State<LoanScreen> {
       );
     }
 
-    final loanInfo = employeeDataList.first.data!.loanInfo!.first;
+    final loanInfo = employeeDataList.first.data.first.loanInfo!.first;
 
     // Null-safe extraction
     totalLoan = loanInfo.totalLoanAmount?.toString() ?? "0";
