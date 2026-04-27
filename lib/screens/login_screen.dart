@@ -567,6 +567,7 @@ class _LoginScreenState extends State<LoginScreen> {
             });
             singletonClass.sendFCMToken();
             await singletonClass.showSuccessPopup(context);
+            await singletonClass.getEmployeeData();
             await handleLogin();
             await Navigator.push(
               context,

@@ -365,9 +365,9 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
         return;
       }
 
-      final String? firstName = singletonClass.employeeDataList.first.data?.firstName;
-      final String? middleName = singletonClass.employeeDataList.first.data?.middleName;
-      final String? lastName = singletonClass.employeeDataList.first.data?.lastName;
+      final String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+      final String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+      final String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
 
       final String employeeName = [firstName, middleName, lastName].where((e) => e != null && e.isNotEmpty).join(' ');
 

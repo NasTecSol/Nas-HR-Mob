@@ -52,6 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final allowanceName = TextEditingController();
   final deductionName = TextEditingController();
   bool isLoading = false;
+  bool _obscurePassword = true;
   PlatformFile? selectedFile;
   String? profilePicUrl;
   String? selectedTeamId;
@@ -331,6 +332,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         );
         return;
+      }
+      if (phoneController.text.length < 10){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.phoneNumberMustBeAtLeastTenDigits),
+          ),
+        );
+        return;
+      }
+      if (iqamaController.text.isNotEmpty){
+        if(iqamaController.text.length < 10){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.iqamaNumberMustBeAtLeastTenDigits),
+          ),
+        );
+        return;
+        }
+      }
+      if (nationalIdController.text.isNotEmpty){
+        if(nationalIdController.text.length < 10){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.nationalIDNumberMustBeAtLeastTenDigits),
+            ),
+          );
+          return;
+        }
       }
     }
 
@@ -893,7 +922,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   )),
                               const SizedBox(height: 12),
 
-                              // ===== LAST NAME =====
+                              /// ===== LAST NAME =====
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -937,7 +966,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                               const SizedBox(height: 12),
 
-                              // ===== NATIONALITY =====
+                              /// ===== NATIONALITY =====
                               RichText(
                                 text:  TextSpan(
                                   text: "${AppLocalizations.of(context)!.nationality} ",
@@ -1049,49 +1078,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               const SizedBox(height: 12),
 
                               /// ===== NATIONAL ID =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .nationalId,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                  ],
+                              if(nationality == "العربية السعودية")...[
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                          text: AppLocalizations.of(context)!
+                                              .nationalId,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: nationalIdController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterNationalId,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    controller: nationalIdController,
+                                    decoration: InputDecoration(
+                                      hintText: AppLocalizations.of(context)!
+                                          .enterNationalId,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide:
+                                        const BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.black, width: 1.5),
+                                      ),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 14),
+                                    )),
+                              ],
                               const SizedBox(height: 12),
-
-                              // ===== IQAMA NUMBER =====
-                              if(nationality != "العربية السعودية")...[ RichText(
+                              /// ===== IQAMA NUMBER =====
+                              if(nationality != "العربية السعودية")...[
+                                RichText(
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
@@ -1128,10 +1158,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           borderRadius: BorderRadius.circular(8)),
                                       contentPadding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 14),
-                                    )),
+                                    ),
+                                ),
                                 const SizedBox(height: 12),
                               ],
-                              // ===== PHONE =====
+                              /// ===== PHONE =====
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -1179,7 +1210,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                               const SizedBox(height: 12),
 
-                              // ===== EMAIL =====
+                              /// ===== EMAIL =====
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -1200,7 +1231,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              TextField(
+                              TextFormField(
                                   controller: emailController,
                                   decoration: InputDecoration(
                                     hintText: AppLocalizations.of(context)!
@@ -1219,7 +1250,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         borderRadius: BorderRadius.circular(8)),
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 14),
-                                  )),
+                                  ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Phone number is required';
+                                  } else if (value.length < 10) {
+                                    return 'Phone number must be at least 10 digits';
+                                  }
+                                  return null;
+                                },
+                              ),
 
                               const SizedBox(height: 12),
 
@@ -1529,10 +1569,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               const SizedBox(height: 8),
                               TextField(
                                 controller: password,
-                                obscureText: true,
+                                obscureText: _obscurePassword,
                                 decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!
-                                      .enterPassword,
+                                  hintText: AppLocalizations.of(context)!.enterPassword,
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: NasColors.icons,
+                                    ),
+                                  ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide:

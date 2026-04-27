@@ -2565,4 +2565,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attendanceRequest => 'Attendance Request';
+
+  @override
+  String get phoneNumberMustBeAtLeastTenDigits =>
+      'Phone number must be at least 10 digits';
+
+  @override
+  String get iqamaNumberMustBeAtLeastTenDigits =>
+      'Iqama number must be at least 10 digits';
+
+  @override
+  String get nationalIDNumberMustBeAtLeastTenDigits =>
+      'National ID number must be at least 10 digits';
+
+  @override
+  String get print => 'Print';
+
+  @override
+  String get shareAndSavePdf => 'Share / Save PDF';
 }

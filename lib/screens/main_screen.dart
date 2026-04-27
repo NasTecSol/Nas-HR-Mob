@@ -145,11 +145,11 @@ class _MainScreenState extends State<MainScreen> {
                       radius: 25,
                       child: ClipOval(
                         child: (singletonClass.employeeDataList.isNotEmpty &&
-                            singletonClass.employeeDataList.first.data?.profilePic != null &&
-                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty &&
-                            singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com")
+                            singletonClass.employeeDataList.first.data.first.profilePic != null &&
+                            singletonClass.employeeDataList.first.data.first.profilePic!.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com")
                             ? Image.network(
-                          singletonClass.employeeDataList.first.data!.profilePic!,
+                          singletonClass.employeeDataList.first.data.first.profilePic!,
                           fit: BoxFit.cover,
                           width: 60,
                           height: 60,

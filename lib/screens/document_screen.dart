@@ -71,7 +71,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
   @override
   Widget build(BuildContext context) {
     final documentInfo =
-        singletonClass.employeeDataList.first.data!.documentsInfo;
+        singletonClass.employeeDataList.first.data.first.documentsInfo;
     final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
         ? (singletonClass
         .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
@@ -417,8 +417,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
           ],
           if (_selectedOptionIndex == 1) ...[
             SizedBox(height: 30),
-            if (singletonClass.employeeDataList.first.data!.nationality ==
-                "Saudi Arabia" || singletonClass.employeeDataList.first.data!.nationality ==
+            if (singletonClass.employeeDataList.first.data.first.nationality ==
+                "Saudi Arabia" || singletonClass.employeeDataList.first.data.first.nationality ==
                 "العربية السعودية")
               Column(
                   children: [
@@ -519,12 +519,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     child:  ClipRRect(
                                                         borderRadius:
                                                         BorderRadius.zero,
-                                                        child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                        child: singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com" ? Image.network(
                                                           singletonClass
                                                               .employeeDataList
                                                               .first
-                                                              .data
-                                                              ?.profilePic ??
+                                                              .data.first
+                                                              .profilePic ??
                                                               '',
                                                           fit: BoxFit.cover,
                                                           width: 100,
@@ -560,7 +560,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                           .center,
                                                       children: [
                                                         Text(
-                                                          "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.nic ?? '---' : '---'}",
+                                                          "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.nic ?? '---' : '---'}",
                                                           style:
                                                           GoogleFonts.inter(
                                                             fontSize: 12,
@@ -574,7 +574,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         SizedBox(
                                                           width: 170,
                                                           child: Text(
-                                                            "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                            "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data.first.firstName ?? '---'} ${singletonClass.employeeDataList.first.data.first.middleName ?? '---'} ${singletonClass.employeeDataList.first.data.first.lastName ?? '---'}' : '---'}",
                                                             style:
                                                             GoogleFonts.inter(
                                                               fontSize: 12,
@@ -587,7 +587,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                         SizedBox(height: 2.5),
                                                         Text(
-                                                          "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
+                                                          "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.dob ?? '---' : '---'}",
                                                           style:
                                                           GoogleFonts.inter(
                                                             fontSize: 12,
@@ -599,7 +599,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                         SizedBox(height: 2.5),
                                                         Text(
-                                                          "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
+                                                          "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.nationality ?? '---' : '---'}",
                                                           style:
                                                           GoogleFonts.inter(
                                                             fontSize: 12,
@@ -611,7 +611,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                         SizedBox(height: 2.5),
                                                         Text(
-                                                          "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
+                                                          "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.address != null ? singletonClass.employeeDataList.first.data.first.address!.city ?? '---' : '---'}",
                                                           style:
                                                           GoogleFonts.inter(
                                                             fontSize: 12,
@@ -746,7 +746,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${singletonClass.employeeDataList.first.data!.firstName}",
+                                                        "${singletonClass.employeeDataList.first.data.first.firstName}",
                                                         maxLines: 4,
                                                         softWrap: true,
                                                         style: GoogleFonts.inter(
@@ -764,7 +764,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       // Copy the image URL or any text to the clipboard
                                                       Clipboard.setData(ClipboardData(
                                                           text:
-                                                          "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                          "${singletonClass.employeeDataList.first.data.first.firstName}"));
                                                     },
                                                     icon: const Icon(Icons.copy,
                                                         color: Colors.white),
@@ -800,7 +800,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Text(
-                                                        "${singletonClass.employeeDataList.first.data!.nic}",
+                                                        "${singletonClass.employeeDataList.first.data.first.nic}",
                                                         textAlign: TextAlign.left,
                                                         maxLines: 4,
                                                         softWrap: true,
@@ -820,7 +820,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       Clipboard.setData(
                                                           ClipboardData(
                                                             text:
-                                                            "${singletonClass.employeeDataList.first.data!.nic}",
+                                                            "${singletonClass.employeeDataList.first.data.first.nic}",
                                                           ));
                                                     },
                                                     icon: const Icon(Icons.copy,
@@ -857,7 +857,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Text(
-                                                        "${singletonClass.employeeDataList.first.data!.dob}",
+                                                        "${singletonClass.employeeDataList.first.data.first.dob}",
                                                         textAlign: TextAlign.left,
                                                         maxLines: 4,
                                                         softWrap: true,
@@ -876,7 +876,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       // Copy the image URL or any text to the clipboard
                                                       Clipboard.setData(ClipboardData(
                                                           text:
-                                                          "${singletonClass.employeeDataList.first.data!.dob}"));
+                                                          "${singletonClass.employeeDataList.first.data.first.dob}"));
                                                     },
                                                     icon: const Icon(Icons.copy,
                                                         color: Colors.white),
@@ -962,7 +962,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Text(
-                                                        "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                        "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                         maxLines: 4,
                                                         softWrap: true,
                                                         style: GoogleFonts.inter(
@@ -981,7 +981,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       Clipboard.setData(
                                                           ClipboardData(
                                                             text:
-                                                            "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                            "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                           )); // Text to be copied
                                                     },
                                                     icon: const Icon(Icons.copy,
@@ -1053,8 +1053,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                   ]),
 
             ///Iqama
-            (singletonClass.employeeDataList.first.data!.nationality == "Saudi Arabia" ||
-                singletonClass.employeeDataList.first.data!.nationality == "العربية السعودية"
+            (singletonClass.employeeDataList.first.data.first.nationality == "Saudi Arabia" ||
+                singletonClass.employeeDataList.first.data.first.nationality == "العربية السعودية"
             )
                 ? const SizedBox.shrink()
                 : Column(children: [
@@ -1160,12 +1160,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                             ClipRRect(
                                                 borderRadius:
                                                 BorderRadius.zero,
-                                                child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                child: singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com" ? Image.network(
                                                   singletonClass
                                                       .employeeDataList
                                                       .first
-                                                      .data
-                                                      ?.profilePic ??
+                                                      .data.first
+                                                      .profilePic ??
                                                       '',
                                                   fit: BoxFit.cover,
                                                   width: 100,
@@ -1200,7 +1200,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     .start,
                                                 children: [
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.iqamaNumber?.id ?? '---' : '---'}",
+                                                    "${AppLocalizations.of(context)!.idNumber}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.iqamaNumber?.id ?? '---' : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1215,7 +1215,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   SizedBox(
                                                     width: 170,
                                                     child: Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data.first.firstName ?? '---'} ${singletonClass.employeeDataList.first.data.first.middleName ?? '---'} ${singletonClass.employeeDataList.first.data.first.lastName ?? '---'}' : '---'}",
                                                       style: GoogleFonts
                                                           .inter(
                                                         fontSize: 12,
@@ -1229,7 +1229,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.dob ?? '---' : '---'}",
+                                                    "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.dob ?? '---' : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1242,7 +1242,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.nationality ?? '---' : '---'}",
+                                                    "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.nationality ?? '---' : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1255,7 +1255,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.jobRank : '---'}",
+                                                    "${AppLocalizations.of(context)!.occupation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.employeeInfo!.first.jobRank : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1268,7 +1268,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.address != null ? singletonClass.employeeDataList.first.data!.address!.city ?? '---' : '---'}",
+                                                    "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.address != null ? singletonClass.employeeDataList.first.data.first.address!.city ?? '---' : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1281,7 +1281,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                   SizedBox(height: 2.5),
                                                   Text(
-                                                    "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data?.religion ?? '---' : '---'}",
+                                                    "${AppLocalizations.of(context)!.religion}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.religion ?? '---' : '---'}",
                                                     style: GoogleFonts
                                                         .inter(
                                                       fontSize: 12,
@@ -1425,7 +1425,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.firstName}",
+                                                  "${singletonClass.employeeDataList.first.data.first.firstName}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style:
@@ -1446,7 +1446,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                         text:
-                                                        "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                        "${singletonClass.employeeDataList.first.data.first.firstName}"));
                                               },
                                               icon: const Icon(
                                                   Icons.copy,
@@ -1485,7 +1485,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 const SizedBox(
                                                     height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",
+                                                  "${singletonClass.employeeDataList.first.data.first.iqamaNumber!.id}",
                                                   textAlign:
                                                   TextAlign.left,
                                                   maxLines: 4,
@@ -1508,7 +1508,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.iqamaNumber!.id}",
+                                                      "${singletonClass.employeeDataList.first.data.first.iqamaNumber!.id}",
                                                     ));
                                               },
                                               icon: const Icon(
@@ -1550,7 +1550,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 const SizedBox(
                                                     height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.dob}",
+                                                  "${singletonClass.employeeDataList.first.data.first.dob}",
                                                   textAlign:
                                                   TextAlign.left,
                                                   maxLines: 4,
@@ -1573,7 +1573,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                         text:
-                                                        "${singletonClass.employeeDataList.first.data!.dob}"));
+                                                        "${singletonClass.employeeDataList.first.data.first.dob}"));
                                               },
                                               icon: const Icon(
                                                   Icons.copy,
@@ -1612,7 +1612,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 const SizedBox(
                                                     height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",
+                                                  "${singletonClass.employeeDataList.first.data.first.iqamaNumber!.expiryDate}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style:
@@ -1633,7 +1633,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.iqamaNumber!.expiryDate}",
+                                                      "${singletonClass.employeeDataList.first.data.first.iqamaNumber!.expiryDate}",
                                                     )); // Text to be copied
                                               },
                                               icon: const Icon(
@@ -1673,7 +1673,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 const SizedBox(
                                                     height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                  "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style:
@@ -1694,7 +1694,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                      "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                     )); // Text to be copied
                                               },
                                               icon: const Icon(
@@ -1858,12 +1858,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               child: ClipRRect(
                                                   borderRadius:
                                                   BorderRadius.zero,
-                                                  child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                  child: singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com" ? Image.network(
                                                     singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data
-                                                        ?.profilePic ??
+                                                        .data.first
+                                                        .profilePic ??
                                                         '',
                                                     fit: BoxFit.cover,
                                                     width: 100,
@@ -1897,7 +1897,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   MainAxisAlignment.center,
                                                   children: [
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                      "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data.first.firstName ?? '---'} ${singletonClass.employeeDataList.first.data.first.middleName ?? '---'} ${singletonClass.employeeDataList.first.data.first.lastName ?? '---'}' : '---'}",
                                                       maxLines: 4,
                                                       softWrap: true,
                                                       textAlign: TextAlign.left,
@@ -1909,7 +1909,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.nationality : '---'}",
+                                                      "${AppLocalizations.of(context)!.nationality}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.nationality?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.nationality : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1921,7 +1921,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.dob : '---'}",
+                                                      "${AppLocalizations.of(context)!.dateOfBirth}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.dob?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.dob : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1933,7 +1933,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.gender : '---'}",
+                                                      "${AppLocalizations.of(context)!.gender}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.gender?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.gender : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1945,7 +1945,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.familyInfo!.fatherName : '---'}",
+                                                      "${AppLocalizations.of(context)!.fatherName}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.familyInfo!.fatherName : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1957,7 +1957,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.issueDate : '---'}",
+                                                      "issue date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.passport!.issueDate : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1969,7 +1969,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.passport!.expiryDate : '---'}",
+                                                      "Expiry date: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.passport!.expiryDate : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -1981,7 +1981,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data!.address!.city : '---'}",
+                                                      "${AppLocalizations.of(context)!.placeOfBirth}: ${singletonClass.employeeDataList.isNotEmpty ? singletonClass.employeeDataList.first.data.first.address!.city : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2116,7 +2116,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.firstName}",
+                                                  "${singletonClass.employeeDataList.first.data.first.firstName}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style: GoogleFonts.inter(
@@ -2134,7 +2134,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 // Copy the image URL or any text to the clipboard
                                                 Clipboard.setData(ClipboardData(
                                                     text:
-                                                    "${singletonClass.employeeDataList.first.data!.firstName}"));
+                                                    "${singletonClass.employeeDataList.first.data.first.firstName}"));
                                               },
                                               icon: const Icon(Icons.copy,
                                                   color: Colors.white),
@@ -2168,7 +2168,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 ),
                                                 const SizedBox(height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.passport!.id}",
+                                                  "${singletonClass.employeeDataList.first.data.first.passport!.id}",
                                                   textAlign: TextAlign.left,
                                                   maxLines: 4,
                                                   softWrap: true,
@@ -2188,7 +2188,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.passport!.id}",
+                                                      "${singletonClass.employeeDataList.first.data.first.passport!.id}",
                                                     ));
                                               },
                                               icon: const Icon(Icons.copy,
@@ -2225,7 +2225,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 ),
                                                 const SizedBox(height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.dob}",
+                                                  "${singletonClass.employeeDataList.first.data.first.dob}",
                                                   textAlign: TextAlign.left,
                                                   maxLines: 4,
                                                   softWrap: true,
@@ -2244,7 +2244,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 // Copy the image URL or any text to the clipboard
                                                 Clipboard.setData(ClipboardData(
                                                     text:
-                                                    "${singletonClass.employeeDataList.first.data!.dob}")); // Text to be copied
+                                                    "${singletonClass.employeeDataList.first.data.first.dob}")); // Text to be copied
                                               },
                                               icon: const Icon(Icons.copy,
                                                   color: Colors.white),
@@ -2278,7 +2278,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 ),
                                                 const SizedBox(height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.passport!.expiryDate}",
+                                                  "${singletonClass.employeeDataList.first.data.first.passport!.expiryDate}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style: GoogleFonts.inter(
@@ -2297,7 +2297,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.passport!.expiryDate}",
+                                                      "${singletonClass.employeeDataList.first.data.first.passport!.expiryDate}",
                                                     )); // Text to be copied
                                               },
                                               icon: const Icon(Icons.copy,
@@ -2332,7 +2332,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 ),
                                                 const SizedBox(height: 5),
                                                 Text(
-                                                  "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                  "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                   maxLines: 4,
                                                   softWrap: true,
                                                   style: GoogleFonts.inter(
@@ -2351,7 +2351,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Clipboard.setData(
                                                     ClipboardData(
                                                       text:
-                                                      "${singletonClass.employeeDataList.first.data!.address!.city}",
+                                                      "${singletonClass.employeeDataList.first.data.first.address!.city}",
                                                     )); // Text to be copied
                                               },
                                               icon: const Icon(Icons.copy,
@@ -2551,12 +2551,12 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                               child: ClipRRect(
                                                   borderRadius:
                                                   BorderRadius.zero,
-                                                  child: singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com" ? Image.network(
+                                                  child: singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com" ? Image.network(
                                                     singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data
-                                                        ?.profilePic ??
+                                                        .data.first
+                                                        .profilePic ??
                                                         '',
                                                     fit: BoxFit.cover,
                                                     width: 100,
@@ -2592,7 +2592,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     SizedBox(
                                                       width: 170,
                                                       child: Text(
-                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data?.firstName ?? '---'} ${singletonClass.employeeDataList.first.data?.middleName ?? '---'} ${singletonClass.employeeDataList.first.data?.lastName ?? '---'}' : '---'}",
+                                                        "${AppLocalizations.of(context)!.name}: ${singletonClass.employeeDataList.isNotEmpty ? '${singletonClass.employeeDataList.first.data.first.firstName ?? '---'} ${singletonClass.employeeDataList.first.data.first.middleName ?? '---'} ${singletonClass.employeeDataList.first.data.first.lastName ?? '---'}' : '---'}",
                                                         maxLines: 4,
                                                         softWrap: true,
                                                         textAlign: TextAlign.left,
@@ -2608,7 +2608,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     SizedBox(
                                                       width: 200,
                                                       child: Text(
-                                                        "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation : '---'}",
+                                                        "${AppLocalizations.of(context)!.designation}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.employeeInfo!.first.designation : '---'}",
                                                         maxLines: 4,
                                                         textAlign: TextAlign.left,
                                                         softWrap: true,
@@ -2621,7 +2621,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId : '---'}",
+                                                      "${AppLocalizations.of(context)!.employeeNumber}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.employeeInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empId : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2640,7 +2640,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId : '---'}",
+                                                      "${AppLocalizations.of(context)!.contractId}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractId : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2652,7 +2652,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry : '---'}",
+                                                      "${AppLocalizations.of(context)!.expiryDate}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractExpiry : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2664,7 +2664,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data?.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data!.contractInfo!.first.contractStatus : '---'}",
+                                                      "${AppLocalizations.of(context)!.contractStatus}: ${singletonClass.employeeDataList.isNotEmpty && singletonClass.employeeDataList.first.data.first.contractInfo?.isNotEmpty == true ? singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractStatus : '---'}",
                                                       maxLines: 4,
                                                       textAlign: TextAlign.left,
                                                       softWrap: true,
@@ -2702,8 +2702,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                     singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data
-                                                        ?.employeeInfo!
+                                                        .data.first
+                                                        .employeeInfo!
                                                         .first
                                                         .empSignature ??
                                                         '---',
@@ -2881,13 +2881,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                 Text(
                                                   singletonClass
                                                       .employeeDataList
-                                                      .isNotEmpty &&
-                                                      singletonClass
-                                                          .employeeDataList
-                                                          .first
-                                                          .data !=
-                                                          null
-                                                      ? "${singletonClass.employeeDataList.first.data!.firstName}"
+                                                      .isNotEmpty
+                                                      ? "${singletonClass.employeeDataList.first.data.first.firstName}"
                                                       : "---",
                                                   maxLines: 4,
                                                   softWrap: true,
@@ -2907,13 +2902,8 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                   ClipboardData(
                                                     text: singletonClass
                                                         .employeeDataList
-                                                        .isNotEmpty &&
-                                                        singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data !=
-                                                            null
-                                                        ? "${singletonClass.employeeDataList.first.data!.firstName}"
+                                                        .isNotEmpty
+                                                        ? "${singletonClass.employeeDataList.first.data.first.firstName}"
                                                         : "---",
                                                   ),
                                                 );
@@ -2954,21 +2944,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .employeeDataList
-                                                          .first
-                                                          .data!
+                                                          .data.first
                                                           .employeeInfo !=
                                                           null &&
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data!
+                                                          .data.first
                                                           .employeeInfo!
                                                           .isNotEmpty
-                                                      ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
+                                                      ? "${singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empId}"
                                                       : "---",
                                                   textAlign: TextAlign.left,
                                                   maxLines: 4,
@@ -2993,21 +2978,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data !=
-                                                            null &&
-                                                        singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data!
+                                                            .data.first
                                                             .employeeInfo !=
                                                             null &&
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data!
+                                                            .data.first
                                                             .employeeInfo!
                                                             .isNotEmpty
-                                                        ? "${singletonClass.employeeDataList.first.data!.employeeInfo!.first.empId}"
+                                                        ? "${singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empId}"
                                                         : "---",
                                                   ),
                                                 );
@@ -3050,21 +3030,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .employeeDataList
-                                                          .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo !=
                                                           null &&
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo!
                                                           .isNotEmpty
-                                                      ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
+                                                      ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractId}"
                                                       : "---",
                                                   textAlign: TextAlign.left,
                                                   maxLines: 4,
@@ -3089,21 +3064,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data !=
-                                                            null &&
-                                                        singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo !=
                                                             null &&
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo!
                                                             .isNotEmpty
-                                                        ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractId}"
+                                                        ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractId}"
                                                         : "---",
                                                   ),
                                                 );
@@ -3144,21 +3114,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .employeeDataList
-                                                          .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo !=
                                                           null &&
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo!
                                                           .isNotEmpty
-                                                      ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
+                                                      ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractExpiry}"
                                                       : "---",
                                                   maxLines: 4,
                                                   softWrap: true,
@@ -3182,21 +3147,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data !=
-                                                            null &&
-                                                        singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo !=
                                                             null &&
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo!
                                                             .isNotEmpty
-                                                        ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractExpiry}"
+                                                        ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractExpiry}"
                                                         : "---",
                                                   ),
                                                 );
@@ -3235,21 +3195,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .employeeDataList
-                                                          .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo !=
                                                           null &&
                                                       singletonClass
                                                           .employeeDataList
                                                           .first
-                                                          .data!
+                                                          .data.first
                                                           .contractInfo!
                                                           .isNotEmpty
-                                                      ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
+                                                      ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractType}"
                                                       : "---",
                                                   maxLines: 4,
                                                   softWrap: true,
@@ -3273,21 +3228,16 @@ class _DocumentScreenState extends State<DocumentScreen> {
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data !=
-                                                            null &&
-                                                        singletonClass
-                                                            .employeeDataList
-                                                            .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo !=
                                                             null &&
                                                         singletonClass
                                                             .employeeDataList
                                                             .first
-                                                            .data!
+                                                            .data.first
                                                             .contractInfo!
                                                             .isNotEmpty
-                                                        ? "${singletonClass.employeeDataList.first.data!.contractInfo!.first.contractType}"
+                                                        ? "${singletonClass.employeeDataList.first.data.first.contractInfo!.first.contractType}"
                                                         : "---",
                                                   ),
                                                 );

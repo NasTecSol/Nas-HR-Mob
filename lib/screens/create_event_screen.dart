@@ -934,8 +934,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   void createEvent() async {
     String? empID = singletonClass.getJWTModel()?.employeeId;
     String? departmentID =
-        singletonClass.employeeDataList.first.data!.departmentId;
-    String? name = singletonClass.employeeDataList.first.data!.firstName;
+        singletonClass.employeeDataList.first.data.first.departmentId;
+    String? name = singletonClass.employeeDataList.first.data.first.firstName;
 
     // Prepare list of selected employees
     List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {

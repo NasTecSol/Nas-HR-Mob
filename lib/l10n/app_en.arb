@@ -1296,7 +1296,12 @@
     "sendLetter":"Send Letter",
     "baseSalary":"Base Salary",
     "remoteRequest":"Remote Request",
-    "attendanceRequest":"Attendance Request"
+    "attendanceRequest":"Attendance Request",
+    "phoneNumberMustBeAtLeastTenDigits":"Phone number must be at least 10 digits",
+    "iqamaNumberMustBeAtLeastTenDigits":"Iqama number must be at least 10 digits",
+    "nationalIDNumberMustBeAtLeastTenDigits":"National ID number must be at least 10 digits",
+    "print":"Print",
+    "shareAndSavePdf":"Share / Save PDF"
 
 
 }

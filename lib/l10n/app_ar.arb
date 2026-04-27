@@ -959,5 +959,10 @@
       "deductions":"الخصومات",
       "baseSalary":"الراتب الأساسي",
       "remoteRequest":"الطلب عن بعد",
-      "attendanceRequest":"طلب الحضور"
+      "attendanceRequest":"طلب الحضور",
+      "phoneNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل",
+      "iqamaNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الإقامة من 10 أرقام على الأقل",
+      "nationalIDNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الهوية الوطنية من 10 أرقام على الأقل",
+      "print":"مطبعة",
+      "shareAndSavePdf":"مشاركة / حفظ PDF"
 }

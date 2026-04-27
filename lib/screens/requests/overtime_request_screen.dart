@@ -86,7 +86,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
     // Get employee salary info (parse safely)
     double salary = 0;
     try {
-      var salaryRaw = singletonClass.employeeDataList.first.data!.salaryInfo!.baseSalary;
+      var salaryRaw = singletonClass.employeeDataList.first.data.first.salaryInfo!.baseSalary;
       if (salaryRaw is String) {
         salary = double.tryParse(salaryRaw) ?? 0;
       } else if (salaryRaw is num) {
@@ -1707,9 +1707,9 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
         return;
       }
 
-      String? firstName = singletonClass.employeeDataList.first.data?.firstName;
-      String? middleName = singletonClass.employeeDataList.first.data?.middleName;
-      String? lastName = singletonClass.employeeDataList.first.data?.lastName;
+      String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+      String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+      String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
 
       String employeeName = [
         firstName,

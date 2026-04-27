@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
     singletonClass.getHRLetter();
-    singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
+    // singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -985,7 +985,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final dashBoardData = singletonClass.employeeDataList.first.data;
+    final dashBoardData = singletonClass.employeeDataList.isNotEmpty
+        ? singletonClass.employeeDataList.first.data
+        : null;
     final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
         ? (singletonClass
                 .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
@@ -1194,11 +1196,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: Stack(
               fit: StackFit.expand,
               children: [
-            (dashBoardData?.profilePic != null &&
-            dashBoardData!.profilePic!.isNotEmpty &&
-            dashBoardData.profilePic != "https://www.profilePic.com")
+            (dashBoardData?.first.profilePic != null &&
+            dashBoardData!.first.profilePic!.isNotEmpty &&
+            dashBoardData.first.profilePic != "https://www.profilePic.com")
                 ? Image.network(
-              dashBoardData.profilePic!,
+              dashBoardData.first.profilePic!,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Image.asset(
@@ -1236,10 +1238,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         onTap: toggleSheet,
-                        child: (singletonClass.employeeDataList.first.data!.profilePic == "https://www.profilePic.com" ||
-                            singletonClass.employeeDataList.first.data!.profilePic == null ||
-                            singletonClass.employeeDataList.first.data!.profilePic.isEmpty
-                        ) ? ClipOval(
+                        child: (singletonClass.employeeDataList.isEmpty) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic == null) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic?.isEmpty == true) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic == "https://www.profilePic.com") ? ClipOval(
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,
@@ -1258,7 +1260,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             radius: 40,
                             child: ClipOval(
                               child: Image.network(
-                                dashBoardData?.profilePic!,
+                                dashBoardData?.first.profilePic!,
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
@@ -1292,7 +1294,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
+                                '${dashBoardData?.first.firstName} ${dashBoardData?.first.middleName} ${dashBoardData?.first.lastName}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1303,7 +1305,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${dashBoardData?.profession}',
+                                '${dashBoardData?.first.profession}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -1314,7 +1316,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
+                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.first.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.first.contractInfo!.first.contractId : 'N/A'}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -2501,13 +2503,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data
-                                                        ?.documentsInfo !=
+                                                        .data.first
+                                                        .documentsInfo !=
                                                     null &&
                                                 singletonClass
                                                     .employeeDataList
                                                     .first
-                                                    .data!
+                                                    .data.first
                                                     .documentsInfo!
                                                     .isNotEmpty)
                                               Positioned(
@@ -2526,7 +2528,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     minHeight: 18,
                                                   ),
                                                   child: Text(
-                                                    '${singletonClass.employeeDataList.first.data!.documentsInfo!.length}',
+                                                    '${singletonClass.employeeDataList.first.data.first.documentsInfo!.length}',
                                                     style: GoogleFonts.inter(
                                                       color: Colors.white,
                                                       fontSize: 12,
@@ -2589,8 +2591,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                             ),
                                               if (singletonClass.employeeDataList.isNotEmpty &&
-                                                  singletonClass.employeeDataList.first.data?.assetsInfo != null &&
-                                                  singletonClass.employeeDataList.first.data!.assetsInfo!.isNotEmpty)
+                                                  singletonClass.employeeDataList.first.data.first.assetsInfo != null &&
+                                                  singletonClass.employeeDataList.first.data.first.assetsInfo!.isNotEmpty)
                                                 Positioned(
                                                   right: 0,
                                                   top: 0,
@@ -2607,7 +2609,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       minHeight: 18,
                                                     ),
                                                     child: Text(
-                                                      '${singletonClass.employeeDataList.first.data!.assetsInfo!.length}',
+                                                      '${singletonClass.employeeDataList.first.data.first.assetsInfo!.length}',
                                                       style: GoogleFonts.inter(
                                                         color: Colors.white,
                                                         fontSize: 12,
@@ -3117,7 +3119,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                                                   Spacer(),
                                                                   Text(
-                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0}",
+                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0}",
                                                                     style: GoogleFonts.inter(fontSize: 11),
                                                                   ),
                                                                 ],
@@ -3129,10 +3131,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   children: [
                                                                     Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
                                                                     FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0) == 0
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0) == 0
                                                                               ? 1
-                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement ?? 0)))
+                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0)))
                                                                           .clamp(0.0, 1.0),
                                                                       child: Container(
                                                                         height: 8,
@@ -3160,7 +3162,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                                                   Spacer(),
                                                                   Text(
-                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0}",
+                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0}",
                                                                     style: GoogleFonts.inter(fontSize: 11),
                                                                   ),
                                                                 ],
@@ -3172,10 +3174,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   children: [
                                                                     Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
                                                                     FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0) == 0
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0) == 0
                                                                               ? 1
-                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement ?? 0)))
+                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0)))
                                                                           .clamp(0.0, 1.0),
                                                                       child: Container(
                                                                         height: 8,
@@ -3208,7 +3210,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   Text(
                                                                     formatMinutesToHoursAndMinutes(
                                                                       context,
-                                                                      singletonClass.employeeDataList.first.data!.leaveBalance!
+                                                                      singletonClass.employeeDataList.first.data.first.leaveBalance!
                                                                           .shortLeavesMonthlyBal!.shortLeavesMinutes!
                                                                           .toInt(),
                                                                     ),
@@ -3223,7 +3225,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   children: [
                                                                     Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
                                                                     FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!
                                                                           .shortLeavesMonthlyBal!.shortLeavesMinutes ??
                                                                           0) /
                                                                           480)
@@ -3254,7 +3256,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                       style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                                                                   Spacer(),
                                                                   Text(
-                                                                    "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0}",
+                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0}",
                                                                     style: GoogleFonts.inter(fontSize: 11),
                                                                   ),
                                                                 ],
@@ -3266,10 +3268,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   children: [
                                                                     Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
                                                                     FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0) == 0
+                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used ?? 0) /
+                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0) == 0
                                                                               ? 1
-                                                                              : (singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement ?? 0)))
+                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0)))
                                                                           .clamp(0.0, 1.0),
                                                                       child: Container(
                                                                         height: 8,
@@ -3294,9 +3296,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 controller: specialScrollController,
                                                 child: Column(
                                                   children: List.generate(
-                                                    (singletonClass.employeeDataList.first.data!.leaveBalance!.specialLeave!.length / 2).ceil(),
+                                                    (singletonClass.employeeDataList.first.data.first.leaveBalance!.specialLeave!.length / 2).ceil(),
                                                         (index) {
-                                                      final leaves = singletonClass.employeeDataList.first.data!.leaveBalance!.specialLeave!;
+                                                      final leaves = singletonClass.employeeDataList.first.data.first.leaveBalance!.specialLeave!;
                                                       final first = leaves[index * 2];
                                                       final second = (index * 2 + 1 < leaves.length) ? leaves[index * 2 + 1] : null;
 

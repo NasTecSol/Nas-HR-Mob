@@ -811,7 +811,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
       final documentXml = xml.XmlDocument.parse(xmlContent);
 
       final now = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final senderInfo = singletonClass.employeeDataList.first.data!.employeeInfo!.first;
+      final senderInfo = singletonClass.employeeDataList.first.data.first.employeeInfo!.first;
 
       String combinedNames = '';
       String combinedDesignations = '';
@@ -842,7 +842,7 @@ class _CreateHrLetterScreenState extends State<CreateHrLetterScreen> {
         'employeeDesignation': " $combinedDesignations ",
         'employeeDepartment': " $combinedDepartments ",
         'letterSubject': _letterSubject.text,
-        'senderName': singletonClass.employeeDataList.first.data!.userName ?? 'HR Team',
+        'senderName': singletonClass.employeeDataList.first.data.first.userName ?? 'HR Team',
         'senderDepartment': senderInfo.depName ?? 'HR Department',
       };
 

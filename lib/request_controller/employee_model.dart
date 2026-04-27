@@ -2,29 +2,46 @@ class EmployeeData {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  Data? data;
+  List<Data> data;
 
-  EmployeeData({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  EmployeeData({
+    this.statusCode,
+    this.statusMessage,
+    this.errorMessage,
+    List<Data>? data,
+  }) : data = data ?? [];
 
-  EmployeeData.fromJson(Map<String, dynamic> json) {
-    statusCode = json["statusCode"];
-    statusMessage = json["statusMessage"];
-    errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : Data.fromJson(json["data"]);
+  factory EmployeeData.fromJson(Map<String, dynamic> json) {
+    final rawData = json["data"];
+
+    List<Data> parsedData = [];
+
+    if (rawData is List) {
+      parsedData = rawData
+          .map((e) => Data.fromJson(e))
+          .toList();
+    }
+    else if (rawData is Map<String, dynamic>) {
+      parsedData = [Data.fromJson(rawData)];
+    }
+
+    return EmployeeData(
+      statusCode: json["statusCode"],
+      statusMessage: json["statusMessage"],
+      errorMessage: json["errorMessage"],
+      data: parsedData,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["statusCode"] = statusCode;
-    _data["statusMessage"] = statusMessage;
-    _data["errorMessage"] = errorMessage;
-    if(data != null) {
-      _data["data"] = data?.toJson();
-    }
-    return _data;
+    return {
+      "statusCode": statusCode,
+      "statusMessage": statusMessage,
+      "errorMessage": errorMessage,
+      "data": data.map((e) => e.toJson()).toList(),
+    };
   }
 }
-
 class Data {
   dynamic id;
   dynamic userName;
@@ -381,9 +398,9 @@ class LeaveBalance {
 }
 
 class UnPaidLeave {
-  int? entitlement;
-  int? remaining;
-  int? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   UnPaidLeave({this.entitlement, this.remaining, this.used});
 
@@ -403,11 +420,11 @@ class UnPaidLeave {
 }
 
 class SpecialLeave {
-  String? leaveType;
-  String? leaveName;
-  int? entitlement;
-  int? used;
-  int? remaining;
+  dynamic leaveType;
+  dynamic leaveName;
+  dynamic entitlement;
+  dynamic used;
+  dynamic remaining;
 
   SpecialLeave({this.leaveType, this.leaveName, this.entitlement, this.used, this.remaining});
 
@@ -431,9 +448,9 @@ class SpecialLeave {
 }
 
 class SickLeave {
-  int? entitlement;
-  int? remaining;
-  int? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   SickLeave({this.entitlement, this.remaining, this.used});
 
@@ -453,7 +470,7 @@ class SickLeave {
 }
 
 class ShortLeavesMonthlyBal {
-  int? shortLeavesMinutes;
+  dynamic shortLeavesMinutes;
 
   ShortLeavesMonthlyBal({this.shortLeavesMinutes});
 
@@ -469,9 +486,9 @@ class ShortLeavesMonthlyBal {
 }
 
 class PaidLeave {
-  int? entitlement;
-  int? remaining;
-  int? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   PaidLeave({this.entitlement, this.remaining, this.used});
 
@@ -491,9 +508,9 @@ class PaidLeave {
 }
 
 class CasualLeave {
-  int? entitlement;
-  int? remaining;
-  int? used;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
   CasualLeave({this.entitlement, this.remaining, this.used});
 
@@ -513,12 +530,12 @@ class CasualLeave {
 }
 
 class AnnualLeave {
-  String? currentMonth;
-  int? entitlement;
-  int? remaining;
-  int? used;
-  Session? session;
-  double? dailyEarned;
+  dynamic currentMonth;
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
+  dynamic session;
+  dynamic dailyEarned;
 
   AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used, this.session, this.dailyEarned});
 
@@ -546,8 +563,8 @@ class AnnualLeave {
 }
 
 class Session {
-  String? start;
-  String? end;
+  dynamic start;
+  dynamic end;
 
   Session({this.start, this.end});
 
