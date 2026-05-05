@@ -3084,19 +3084,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         builder: (context, setState) {
                                           final PageController controller = PageController();
                                           int currentPage = 0;
+                                          Timer? timer;
+
+                                          double parseNum(dynamic value) {
+                                            if (value == null) return 0;
+                                            if (value is num) return value.toDouble();
+                                            return double.tryParse(value.toString()) ?? 0;
+                                          }
+
                                           Future.delayed(Duration.zero, () {
-                                            Timer.periodic(Duration(seconds: 4), (timer) {
+                                            timer ??= Timer.periodic(const Duration(seconds: 4), (t) {
                                               if (controller.hasClients) {
                                                 currentPage++;
                                                 if (currentPage > 1) currentPage = 0;
+
                                                 controller.animateToPage(
                                                   currentPage,
-                                                  duration: Duration(milliseconds: 500),
+                                                  duration: const Duration(milliseconds: 500),
                                                   curve: Curves.easeIn,
                                                 );
                                               }
                                             });
                                           });
+
                                           return PageView(
                                             controller: controller,
                                             children: [
@@ -3106,184 +3116,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 padding: const EdgeInsets.only(top: 12, bottom: 12),
                                                 child: Column(
                                                   children: [
-                                                    /// (Annual + Casual)
+
+                                                    /// Annual + Casual
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Text(AppLocalizations.of(context)!.annualLeave,
-                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                  Spacer(),
-                                                                  Text(
-                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0}",
-                                                                    style: GoogleFonts.inter(fontSize: 11),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              SizedBox(height: 6),
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(20),
-                                                                child: Stack(
-                                                                  children: [
-                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                    FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0) == 0
-                                                                              ? 1
-                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement ?? 0)))
-                                                                          .clamp(0.0, 1.0),
-                                                                      child: Container(
-                                                                        height: 8,
-                                                                        decoration: BoxDecoration(
-                                                                          gradient: LinearGradient(colors: [Colors.blue, Colors.lightBlueAccent]),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          child: buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.annualLeave,
+                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used),
+                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement),
+                                                            gradient: [Colors.blue, Colors.lightBlueAccent],
                                                           ),
                                                         ),
-
-                                                        SizedBox(width: 12),
-
+                                                        const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Text(AppLocalizations.of(context)!.casualLeave,
-                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                  Spacer(),
-                                                                  Text(
-                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0}",
-                                                                    style: GoogleFonts.inter(fontSize: 11),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              SizedBox(height: 6),
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(20),
-                                                                child: Stack(
-                                                                  children: [
-                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                    FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0) == 0
-                                                                              ? 1
-                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement ?? 0)))
-                                                                          .clamp(0.0, 1.0),
-                                                                      child: Container(
-                                                                        height: 8,
-                                                                        decoration: BoxDecoration(
-                                                                          gradient: LinearGradient(colors: [Colors.green, Colors.lightGreenAccent]),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          child: buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.casualLeave,
+                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used),
+                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement),
+                                                            gradient: [Colors.green, Colors.lightGreenAccent],
                                                           ),
                                                         ),
                                                       ],
                                                     ),
+
                                                     const SizedBox(height: 25),
-                                                    /// (Short + Sick)
+
+                                                    /// Short + Sick
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Text(AppLocalizations.of(context)!.shortLeaves,
-                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                  Spacer(),
-                                                                  Text(
-                                                                    formatMinutesToHoursAndMinutes(
-                                                                      context,
-                                                                      singletonClass.employeeDataList.first.data.first.leaveBalance!
-                                                                          .shortLeavesMonthlyBal!.shortLeavesMinutes!
-                                                                          .toInt(),
-                                                                    ),
-                                                                    style: GoogleFonts.inter(fontSize: 11),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              SizedBox(height: 6),
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(20),
-                                                                child: Stack(
-                                                                  children: [
-                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                    FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!
-                                                                          .shortLeavesMonthlyBal!.shortLeavesMinutes ??
-                                                                          0) /
-                                                                          480)
-                                                                          .clamp(0.0, 1.0),
-                                                                      child: Container(
-                                                                        height: 8,
-                                                                        decoration: BoxDecoration(
-                                                                          gradient: LinearGradient(colors: [Colors.orange, Colors.deepOrangeAccent]),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          child: buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.shortLeaves,
+                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!
+                                                                .shortLeavesMonthlyBal!.shortLeavesMinutes),
+                                                            total: 480,
+                                                            isMinutes: true,
+                                                            gradient: [Colors.orange, Colors.deepOrangeAccent],
                                                           ),
                                                         ),
-
-                                                        SizedBox(width: 12),
-
+                                                        const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Text(AppLocalizations.of(context)!.sickLeave,
-                                                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                  Spacer(),
-                                                                  Text(
-                                                                    "${singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used ?? 0}/${singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0}",
-                                                                    style: GoogleFonts.inter(fontSize: 11),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              SizedBox(height: 6),
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(20),
-                                                                child: Stack(
-                                                                  children: [
-                                                                    Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                    FractionallySizedBox(
-                                                                      widthFactor: ((singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used ?? 0) /
-                                                                          ((singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0) == 0
-                                                                              ? 1
-                                                                              : (singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement ?? 0)))
-                                                                          .clamp(0.0, 1.0),
-                                                                      child: Container(
-                                                                        height: 8,
-                                                                        decoration: BoxDecoration(
-                                                                          gradient: LinearGradient(colors: [Colors.red, Colors.redAccent]),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          child: buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.sickLeave,
+                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used),
+                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement),
+                                                            gradient: [Colors.red, Colors.redAccent],
                                                           ),
                                                         ),
                                                       ],
@@ -3291,6 +3173,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   ],
                                                 ),
                                               ),
+
                                               /// 🔹 PAGE 2 (Special Leaves)
                                               SingleChildScrollView(
                                                 controller: specialScrollController,
@@ -3306,79 +3189,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         padding: const EdgeInsets.only(top: 12, bottom: 12),
                                                         child: Row(
                                                           children: [
-                                                            /// FIRST ITEM
                                                             Expanded(
-                                                              child: Column(
-                                                                children: [
-                                                                  Row(
-                                                                    children: [
-                                                                      Text("${first.leaveName}",
-                                                                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                      Spacer(),
-                                                                      Text("${first.used ?? 0}/${first.entitlement ?? 0}",
-                                                                          style: GoogleFonts.inter(fontSize: 11)),
-                                                                    ],
-                                                                  ),
-                                                                  SizedBox(height: 6),
-                                                                  ClipRRect(
-                                                                    borderRadius: BorderRadius.circular(20),
-                                                                    child: Stack(
-                                                                      children: [
-                                                                        Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                        FractionallySizedBox(
-                                                                          widthFactor: ((first.used ?? 0) /
-                                                                              ((first.entitlement ?? 0) == 0 ? 1 : (first.entitlement ?? 0)))
-                                                                              .clamp(0.0, 1.0),
-                                                                          child: Container(
-                                                                            height: 8,
-                                                                            decoration: BoxDecoration(
-                                                                              gradient: LinearGradient(colors: [NasColors.amber, NasColors.yellow]),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
+                                                              child: buildLeaveBar(
+                                                                context,
+                                                                title: "${first.leaveName}",
+                                                                used: parseNum(first.used),
+                                                                total: parseNum(first.entitlement),
+                                                                gradient: [NasColors.amber, NasColors.yellow],
                                                               ),
                                                             ),
-                                                            SizedBox(width: 12),
-                                                            /// SECOND ITEM (if exists)
+                                                            const SizedBox(width: 12),
                                                             Expanded(
                                                               child: second == null
-                                                                  ? SizedBox()
-                                                                  : Column(
-                                                                children: [
-                                                                  Row(
-                                                                    children: [
-                                                                      Text("${second.leaveName}",
-                                                                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                                                                      Spacer(),
-                                                                      Text("${second.used ?? 0}/${second.entitlement ?? 0}",
-                                                                          style: GoogleFonts.inter(fontSize: 11)),
-                                                                    ],
-                                                                  ),
-                                                                  SizedBox(height: 6),
-                                                                  ClipRRect(
-                                                                    borderRadius: BorderRadius.circular(20),
-                                                                    child: Stack(
-                                                                      children: [
-                                                                        Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
-                                                                        FractionallySizedBox(
-                                                                          widthFactor: ((second.used ?? 0) /
-                                                                              ((second.entitlement ?? 0) == 0 ? 1 : (second.entitlement ?? 0)))
-                                                                              .clamp(0.0, 1.0),
-                                                                          child: Container(
-                                                                            height: 8,
-                                                                            decoration: BoxDecoration(
-                                                                              gradient: LinearGradient(colors: [NasColors.onTime, NasColors.completed]),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
+                                                                  ? const SizedBox()
+                                                                  : buildLeaveBar(
+                                                                context,
+                                                                title: "${second.leaveName}",
+                                                                used: parseNum(second.used),
+                                                                total: parseNum(second.entitlement),
+                                                                gradient: [NasColors.onTime, NasColors.completed],
                                                               ),
                                                             ),
                                                           ],
@@ -3387,7 +3216,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     },
                                                   ),
                                                 ),
-                                              )
+                                              ),
                                             ],
                                           );
                                         },
@@ -3410,6 +3239,59 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  Widget buildLeaveBar(
+      BuildContext context, {
+        required String title,
+        required double used,
+        required double total,
+        required List<Color> gradient,
+        bool isMinutes = false,
+      }) {
+    final safeTotal = total == 0 ? 1 : total;
+    final progress = (used / safeTotal).clamp(0.0, 1.0);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Text(
+              isMinutes
+                  ? formatMinutesToHoursAndMinutes(context, used.toInt())
+                  : "${used.toInt()}/${total.toInt()}",
+              style: GoogleFonts.inter(fontSize: 11),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+              FractionallySizedBox(
+                widthFactor: progress,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: gradient),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+  
+  double parseNum(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
   }
 
   String _translateSecondaryStatus(String? status, BuildContext context) {

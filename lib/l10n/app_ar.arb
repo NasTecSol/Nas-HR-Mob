@@ -964,5 +964,6 @@
       "iqamaNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الإقامة من 10 أرقام على الأقل",
       "nationalIDNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الهوية الوطنية من 10 أرقام على الأقل",
       "print":"مطبعة",
-      "shareAndSavePdf":"مشاركة / حفظ PDF"
+      "shareAndSavePdf":"مشاركة / حفظ PDF",
+      "ageMustBeAtLeastEighteenYearsOld":"يجب ألا يقل العمر عن 18 عامًا"
 }

@@ -2574,4 +2574,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shareAndSavePdf => 'مشاركة / حفظ PDF';
+
+  @override
+  String get ageMustBeAtLeastEighteenYearsOld =>
+      'يجب ألا يقل العمر عن 18 عامًا';
 }

@@ -2583,4 +2583,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareAndSavePdf => 'Share / Save PDF';
+
+  @override
+  String get ageMustBeAtLeastEighteenYearsOld =>
+      'Age must be at least 18 years old';
 }

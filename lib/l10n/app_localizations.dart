@@ -5191,6 +5191,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share / Save PDF'**
   String get shareAndSavePdf;
+
+  /// No description provided for @ageMustBeAtLeastEighteenYearsOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Age must be at least 18 years old'**
+  String get ageMustBeAtLeastEighteenYearsOld;
 }
 
 class _AppLocalizationsDelegate
