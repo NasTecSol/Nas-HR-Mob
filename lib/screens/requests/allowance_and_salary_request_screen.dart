@@ -43,7 +43,7 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
   bool isLoading = false;
   final List<SearchedResult> _employeeSearchResults = [];
   final List<SearchedResult?> _selectedEmployees = [];
-
+  int? _selectedCashOutDays;
   @override
   Widget build(BuildContext context) {
     final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
@@ -384,9 +384,62 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
                         ),
                       );
                     }).toList(),
-                    onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
+                    onChanged: (SubTypes? newValue) => setState(() { _selectedSubType = newValue; _selectedCashOutDays = null; }),
                   ),
                 ),
+                const SizedBox(height: 20),
+                if (_selectedSubType?.requestName == 'annualLeaveCashOut' && widget.isTeam == false) ...[
+                  const SizedBox(height: 20),
+                  Text('Remaining Annual Leave', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+                    child: Align(alignment: Alignment.centerLeft, child: Text(singletonClass.employeeDataList.isNotEmpty ? (singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.remaining ?? 0).toString() : '0', style: GoogleFonts.inter(fontSize: 15, color: Colors.black87))),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Cash Out Days', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+                    child: DropdownButtonFormField<int>(
+                      dropdownColor: Colors.white,
+                      value: _selectedCashOutDays,
+                      decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                      hint: Text('Select Days', style: GoogleFonts.inter(fontSize: 15, color: Colors.black)),
+                      items: List.generate(singletonClass.employeeDataList.isNotEmpty ? (singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.remaining ?? 0) : 0, (i) => i + 1).map((day) => DropdownMenuItem<int>(value: day, child: Text(day.toString(), style: GoogleFonts.inter(fontSize: 15, color: Colors.black)))).toList(),
+                      onChanged: (int? val) => setState(() { _selectedCashOutDays = val; if (val != null && singletonClass.employeeDataList.isNotEmpty) { final netSalary = double.tryParse(singletonClass.employeeDataList.first.data.first.salaryInfo!.netSalary?.toString() ?? '0') ?? 0; _amount.text = ((netSalary / 30) * val).toStringAsFixed(2); } }),
+                    ),
+                  ),
+                ],
+                if (_selectedSubType?.requestName == 'annualLeaveCashOut' && widget.isTeam == true) ...[
+                  const SizedBox(height: 20),
+                  Text('Remaining Annual Leave', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+                    child: Align(alignment: Alignment.centerLeft, child: Text(_selectedEmployees.isNotEmpty ? (_selectedEmployees.first!.annualLeaveRemaining ?? 0).toString() : '0', style: GoogleFonts.inter(fontSize: 15, color: Colors.black87))),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('Cash Out Days', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+                    child: DropdownButtonFormField<int>(
+                      dropdownColor: Colors.white,
+                      value: _selectedCashOutDays,
+                      decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                      hint: Text('Select Days', style: GoogleFonts.inter(fontSize: 15, color: Colors.black)),
+                      items: List.generate(_selectedEmployees.isNotEmpty ? (_selectedEmployees.first!.annualLeaveRemaining ?? 0) : 0, (i) => i + 1).map((day) => DropdownMenuItem<int>(value: day, child: Text(day.toString(), style: GoogleFonts.inter(fontSize: 15, color: Colors.black)))).toList(),
+                      onChanged: (int? val) => setState(() { _selectedCashOutDays = val; if (val != null && _selectedEmployees.isNotEmpty) { final netSalary = double.tryParse(_selectedEmployees.first!.netSalary?.toString() ?? '0') ?? 0; _amount.text = ((netSalary / 30) * val).toStringAsFixed(2); } }),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 /// Date
                 Row(
@@ -656,6 +709,14 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
         return localizations.travellingAllowance;
       case 'Salary Incremental Allowance':
         return localizations.salaryIncrementalAllowance;
+      case "housingAllowance":
+        return localizations.housingAllowance;
+      case "travelingAllowance":
+        return localizations.travellingAllowance;
+      case 'salaryIncrementalAllowance':
+        return localizations.salaryIncrementalAllowance;
+      case 'annualLeaveCashOut':
+        return localizations.annualLeaveCashOut;
       case "Salary Slip":
         return localizations.salarySlip;
       case "Promotional Letter":
@@ -710,6 +771,8 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
         return localizations.complaints;
       case "Allowance Increment":
         return localizations.allowanceIncrement;
+      case "allowance_Increment":
+        return localizations.allowanceIncrement;
       case 'Document Request':
         return localizations.documentRequest;
       case "Expense Request":
@@ -739,6 +802,8 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
       case "Complaint Request":
         return localizations.complaints;
       case "Allowance Increment":
+        return localizations.allowanceIncrementBottom;
+      case "allowance_Increment":
         return localizations.allowanceIncrementBottom;
       case 'Document Request':
         return localizations.documentRequestBottom;
@@ -886,11 +951,12 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
         "subType": selectedSubType,
         "requestData": [
           {
-            "employees": employees,
-            "subType": selectedSubType,
+            if (widget.isTeam == true) "employees": employees,
+            "allowanceType": selectedSubType,
             "amount": _amount.text,
             "remark": notesController.text,
-            "date": formattedFromDate,
+            "effectiveDate": formattedFromDate,
+            if (selectedSubType == "annualleavecashout") "days": _selectedCashOutDays?.toString() ?? "undefined",
           }
         ],
         "approvers": [],
@@ -984,6 +1050,8 @@ class _AllowanceAndSalaryRequestScreenState extends State<AllowanceAndSalaryRequ
       SearchedResult result = SearchedResult(
         empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
         employeeName: employeeData.data?.employees!.first.firstName,
+        netSalary: employeeData.data!.employees!.first.salaryInfo!.netSalary,
+        annualLeaveRemaining:  employeeData.data!.employees!.first.leaveBalance!.annualLeave!.remaining,
       );
 
       debugPrint(">>>>$result");

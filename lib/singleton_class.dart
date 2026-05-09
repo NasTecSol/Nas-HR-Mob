@@ -57,6 +57,7 @@ import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
+import 'package:nashr/request_controller/user_activity_model.dart';
 import 'package:nashr/widgets/face_id_popup.dart';
 import 'package:nashr/widgets/successful_popup.dart';
 import 'package:nashr/widgets/unsuccessful_popup.dart';
@@ -83,6 +84,7 @@ class SingletonClass {
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<UserActivityModel> userActivityDataList = [];
   List<CompanyNotificationModel> companyNotificationDataList = [];
   List<DocumentSharedTemplate> documentSharedTemplateDataList = [];
   List<ReportManagerModel> reportManagerDataList = [];
@@ -813,7 +815,8 @@ class SingletonClass {
         "specialLeaveRequest",
         "attendanceRequest",
         "overTimeRequest",
-        "remoteRequest"
+        "remoteRequest",
+        "resignationRequest"
       ],
     };
     final uri = Uri.parse(

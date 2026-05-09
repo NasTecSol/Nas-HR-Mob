@@ -884,8 +884,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .firstName,
+                                        text: AppLocalizations.of(context)!.firstName,
                                         style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -1326,11 +1325,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 onTap: () async {
                                   DateTime? picked = await showDatePicker(
                                     context: context,
-                                    initialDate: DateTime.now(),
+                                    initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
                                     firstDate: DateTime(1950),
                                     lastDate: DateTime.now(),
-                                    builder:
-                                        (BuildContext context, Widget? child) {
+                                    builder: (BuildContext context, Widget? child) {
                                       return Theme(
                                         data: ThemeData.light().copyWith(
                                           colorScheme: ColorScheme.light(
@@ -1341,8 +1339,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           dialogBackgroundColor: Colors.white,
                                           textButtonTheme: TextButtonThemeData(
                                             style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  NasColors.darkBlue,
+                                              foregroundColor: NasColors.darkBlue,
                                             ),
                                           ),
                                         ),
@@ -1351,6 +1348,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     },
                                   );
                                   if (picked != null) {
+                                    final now = DateTime.now();
+                                    if (picked.isAfter(now)) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text("Date of birth cannot be in the future")),
+                                      );
+                                      return;
+                                    }
+                                    final minAdultDate = DateTime(
+                                      now.year - 18,
+                                      now.month,
+                                      now.day,
+                                    );
+
+                                    if (picked.isAfter(minAdultDate)) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                         SnackBar(content: Text(AppLocalizations.of(context)!.ageMustBeAtLeastEighteenYearsOld)),
+                                      );
+                                      selectedDate = null;
+                                      return;
+                                    }
                                     setState(() => selectedDate = picked);
                                   }
                                 },

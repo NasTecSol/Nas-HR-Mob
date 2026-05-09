@@ -10,6 +10,7 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/widgets/loader.dart';
+import 'package:pdf/pdf.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -235,7 +236,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ),
                 const SizedBox(height: 15),
                 ///Request Data of every request
-                if(widget.dataApprover.requestType == 'allowanceIncrement')...[
+                if(widget.dataApprover.requestType == 'allowanceIncrement' || widget.dataApprover.requestType == 'allowance_Increment')...[
                   ///date
                   Row(
                     children: [
@@ -253,15 +254,54 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date, context)
+                        widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.effectiveDate != null &&
+                            widget.dataApprover.requestData!.first.effectiveDate.toString().isNotEmpty
+                            ? singletonClass.formatDate2(
+                          widget.dataApprover.requestData!.first.effectiveDate.toString(),
+                          context,
+                        )
                             : AppLocalizations.of(context)!.noData,
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                           fontSize: 15,
                         ),
-                      )
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  ///Days
+                  Row(
+                    children: [
+                      Align(
+                          alignment:
+                          Alignment.topLeft,
+                          child: Text(
+                            "${AppLocalizations.of(context)!.days}:",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          )
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.days != null &&
+                            widget.dataApprover.requestData!.first.days.toString().isNotEmpty
+                            ?
+                        widget.dataApprover.requestData!.first.days.toString()
+                            : AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 15),
@@ -326,7 +366,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -492,7 +532,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -693,7 +733,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -838,7 +878,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1070,7 +1110,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1220,7 +1260,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1461,7 +1501,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1577,7 +1617,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1711,7 +1751,94 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
+                        style: GoogleFonts.inter(
+                          fontWeight:
+                          FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Align(
+                        alignment:
+                        Alignment.topLeft,
+                        child: Text(
+                          '${widget.dataApprover.requestType}',
+                          style:
+                          GoogleFonts.inter(
+                            fontWeight:
+                            FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if(widget.dataApprover.requestType == 'resignationRequest')...[
+                  ///date
+                  Row(
+                    children: [
+                      Align(
+                          alignment:
+                          Alignment.topLeft,
+                          child: Text(
+                            "${AppLocalizations.of(context)!.date}:",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          )
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date , context)
+                            : AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  /// Note
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, // align top
+                    children: [
+                      Text(
+                        "${AppLocalizations.of(context)!.note}:",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      // Make the content flexible
+                      Expanded(
+                        child: Text(
+                          "${widget.dataApprover.reason}",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  ///Request Type
+                  Row(
+                    children: [
+                      Text(
+                        "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -2578,6 +2705,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
   }
 
+  ///PDF generate methods
   String htmlRow(String label, String value) {
     final escapedValue = value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     return '<div style="margin-bottom: 10px;"><strong>$label:</strong> <span>$escapedValue</span></div>';
@@ -2711,54 +2839,164 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       final body = buildHtmlContent();
       final approversWorkflow = buildApproversWorkflow();
       final commentsSection = buildCommentsSection();
+
+      // Convert remote images to base64 to avoid loading issues in convertHtml
+      String headerImgTag = '';
+      String footerImgTag = '';
+
+      try {
+        final headerBytes = await _fetchImageAsBase64(headerUrl);
+        headerImgTag = '<img class="header-img" src="data:image/png;base64,$headerBytes" alt="Header"/>';
+      } catch (_) {
+        headerImgTag = ''; // skip if fails
+      }
+
+      try {
+        final footerBytes = await _fetchImageAsBase64(footerUrl);
+        footerImgTag = '<img class="footer-img" src="data:image/png;base64,$footerBytes" alt="Footer"/>';
+      } catch (_) {
+        footerImgTag = ''; // skip if fails
+      }
+
       return '''
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          img { display: block; width: 100%; }
-          .header-img, .footer-img { margin: 0; padding: 0; }
-          .content { margin: 20px; padding: 20px; }
-          strong { color: black; font-weight: bold; }
-          span { color: black; }
-          div { line-height: 1.6; }
-          h3 { color: black; font-weight: bold; margin: 20px 0 15px 0; }
-        </style>
-      </head>
-      <body>
-        <img class="header-img" src="$headerUrl" alt="Header"/>
-        <div class="content">$body</div>
-        $approversWorkflow
-        $commentsSection
-        <img class="footer-img" src="$footerUrl" alt="Footer"/>
-      </body>
-    </html>
-    ''';
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+      img { display: block; width: 100%; }
+      .header-img, .footer-img { margin: 0; padding: 0; }
+      .content { margin: 20px; padding: 20px; }
+      strong { color: black; font-weight: bold; }
+      span { color: black; }
+      div { line-height: 1.6; }
+      h3 { color: black; font-weight: bold; margin: 20px 0 15px 0; }
+    </style>
+  </head>
+  <body>
+    $headerImgTag
+    <div class="content">$body</div>
+    $approversWorkflow
+    $commentsSection
+    $footerImgTag
+  </body>
+</html>
+''';
     } catch (e) {
       if (kDebugMode) print('Error generating HTML: $e');
       rethrow;
     }
   }
 
+// Helper to fetch image and convert to base64
+  Future<String> _fetchImageAsBase64(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return base64Encode(response.bodyBytes);
+    }
+    throw Exception('Failed to load image: $url');
+  }
+
 
   Future<void> printPdf() async {
     try {
-      final html = await generateFullHtml(headerUrl: singletonClass.headerUrl, footerUrl: singletonClass.footerUrl);
-      await Printing.layoutPdf(onLayout: (format) async {
-        try {
-          return await Printing.convertHtml(format: format, html: html);
-        } catch (e) {
-          if (kDebugMode) print('Error converting HTML to PDF: $e');
-          rethrow;
-        }
-      });
-    } catch (e) {
-      if (kDebugMode) print('Error printing PDF: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: ${e.toString()}'), backgroundColor: Colors.red));
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>  Center(child: Loader()),
+        );
+      }
+
+      final html = await generateFullHtml(
+        headerUrl: singletonClass.headerUrl,
+        footerUrl: singletonClass.footerUrl,
+      );
+
+      // Convert HTML to PDF bytes first
+      final pdfBytes = await Printing.convertHtml(
+        format: PdfPageFormat.a4,
+        html: html,
+        baseUrl: 'about:blank',
+      );
+
+      if (kDebugMode) print('PDF bytes length: ${pdfBytes.length}');
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+
+      // Show bottom sheet with options
+      if (context.mounted) {
+        showModalBottomSheet(
+          context: context,
+          builder: (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.print , color: Colors.black,),
+                  title: Text(AppLocalizations.of(context)!.print,
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.black
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await Printing.layoutPdf(
+                      name: 'Request_Document',
+                      onLayout: (_) async => pdfBytes,
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.share , color: Colors.blue,),
+                  title: Text('Share / Save PDF',
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.blue
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await Printing.sharePdf(
+                      bytes: pdfBytes,
+                      filename: 'Request_Document.pdf',
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cancel, color: Colors.red,),
+                  title:  Text(AppLocalizations.of(context)!.cancel,
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.red
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        try { Navigator.of(context, rootNavigator: true).pop(); } catch (_) {}
+      }
+      if (kDebugMode) {
+        print('Error printing PDF: $e');
+        print('StackTrace: $stackTrace');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

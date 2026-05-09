@@ -5191,6 +5191,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share / Save PDF'**
   String get shareAndSavePdf;
+
+  /// No description provided for @ageMustBeAtLeastEighteenYearsOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Age must be at least 18 years old'**
+  String get ageMustBeAtLeastEighteenYearsOld;
+
+  /// No description provided for @resignationRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Resignation Request'**
+  String get resignationRequest;
+
+  /// No description provided for @lastWorkingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Working Day'**
+  String get lastWorkingDay;
+
+  /// No description provided for @annualLeaveCashOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Leave Cash Out'**
+  String get annualLeaveCashOut;
+
+  /// No description provided for @userActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'User Activity'**
+  String get userActivity;
+
+  /// No description provided for @online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get online;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get offline;
+
+  /// No description provided for @activeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Time'**
+  String get activeTime;
+
+  /// No description provided for @productivityScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Productivity Score'**
+  String get productivityScore;
+
+  /// No description provided for @employeeActivityDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee Activity Details'**
+  String get employeeActivityDetail;
+
+  /// No description provided for @totalTrackedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Tracked Time'**
+  String get totalTrackedTime;
+
+  /// No description provided for @mostUsedApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Used Apps'**
+  String get mostUsedApps;
+
+  /// No description provided for @activityTimeLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Timeline'**
+  String get activityTimeLine;
+
+  /// No description provided for @sessionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Details'**
+  String get sessionDetails;
 }
 
 class _AppLocalizationsDelegate

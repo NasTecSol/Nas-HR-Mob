@@ -17,6 +17,7 @@ import 'package:nashr/screens/requests/leave_request_screen.dart';
 import 'package:nashr/screens/requests/loan_request_screen.dart';
 import 'package:nashr/screens/requests/overtime_request_screen.dart';
 import 'package:nashr/screens/requests/request_detail_screen.dart';
+import 'package:nashr/screens/requests/resignation_request_screen.dart';
 import 'package:nashr/screens/requests/self_request_detail_screen.dart';
 import 'package:nashr/screens/requests/special_leave_request_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -184,7 +185,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                 onTap: () {
                                   _removeOverlay();
                                   /// Allowance Increment (with grade check)
-                                  if (request.requestType == 'allowanceIncrement' &&
+                                  if ((request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment') &&
                                       (singletonClass.getJWTModel()?.grade == 'L0' ||
                                           singletonClass.getJWTModel()?.grade == 'L1')) {
                                     showDialog(
@@ -279,6 +280,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                         );
                                       },
                                     );
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AllowanceAndSalaryRequestScreen(
+                                              selectedRequest: request,
+                                              isTeam: false,
+                                            ),
+                                      ),
+                                    );
                                   }
 
                                   /// Overtime Request
@@ -299,6 +311,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => CreateRemoteRequestScreen(
+                                          selectedRequest: request,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  ///Remote Request
+                                  if (request.requestType == 'resignationRequest') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ResignationRequestScreen(
                                           selectedRequest: request,
                                         ),
                                       ),
@@ -391,6 +414,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
                                   /// Default (if nothing matched)
                                   if (request.requestType != 'allowanceIncrement' &&
+                                      request.requestType != 'allowance_Increment' &&
                                       request.requestType != 'overTimeRequest' &&
                                       request.requestType != 'expenseRequest' &&
                                       request.requestType != 'documentRequest' &&
@@ -400,6 +424,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       request.requestType != 'attendanceRequest' &&
                                       request.requestType != 'penalities_fines' &&
                                       request.requestType != 'penalties_fines' &&
+                                      request.requestType != 'resignationRequest' &&
                                       request.requestType != 'remoteRequest' )
                                   {
                                     Navigator.push(
@@ -946,7 +971,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                   ),
                                                   const SizedBox(height: 10),
                                                   ///Request Data of every request
-                                                  if(request.requestType == 'allowanceIncrement')...[
+                                                  if(request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment')...[
                                                     ///date
                                                     Row(
                                                       children: [
@@ -964,15 +989,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ),
                                                         const SizedBox(width: 5),
                                                         Text(
-                                                          request.requestData != null && request.requestData!.isNotEmpty
-                                                              ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                          request.requestData != null &&
+                                                              request.requestData!.isNotEmpty &&
+                                                              request.requestData!.first.effectiveDate != null &&
+                                                              request.requestData!.first.effectiveDate.toString().isNotEmpty
+                                                              ? singletonClass.formatDate2(
+                                                            request.requestData!.first.effectiveDate.toString(),
+                                                            context,
+                                                          )
                                                               : AppLocalizations.of(context)!.noData,
                                                           style: GoogleFonts.inter(
                                                             fontWeight: FontWeight.bold,
                                                             color: Colors.grey,
                                                             fontSize: 15,
                                                           ),
-                                                        )
+                                                        ),
                                                       ],
                                                     ),
                                                   ],
@@ -1285,6 +1316,36 @@ class _RequestScreenState extends State<RequestScreen> {
                                                             fontSize: 15,
                                                           ),
                                                         )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  if(request.requestType == 'resignationRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.requestData != null && request.requestData!.isNotEmpty
+                                                              ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
                                                       ],
                                                     ),
                                                   ],
@@ -1681,7 +1742,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ),
                                                     const SizedBox(height: 10),
                                                     ///Request Data of every request
-                                                    if(request.requestType == 'allowanceIncrement')...[
+                                                    if(request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment')...[
                                                       ///date
                                                       Row(
                                                         children: [
@@ -1699,15 +1760,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                           const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData != null && request.requestData!.isNotEmpty
-                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                            request.requestData != null &&
+                                                                request.requestData!.isNotEmpty &&
+                                                                request.requestData!.first.effectiveDate != null &&
+                                                                request.requestData!.first.effectiveDate.toString().isNotEmpty
+                                                                ? singletonClass.formatDate2(
+                                                              request.requestData!.first.effectiveDate.toString(),
+                                                              context,
+                                                            )
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
@@ -2020,6 +2087,36 @@ class _RequestScreenState extends State<RequestScreen> {
                                                               fontSize: 15,
                                                             ),
                                                           )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                    if(request.requestType == 'resignationRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
@@ -2399,7 +2496,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                     ),
                                                     SizedBox(height: 10),
                                                     ///Request Data of every request
-                                                    if(request.requestType == 'allowanceIncrement')...[
+                                                    if(request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment')...[
                                                       ///date
                                                       Row(
                                                         children: [
@@ -2417,15 +2514,21 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           ),
                                                           const SizedBox(width: 5),
                                                           Text(
-                                                            request.requestData != null && request.requestData!.isNotEmpty
-                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                            request.requestData != null &&
+                                                                request.requestData!.isNotEmpty &&
+                                                                request.requestData!.first.effectiveDate != null &&
+                                                                request.requestData!.first.effectiveDate.toString().isNotEmpty
+                                                                ? singletonClass.formatDate2(
+                                                              request.requestData!.first.effectiveDate.toString(),
+                                                              context,
+                                                            )
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
                                                               fontWeight: FontWeight.bold,
                                                               color: Colors.grey,
                                                               fontSize: 15,
                                                             ),
-                                                          )
+                                                          ),
                                                         ],
                                                       ),
                                                     ],
@@ -2741,6 +2844,36 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ],
                                                       ),
                                                     ],
+                                                    if(request.requestType == 'resignationRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.requestData != null && request.requestData!.isNotEmpty
+                                                                ? singletonClass.formatDate2(request.requestData!.first.date, context)
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
                                               ],
@@ -2961,6 +3094,8 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.complaints;
       case "Allowance Increment":
         return localizations.allowanceIncrement;
+      case "allowance_Increment":
+        return localizations.allowanceIncrement;
       case 'Document Request':
         return localizations.documentRequest;
       case "Expense Request":
@@ -2975,6 +3110,8 @@ class _RequestScreenState extends State<RequestScreen> {
         return localizations.attendanceRequest;
       case "Short Leave":
         return localizations.shortLeaves;
+      case "Resignation Request":
+        return localizations.resignationRequest;
       default:
         return status!;
     }
@@ -3080,6 +3217,8 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/pc.png';
       case 'shortLeave':
         return 'images/clocking.png';
+      case 'resignationRequest':
+        return 'images/clock.png';
       default:
         return 'images/OverTime.png';
     }
@@ -3101,7 +3240,8 @@ class _RequestScreenState extends State<RequestScreen> {
         "specialLeaveRequest",
         "attendanceRequest",
         "overTimeRequest",
-        "remoteRequest"
+        "remoteRequest",
+        "resignationRequest"
       ],
     };
 
@@ -3149,12 +3289,14 @@ class SearchedResult {
   dynamic employeeName;
   dynamic severity;
   dynamic netSalary;
+  dynamic annualLeaveRemaining;
 
   SearchedResult({
     this.empId,
     this.employeeName,
     this.severity,
-    this. netSalary
+    this.netSalary,
+    this.annualLeaveRemaining
   });
 
   @override
@@ -3169,6 +3311,7 @@ class SearchedResult {
       'employeeName': employeeName,
       'severity': severity,
       'netSalary': netSalary,
+      'annualLeaveRemaining': annualLeaveRemaining,
     };
   }
 }
