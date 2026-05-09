@@ -594,6 +594,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    /// check for user activity
+    final hasUserActivity = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "User Activity" ||
+            sub.title == "userActivity") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
     /// Check for Biometric Checkins - in ManageTime submenu
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
@@ -660,6 +673,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/pc.png",
           "label": AppLocalizations.of(context)!.companyNotifications
+        },
+        {
+          "icon": "images/Group.png",
+          "label": AppLocalizations.of(context)!.userActivity
         },
         {
           "icon": "images/thisMonth.png",
@@ -793,6 +810,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               }
                               if (item["label"] ==
                                   AppLocalizations.of(context)!
+                                      .userActivity &&
+                                  !hasUserActivity) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
                                       .stores &&
                                   !hasStores) {
                                 return false;
@@ -894,6 +917,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               CompanyNotifications()),
                                     );
                                   } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .userActivity) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              UserActivityScreen()),
+                                    );
+                                  }  else if (item["label"] ==
                                       AppLocalizations.of(context)!
                                           .stores) {
                                     _removeOverlay();
@@ -1099,6 +1132,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    /// check for user activity
+    final hasUserActivity = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "User Activity" ||
+            sub.title == "userActivity") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
     /// Check for Biometric Checkins - in ManageTime submenu
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
@@ -2990,7 +3035,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasCompanyNotifications)...[
+                                  if (hasUserActivity)...[
                                     Column(
                                     children: [
                                       GestureDetector(
