@@ -1302,7 +1302,18 @@
     "nationalIDNumberMustBeAtLeastTenDigits":"National ID number must be at least 10 digits",
     "print":"Print",
     "shareAndSavePdf":"Share / Save PDF",
-    "ageMustBeAtLeastEighteenYearsOld":"Age must be at least 18 years old"
-
-
+    "ageMustBeAtLeastEighteenYearsOld":"Age must be at least 18 years old",
+    "resignationRequest":"Resignation Request",
+    "lastWorkingDay":"Last Working Day",
+    "annualLeaveCashOut":"Annual Leave Cash Out",
+    "userActivity":"User Activity",
+    "online":"Online",
+    "offline":"Offline",
+    "activeTime":"Active Time",
+    "productivityScore":"Productivity Score",
+    "employeeActivityDetail":"Employee Activity Details",
+    "totalTrackedTime":"Total Tracked Time",
+    "mostUsedApps":"Most Used Apps",
+    "activityTimeLine":"Activity Timeline",
+    "sessionDetails":"Session Details"
 }

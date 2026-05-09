@@ -203,6 +203,8 @@ class RequestData {
 
   // 🔥 NEW FIELD (Single date for: expense, overtime, documents, penalties)
   dynamic date;
+  dynamic effectiveDate;
+  dynamic days;
 
   // Extra storage for any unrecognized keys
   Map<String, dynamic>? extra;
@@ -240,7 +242,9 @@ class RequestData {
     this.punchingType,
     this.attendanceTime,
     this.attendanceDate,
-    this.date, // NEW FIELD
+    this.date,
+    this.effectiveDate,
+    this.days,
     this.extra,
   });
 
@@ -291,7 +295,9 @@ class RequestData {
     attendanceTime = json["attendanceTime"];
     attendanceDate = json["attendanceDate"];
 
-    date = json["date"]; // NEW FIELD
+    date = json["date"];
+    effectiveDate = json["effectiveDate"];
+    days = json["days"];
 
     // Save extra unknown keys
     extra = {};
@@ -348,7 +354,9 @@ class RequestData {
     data["attendanceTime"] = attendanceTime;
     data["attendanceDate"] = attendanceDate;
 
-    data["date"] = date; // NEW FIELD
+    data["date"] = date;
+    data["effectiveDate"] = effectiveDate;
+    data["days"] = days;
 
     // Add unknown extra keys
     if (extra != null) {

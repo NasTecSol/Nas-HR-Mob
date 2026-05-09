@@ -2578,4 +2578,43 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get ageMustBeAtLeastEighteenYearsOld =>
       'يجب ألا يقل العمر عن 18 عامًا';
+
+  @override
+  String get resignationRequest => 'طلب الاستقالة';
+
+  @override
+  String get lastWorkingDay => 'يوم العمل الأخير';
+
+  @override
+  String get annualLeaveCashOut => 'الإجازة السنوية النقدية';
+
+  @override
+  String get userActivity => 'نشاط المستخدم';
+
+  @override
+  String get online => 'متصل';
+
+  @override
+  String get offline => 'غير متصل';
+
+  @override
+  String get activeTime => 'الوقت النشط';
+
+  @override
+  String get productivityScore => 'نقاط الإنتاجية';
+
+  @override
+  String get employeeActivityDetail => 'تفاصيل نشاط الموظف';
+
+  @override
+  String get totalTrackedTime => 'إجمالي الوقت المتعقب';
+
+  @override
+  String get mostUsedApps => 'التطبيقات الأكثر استخدامًا';
+
+  @override
+  String get activityTimeLine => 'الجدول الزمني للنشاط';
+
+  @override
+  String get sessionDetails => 'تفاصيل الجلسة';
 }

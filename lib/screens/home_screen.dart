@@ -26,6 +26,7 @@ import 'package:nashr/screens/stores_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
+import 'package:nashr/screens/user_activity_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -2989,6 +2990,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                     const SizedBox(width: 20),
                                   ],
+                                  if (hasCompanyNotifications)...[
+                                    Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const UserActivityScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/Group.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!.userActivity,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                    const SizedBox(width: 20),
+                                  ],
                                   if (hasStores)...[
                                   Column(
                                     children: [
@@ -3141,9 +3192,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                         ),
                                                       ],
                                                     ),
-
                                                     const SizedBox(height: 25),
-
                                                     /// Short + Sick
                                                     Row(
                                                       children: [
@@ -3192,7 +3241,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             Expanded(
                                                               child: buildLeaveBar(
                                                                 context,
-                                                                title: "${first.leaveName}",
+                                                                title: _translateRequestSubtype2(first.leaveName , context),
                                                                 used: parseNum(first.used),
                                                                 total: parseNum(first.entitlement),
                                                                 gradient: [NasColors.amber, NasColors.yellow],
@@ -3204,7 +3253,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                                   ? const SizedBox()
                                                                   : buildLeaveBar(
                                                                 context,
-                                                                title: "${second.leaveName}",
+                                                                title: _translateRequestSubtype2(second.leaveName , context),
                                                                 used: parseNum(second.used),
                                                                 total: parseNum(second.entitlement),
                                                                 gradient: [NasColors.onTime, NasColors.completed],
@@ -3287,7 +3336,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ],
     );
   }
-  
+
   double parseNum(dynamic value) {
     if (value == null) return 0;
     if (value is num) return value.toDouble();
@@ -3682,5 +3731,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     }
     return null;
+  }
+
+  String _translateRequestSubtype2(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Sick Leave':
+        return localizations.sickLeave;
+      case 'Annual Leave':
+        return localizations.annualLeave;
+      case 'Casual Leave':
+        return localizations.casualLeave;
+      case 'Advancesalaryrequest':
+        return localizations.advanceSalaryRequest;
+      case 'LongTermloanrequest':
+        return localizations.longTermLoanRequest;
+      case "Housingallowance":
+        return localizations.housingAllowance;
+      case "Travelingallowance":
+        return localizations.travellingAllowance;
+      case 'Salaryincrementalallowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salaryslip":
+        return localizations.salarySlip;
+      case "Promotionalletter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advanceexpense":
+        return localizations.advanceExpense;
+      case "Businessexpense":
+        return localizations.businessExpense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Badbehaviour":
+        return localizations.badBehaviour;
+      case "Marriage Leave":
+        return localizations.marriageLeave;
+      case "Exams Leave":
+        return localizations.examLeave;
+      case "Exam Leave":
+        return localizations.examLeave;
+      case "Death Leave":
+        return localizations.deathLeave;
+      case "Specialdocument":
+        return localizations.specialDocument;
+      default:
+        return status!;
+    }
   }
 }

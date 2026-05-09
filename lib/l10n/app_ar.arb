@@ -965,5 +965,18 @@
       "nationalIDNumberMustBeAtLeastTenDigits":"يجب أن يتكون رقم الهوية الوطنية من 10 أرقام على الأقل",
       "print":"مطبعة",
       "shareAndSavePdf":"مشاركة / حفظ PDF",
-      "ageMustBeAtLeastEighteenYearsOld":"يجب ألا يقل العمر عن 18 عامًا"
+      "ageMustBeAtLeastEighteenYearsOld":"يجب ألا يقل العمر عن 18 عامًا",
+      "resignationRequest":"طلب الاستقالة",
+      "lastWorkingDay":"يوم العمل الأخير",
+      "annualLeaveCashOut":"الإجازة السنوية النقدية",
+      "userActivity":"نشاط المستخدم",
+      "online":"متصل",
+      "offline":"غير متصل",
+      "activeTime":"الوقت النشط",
+      "productivityScore":"نقاط الإنتاجية",
+      "employeeActivityDetail":"تفاصيل نشاط الموظف",
+      "totalTrackedTime":"إجمالي الوقت المتعقب",
+      "mostUsedApps":"التطبيقات الأكثر استخدامًا",
+      "activityTimeLine":"الجدول الزمني للنشاط",
+      "sessionDetails":"تفاصيل الجلسة"
 }

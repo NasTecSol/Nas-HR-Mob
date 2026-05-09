@@ -236,7 +236,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ),
                 const SizedBox(height: 15),
                 ///Request Data of every request
-                if(widget.dataApprover.requestType == 'allowanceIncrement')...[
+                if(widget.dataApprover.requestType == 'allowanceIncrement' || widget.dataApprover.requestType == 'allowance_Increment')...[
                   ///date
                   Row(
                     children: [
@@ -254,15 +254,54 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
-                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date, context)
+                        widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.effectiveDate != null &&
+                            widget.dataApprover.requestData!.first.effectiveDate.toString().isNotEmpty
+                            ? singletonClass.formatDate2(
+                          widget.dataApprover.requestData!.first.effectiveDate.toString(),
+                          context,
+                        )
                             : AppLocalizations.of(context)!.noData,
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                           fontSize: 15,
                         ),
-                      )
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  ///Days
+                  Row(
+                    children: [
+                      Align(
+                          alignment:
+                          Alignment.topLeft,
+                          child: Text(
+                            "${AppLocalizations.of(context)!.days}:",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          )
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.dataApprover.requestData != null &&
+                            widget.dataApprover.requestData!.isNotEmpty &&
+                            widget.dataApprover.requestData!.first.days != null &&
+                            widget.dataApprover.requestData!.first.days.toString().isNotEmpty
+                            ?
+                        widget.dataApprover.requestData!.first.days.toString()
+                            : AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 15),
@@ -327,7 +366,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -493,7 +532,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -694,7 +733,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -839,7 +878,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1071,7 +1110,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1221,7 +1260,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1462,7 +1501,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1578,7 +1617,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,
@@ -1712,7 +1751,94 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        "Request Type - ",
+                         "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
+                        style: GoogleFonts.inter(
+                          fontWeight:
+                          FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Align(
+                        alignment:
+                        Alignment.topLeft,
+                        child: Text(
+                          '${widget.dataApprover.requestType}',
+                          style:
+                          GoogleFonts.inter(
+                            fontWeight:
+                            FontWeight.bold,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if(widget.dataApprover.requestType == 'resignationRequest')...[
+                  ///date
+                  Row(
+                    children: [
+                      Align(
+                          alignment:
+                          Alignment.topLeft,
+                          child: Text(
+                            "${AppLocalizations.of(context)!.date}:",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          )
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.dataApprover.requestData != null && widget.dataApprover.requestData!.isNotEmpty
+                            ? singletonClass.formatDate2(widget.dataApprover.requestData!.first.date , context)
+                            : AppLocalizations.of(context)!.noData,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  /// Note
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, // align top
+                    children: [
+                      Text(
+                        "${AppLocalizations.of(context)!.note}:",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      // Make the content flexible
+                      Expanded(
+                        child: Text(
+                          "${widget.dataApprover.reason}",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  ///Request Type
+                  Row(
+                    children: [
+                      Text(
+                        "${AppLocalizations.of(context)!.requests} ${AppLocalizations.of(context)!.type} - ",
                         style: GoogleFonts.inter(
                           fontWeight:
                           FontWeight.bold,

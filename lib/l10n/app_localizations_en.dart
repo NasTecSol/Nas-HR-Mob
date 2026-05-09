@@ -2587,4 +2587,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ageMustBeAtLeastEighteenYearsOld =>
       'Age must be at least 18 years old';
+
+  @override
+  String get resignationRequest => 'Resignation Request';
+
+  @override
+  String get lastWorkingDay => 'Last Working Day';
+
+  @override
+  String get annualLeaveCashOut => 'Annual Leave Cash Out';
+
+  @override
+  String get userActivity => 'User Activity';
+
+  @override
+  String get online => 'Online';
+
+  @override
+  String get offline => 'Offline';
+
+  @override
+  String get activeTime => 'Active Time';
+
+  @override
+  String get productivityScore => 'Productivity Score';
+
+  @override
+  String get employeeActivityDetail => 'Employee Activity Details';
+
+  @override
+  String get totalTrackedTime => 'Total Tracked Time';
+
+  @override
+  String get mostUsedApps => 'Most Used Apps';
+
+  @override
+  String get activityTimeLine => 'Activity Timeline';
+
+  @override
+  String get sessionDetails => 'Session Details';
 }
