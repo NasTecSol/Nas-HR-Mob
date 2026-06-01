@@ -11,7 +11,6 @@ import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/company_notifications.dart';
-import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
@@ -504,33 +503,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
 
-    /// Check for Complaints - in Approval submenu
-    final hasComplaints = (uiSettings).any((e) {
-      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
-
-        final subMenus = (e.subMenu is List)
-            ? (e.subMenu as List).cast<SubMenu>()
-            : <SubMenu>[];
-        return subMenus.any((sub) {
-          if ((sub.title?.toLowerCase() == "requests" ||
-              sub.title?.toLowerCase() == "request") &&
-              sub.hidden == false) {
-
-            final innerMenus = (sub.subMenu is List)
-                ? (sub.subMenu as List).cast<SubMenu>()
-                : <SubMenu>[];
-
-            return innerMenus.any((inner) =>
-            inner.title == "Complaints" &&
-                inner.hidden == false
-            );
-          }
-          return false;
-        });
-      }
-      return false;
-    });
-
     /// Check for Penalties and Fines - in Approval submenu
     final hasPenaltiesAndFines = (uiSettings).any((e) {
       if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
@@ -768,12 +740,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 return false;
                               }
                               if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .complaints &&
-                                  !hasComplaints) {
-                                return false;
-                              }
-                              if (item["label"] ==
                                       AppLocalizations.of(context)!.penalties &&
                                   !hasPenaltiesAndFines) {
                                 return false;
@@ -848,15 +814,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => TeamScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .complaints) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Complaints()),
                                     );
                                   } else if (item["label"] ==
                                       AppLocalizations.of(context)!.penalties) {
@@ -1034,7 +991,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     /// Check for stores
     final hasStores = uiSettings.any((e) =>
-    (e.title == "Stores" || e.title == "stores") && e.hidden == false);
+    (e.title == "Stores" || e.title == "stores") && e.hidden == true);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -1044,32 +1001,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
 
-    /// Check for Complaints - in Approval submenu
-    final hasComplaints = (uiSettings).any((e) {
-      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
-
-        final subMenus = (e.subMenu is List)
-            ? (e.subMenu as List).cast<SubMenu>()
-            : <SubMenu>[];
-        return subMenus.any((sub) {
-          if ((sub.title?.toLowerCase() == "requests" ||
-              sub.title?.toLowerCase() == "request") &&
-              sub.hidden == false) {
-
-            final innerMenus = (sub.subMenu is List)
-                ? (sub.subMenu as List).cast<SubMenu>()
-                : <SubMenu>[];
-
-            return innerMenus.any((inner) =>
-            inner.title == "Complaints" &&
-                inner.hidden == false
-            );
-          }
-          return false;
-        });
-      }
-      return false;
-    });
     final hasCompanyNotifications = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
@@ -2720,57 +2651,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         const SizedBox(height: 5),
                                         Text(
                                           AppLocalizations.of(context)!.teams,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 20),
-                                  ],
-                                  if (hasComplaints)...[
-                                    Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                    const Complaints()));
-                                          },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                'images/Complain.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .complaints,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
