@@ -13,6 +13,7 @@ import 'package:nashr/screens/requests/create_remote_request_screen.dart';
 import 'package:nashr/screens/requests/create_request_screen.dart';
 import 'package:nashr/screens/requests/document_request_screen.dart';
 import 'package:nashr/screens/requests/expense_request_screen.dart';
+import 'package:nashr/screens/requests/file_complaints_screen.dart';
 import 'package:nashr/screens/requests/leave_request_screen.dart';
 import 'package:nashr/screens/requests/loan_request_screen.dart';
 import 'package:nashr/screens/requests/overtime_request_screen.dart';
@@ -174,7 +175,6 @@ class _RequestScreenState extends State<RequestScreen> {
                                   policyList.first.data!.attendancePolicy!.overtimePolicy!.isAllowed == false;
 
                           if (isOvertimeBlocked ||
-                              request.requestType == 'complaintRequest' ||
                               request.requestType == 'approvalDoc' ||
                               request.requestType == 'payrollRequest') {
                             return const SizedBox.shrink();
@@ -185,112 +185,113 @@ class _RequestScreenState extends State<RequestScreen> {
                                 onTap: () {
                                   _removeOverlay();
                                   /// Allowance Increment (with grade check)
-                                  if ((request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment') &&
-                                      (singletonClass.getJWTModel()?.grade == 'L0' ||
-                                          singletonClass.getJWTModel()?.grade == 'L1')) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          backgroundColor: Colors.white,
-                                          title: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AllowanceAndSalaryRequestScreen(
-                                                            selectedRequest: request,
-                                                            isTeam: false,
+                                  if (request.requestType == 'allowanceIncrement' || request.requestType == 'allowance_Increment' || request.requestType == 'allowance_increment'){
+                                    if ((singletonClass.getJWTModel()?.grade == 'L0' ||
+                                        singletonClass.getJWTModel()?.grade == 'L1')){
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            title: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.pop(context);
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            AllowanceAndSalaryRequestScreen(
+                                                              selectedRequest: request,
+                                                              isTeam: false,
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      ClipOval(
+                                                        child: CircleAvatar(
+                                                          backgroundColor: Colors.white,
+                                                          radius: 25,
+                                                          child: Image.asset(
+                                                            'images/person.png',
+                                                            fit: BoxFit.fill,
+                                                            height: 50,
+                                                            width: 50,
                                                           ),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    ClipOval(
-                                                      child: CircleAvatar(
-                                                        backgroundColor: Colors.white,
-                                                        radius: 25,
-                                                        child: Image.asset(
-                                                          'images/person.png',
-                                                          fit: BoxFit.fill,
-                                                          height: 50,
-                                                          width: 50,
                                                         ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      AppLocalizations.of(context)!.yourSelf,
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 15,
+                                                      Text(
+                                                        AppLocalizations.of(context)!.yourSelf,
+                                                        style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 15,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
 
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AllowanceAndSalaryRequestScreen(
-                                                            selectedRequest: request,
-                                                            isTeam: true,
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.pop(context);
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            AllowanceAndSalaryRequestScreen(
+                                                              selectedRequest: request,
+                                                              isTeam: true,
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      ClipOval(
+                                                        child: CircleAvatar(
+                                                          backgroundColor: Colors.white,
+                                                          radius: 25,
+                                                          child: Image.asset(
+                                                            'images/Group.png',
+                                                            fit: BoxFit.fill,
+                                                            height: 50,
+                                                            width: 50,
                                                           ),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    ClipOval(
-                                                      child: CircleAvatar(
-                                                        backgroundColor: Colors.white,
-                                                        radius: 25,
-                                                        child: Image.asset(
-                                                          'images/Group.png',
-                                                          fit: BoxFit.fill,
-                                                          height: 50,
-                                                          width: 50,
                                                         ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      AppLocalizations.of(context)!.teams,
-                                                      style: GoogleFonts.inter(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 15,
+                                                      Text(
+                                                        AppLocalizations.of(context)!.teams,
+                                                        style: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 15,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AllowanceAndSalaryRequestScreen(
-                                              selectedRequest: request,
-                                              isTeam: false,
+                                              ],
                                             ),
-                                      ),
-                                    );
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AllowanceAndSalaryRequestScreen(
+                                                selectedRequest: request,
+                                                isTeam: false,
+                                              ),
+                                        ),
+                                      );
+                                    }
                                   }
 
                                   /// Overtime Request
@@ -304,7 +305,17 @@ class _RequestScreenState extends State<RequestScreen> {
                                       ),
                                     );
                                   }
-
+                                  ///Complaint Request
+                                  if (request.requestType == 'complaintRequest') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FileComplaintsScreen(
+                                          selectedRequest: request,
+                                        ),
+                                      ),
+                                    );
+                                  }
                                   ///Remote Request
                                   if (request.requestType == 'remoteRequest') {
                                     Navigator.push(
@@ -340,7 +351,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     );
                                   }
 
-                                  // Document Request
+                                  /// Document Request
                                   if (request.requestType == 'documentRequest') {
                                     Navigator.push(
                                       context,
@@ -414,6 +425,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
                                   /// Default (if nothing matched)
                                   if (request.requestType != 'allowanceIncrement' &&
+                                      request.requestType != 'allowance_increment' &&
                                       request.requestType != 'allowance_Increment' &&
                                       request.requestType != 'overTimeRequest' &&
                                       request.requestType != 'expenseRequest' &&
@@ -425,6 +437,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       request.requestType != 'penalities_fines' &&
                                       request.requestType != 'penalties_fines' &&
                                       request.requestType != 'resignationRequest' &&
+                                      request.requestType != 'complaintRequest' &&
                                       request.requestType != 'remoteRequest' )
                                   {
                                     Navigator.push(
@@ -1349,6 +1362,42 @@ class _RequestScreenState extends State<RequestScreen> {
                                                       ],
                                                     ),
                                                   ],
+                                                  if(request.requestType == 'complaintRequest')...[
+                                                    ///date
+                                                    Row(
+                                                      children: [
+                                                        Align(
+                                                            alignment:
+                                                            Alignment.topLeft,
+                                                            child: Text(
+                                                              "${AppLocalizations.of(context)!.date}:",
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.black,
+                                                                fontSize: 15,
+                                                              ),
+                                                            )
+                                                        ),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          request.createdAt != null &&
+                                                              request.createdAt!.isNotEmpty &&
+                                                              request.createdAt != null &&
+                                                              request.createdAt!.toString().isNotEmpty
+                                                              ? singletonClass.formatDate2(
+                                                            request.createdAt!.toString(),
+                                                            context,
+                                                          )
+                                                              : AppLocalizations.of(context)!.noData,
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.grey,
+                                                            fontSize: 15,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ],
                                               ),
                                             ],
@@ -2120,6 +2169,42 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ],
                                                       ),
                                                     ],
+                                                    if(request.requestType == 'complaintRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.createdAt != null &&
+                                                                request.createdAt!.isNotEmpty &&
+                                                                request.createdAt != null &&
+                                                                request.createdAt!.toString().isNotEmpty
+                                                                ? singletonClass.formatDate2(
+                                                              request.createdAt!.toString(),
+                                                              context,
+                                                            )
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
                                               ],
@@ -2874,6 +2959,42 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         ],
                                                       ),
                                                     ],
+                                                    if(request.requestType == 'complaintRequest')...[
+                                                      ///date
+                                                      Row(
+                                                        children: [
+                                                          Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Text(
+                                                                "${AppLocalizations.of(context)!.date}:",
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: Colors.black,
+                                                                  fontSize: 15,
+                                                                ),
+                                                              )
+                                                          ),
+                                                          const SizedBox(width: 5),
+                                                          Text(
+                                                            request.createdAt != null &&
+                                                                request.createdAt!.isNotEmpty &&
+                                                                request.createdAt != null &&
+                                                                request.createdAt!.toString().isNotEmpty
+                                                                ? singletonClass.formatDate2(
+                                                              request.createdAt!.toString(),
+                                                              context,
+                                                            )
+                                                                : AppLocalizations.of(context)!.noData,
+                                                            style: GoogleFonts.inter(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.grey,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
                                               ],
@@ -3203,6 +3324,8 @@ class _RequestScreenState extends State<RequestScreen> {
         return 'images/Penalties.png';
       case 'allowance_Increment':
         return 'images/creditCard.png';
+      case 'allowance_increment':
+        return 'images/creditCard.png';
       case 'documentRequest':
         return 'images/files.png';
       case 'expenseRequest':
@@ -3241,7 +3364,8 @@ class _RequestScreenState extends State<RequestScreen> {
         "attendanceRequest",
         "overTimeRequest",
         "remoteRequest",
-        "resignationRequest"
+        "resignationRequest",
+        "complaintRequest"
       ],
     };
 
