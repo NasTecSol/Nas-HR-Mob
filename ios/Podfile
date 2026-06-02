@@ -1,10 +1,14 @@
-# Uncomment this line to define a global platform for your project
 source 'https://github.com/CocoaPods/Specs.git'
 
 platform :ios, '16.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+# Disable CocoaPods analytics to avoid network latency during builds
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+# ✅ FIX 1: Disable Flutter's Swift Package Manager integration
+# This prevents the SDWebImage "redefinition of module" error caused by
+# SPM and CocoaPods both registering the same module simultaneously.
+ENV['SWIFT_PACKAGE_MANAGER_INTEGRATION'] = '0'
 
 project 'Runner', {
   'Debug' => :debug,
@@ -12,7 +16,6 @@ project 'Runner', {
   'Release' => :release,
 }
 
-# 🛠️ Fix: Load Flutter's podhelper.rb correctly
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
@@ -26,7 +29,6 @@ def flutter_root
   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
 end
 
-# ✅ Make sure this line is present and correct
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 flutter_ios_podfile_setup
@@ -41,13 +43,30 @@ target 'Runner' do
   end
 end
 
-
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+
+      # ✅ FIX 2: Suppress warnings that can escalate to errors in strict builds
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+      config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+    end
+  end
+
+  # ✅ FIX 3: Remove duplicate SDWebImage modulemaps left behind by SPM/CocoaPods conflict.
+  # Keeps only the first occurrence and deletes the rest to prevent "redefinition of module" errors.
+  pods_root = installer.sandbox.root
+  seen = {}
+  Dir.glob("#{pods_root}/Headers/Public/**/*.modulemap").each do |path|
+    mod_name = File.basename(File.dirname(path))
+    if seen[mod_name]
+      puts "Removing duplicate modulemap for #{mod_name}: #{path}"
+      FileUtils.rm_f(path)
+    else
+      seen[mod_name] = path
     end
   end
 end
