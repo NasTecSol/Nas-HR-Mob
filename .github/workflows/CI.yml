@@ -24,7 +24,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true  # Cache Flutter SDK between runs
+          cache: true
 
       - run: flutter pub get
       - run: flutter --version
@@ -50,7 +50,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # ✅ FIX: Full clean to prevent stale Pod/DerivedData artifacts
+      # ✅ FIX 1: Disable SPM via Flutter config (replaces the invalid --no-swift-package-manager flag)
+      - name: Disable Swift Package Manager integration
+        run: flutter config --no-enable-swift-package-manager
+
+      # ✅ FIX 2: Full clean — removes stale Pods, Podfile.lock, and Flutter build cache
       - name: Clean Flutter & iOS artifacts
         run: |
           flutter clean
@@ -58,25 +62,25 @@ jobs:
           rm -rf Pods Podfile.lock
           cd ..
 
-      # ✅ FIX: Wipe Xcode DerivedData to eliminate cached corrupt module maps
+      # ✅ FIX 3: Wipe DerivedData to remove any corrupt cached module maps from previous runs
       - name: Clear Xcode DerivedData
         run: rm -rf ~/Library/Developer/Xcode/DerivedData
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # ✅ FIX: Cache CocoaPods to speed up pod install while still running it fresh
-      - name: Cache CocoaPods
+      # ✅ FIX 4: Cache CocoaPods gems to speed up pod install
+      - name: Cache CocoaPods gems
         uses: actions/cache@v3
         with:
-          path: ios/Pods
-          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          path: ~/.cocoapods
+          key: cocoapods-${{ hashFiles('ios/Podfile') }}
           restore-keys: |
-            pods-
+            cocoapods-
 
-      # ✅ FIX: Use --no-swift-package-manager to prevent SPM/CocoaPods module conflict
-      - name: Build iOS (no codesign, no SPM)
-        run: flutter build ios --no-codesign --no-swift-package-manager
+      # Build without codesign (SPM is already disabled via flutter config above)
+      - name: Build iOS (no codesign)
+        run: flutter build ios --no-codesign
 
       - name: Package IPA
         run: |
@@ -130,8 +134,7 @@ jobs:
 
   # ─────────────────────────────────────────────
   # 4. Slack Notification
-  # Runs after whichever build job ran (uses always() so it
-  # fires even if a build fails, giving you failure alerts too)
+  # if: always() ensures this fires on both success and failure
   # ─────────────────────────────────────────────
   notify_Slack:
     name: Slack Notification
