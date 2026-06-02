@@ -7,21 +7,31 @@ on:
       - releases_android
 
 jobs:
+  # ─────────────────────────────────────────────
+  # 1. Flutter Test (runs on every push)
+  # ─────────────────────────────────────────────
   flutter_test:
     name: Run Flutter Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true  # Cache Flutter SDK between runs
+
       - run: flutter pub get
       - run: flutter --version
 
+  # ─────────────────────────────────────────────
+  # 2. iOS Build
+  # ─────────────────────────────────────────────
   build_iOSApp:
     name: Build Flutter App (iOS)
     if: github.ref == 'refs/heads/releases_ios'
@@ -29,29 +39,63 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter clean
-      - run: |
-          flutter build ios --no-codesign
+          cache: true
+
+      # ✅ FIX: Full clean to prevent stale Pod/DerivedData artifacts
+      - name: Clean Flutter & iOS artifacts
+        run: |
+          flutter clean
+          cd ios
+          rm -rf Pods Podfile.lock
+          cd ..
+
+      # ✅ FIX: Wipe Xcode DerivedData to eliminate cached corrupt module maps
+      - name: Clear Xcode DerivedData
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # ✅ FIX: Cache CocoaPods to speed up pod install while still running it fresh
+      - name: Cache CocoaPods
+        uses: actions/cache@v3
+        with:
+          path: ios/Pods
+          key: pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            pods-
+
+      # ✅ FIX: Use --no-swift-package-manager to prevent SPM/CocoaPods module conflict
+      - name: Build iOS (no codesign, no SPM)
+        run: flutter build ios --no-codesign --no-swift-package-manager
+
+      - name: Package IPA
+        run: |
           cd build/ios/iphoneos
           mkdir Payload
           cd Payload
           ln -s ../Runner.app
           cd ..
           zip -r app.ipa Payload
+
       - name: Upload iOS Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: iOS_App_Build
           path: build/ios/iphoneos/app.ipa
 
+  # ─────────────────────────────────────────────
+  # 3. Android Build
+  # ─────────────────────────────────────────────
   build_androidApk:
     name: Build Flutter App (Android)
     if: github.ref == 'refs/heads/releases_android'
@@ -59,6 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Java 17
         uses: actions/setup-java@v3
         with:
@@ -71,6 +116,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - run: flutter pub get
       - run: flutter clean
@@ -82,17 +128,22 @@ jobs:
           name: Android_App_Build
           path: build/app/outputs/apk/debug/app-debug.apk
 
-
+  # ─────────────────────────────────────────────
+  # 4. Slack Notification
+  # Runs after whichever build job ran (uses always() so it
+  # fires even if a build fails, giving you failure alerts too)
+  # ─────────────────────────────────────────────
   notify_Slack:
     name: Slack Notification
     runs-on: ubuntu-latest
+    if: always()
     needs: [build_iOSApp, build_androidApk]
     steps:
       - name: Send Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: flutter-builds
-          SLACK_COLOR: ${{ job.status == 'success' && '#2cde04' || '#de2c2c' }}
+          SLACK_COLOR: ${{ contains(needs.*.result, 'failure') && '#de2c2c' || '#2cde04' }}
           SLACK_ICON: https://github.com/ED209Repo/AnyPick/blob/main/images/mainlogo.png?size=48
           SLACK_MESSAGE: 'New build for Nas-HR launched 🚀'
           SLACK_TITLE: Build Completed
