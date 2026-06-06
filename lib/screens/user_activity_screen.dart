@@ -545,7 +545,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
         padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 15),
         child: Column(
           children: [
-            // ─── Header ──────────────────────────────────────────────────
+            /// ─── Header ──────────────────────────────────────────────────
             Row(
               children: [
                 IconButton(

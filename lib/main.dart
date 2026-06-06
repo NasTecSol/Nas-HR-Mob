@@ -31,16 +31,20 @@ void main() {
     final env = await Environment.detectEnv();
     await SingletonClass().init();
     await NotificationService.init();
-
-    if (env == "staging") {
-      debugPrint("App is running in Debug mode.");
-      SingletonClass().baseURL = "https://dev.nashrms.com/api";
-      SingletonClass().env = "staging";
+    if (Platform.isIOS) {
+      if (env == "staging") {
+        debugPrint("App is running in Debug mode.");
+        SingletonClass().baseURL = "https://dev.nashrms.com/api";
+        SingletonClass().env = "staging";
+      }
+      if ( env == "production") {
+        SingletonClass().baseURL = "https://www.nashrms.com/api";
+      }
+    } else if(Platform.isAndroid){
+      SingletonClass().baseURL = "https://www.nashrms.com/api";
     }
-    if ( env == "production") {
-      SingletonClass().baseURL = "https://dev.nashrms.com/api";
-    }
 
+ 
     if (kProfileMode) {
       log("App is running in Profile mode.");
     }
@@ -89,7 +93,7 @@ void main() {
     var appToken = "";
     if (Platform.isIOS) {
       appToken = 'AA796b590654035b9f72fb84c72e39173ffbcc165b-NRMA';
-    } else if (Platform.isAndroid) {
+    }else if (Platform.isAndroid) {
       appToken = 'AA54e627aef512b22489a6d1abf365e9ab63e294f6-NRMA';
     }
 

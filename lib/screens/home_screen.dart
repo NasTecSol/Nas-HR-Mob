@@ -3083,6 +3083,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                             });
                                           });
 
+                                          // Safe accessor for employee data
+                                          final employeeData = singletonClass.employeeDataList.isNotEmpty
+                                              ? singletonClass.employeeDataList.first.data.isNotEmpty
+                                              ? singletonClass.employeeDataList.first.data.first
+                                              : null
+                                              : null;
+
+                                          final leaveBalance = employeeData?.leaveBalance;
+
                                           return PageView(
                                             controller: controller,
                                             children: [
@@ -3097,50 +3106,59 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: buildLeaveBar(
+                                                          child: leaveBalance?.annualLeave != null
+                                                              ? buildLeaveBar(
                                                             context,
                                                             title: AppLocalizations.of(context)!.annualLeave,
-                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.used),
-                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.annualLeave!.entitlement),
+                                                            used: parseNum(leaveBalance!.annualLeave!.used),
+                                                            total: parseNum(leaveBalance.annualLeave!.entitlement),
                                                             gradient: [Colors.blue, Colors.lightBlueAccent],
-                                                          ),
+                                                          )
+                                                              : const SizedBox.shrink(),
                                                         ),
                                                         const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: buildLeaveBar(
+                                                          child: leaveBalance?.casualLeave != null
+                                                              ? buildLeaveBar(
                                                             context,
                                                             title: AppLocalizations.of(context)!.casualLeave,
-                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.used),
-                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.casualLeave!.entitlement),
+                                                            used: parseNum(leaveBalance!.casualLeave!.used),
+                                                            total: parseNum(leaveBalance.casualLeave!.entitlement),
                                                             gradient: [Colors.green, Colors.lightGreenAccent],
-                                                          ),
+                                                          )
+                                                              : const SizedBox.shrink(),
                                                         ),
                                                       ],
                                                     ),
+
                                                     const SizedBox(height: 25),
+
                                                     /// Short + Sick
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: buildLeaveBar(
+                                                          child: leaveBalance?.shortLeavesMonthlyBal != null
+                                                              ? buildLeaveBar(
                                                             context,
                                                             title: AppLocalizations.of(context)!.shortLeaves,
-                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!
-                                                                .shortLeavesMonthlyBal!.shortLeavesMinutes),
+                                                            used: parseNum(leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes),
                                                             total: 480,
                                                             isMinutes: true,
                                                             gradient: [Colors.orange, Colors.deepOrangeAccent],
-                                                          ),
+                                                          )
+                                                              : const SizedBox.shrink(),
                                                         ),
                                                         const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: buildLeaveBar(
+                                                          child: leaveBalance?.sickLeave != null
+                                                              ? buildLeaveBar(
                                                             context,
                                                             title: AppLocalizations.of(context)!.sickLeave,
-                                                            used: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.used),
-                                                            total: parseNum(singletonClass.employeeDataList.first.data.first.leaveBalance!.sickLeave!.entitlement),
+                                                            used: parseNum(leaveBalance!.sickLeave!.used),
+                                                            total: parseNum(leaveBalance.sickLeave!.entitlement),
                                                             gradient: [Colors.red, Colors.redAccent],
-                                                          ),
+                                                          )
+                                                              : const SizedBox.shrink(),
                                                         ),
                                                       ],
                                                     ),
@@ -3149,15 +3167,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
 
                                               /// 🔹 PAGE 2 (Special Leaves)
-                                              SingleChildScrollView(
+                                              leaveBalance?.specialLeave != null && leaveBalance!.specialLeave!.isNotEmpty
+                                                  ? SingleChildScrollView(
                                                 controller: specialScrollController,
                                                 child: Column(
                                                   children: List.generate(
-                                                    (singletonClass.employeeDataList.first.data.first.leaveBalance!.specialLeave!.length / 2).ceil(),
+                                                    (leaveBalance.specialLeave!.length / 2).ceil(),
                                                         (index) {
-                                                      final leaves = singletonClass.employeeDataList.first.data.first.leaveBalance!.specialLeave!;
+                                                      final leaves = leaveBalance.specialLeave!;
                                                       final first = leaves[index * 2];
-                                                      final second = (index * 2 + 1 < leaves.length) ? leaves[index * 2 + 1] : null;
+                                                      final second = (index * 2 + 1 < leaves.length)
+                                                          ? leaves[index * 2 + 1]
+                                                          : null;
+
+                                                      // Safe name resolver — never crashes on null leaveName
+                                                      final firstName = (first.leaveName != null && first.leaveName!.isNotEmpty)
+                                                          ? _translateRequestSubtype2(first.leaveName, context)
+                                                          : '';
+                                                      final secondName = (second?.leaveName != null && second!.leaveName!.isNotEmpty)
+                                                          ? _translateRequestSubtype2(second.leaveName, context)
+                                                          : '';
 
                                                       return Padding(
                                                         padding: const EdgeInsets.only(top: 12, bottom: 12),
@@ -3166,7 +3195,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             Expanded(
                                                               child: buildLeaveBar(
                                                                 context,
-                                                                title: _translateRequestSubtype2(first.leaveName , context),
+                                                                title: firstName,
                                                                 used: parseNum(first.used),
                                                                 total: parseNum(first.entitlement),
                                                                 gradient: [NasColors.amber, NasColors.yellow],
@@ -3175,10 +3204,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                             const SizedBox(width: 12),
                                                             Expanded(
                                                               child: second == null
-                                                                  ? const SizedBox()
+                                                                  ? const SizedBox.shrink()
                                                                   : buildLeaveBar(
                                                                 context,
-                                                                title: _translateRequestSubtype2(second.leaveName , context),
+                                                                title: secondName,
                                                                 used: parseNum(second.used),
                                                                 total: parseNum(second.entitlement),
                                                                 gradient: [NasColors.onTime, NasColors.completed],
@@ -3190,7 +3219,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     },
                                                   ),
                                                 ),
-                                              ),
+                                              )
+                                                  : const SizedBox.shrink(),
                                             ],
                                           );
                                         },
