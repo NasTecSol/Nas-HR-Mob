@@ -494,6 +494,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     /// Check for Stores
     final hasStores = uiSettings.any((e) =>
     (e.title == "stores" || e.title == "Stores") && e.hidden == false);
+
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -602,6 +603,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
       return false;
     });
+
      Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
@@ -617,10 +619,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/Team.png",
           "label": AppLocalizations.of(context)!.teams
-        },
-        {
-          "icon": "images/Complain.png",
-          "label": AppLocalizations.of(context)!.complaints
         },
         {
           "icon": "images/Penalties.png",
@@ -2209,30 +2207,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       ),
                                       height: 60,
                                       child: (() {
-                                        final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
-                                        final today = DateTime.now();
-                                        final todayEntries = dataList.where((entry) {
-                                          final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                          return createdAt != null &&
-                                              createdAt.year == today.year &&
-                                              createdAt.month == today.month &&
-                                              createdAt.day == today.day;
-                                        }).toList();
-                                        final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
-                                        String? checkInTime = todayData?.clockInTime;
-                                        String? checkOutTime = todayData?.clockOutTime;
                                         String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-
-                                        if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
-                                            (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
-                                          displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                        } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
+                                        if ( _timer != null && _timer!.isActive) {
                                           displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                        } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
-                                            (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
+                                        } else {
                                           displayText = AppLocalizations.of(context)!.swipeToCheckIn;
                                         }
-
                                         // Always show swipe UI
                                         return Transform.translate(
                                           offset: Offset(_dragPosition, -1),

@@ -244,7 +244,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           ),
         ),
         actions: [
-          if(isWithinRadius || singletonClass.getJWTModel()?.empId == "NTS109")
+          if(isWithinRadius || singletonClass.getJWTModel()?.empId == "NTS109" || singletonClass.getJWTModel()?.empId == "NTS115")
           IconButton(
             icon: Icon(
               (isCheckedIn) ? Icons.logout : Icons.done,

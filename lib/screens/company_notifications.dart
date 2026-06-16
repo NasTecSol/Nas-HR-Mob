@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/screens/company_notification_assets_detail_screen.dart';
 import 'package:nashr/screens/create_company_notifications.dart';
 import 'package:nashr/screens/edit_company_notification_screen.dart';
 import 'package:nashr/singleton_class.dart';
@@ -646,15 +647,13 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                         final employees =
                             singletonClass.teamBranchDataList.first.data?.employees ?? [];
 
-                        final filteredNotifications = notifications.where((notification) {
-                          final employeeExists =
-                          employees.any((e) => e.id == notification.objectId);
 
-                          return notification.companyId == singletonClass.selectedCompanyId &&
-                              notification.objectType == 'employee' &&
-                              employeeExists;
+                        final filteredNotifications = notifications.where((n) {
+                          final employeeExists = employees.any((e) => e.id == n.objectId);
+
+                          return n.companyId == singletonClass.selectedCompanyId && employeeExists &&
+                              n.objectType == 'employee';
                         }).toList();
-
                         if (filteredNotifications.isEmpty) {
                           return Center(
                             child: Padding(
@@ -683,16 +682,16 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                         return ListView.builder(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 5),
-                          itemCount: singletonClass.companyNotificationDataList.first.data!.length,
+                          itemCount: filteredNotifications.length,
                           itemBuilder: (ctx, i) {
-                            final notification = singletonClass.companyNotificationDataList.first.data![i];
+                            final notification = filteredNotifications[i];
                             String date = '--';
                             final employee = singletonClass.teamBranchDataList
                                 .first.data!.employees!
                                 .where((e) => e.id == notification.objectId)
                                 .isNotEmpty
                                 ? singletonClass.teamBranchDataList.first.data!.employees!
-                                .firstWhere((e) => e.id == notification.objectId)
+                                .firstWhere((e) => e.id == notification.objectId && notification.objectType == "employee")
                                 : null;
                             try {
                               final parsed =
@@ -777,7 +776,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                                   Row(
                                     children: [
                                       Text(
-                                        "${employee?.firstName ?? "---"} ${employee?.lastName ?? "---"}",
+                                        "${employee?.firstName ?? "---"} ${employee?.middleName ?? "---"} ${employee?.lastName ?? "---"}",
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: Colors.black,
@@ -868,20 +867,23 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ConnectionState.waiting) {
                           return Loader();
                         }
-                        if (!snapshot.hasData ||
-                            singletonClass
-                                .companyNotificationDataList.isEmpty) {
+                        final notifications = singletonClass.companyNotificationDataList.first.data ?? [];
+
+                        final filteredNotifications = notifications.where((n) {
+                          return n.companyId == singletonClass.selectedCompanyId && n.objectType == 'asset';
+                        }).toList();
+
+
+                        if (filteredNotifications.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
                                     height: 200,
                                     width: 200,
-                                    child:
-                                    Lottie.asset('images/empty.json'),
+                                    child: Lottie.asset('images/empty.json'),
                                   ),
                                   Text(
                                     AppLocalizations.of(context)!.noData,
@@ -896,13 +898,12 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             ),
                           );
                         }
-
                         return ListView.builder(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 5),
-                          itemCount: singletonClass.companyNotificationDataList.first.data!.length,
+                          itemCount: filteredNotifications.length,
                           itemBuilder: (ctx, i) {
-                            final notification = singletonClass.companyNotificationDataList.first.data![i];
+                            final notification = filteredNotifications[i];
                             String date = '--';
                             try {
                               final parsed =
@@ -911,165 +912,140 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
                             } catch (_) {}
-                            if (singletonClass.selectedCompanyId != notification.companyId ||
-                                notification.objectType != "asset") {
-                              // If this is the last item and nothing is shown yet, show "no data"
-                              if (i == singletonClass.companyNotificationDataList.first.data!.length - 1) {
-                                return Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20.0),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                            return GestureDetector(
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=> CompanyNotificationAssetsDetailScreen( assetsInfo: notification)));
+                              },
+                              child: Container(
+                                margin:
+                                const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                      Colors.grey.withOpacity(0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
                                       children: [
-                                        SizedBox(
-                                          height: 200,
-                                          width: 200,
-                                          child: Lottie.asset('images/empty.json'),
+                                        (notification.objectType == "company")
+                                            ? SizedBox(
+                                          height: 30,
+                                          width: 30,
+                                          child: Image.asset('images/site.png'),
+                                        )
+                                            : (notification.objectType == "employee")
+                                            ? SizedBox(
+                                          height: 30,
+                                          width: 30,
+                                          child: Image.asset('images/person.png'),
+                                        )
+                                            : SizedBox(
+                                          height: 30,
+                                          width: 30,
+                                          child: Image.asset('images/pc.png'),
                                         ),
-                                        Text(
-                                          AppLocalizations.of(context)!.noData,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: NasColors.darkBlue,
+                                        const SizedBox(width: 5),
+                                        SizedBox(
+                                          width: 180,
+                                          child: Text(
+                                            notification.attachmentName ?? '',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        Spacer(),
+                                        Container(
+                                          height: 30,
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                            color: getStatusColor(notification.status!),
+                                            borderRadius: BorderRadius.circular(14),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "${notification.status}",
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            }
-                            return Container(
-                              margin:
-                              const EdgeInsets.symmetric(vertical: 10),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                    Colors.grey.withOpacity(0.3),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      (notification.objectType == "company")
-                                          ? SizedBox(
-                                        height: 30,
-                                        width: 30,
-                                        child: Image.asset('images/site.png'),
-                                      )
-                                          : (notification.objectType == "employee")
-                                          ? SizedBox(
-                                        height: 30,
-                                        width: 30,
-                                        child: Image.asset('images/person.png'),
-                                      )
-                                          : SizedBox(
-                                        height: 30,
-                                        width: 30,
-                                        child: Image.asset('images/pc.png'),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      SizedBox(
-                                        width: 180,
-                                        child: Text(
-                                          notification.attachmentName ?? '',
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "${AppLocalizations.of(context)!.expiryDate}: $date",
                                           style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                            color: Colors.grey,
                                           ),
                                         ),
-                                      ),
-                                      Spacer(),
-                                      Container(
-                                        height: 30,
-                                        width: 100,
-                                        decoration: BoxDecoration(
-                                          color: getStatusColor(notification.status!),
-                                          borderRadius: BorderRadius.circular(14),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "${notification.status}",
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "${AppLocalizations.of(context)!.expiryDate}: $date",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      PopupMenuButton<String>(
-                                        color: Colors.white,
-                                        icon: const Icon(Icons.more_horiz, size: 25),
-                                        onSelected: (value) {
-                                          if (value == 'edit') {
-                                            Navigator.push(context, MaterialPageRoute(builder: (context)=> EditCompanyNotificationScreen( companyNotifications: notification,)));
-                                          } else if (value == 'delete') {
-                                            deleteNotification(i);
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          PopupMenuItem(
-                                            value: 'edit',
-                                            child: Row(
-                                              children:  [
-                                                Icon(Icons.edit, size: 18),
-                                                SizedBox(width: 8),
-                                                Text(AppLocalizations.of(context)!.edit,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    color: Colors.black,
+                                        Spacer(),
+                                        PopupMenuButton<String>(
+                                          color: Colors.white,
+                                          icon: const Icon(Icons.more_horiz, size: 25),
+                                          onSelected: (value) {
+                                            if (value == 'edit') {
+                                              Navigator.push(context, MaterialPageRoute(builder: (context)=> EditCompanyNotificationScreen( companyNotifications: notification,)));
+                                            } else if (value == 'delete') {
+                                              deleteNotification(i);
+                                            }
+                                          },
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children:  [
+                                                  Icon(Icons.edit, size: 18),
+                                                  SizedBox(width: 8),
+                                                  Text(AppLocalizations.of(context)!.edit,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'delete',
-                                            child: Row(
-                                              children:  [
-                                                Icon(Icons.delete, size: 18, color: Colors.red),
-                                                SizedBox(width: 8),
-                                                Text(AppLocalizations.of(context)!.delete,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    color: Colors.black,
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children:  [
+                                                  Icon(Icons.delete, size: 18, color: Colors.red),
+                                                  SizedBox(width: 8),
+                                                  Text(AppLocalizations.of(context)!.delete,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
