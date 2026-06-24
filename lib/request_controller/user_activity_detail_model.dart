@@ -1,22 +1,24 @@
 
-class UserActivityModel {
+class UserActivityDetailModel {
   String? id;
   String? empId;
   String? attendanceId;
   String? date;
+  List<ActivitySession>? activitySession;
   String? expiryAt;
   String? createdAt;
   String? updatedAt;
   int? v;
   Body? body;
 
-  UserActivityModel({this.id, this.empId, this.attendanceId, this.date, this.expiryAt, this.createdAt, this.updatedAt, this.v, this.body});
+  UserActivityDetailModel({this.id, this.empId, this.attendanceId, this.date, this.activitySession, this.expiryAt, this.createdAt, this.updatedAt, this.v, this.body});
 
-  UserActivityModel.fromJson(Map<String, dynamic> json) {
+  UserActivityDetailModel.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
     empId = json["empId"];
     attendanceId = json["attendanceId"];
     date = json["date"];
+    activitySession = json["activitySession"] == null ? null : (json["activitySession"] as List).map((e) => ActivitySession.fromJson(e)).toList();
     expiryAt = json["expiryAt"];
     createdAt = json["createdAt"];
     updatedAt = json["updatedAt"];
@@ -30,6 +32,9 @@ class UserActivityModel {
     _data["empId"] = empId;
     _data["attendanceId"] = attendanceId;
     _data["date"] = date;
+    if(activitySession != null) {
+      _data["activitySession"] = activitySession?.map((e) => e.toJson()).toList();
+    }
     _data["expiryAt"] = expiryAt;
     _data["createdAt"] = createdAt;
     _data["updatedAt"] = updatedAt;
@@ -98,6 +103,43 @@ class TaskNameWiseTime {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
 
+    return _data;
+  }
+}
+
+class ActivitySession {
+  int? id;
+  String? app;
+  String? taskName;
+  String? title;
+  dynamic url;
+  String? color;
+  int? beginDate;
+  int? endDate;
+
+  ActivitySession({this.id, this.app, this.taskName, this.title, this.url, this.color, this.beginDate, this.endDate});
+
+  ActivitySession.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    app = json["app"];
+    taskName = json["taskName"];
+    title = json["title"];
+    url = json["url"];
+    color = json["color"];
+    beginDate = json["beginDate"];
+    endDate = json["endDate"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["id"] = id;
+    _data["app"] = app;
+    _data["taskName"] = taskName;
+    _data["title"] = title;
+    _data["url"] = url;
+    _data["color"] = color;
+    _data["beginDate"] = beginDate;
+    _data["endDate"] = endDate;
     return _data;
   }
 }

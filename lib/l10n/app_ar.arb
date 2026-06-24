@@ -978,5 +978,24 @@
       "totalTrackedTime":"إجمالي الوقت المتعقب",
       "mostUsedApps":"التطبيقات الأكثر استخدامًا",
       "activityTimeLine":"الجدول الزمني للنشاط",
-      "sessionDetails":"تفاصيل الجلسة"
+      "session":"الجلسة",
+      "sessionDetails":"تفاصيل الجلسة",
+      "results":"نتائج",
+      "allApps":"جميع التطبيقات",
+      "dur":"مدة",
+      "taskOrTitle":"المهمة / العنوان",
+      "application":"طلب",
+      "timeRange":"النطاق الزمني",
+      "noSessionMatchYourFilter":"لا توجد جلسات مطابقة لمرشحك",
+      "noSessionData":"لا توجد بيانات الجلسة",
+      "noActivityDataAvailable":"لا توجد بيانات النشاط المتاحة",
+      "morningSession":"الجلسة الصباحية",
+      "afternoonSession":"جلسة بعد الظهر",
+      "eveningSession":"الجلسة المسائية",
+      "am":"أكون",
+      "pm":"مساءً",
+      "idle":"عاطل",
+      "retry":"أعد المحاولة",
+      "liveSessions":"جلسة مباشرة"
+
 }

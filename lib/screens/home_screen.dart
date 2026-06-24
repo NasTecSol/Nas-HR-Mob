@@ -201,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void startWorkTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      singletonClass.isTimerActive = true;
       _updateWorkedTime();
     });
   }
@@ -208,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void stopWorkTimer() {
     _timer?.cancel();
     _timer = null;
+    singletonClass.isTimerActive = true;
   }
 
   void _updateWorkedTime() {

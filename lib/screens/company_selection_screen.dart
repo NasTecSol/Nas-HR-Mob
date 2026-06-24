@@ -282,37 +282,93 @@ class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
                           const SizedBox(height: 10),
                           if (_suggestions.isNotEmpty)
                             ..._suggestions.map((suggestion) {
-                              return CheckboxListTile(
-                                activeColor: NasColors.darkBlue,
-                                title: Row(
-                                  children: [
-                                    SizedBox(
-                                      height:40,
-                                        width: 40,
-                                        child: Image.network("${suggestion.tenantLogo}")),
-                                    SizedBox(width: 10),
-                                    Text(suggestion.tenantName ?? ''),
-                                  ],
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: Material(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  elevation: 1,
+                                  child: CheckboxListTile(
+                                    activeColor: NasColors.darkBlue,
+                                    tileColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        SizedBox(
+                                          height: 40,
+                                          width: 40,
+                                          child: Image.network(
+                                            suggestion.tenantLogo ?? '',
+                                            errorBuilder: (_, __, ___) {
+                                              return Image.asset('images/site.png');
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            suggestion.tenantName ?? '',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    value:
+                                    _selectedTenantId ==
+                                        suggestion.tenantId.toString(),
+                                    onChanged: (bool? selected) async {
+                                      if (selected == true) {
+                                        final prefs =
+                                        await SharedPreferences.getInstance();
+
+                                        await prefs.setString(
+                                          'baseURL',
+                                          suggestion.tenantId.toString(),
+                                        );
+
+                                        await prefs.setString(
+                                          'companyName',
+                                          suggestion.tenantName.toString(),
+                                        );
+
+                                        await prefs.setString(
+                                          'organizationLogo',
+                                          suggestion.tenantLogo.toString(),
+                                        );
+
+                                        singletonClass.tenantId =
+                                            prefs.getString('baseURL') ?? '';
+
+                                        singletonClass.companyName =
+                                            prefs.getString('companyName') ?? '';
+
+                                        singletonClass.tenantLogo =
+                                            prefs.getString('organizationLogo') ?? '';
+
+                                        singletonClass.tenantIDDataList.clear();
+
+                                        singletonClass.tenantIDDataList.add(
+                                          TenantIdModel(data: suggestion),
+                                        );
+
+                                        setState(() {
+                                          _selectedTenantId =
+                                              suggestion.tenantId.toString();
+                                          _suggestions.clear();
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ),
-                                value: _selectedTenantId == suggestion.tenantId.toString(),
-                                onChanged: (bool? selected) async {
-                                  if (selected == true) {
-                                    final prefs = await SharedPreferences.getInstance();
-                                    await prefs.setString('baseURL', suggestion.tenantId.toString());
-                                    await prefs.setString('companyName', suggestion.tenantName.toString());
-                                    await prefs.setString('organizationLogo', suggestion.tenantLogo.toString());
-                                    singletonClass.tenantId = prefs.getString('baseURL') ?? '';
-                                    singletonClass.companyName = prefs.getString('companyName') ?? '';
-                                    singletonClass.tenantLogo = prefs.getString('organizationLogo') ?? '';
-                                    singletonClass.tenantIDDataList.clear();
-                                    singletonClass.tenantIDDataList.add(
-                                        TenantIdModel(data: suggestion));
-                                    setState(() {
-                                      _selectedTenantId = suggestion.tenantId.toString();
-                                      _suggestions.clear();
-                                    });
-                                  }
-                                },
                               );
                             }),
 

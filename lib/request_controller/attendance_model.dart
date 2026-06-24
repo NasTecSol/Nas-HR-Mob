@@ -27,10 +27,10 @@ class AttendanceData {
 
 class Data {
   List<Data1>? data;
-  int? totalRecords;
-  int? page;
-  int? limit;
-  int? totalPages;
+  dynamic totalRecords;
+  dynamic page;
+  dynamic limit;
+  dynamic totalPages;
 
   Data({this.data, this.totalRecords, this.page, this.limit, this.totalPages});
 
@@ -56,30 +56,30 @@ class Data {
 }
 
 class Data1 {
-  String? id;
-  String? employeeId;
-  String? empId;
-  String? name;
-  String? companyId;
-  String? branchId;
-  String? date;
-  String? clockInTime;
-  String? clockOutTime;
-  int? totalHoursWorked;
-  String? location;
-  String? status;
+  dynamic id;
+  dynamic employeeId;
+  dynamic empId;
+  dynamic name;
+  dynamic companyId;
+  dynamic branchId;
+  dynamic date;
+  dynamic clockInTime;
+  dynamic clockOutTime;
+  dynamic totalHoursWorked;
+  dynamic location;
+  dynamic status;
   dynamic secondaryStatus;
   List<dynamic>? breaksTaken;
-  int? breakTime;
-  int? lateMinutes;
+  dynamic breakTime;
+  dynamic lateMinutes;
   List<Penalties>? penalties;
   dynamic leaveDetails;
-  String? shift;
+  dynamic shift;
   dynamic workingHoursPerday;
-  int? earlyCheckOut;
-  String? remarks;
-  String? createdAt;
-  String? updatedAt;
+  dynamic earlyCheckOut;
+  dynamic remarks;
+  dynamic createdAt;
+  dynamic updatedAt;
   int? v;
 
   Data1({this.id, this.employeeId, this.empId, this.name, this.companyId, this.branchId, this.date, this.clockInTime, this.clockOutTime, this.totalHoursWorked, this.location, this.status, this.secondaryStatus ,this.breaksTaken, this.breakTime, this.lateMinutes, this.penalties, this.leaveDetails, this.shift, this.workingHoursPerday, this.earlyCheckOut, this.remarks, this.createdAt, this.updatedAt, this.v});
@@ -150,11 +150,11 @@ class Data1 {
 }
 
 class Penalties {
-  int? uniqueId;
-  String? action;
-  int? percentage;
-  int? lateMinute;
-  int? occurrence;
+  dynamic uniqueId;
+  dynamic action;
+  dynamic percentage;
+  dynamic lateMinute;
+  dynamic occurrence;
 
   Penalties({this.uniqueId, this.action, this.percentage, this.lateMinute, this.occurrence});
 

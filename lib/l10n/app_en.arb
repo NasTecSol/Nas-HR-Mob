@@ -1315,5 +1315,24 @@
     "totalTrackedTime":"Total Tracked Time",
     "mostUsedApps":"Most Used Apps",
     "activityTimeLine":"Activity Timeline",
-    "sessionDetails":"Session Details"
+    "session":"Sessions",
+    "sessionDetails":"Session Details",
+    "results":"Results",
+    "allApps":"All Apps",
+    "dur":"Dur",
+    "taskOrTitle":"Task / Title",
+    "application":"Application",
+    "timeRange":"Time Range",
+    "noSessionMatchYourFilter":"'No sessions match your filter",
+    "noSessionData":"No session data",
+    "noActivityDataAvailable":"No activity data available",
+    "morningSession":"MORNING SESSION",
+    "afternoonSession":"AFTERNOON SESSION",
+    "eveningSession":"EVENING SESSION",
+    "am":"AM",
+    "pm":"PM",
+    "idle":"Idle",
+    "retry":"retry",
+    "liveSessions":"LIVE SESSIONS"
+
 }

@@ -2625,5 +2625,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityTimeLine => 'Activity Timeline';
 
   @override
+  String get session => 'Sessions';
+
+  @override
   String get sessionDetails => 'Session Details';
+
+  @override
+  String get results => 'Results';
+
+  @override
+  String get allApps => 'All Apps';
+
+  @override
+  String get dur => 'Dur';
+
+  @override
+  String get taskOrTitle => 'Task / Title';
+
+  @override
+  String get application => 'Application';
+
+  @override
+  String get timeRange => 'Time Range';
+
+  @override
+  String get noSessionMatchYourFilter => '\'No sessions match your filter';
+
+  @override
+  String get noSessionData => 'No session data';
+
+  @override
+  String get noActivityDataAvailable => 'No activity data available';
+
+  @override
+  String get morningSession => 'MORNING SESSION';
+
+  @override
+  String get afternoonSession => 'AFTERNOON SESSION';
+
+  @override
+  String get eveningSession => 'EVENING SESSION';
+
+  @override
+  String get am => 'AM';
+
+  @override
+  String get pm => 'PM';
+
+  @override
+  String get idle => 'Idle';
+
+  @override
+  String get retry => 'retry';
+
+  @override
+  String get liveSessions => 'LIVE SESSIONS';
 }

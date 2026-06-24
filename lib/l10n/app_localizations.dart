@@ -5270,11 +5270,119 @@ abstract class AppLocalizations {
   /// **'Activity Timeline'**
   String get activityTimeLine;
 
+  /// No description provided for @session.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get session;
+
   /// No description provided for @sessionDetails.
   ///
   /// In en, this message translates to:
   /// **'Session Details'**
   String get sessionDetails;
+
+  /// No description provided for @results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get results;
+
+  /// No description provided for @allApps.
+  ///
+  /// In en, this message translates to:
+  /// **'All Apps'**
+  String get allApps;
+
+  /// No description provided for @dur.
+  ///
+  /// In en, this message translates to:
+  /// **'Dur'**
+  String get dur;
+
+  /// No description provided for @taskOrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task / Title'**
+  String get taskOrTitle;
+
+  /// No description provided for @application.
+  ///
+  /// In en, this message translates to:
+  /// **'Application'**
+  String get application;
+
+  /// No description provided for @timeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Range'**
+  String get timeRange;
+
+  /// No description provided for @noSessionMatchYourFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'\'No sessions match your filter'**
+  String get noSessionMatchYourFilter;
+
+  /// No description provided for @noSessionData.
+  ///
+  /// In en, this message translates to:
+  /// **'No session data'**
+  String get noSessionData;
+
+  /// No description provided for @noActivityDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity data available'**
+  String get noActivityDataAvailable;
+
+  /// No description provided for @morningSession.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING SESSION'**
+  String get morningSession;
+
+  /// No description provided for @afternoonSession.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON SESSION'**
+  String get afternoonSession;
+
+  /// No description provided for @eveningSession.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENING SESSION'**
+  String get eveningSession;
+
+  /// No description provided for @am.
+  ///
+  /// In en, this message translates to:
+  /// **'AM'**
+  String get am;
+
+  /// No description provided for @pm.
+  ///
+  /// In en, this message translates to:
+  /// **'PM'**
+  String get pm;
+
+  /// No description provided for @idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get idle;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'retry'**
+  String get retry;
+
+  /// No description provided for @liveSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE SESSIONS'**
+  String get liveSessions;
 }
 
 class _AppLocalizationsDelegate
