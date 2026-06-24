@@ -177,13 +177,14 @@ class _HourGroup {
 // ─────────────────────────────────────────────────────────────────────────────
 class ActivityTimelineBar extends StatelessWidget {
   final List<UserActivityDetailModel> records;
-  const ActivityTimelineBar({super.key, required this.records});
+  final VoidCallback? onDetailPressed;
+  const ActivityTimelineBar({super.key, required this.records, this.onDetailPressed});
 
   @override
   Widget build(BuildContext context) {
     final p = _Parsed.from(records);
     if (p.sessions.isEmpty) return const SizedBox.shrink();
-    return _TimelineWidget(parsed: p, compact: true);
+    return _TimelineWidget(parsed: p, compact: true, onDetailPressed: onDetailPressed);
   }
 }
 
@@ -926,7 +927,8 @@ class _State extends State<UserActivityDetailScreen>
 class _TimelineWidget extends StatelessWidget {
   final _Parsed parsed;
   final bool compact;
-  const _TimelineWidget({required this.parsed, required this.compact});
+  final VoidCallback? onDetailPressed;
+  const _TimelineWidget({required this.parsed, required this.compact, this.onDetailPressed});
 
   static String _clock(DateTime d) {
     final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
@@ -964,7 +966,30 @@ class _TimelineWidget extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF111827))),
           const Spacer(),
-          if (parsed.isOnline && sessions.isNotEmpty) ...[
+          if (compact && onDetailPressed != null) ...[
+            GestureDetector(
+              onTap: onDetailPressed,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.details,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: NasColors.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: NasColors.darkBlue,
+                  ),
+                ],
+              ),
+            ),
+          ] else if (parsed.isOnline && sessions.isNotEmpty) ...[
             Icon(Icons.circle, size: 8, color: parsed.colorOf(sessions.last.app)),
             const SizedBox(width: 5),
             Flexible(child: Text(sessions.last.app,

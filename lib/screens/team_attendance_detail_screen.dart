@@ -511,7 +511,32 @@ class _TeamAttendanceDetailScreenState
                       ),
                     )
                   else if (_activityRecords.isNotEmpty) ...[
-                    ActivityTimelineBar(records: _activityRecords),
+                    ActivityTimelineBar(
+                      records: _activityRecords,
+                      onDetailPressed: () {
+                        final dateStr = (data.date != null && data.date.toString().isNotEmpty)
+                            ? data.date.toString().split('T').first
+                            : (data.createdAt != null)
+                                ? data.createdAt.toString().split('T').first
+                                : null;
+                        final attendanceDate = dateStr != null
+                            ? (DateTime.tryParse(dateStr) ?? DateTime.now())
+                            : DateTime.now();
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UserActivityDetailScreen(
+                              empId: data.empId ?? '',
+                              empName: data.name ?? '',
+                              designation: '',
+                              startDate: attendanceDate,
+                              endDate: attendanceDate,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 14),
                   ],
 
