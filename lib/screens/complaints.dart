@@ -280,9 +280,9 @@ class _ComplaintsState extends State<Complaints> {
                                                   ),
                                                 ),
                                                 Spacer(),
-                                                if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
-                                                    DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
-                                                    DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                if ((DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().year == DateTime.now().year &&
+                                                    (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().month == DateTime.now().month &&
+                                                    (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().day == DateTime.now().day)...[
                                                   Align(
                                                     alignment: Alignment.topRight,
                                                     child: Container(
@@ -533,9 +533,9 @@ class _ComplaintsState extends State<Complaints> {
                                                         ),
                                                       ),
                                                       Spacer(),
-                                                      if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
-                                                          DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
-                                                          DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                      if ((DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().year == DateTime.now().year &&
+                                                          (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().month == DateTime.now().month &&
+                                                          (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().day == DateTime.now().day)...[
                                                         Align(
                                                           alignment: Alignment.topRight,
                                                           child: Container(
@@ -793,9 +793,9 @@ class _ComplaintsState extends State<Complaints> {
                                                         ),
                                                       ),
                                                       Spacer(),
-                                                      if (DateTime.parse(request.createdAt!).toLocal().year == DateTime.now().year &&
-                                                          DateTime.parse(request.createdAt!).toLocal().month == DateTime.now().month &&
-                                                          DateTime.parse(request.createdAt!).toLocal().day == DateTime.now().day)...[
+                                                      if ((DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().year == DateTime.now().year &&
+                                                          (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().month == DateTime.now().month &&
+                                                          (DateTime.tryParse(request.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)).toLocal().day == DateTime.now().day)...[
                                                         Align(
                                                           alignment: Alignment.topRight,
                                                           child: Container(

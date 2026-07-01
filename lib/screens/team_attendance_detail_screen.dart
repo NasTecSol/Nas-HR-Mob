@@ -128,7 +128,7 @@ class _TeamAttendanceDetailScreenState
 
   DateTime? _parseTime(String? s) {
     if (s == null || s.isEmpty) return null;
-    return DateTime.parse(s).toUtc();
+    return (DateTime.tryParse(s) ?? DateTime.fromMillisecondsSinceEpoch(0)).toUtc();
   }
 
   String _formatDateTime(DateTime? dt) {

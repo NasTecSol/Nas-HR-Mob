@@ -645,9 +645,14 @@ class SingletonClass {
 
 
   ///formated date method
-  String formatCheckInTime(String dateTimeString , context) {
+  String formatCheckInTime(String? dateTimeString , context) {
+    if (dateTimeString == null || dateTimeString.isEmpty || dateTimeString == 'null') {
+      return '--:--';
+    }
     try {
-      DateTime localTime = DateTime.parse(dateTimeString).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTimeString);
+      if (parsed == null) return '--:--';
+      DateTime localTime = parsed.toLocal();
       final locale = Localizations.localeOf(context).languageCode;
       if (locale == 'ar') {
         final arabicFormatter = DateFormat('h:mm a', 'ar');
@@ -739,23 +744,35 @@ class SingletonClass {
     }
   }
 
-  String formatTime(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('hh:mm a').format(createdDate);
+  String formatTime(String? createdAt) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
+      return DateFormat('hh:mm a').format(parsed);
+    } catch (e) {
+      return '--:--';
+    }
   }
 
-  String formatDate2(String createdAt , context) {
-    try{
-      DateTime updatedAtDateTime = DateTime.parse(createdAt);
+  String formatDate2(String? createdAt , context) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
       final locale = Localizations.localeOf(context).languageCode;
-      if (locale == 'ar'){
+      if (locale == 'ar') {
         final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
-        return arabicFormatter.format(updatedAtDateTime);
-      }else{
-        final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+        return arabicFormatter.format(parsed);
+      } else {
+        final formattedTime = DateFormat('dd-MM-yyyy').format(parsed);
         return formattedTime;
       }
-    } catch (e){
+    } catch (e) {
       if (kDebugMode) {
         print("Error formatting time: $e");
       }
@@ -763,9 +780,14 @@ class SingletonClass {
     }
   }
 
-  String formatDateTime(String dateTime) {
+  String formatDateTime(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty || dateTime == 'null') {
+      return 'Invalid date';
+    }
     try {
-      final parsedDate = DateTime.parse(dateTime).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTime);
+      if (parsed == null) return 'Invalid date';
+      final parsedDate = parsed.toLocal();
       return DateFormat('hh:mm:a').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
@@ -958,6 +980,7 @@ class SingletonClass {
     headerUrl = '';
     footerUrl = '';
     token = null;
+    isTimerActive = false;
   }
 
 

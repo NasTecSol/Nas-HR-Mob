@@ -748,7 +748,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     }
                                     String formatDate(String updatedAt) {
                                       DateTime updatedAtDateTime =
-                                          DateTime.parse(updatedAt);
+                                          (DateTime.tryParse(updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0));
                                       return DateFormat('dd-MM-yyyy hh:mm a')
                                           .format(updatedAtDateTime);
                                     }
@@ -1130,7 +1130,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                         Text(
                                                           request.requestData != null && request.requestData!.isNotEmpty
                                                               ? (request.requestData!.first.expenseDate != null && request.requestData!.first.expenseDate!.isNotEmpty
-                                                              ? DateFormat('dd-MM-yyyy').format(DateTime.parse(request.requestData!.first.expenseDate!))
+                                                              ? DateFormat('dd-MM-yyyy').format((DateTime.tryParse(request.requestData!.first.expenseDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)))
                                                               : "---")
                                                               : AppLocalizations.of(context)!.noData,
                                                           style: GoogleFonts.inter(
@@ -1546,7 +1546,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                       }
                                       String formatDate(String updatedAt) {
                                         DateTime updatedAtDateTime =
-                                            DateTime.parse(updatedAt);
+                                            (DateTime.tryParse(updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0));
                                         return DateFormat('dd-MM-yyyy hh:mm a')
                                             .format(updatedAtDateTime);
                                       }
@@ -1937,7 +1937,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           Text(
                                                             request.requestData != null && request.requestData!.isNotEmpty
                                                                 ? (request.requestData!.first.expenseDate != null && request.requestData!.first.expenseDate!.isNotEmpty
-                                                                ? DateFormat('dd-MM-yyyy').format(DateTime.parse(request.requestData!.first.expenseDate!))
+                                                                ? DateFormat('dd-MM-yyyy').format((DateTime.tryParse(request.requestData!.first.expenseDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)))
                                                                 : "---")
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(
@@ -2340,7 +2340,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                         }
                                       }
                                       String formatDate(String updatedAt) {
-                                        DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+                                        DateTime updatedAtDateTime = (DateTime.tryParse(updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0));
                                         return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
                                       }
                                       String date = formatDate(request.createdAt!);
@@ -2727,7 +2727,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                                           Text(
                                                             request.requestData != null && request.requestData!.isNotEmpty
                                                                 ? (request.requestData!.first.expenseDate != null && request.requestData!.first.expenseDate!.isNotEmpty
-                                                                ? DateFormat('dd-MM-yyyy').format(DateTime.parse(request.requestData!.first.expenseDate!))
+                                                                ? DateFormat('dd-MM-yyyy').format((DateTime.tryParse(request.requestData!.first.expenseDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0)))
                                                                 : "---")
                                                                 : AppLocalizations.of(context)!.noData,
                                                             style: GoogleFonts.inter(

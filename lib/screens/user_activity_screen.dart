@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nashr/singleton_class.dart';
@@ -934,12 +935,26 @@ class _UserActivityScreenState extends State<UserActivityScreen>
 
     if (_filteredRows.isEmpty) {
       return Center(
-        child: Text(
-          AppLocalizations.of(context)!.noData,
-          style: GoogleFonts.inter(
-            fontSize:   15,
-            color:      Colors.grey,
-            fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 200,
+                width: 200,
+                child:
+                Lottie.asset('images/empty.json'),
+              ),
+              Text(
+                AppLocalizations.of(context)!.noData,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ],
           ),
         ),
       );

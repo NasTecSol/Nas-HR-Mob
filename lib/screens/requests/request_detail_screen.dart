@@ -44,7 +44,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         widget.dataApprover.approvers!
             .every((approver) => approver.status?.toLowerCase() == 'rejected');
     String formatDate(String updatedAt) {
-      DateTime updatedAtDateTime = DateTime.parse(updatedAt);
+      DateTime updatedAtDateTime = (DateTime.tryParse(updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0));
       return DateFormat('dd-MM-yyyy hh:mm a').format(updatedAtDateTime);
     }
     String date = formatDate(widget.dataApprover.createdAt!);
