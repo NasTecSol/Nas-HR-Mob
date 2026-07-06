@@ -2680,4 +2680,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveSessions => 'LIVE SESSIONS';
+
+  @override
+  String get facialRegistration => 'Facial Registration';
+
+  @override
+  String get startFacialRegistration => 'Start Facial Registration';
+
+  @override
+  String get faceVerificationGuidelines => 'Face Verification Guidelines';
+
+  @override
+  String get facialRegistrationSuccessful => 'Facial Registration Successful';
+
+  @override
+  String get noFaceDetected =>
+      'No face detected. Please look directly at the camera.';
+
+  @override
+  String get multipleFacesDetected =>
+      'Multiple faces detected. Please make sure only you are in the frame.';
+
+  @override
+  String get faceTilted =>
+      'Face is tilted. Please look straight into the camera.';
+
+  @override
+  String get eyesClosed => 'Please keep your eyes open during registration.';
+
+  @override
+  String get confirm => 'Confirm';
 }

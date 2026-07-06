@@ -2671,4 +2671,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveSessions => 'جلسة مباشرة';
+
+  @override
+  String get facialRegistration => 'التسجيل بالوجه';
+
+  @override
+  String get startFacialRegistration => 'بدء تسجيل الوجه';
+
+  @override
+  String get faceVerificationGuidelines => 'إرشادات التحقق من الوجه';
+
+  @override
+  String get facialRegistrationSuccessful => 'تم تسجيل الوجه بنجاح';
+
+  @override
+  String get noFaceDetected =>
+      'لم يتم الكشف عن وجه. يرجى النظر مباشرة إلى الكاميرا.';
+
+  @override
+  String get multipleFacesDetected =>
+      'تم الكشف عن وجوه متعددة. يرجى التأكد من أنك بمفردك في الإطار.';
+
+  @override
+  String get faceTilted => 'الوجه مائل. يرجى النظر مباشرة إلى الكاميرا.';
+
+  @override
+  String get eyesClosed => 'يرجى إبقاء عينيك مفتوحتين أثناء التسجيل.';
+
+  @override
+  String get confirm => 'تأكيد';
 }

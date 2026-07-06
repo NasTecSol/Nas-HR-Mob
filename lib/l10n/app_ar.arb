@@ -996,6 +996,14 @@
       "pm":"مساءً",
       "idle":"عاطل",
       "retry":"أعد المحاولة",
-      "liveSessions":"جلسة مباشرة"
-
+      "liveSessions":"جلسة مباشرة",
+      "facialRegistration":"التسجيل بالوجه",
+      "startFacialRegistration":"بدء تسجيل الوجه",
+      "faceVerificationGuidelines":"إرشادات التحقق من الوجه",
+      "facialRegistrationSuccessful":"تم تسجيل الوجه بنجاح",
+      "noFaceDetected":"لم يتم الكشف عن وجه. يرجى النظر مباشرة إلى الكاميرا.",
+      "multipleFacesDetected":"تم الكشف عن وجوه متعددة. يرجى التأكد من أنك بمفردك في الإطار.",
+      "faceTilted":"الوجه مائل. يرجى النظر مباشرة إلى الكاميرا.",
+      "eyesClosed":"يرجى إبقاء عينيك مفتوحتين أثناء التسجيل.",
+      "confirm":"تأكيد"
 }

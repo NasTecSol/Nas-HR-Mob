@@ -19,7 +19,9 @@ import '../request_controller/signature_model.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/loader.dart';
+import 'facial_detector_screen.dart';
 import 'loan_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -38,10 +40,25 @@ class _ProfileScreenState extends State<ProfileScreen>
   final SignatureController _controller = SignatureController(penStrokeWidth: 2, penColor: Colors.black);
   bool _isEditing = false;
   File? _signatureImageFile;
+  bool _isFaceRegistered = false;
+  String? _faceImagePath;
+
   @override
   void initState() {
     super.initState();
     _loadSignature();
+    _loadFaceRegistrationState();
+  }
+
+  Future<void> _loadFaceRegistrationState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final employeeId = singletonClass.getJWTModel()?.employeeId ?? '';
+    if (mounted) {
+      setState(() {
+        _isFaceRegistered = prefs.getBool('face_registered_$employeeId') ?? false;
+        _faceImagePath = prefs.getString('face_image_path_$employeeId');
+      });
+    }
   }
 
   Future<void> _loadSignature() async {
@@ -190,6 +207,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ],
+                        if(_selectedOptionIndex2 == 6)...[
+                          Text(
+                            AppLocalizations.of(context)!.facialRegistration,
+                            style: GoogleFonts.inter(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
                         const Spacer(),
                         if (_selectedOptionIndex2 == 0)
                           IconButton(
@@ -231,6 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           buildOptionsCard2(3, AppLocalizations.of(context)!.familyInfo),
                           buildOptionsCard2(4, AppLocalizations.of(context)!.shiftInfo),
                           buildOptionsCard2(5, AppLocalizations.of(context)!.signature),
+                          buildOptionsCard2(6, AppLocalizations.of(context)!.facialRegistration),
                         ],
                       ),
                     ),
@@ -1833,6 +1861,220 @@ class _ProfileScreenState extends State<ProfileScreen>
                     )),
               ),
             ],
+            if (_selectedOptionIndex2 == 6)...[
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      if (_isFaceRegistered) ...[
+                        Card(
+                          elevation: 4,
+                          shadowColor: Colors.grey.withOpacity(0.2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              children: [
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      height: 140,
+                                      width: 140,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.greenAccent,
+                                          width: 3,
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: _faceImagePath != null
+                                            ? (_faceImagePath!.startsWith('http')
+                                                ? Image.network(
+                                                    _faceImagePath!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) =>
+                                                        const Icon(Icons.person, size: 80),
+                                                  )
+                                                : Image.file(
+                                                    File(_faceImagePath!),
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) =>
+                                                        const Icon(Icons.person, size: 80),
+                                                  ))
+                                            : const Icon(Icons.person, size: 80),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  AppLocalizations.of(context)!.facialRegistrationSuccessful,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "Your face registration has been completed and verified successfully. This face pattern will be used to verify your identity.",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: NasColors.darkBlue,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      final path = await Navigator.push<String>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const FacialDetectorScreen(),
+                                        ),
+                                      );
+                                      if (path != null) {
+                                        _handleSuccessfulRegistration(path);
+                                      }
+                                    },
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: Text(
+                                      "Re-register Face",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        Card(
+                          elevation: 4,
+                          shadowColor: Colors.grey.withOpacity(0.2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: Icon(
+                                    Icons.face_retouching_natural_rounded,
+                                    size: 80,
+                                    color: NasColors.blue,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Center(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.faceVerificationGuidelines,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: NasColors.darkBlue,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                const Divider(),
+                                const SizedBox(height: 15),
+                                _buildGuidelineRow(
+                                  Icons.lightbulb_outline_rounded,
+                                  "Good Lighting",
+                                  "Ensure your face is well-lit and not covered in shadows.",
+                                ),
+                                const SizedBox(height: 15),
+                                _buildGuidelineRow(
+                                  Icons.visibility_outlined,
+                                  "Look Straight",
+                                  "Position your device at eye level and look directly into the camera.",
+                                ),
+                                const SizedBox(height: 15),
+                                _buildGuidelineRow(
+                                  Icons.style_outlined,
+                                  "No Accessories",
+                                  "Remove sunglasses, hats, masks, or any other face coverings.",
+                                ),
+                                const SizedBox(height: 30),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: NasColors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      final path = await Navigator.push<String>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const FacialDetectorScreen(),
+                                        ),
+                                      );
+                                      if (path != null) {
+                                        _handleSuccessfulRegistration(path);
+                                      }
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.startFacialRegistration,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
           if (isLoading)
@@ -1850,6 +2092,123 @@ class _ProfileScreenState extends State<ProfileScreen>
     } else {
       return accountNumber;
     }
+  }
+
+  Future<void> _handleSuccessfulRegistration(String path) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final remoteUrl = await _uploadFaceImageToS3(path);
+      final prefs = await SharedPreferences.getInstance();
+      final employeeId = singletonClass.getJWTModel()?.employeeId ?? '';
+      final savedPath = remoteUrl ?? path;
+
+      await prefs.setBool('face_registered_$employeeId', true);
+      await prefs.setString('face_image_path_$employeeId', savedPath);
+
+      if (mounted) {
+        setState(() {
+          _isFaceRegistered = true;
+          _faceImagePath = savedPath;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error handling registration: $e");
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<String?> _uploadFaceImageToS3(String filePath) async {
+    var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
+    try {
+      final file = File(filePath);
+      var fileBytes = await file.readAsBytes();
+
+      if (fileBytes.length > 1000000) {
+        final compressed = await FlutterImageCompress.compressWithList(
+          fileBytes,
+          minWidth: 1080,
+          minHeight: 1080,
+          quality: 70,
+          format: CompressFormat.jpeg,
+        );
+        fileBytes = compressed;
+      }
+
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(singletonClass.getHeaders());
+
+      final filename = filePath.split('/').last;
+      final mimeType = lookupMimeType(filePath, headerBytes: fileBytes) ?? 'image/jpeg';
+
+      request.files.add(http.MultipartFile(
+        'file',
+        http.ByteStream.fromBytes(fileBytes),
+        fileBytes.length,
+        filename: filename,
+        contentType: MediaType.parse(mimeType),
+      ));
+
+      request.fields['attachmentName'] = filename;
+      request.fields['attachmentType'] = filename.split('.').last;
+
+      var response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      if (response.statusCode == 200) {
+        final decodedJson = json.decode(responseBody);
+        return decodedJson['data']['url'];
+      }
+    } catch (e) {
+      debugPrint("Error uploading face image to S3: $e");
+    }
+    return null;
+  }
+
+  Widget _buildGuidelineRow(IconData icon, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: NasColors.blue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: NasColors.blue, size: 20),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   ///Cards

@@ -1333,6 +1333,14 @@
     "pm":"PM",
     "idle":"Idle",
     "retry":"retry",
-    "liveSessions":"LIVE SESSIONS"
-
+    "liveSessions":"LIVE SESSIONS",
+    "facialRegistration":"Facial Registration",
+    "startFacialRegistration":"Start Facial Registration",
+    "faceVerificationGuidelines":"Face Verification Guidelines",
+    "facialRegistrationSuccessful":"Facial Registration Successful",
+    "noFaceDetected":"No face detected. Please look directly at the camera.",
+    "multipleFacesDetected":"Multiple faces detected. Please make sure only you are in the frame.",
+    "faceTilted":"Face is tilted. Please look straight into the camera.",
+    "eyesClosed":"Please keep your eyes open during registration.",
+    "confirm":"Confirm"
 }

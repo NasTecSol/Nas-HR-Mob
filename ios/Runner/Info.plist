@@ -50,6 +50,10 @@
 	<true/>
 
 	<!-- ✅ Usage Descriptions -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need camera access to take pictures</string>
 	<key>NSFaceIDUsageDescription</key>

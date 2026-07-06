@@ -34,7 +34,7 @@ void main() {
     if (Platform.isIOS) {
       if (env == "staging") {
         debugPrint("App is running in Debug mode.");
-        SingletonClass().baseURL = "https://dev.nashrms.com/api";
+        SingletonClass().baseURL = "https://www.nashrms.com/api";
         SingletonClass().env = "staging";
       }
       if ( env == "production") {

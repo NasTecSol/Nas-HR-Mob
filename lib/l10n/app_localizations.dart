@@ -5383,6 +5383,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LIVE SESSIONS'**
   String get liveSessions;
+
+  /// No description provided for @facialRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Facial Registration'**
+  String get facialRegistration;
+
+  /// No description provided for @startFacialRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Facial Registration'**
+  String get startFacialRegistration;
+
+  /// No description provided for @faceVerificationGuidelines.
+  ///
+  /// In en, this message translates to:
+  /// **'Face Verification Guidelines'**
+  String get faceVerificationGuidelines;
+
+  /// No description provided for @facialRegistrationSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Facial Registration Successful'**
+  String get facialRegistrationSuccessful;
+
+  /// No description provided for @noFaceDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'No face detected. Please look directly at the camera.'**
+  String get noFaceDetected;
+
+  /// No description provided for @multipleFacesDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple faces detected. Please make sure only you are in the frame.'**
+  String get multipleFacesDetected;
+
+  /// No description provided for @faceTilted.
+  ///
+  /// In en, this message translates to:
+  /// **'Face is tilted. Please look straight into the camera.'**
+  String get faceTilted;
+
+  /// No description provided for @eyesClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Please keep your eyes open during registration.'**
+  String get eyesClosed;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate
