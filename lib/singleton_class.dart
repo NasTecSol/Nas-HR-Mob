@@ -828,7 +828,7 @@ class SingletonClass {
 
   ///Request Screen API Calls
   Future<ApproverRequestData?> getApproverData(
-      {int page = 0, int limit = 20}) async {
+      {int page = 0, int limit = 25}) async {
     String? employeeId = getJWTModel()?.employeeId;
 
     // Request body (stays the same)
@@ -877,6 +877,42 @@ class SingletonClass {
       }
     } catch (e) {
       log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
+  Future<ApproverRequestData?> getRequestByCompanyAndBranch(
+      String companyId, String branchId, {int page = 0, int limit = 25}) async {
+    final uri = Uri.parse(
+      '$baseURL/request/requestByCompany&BranchId/$companyId/$branchId?page=$page&limit=$limit',
+    );
+    print("🌐 requestByCompanyAndBranch URL: $uri");
+    try {
+      final response = await http.get(
+        uri,
+        headers: getHeaders(),
+      );
+
+      log("Response requestByCompanyAndBranch: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+
+        if (page == 0) {
+          setApproverDataList([requestData]);
+        } else {
+          final existing = approverDataList;
+          setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error requestByCompanyAndBranch: $e');
       return null;
     }
   }

@@ -126,19 +126,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final companies = dashboardModule.accessLevel?.companies ?? [];
 
     if (companies.isNotEmpty && selectedCompanyId == null) {
-      // Auto select 0 index company
-      selectedCompanyId = companies.first.companyId;
+      final defaultCompanyId = singletonClass.getJWTModel()?.companyId;
+      final defaultBranchId = singletonClass.getJWTModel()?.branchId;
+
+      // Find company matching defaultCompanyId or fallback to first company
+      dynamic selectedComp;
+      for (var c in companies) {
+        if (c.companyId == defaultCompanyId) {
+          selectedComp = c;
+          break;
+        }
+      }
+      final company = selectedComp ?? companies.first;
+
+      selectedCompanyId = company.companyId;
       singletonClass.selectedCompanyId = selectedCompanyId;
-      singletonClass.companyName = companies.first.companyName ?? '';
+      singletonClass.companyName = company.companyName ?? '';
 
       // Populate branches of this company
-      singletonClass.availableBranches = companies.first.branches ?? [];
+      singletonClass.availableBranches = company.branches ?? [];
 
       if (singletonClass.availableBranches.isNotEmpty && selectedBranchId == null) {
-        // Auto select 0 index branch
-        selectedBranchId = singletonClass.availableBranches.first.branchId;
+        // Find branch matching defaultBranchId or fallback to first branch
+        dynamic selectedBr;
+        for (var b in singletonClass.availableBranches) {
+          if (b.branchId == defaultBranchId) {
+            selectedBr = b;
+            break;
+          }
+        }
+        final branch = selectedBr ?? singletonClass.availableBranches.first;
+
+        selectedBranchId = branch.branchId;
         singletonClass.branchID = selectedBranchId;
-        singletonClass.branchName = singletonClass.availableBranches.first.branchName ?? '';
+        singletonClass.branchName = branch.branchName ?? '';
 
         // Call your API
         singletonClass.getTeamBranchData();

@@ -17,6 +17,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../request_controller/approver_request_data_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:printing/printing.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final DataApprover dataApprover;
@@ -3055,6 +3057,52 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.open_in_new, color: Colors.green),
+                  title: Text(
+                    'Open',
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: Colors.green
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+
+                    // Show loader dialog
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => Center(child: Loader()),
+                    );
+
+                    final localPath = await _savePdfLocally(pdfBytes);
+
+                    // Close loader dialog
+                    if (context.mounted) {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    }
+
+                    if (localPath != null && localPath.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FileViewerScreen(
+                            url: localPath,
+                            fileName: 'Request_Document',
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to save and open document'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.cancel, color: Colors.red,),
                   title:  Text(AppLocalizations.of(context)!.cancel,
                     style: GoogleFonts.inter(
@@ -3086,5 +3134,17 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         );
       }
     }
+  }
+
+  Future<String?> _savePdfLocally(Uint8List pdfBytes) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/Request_Document.pdf');
+      await file.writeAsBytes(pdfBytes);
+      return file.path;
+    } catch (e) {
+      debugPrint("Error saving PDF locally: $e");
+    }
+    return null;
   }
 }
