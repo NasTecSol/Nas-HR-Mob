@@ -246,7 +246,7 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           if(isWithinRadius || singletonClass.getJWTModel()?.empId == "NTS109" || singletonClass.getJWTModel()?.empId == "NTS115")
           IconButton(
             icon: Icon(
-              (singletonClass.isTimerActive == true) ? Icons.logout : Icons.done,
+              (singletonClass.isTimerActive == true) ? Icons.logout_outlined : Icons.fingerprint_outlined,
               color: (singletonClass.isTimerActive == true)  ? Colors.red : Colors.green,
             ),
             onPressed: (){

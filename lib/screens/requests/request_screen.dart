@@ -580,7 +580,7 @@ class _RequestScreenState extends State<RequestScreen> {
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Padding(
-        padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0),
+        padding: const EdgeInsets.only(top: 65.0, left: 16.0, right: 16.0),
         child: RefreshIndicator(
           color: NasColors.darkBlue,
           backgroundColor: Colors.white,
@@ -1898,16 +1898,16 @@ class _RequestScreenState extends State<RequestScreen> {
       addDetailRow(Icons.description_outlined, AppLocalizations.of(context)!.reason, reason);
     } 
     else if (reqType == 'attendanceRequest') {
-      final date = (firstData != null && firstData.date != null && firstData.date.toString().isNotEmpty)
-          ? singletonClass.formatDate2(firstData.date.toString(), context)
+      final date = (firstData != null && firstData.date != null && firstData.attendanceDate.toString().isNotEmpty)
+          ? singletonClass.formatDate2(firstData.attendanceDate.toString(), context)
           : AppLocalizations.of(context)!.noData;
       addDetailRow(Icons.calendar_today_outlined, AppLocalizations.of(context)!.date, date);
       
-      final checkIn = (firstData != null && firstData.checkIn != null) ? firstData.checkIn! : '---';
-      final checkOut = (firstData != null && firstData.checkOut != null) ? firstData.checkOut! : '---';
-      addDetailRow(Icons.login_outlined, AppLocalizations.of(context)!.checkIn, checkIn);
-      addDetailRow(Icons.logout_outlined, AppLocalizations.of(context)!.checkOut, checkOut);
-    } 
+      final attendanceTime = (firstData != null && firstData.attendanceTime != null) ? singletonClass.formatDateTime(firstData.attendanceTime!) : '---';
+      final punchingType = (firstData != null && firstData.punchingType != null) ? firstData.punchingType! : '---';
+      addDetailRow(Icons.fingerprint_outlined, punchingType , attendanceTime);
+    }
+
     else if (reqType == 'expenseRequest') {
       final amount = (firstData != null && firstData.totalAmount != null)
           ? firstData.totalAmount.toString()
